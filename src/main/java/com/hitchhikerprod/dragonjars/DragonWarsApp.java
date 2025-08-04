@@ -13,9 +13,9 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -24,11 +24,12 @@ public class DragonWarsApp extends Application {
     private static final double SCALE_FACTOR = 3.0;
 
     private Stage stage;
+    private Scene scene;
 
     private List<Chunk> dataChunks;
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
         this.stage = stage;
 
         final URL cssUrl = getClass().getResource("style.css");
@@ -38,18 +39,24 @@ public class DragonWarsApp extends Application {
 
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
-        root.asParent().getStylesheets().add(cssUrl.toExternalForm());
+        root.setStyleSheets(cssUrl);
 
-        final Scene scene = new Scene(root.asParent());
+        this.scene = new Scene(root.asParent());
+
         this.stage.setTitle("DragonJars");
         this.stage.setScene(scene);
         this.stage.setResizable(false);
         this.stage.show();
+
         loadDataFiles();
     }
 
     public static void main(String[] args) {
         launch();
+    }
+
+    public void exit() {
+        Platform.exit();
     }
 
     private void loadDataFiles() {
@@ -95,5 +102,13 @@ public class DragonWarsApp extends Application {
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
         RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
+        this.scene.setOnKeyReleased(this::titleScreenHandler);
+    }
+
+    private void titleScreenHandler(KeyEvent event) {
+        System.out.println(event.getCode().name());
+        switch (event.getCode()) {
+            case ENTER, ESCAPE, SPACE -> Platform.exit();
+        }
     }
 }

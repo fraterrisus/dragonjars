@@ -2,9 +2,6 @@ package com.hitchhikerprod.dragonjars.data;
 
 import javafx.scene.image.PixelWriter;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
 public class Images {
@@ -342,17 +339,5 @@ public class Images {
                 return 0xff333333;
             }
         }
-    }
-
-    public static BufferedImage scale(final BufferedImage before, final double scale, final int type) {
-        int w = before.getWidth();
-        int h = before.getHeight();
-        int w2 = (int) (w * scale);
-        int h2 = (int) (h * scale);
-        BufferedImage after = new BufferedImage(w2, h2, before.getType());
-        AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
-        AffineTransformOp scaleOp = new AffineTransformOp(scaleInstance, type);
-        scaleOp.filter(before, after);
-        return after;
     }
 }

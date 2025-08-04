@@ -60,6 +60,7 @@ public class ChunkImageDecoder {
                 inputCounter += 4;
             }
         }
+
         return output;
     }
 }

@@ -4,7 +4,10 @@ import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+
+import java.net.URL;
 
 public class RootWindow {
     public static final RootWindow INSTANCE = new RootWindow();
@@ -13,6 +16,7 @@ public class RootWindow {
         return INSTANCE;
     }
 
+    private DragonWarsApp app;
     private final StackPane pane;
 
     private RootWindow() {
@@ -24,7 +28,12 @@ public class RootWindow {
     }
 
     public void start(DragonWarsApp app) {
+        this.app = app;
         pane.getChildren().setAll(LoadingWindow.getInstance().asNode());
+    }
+
+    public void setStyleSheets(URL cssUrl) {
+        pane.getStylesheets().add(cssUrl.toExternalForm());
     }
 
     public void setImage(Image image, double scale) {
@@ -33,4 +42,5 @@ public class RootWindow {
         imageView.setScaleY(scale);
         pane.getChildren().setAll(imageView);
     }
+
 }
