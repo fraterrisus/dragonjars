@@ -1,7 +1,9 @@
-module com.hitchhikerprod.dragonwars.dragonjars {
+module com.hitchhikerprod.dragonjars {
     requires javafx.controls;
     requires javafx.fxml;
 
     exports com.hitchhikerprod.dragonjars;
     opens com.hitchhikerprod.dragonjars to javafx.fxml;
+    exports com.hitchhikerprod.dragonjars.ui;
+    opens com.hitchhikerprod.dragonjars.ui to javafx.fxml;
 }
