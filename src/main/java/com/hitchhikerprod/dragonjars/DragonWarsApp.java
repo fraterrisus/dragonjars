@@ -1,5 +1,8 @@
 package com.hitchhikerprod.dragonjars;
 
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
+import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
@@ -9,13 +12,20 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
+    private static final double SCALE_FACTOR = 3.0;
+
     private Stage stage;
+
+    private List<Chunk> dataChunks;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -33,14 +43,16 @@ public class DragonWarsApp extends Application {
         final Scene scene = new Scene(root.asParent());
         this.stage.setTitle("DragonJars");
         this.stage.setScene(scene);
+        this.stage.setResizable(false);
         this.stage.show();
+        loadDataFiles();
     }
 
     public static void main(String[] args) {
         launch();
     }
 
-    public void loadDataFiles() {
+    private void loadDataFiles() {
         final LoadDataTask task = new LoadDataTask();
 
         final StringProperty label = LoadingWindow.getInstance().getLabel().textProperty();
@@ -53,7 +65,13 @@ public class DragonWarsApp extends Application {
             label.setValue("Complete.");
             progress.unbind();
             progress.setValue(1.0);
-            // TODO
+            try {
+                this.dataChunks = task.get();
+                showTitleScreen();
+            } catch (InterruptedException | ExecutionException e) {
+                label.setValue("Failed.");
+                dataChunks = null;
+            }
         });
 
         task.setOnFailed(event -> {
@@ -66,6 +84,16 @@ public class DragonWarsApp extends Application {
             Platform.exit();
         });
 
-        new Thread(task).start();
+        final Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void showTitleScreen() {
+        this.stage.setWidth(320 * SCALE_FACTOR);
+        this.stage.setHeight(200 * SCALE_FACTOR);
+        final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
+        final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
+        RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
     }
 }

@@ -2,6 +2,8 @@ package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
 public class RootWindow {
@@ -23,6 +25,12 @@ public class RootWindow {
 
     public void start(DragonWarsApp app) {
         pane.getChildren().setAll(LoadingWindow.getInstance().asNode());
-        app.loadDataFiles();
+    }
+
+    public void setImage(Image image, double scale) {
+        final ImageView imageView = new ImageView(image);
+        imageView.setScaleX(scale);
+        imageView.setScaleY(scale);
+        pane.getChildren().setAll(imageView);
     }
 }

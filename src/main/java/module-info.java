@@ -1,6 +1,7 @@
 module com.hitchhikerprod.dragonjars {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.desktop;
 
     exports com.hitchhikerprod.dragonjars;
     opens com.hitchhikerprod.dragonjars to javafx.fxml;
