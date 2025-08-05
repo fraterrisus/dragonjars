@@ -24,6 +24,7 @@ class LoadAXHeapTest {
         i.start();
 
         assertEquals(0x0000bbaa, i.getAX());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -42,6 +43,7 @@ class LoadAXHeapTest {
         i.start();
 
         assertEquals(0x000000aa, i.getAX());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 }

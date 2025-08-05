@@ -30,6 +30,7 @@ class LoadAXHeapOffsetTest {
         i.start();
 
         assertEquals(0x0000ffee, i.getAX());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -54,7 +55,7 @@ class LoadAXHeapOffsetTest {
         i.start();
 
         assertEquals(0x000000ee, i.getAX());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
-
 }

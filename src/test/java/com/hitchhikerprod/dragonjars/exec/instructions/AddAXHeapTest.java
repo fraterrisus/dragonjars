@@ -25,6 +25,7 @@ class AddAXHeapTest {
 
         assertEquals(carryOut, i.getCarry());
         assertEquals(total, i.getAX());
+        assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 

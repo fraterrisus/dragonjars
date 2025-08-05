@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 
 import java.util.ArrayDeque;
@@ -14,7 +15,6 @@ public class Interpreter {
     private static final int MASK_WORD = 0x0000ffff;
 
     private final List<Chunk> dataChunks;
-    private Chunk codeChunk;
     private Address thisIP;
     private Address nextIP;
 
@@ -32,6 +32,9 @@ public class Interpreter {
     private boolean flagZero;  // 0x0040
     private boolean flagSign;  // 0x0080
 
+    // debugging information
+    private int instructionsExecuted;
+
     public Interpreter(List<Chunk> dataChunks, int initialChunk, int initialAddr) {
         this.dataChunks = dataChunks;
         this.thisIP = new Address(-1, -1);
@@ -43,6 +46,22 @@ public class Interpreter {
         this.flagCarry = false;
         this.flagZero = false;
         this.flagSign = false;
+        this.instructionsExecuted = 0;
+    }
+
+    public void start() {
+        this.instructionsExecuted = 0;
+        while (Objects.nonNull(nextIP)) {
+            thisIP = nextIP;
+            final int opcode = readByte(this.getIP());
+            final Instruction ins = decodeOpcode(opcode);
+            nextIP = ins.exec(this);
+            this.instructionsExecuted++;
+        }
+    }
+
+    public int instructionsExecuted() {
+        return this.instructionsExecuted;
     }
 
     public boolean getCarry() {
@@ -59,18 +78,6 @@ public class Interpreter {
 
     public void setZero(boolean flag) {
         this.flagZero = flag;
-    }
-
-    public void start() {
-        while (Objects.nonNull(nextIP)) {
-            if (nextIP.chunk() != thisIP.chunk()) {
-                codeChunk = getChunk(nextIP.chunk());
-            }
-            thisIP = nextIP;
-            final int opcode = readByte(this.getIP());
-            final Instruction ins = decodeOpcode(opcode);
-            nextIP = ins.exec(this);
-        }
     }
 
     public Chunk getChunk(int index) {
@@ -95,6 +102,10 @@ public class Interpreter {
 
     public void setAL(int val) {
         this.ax = (this.ax & MASK_HIGH) | (val & MASK_LOW);
+    }
+
+    public void setAH(int val) {
+        this.ax = ((val & 0x000000ff) << 8) | (this.ax & MASK_LOW);
     }
 
     public void setAX(int val) {
@@ -178,16 +189,6 @@ public class Interpreter {
         this.width = width;
     }
 
-    /** Retrieves a word (two bytes) from chunk data. */
-    public int readWord(int chunk, int offset) {
-        return dataChunks.get(chunk).getWord(offset);
-    }
-
-    /** Retrieves a word (two bytes) from chunk data. */
-    public int readWord(Address addr) {
-        return readWord(addr.chunk(), addr.offset());
-    }
-
     /** Retrieves a single byte from chunk data. */
     public int readByte(int chunk, int offset) {
         return dataChunks.get(chunk).getUnsignedByte(offset);
@@ -198,6 +199,42 @@ public class Interpreter {
         return readByte(addr.chunk(), addr.offset());
     }
 
+    /** Retrieves a word (two bytes) from chunk data. */
+    public int readWord(int chunk, int offset) {
+        return dataChunks.get(chunk).getWord(offset);
+    }
+
+    /** Retrieves a word (two bytes) from chunk data. */
+    public int readWord(Address addr) {
+        return readWord(addr.chunk(), addr.offset());
+    }
+
+    public void writeByte(int chunk, int offset, int value) {
+        final Chunk c = dataChunks.get(chunk);
+        if (c instanceof ModifiableChunk m) {
+            m.setByte(offset, value);
+        } else {
+            throw new RuntimeException("Chunk " + chunk + " can't be written");
+        }
+    }
+
+    public void writeByte(Address addr, int value) {
+        writeByte(addr.chunk(), addr.offset(), value);
+    }
+    
+    public void writeWord(int chunk, int offset, int value) {
+        final Chunk c = dataChunks.get(chunk);
+        if (c instanceof ModifiableChunk m) {
+            m.setWord(offset, value);
+        } else {
+            throw new RuntimeException("Chunk " + chunk + " can't be written");
+        }
+    }
+
+    public void writeWord(Address addr, int value) {
+        writeWord(addr.chunk(), addr.offset(), value);
+    }
+    
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instruction.SET_WIDE;
@@ -212,9 +249,9 @@ public class Interpreter {
             case 0x09 -> new LoadAXImm();
             case 0x0a -> new LoadAXHeap();
             case 0x0b -> new LoadAXHeapOffset();
-            // case 0x0c -> new LoadAX();
-            // case 0x0d -> new LoadAXOffset();
-            // case 0x0e -> new LoadAXIndirect();
+            case 0x0c -> new LoadAX();
+            case 0x0d -> new LoadAXOffset();
+            case 0x0e -> new LoadAXIndirect();
             case 0x0f -> new LoadAXLongPtr();
             // case 0x10 -> new LoadAXIndirectImm();
             case 0x11 -> new StoreZeroHeap();

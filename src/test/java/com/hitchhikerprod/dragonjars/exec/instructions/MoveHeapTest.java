@@ -25,6 +25,7 @@ class MoveHeapTest {
         i.start();
 
         assertEquals(0x00001234, i.getHeapWord(0x18));
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -44,6 +45,7 @@ class MoveHeapTest {
         i.start();
 
         assertEquals(0x00000034, i.getHeapWord(0x18));
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 }

@@ -56,6 +56,7 @@ public class SimpleInstructionsTest {
 
         i.setWidth(true);
         assertEquals(0x00000200, i.getHeap(0x74));
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -74,6 +75,7 @@ public class SimpleInstructionsTest {
         i.start();
 
         assertEquals(0x000000aa, i.getBL());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -90,6 +92,7 @@ public class SimpleInstructionsTest {
         i.start();
 
         assertEquals(0x000000aa, i.getBL());
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 
@@ -176,6 +179,7 @@ public class SimpleInstructionsTest {
         i.start();
 
         assertEquals(0x000000ff, i.getHeapByte(0x7a));
+        assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
 }
