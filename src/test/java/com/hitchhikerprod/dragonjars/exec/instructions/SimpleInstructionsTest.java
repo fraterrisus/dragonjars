@@ -57,7 +57,20 @@ public class SimpleInstructionsTest {
 
         assertEquals(0x000000aa, i.getBL());
         assertEquals(program.getSize() - 1, i.getIP().offset());
+    }
 
+    @Test
+    public void loadBLZero() {
+        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        i.setWidth(true);
+        i.setBX(0xffff);
+        final Instruction uut = new LoadBLZero();
+
+        final Address newIP = uut.exec(i);
+
+        assertEquals(0x00000000, i.getBL());
+        assertEquals(0x0000ff00, i.getBX());
+        assertEquals(0, newIP.offset());
     }
 
     @Test
@@ -99,19 +112,5 @@ public class SimpleInstructionsTest {
 
         assertEquals(0x000000ff, i.getHeapByte(0x7a));
         assertEquals(program.getSize() - 1, i.getIP().offset());
-    }
-
-    @Test
-    public void zeroBL() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
-        i.setWidth(true);
-        i.setBX(0xffff);
-        final Instruction uut = new ZeroBL();
-
-        final Address newIP = uut.exec(i);
-
-        assertEquals(0x00000000, i.getBL());
-        assertEquals(0x0000ff00, i.getBX());
-        assertEquals(0, newIP.offset());
     }
 }
