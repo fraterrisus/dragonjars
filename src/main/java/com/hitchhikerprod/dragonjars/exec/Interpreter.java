@@ -14,17 +14,18 @@ public class Interpreter {
     private static final int MASK_WORD = 0x0000ffff;
 
     private final List<Chunk> dataChunks;
-    private Chunk chunk;
+    private Chunk codeChunk;
     private Address thisIP;
     private Address nextIP;
 
-    private final Deque<Integer> stack = new ArrayDeque<>();
+    private final Deque<Integer> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
     // TODO: image+memory as segmented by ds
 
     private boolean width;
-    private int cs; // two bytes, although this is thisIP.chunk(), right?
-    private int ds; // two bytes
+    // Metaregister CS is the index of the code chunk
+    // Likewise, DS is the index of the data chunk
+    private int dataChunkIndex;
     private int ax; // sometimes one byte, sometimes two
     private int bx; // sometimes one byte, sometimes two
     private boolean flagCarry; // 0x0001
@@ -36,8 +37,7 @@ public class Interpreter {
         this.thisIP = new Address(-1, -1);
         this.nextIP = new Address(initialChunk, initialAddr);
         this.width = false;
-        this.cs = 0;
-        this.ds = 0;
+        this.dataChunkIndex = 0;
         this.ax = 0;
         this.bx = 0;
         this.flagCarry = false;
@@ -64,10 +64,10 @@ public class Interpreter {
     public void start() {
         while (Objects.nonNull(nextIP)) {
             if (nextIP.chunk() != thisIP.chunk()) {
-                chunk = getChunk(nextIP.chunk());
+                codeChunk = getChunk(nextIP.chunk());
             }
             thisIP = nextIP;
-            final int opcode = readByte(thisIP.offset());
+            final int opcode = readByte(this.getIP());
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
         }
@@ -130,19 +130,15 @@ public class Interpreter {
     }
 
     public int getCS() {
-        return this.cs & MASK_WORD;
-    }
-
-    public void setCS(int val) {
-        this.cs = val & MASK_WORD;
+        return this.thisIP.chunk();
     }
 
     public int getDS() {
-        return this.ds & MASK_WORD;
+        return this.dataChunkIndex;
     }
 
     public void setDS(int val) {
-        this.ds = val & MASK_WORD;
+        this.dataChunkIndex = val;
     }
 
     public void push(int val) {
@@ -182,20 +178,24 @@ public class Interpreter {
         this.width = width;
     }
 
-    /**
-     * Retrieves a word (two bytes) from the current chunk pointer. Does not increment the pointer.
-     * @param offset
-     */
-    public int readWord(int offset) {
-        return chunk.getWord(offset);
+    /** Retrieves a word (two bytes) from chunk data. */
+    public int readWord(int chunk, int offset) {
+        return dataChunks.get(chunk).getWord(offset);
     }
 
-    /**
-     * Retrieves a single byte from the current chunk pointer. Does not increment the pointer.
-     * @param offset
-     */
-    public int readByte(int offset) {
-        return chunk.getUnsignedByte(offset);
+    /** Retrieves a word (two bytes) from chunk data. */
+    public int readWord(Address addr) {
+        return readWord(addr.chunk(), addr.offset());
+    }
+
+    /** Retrieves a single byte from chunk data. */
+    public int readByte(int chunk, int offset) {
+        return dataChunks.get(chunk).getUnsignedByte(offset);
+    }
+
+    /** Retrieves a single byte from chunk data. */
+    public int readByte(Address addr) {
+        return readByte(addr.chunk(), addr.offset());
     }
 
     private Instruction decodeOpcode(int opcode) {
@@ -251,7 +251,66 @@ public class Interpreter {
             // case 0x30 -> new AddAXImm(); // with carry
             // case 0x31 -> new SubAXHeap(); // with carry
             // case 0x32 -> new SubAXImm(); // with carry
+            // case 0x33 -> new MulAXHeap();
+            // case 0x34 -> new MulAXImm();
+            // case 0x35 -> new DivAXHeap();
+            // case 0x36 -> new DivAXImm();
+            // case 0x37 -> new AndAXHeap();
+            // case 0x38 -> new AndAXImm();
+            // case 0x39 -> new OrAXHeap();
+            // case 0x3a -> new OrAXImm();
+            // case 0x3b -> new XorAXHeap();
+            // case 0x3c -> new XorAXImm();
+            // The CMP instructions flip the carry bit before writing, which makes JC and JNC
+            // behave in the opposite manner. But ADD doesn't flip carry.
+            // case 0x3d -> new CmpAXHeap();
+            // case 0x3e -> new CmpAXImm();
+            // case 0x3f -> new CmpBXHeap();
+            // case 0x40 -> new CmpBXImm(); // wide or no?
+            // case 0x41 -> new JumpCarry();
+            // case 0x42 -> new JumpNotCarry();
+            // case 0x43 -> new JumpAbove();
+            // case 0x44 -> new JumpEqual();
+            // case 0x45 -> new JumpNotEqual();
+            // case 0x46 -> new JumpSign();
+            // case 0x47 -> new JumpNotSign();
+            // case 0x48 -> new TestHeapSign();
+            // case 0x49 -> new LoopBX();
+            // case 0x4a -> new LoopBXLimit();
+            case 0x4b -> (i) -> { i.setCarry(true); return i.getIP().incr(Instruction.OPCODE); };
+            case 0x4c -> (i) -> { i.setCarry(false); return i.getIP().incr(Instruction.OPCODE); };
+            // case 0x4d -> new RandomAX();
+            // case 0x4e -> new SetHeapBit();
+            // case 0x4f -> new ClearHeapBit();
+            // case 0x50 -> new TestHeapBit();
+            // case 0x51 -> new ArrayMax();
+            // case 0x52 -> new Jump();
+            // case 0x53 -> new Call();
+            // case 0x54 -> new Return();
+            case 0x55 -> new PopAX();
+            case 0x56 -> new PushAX();
+            // case 0x57 -> new LongJump();
+            // case 0x58 -> new LongCall();
+            // case 0x59 -> new LongReturn();
             case 0x5a -> new ExitInstruction(); // "stop executing instruction stream"
+            // case 0x5b -> new EraseSquareSpecial();
+            // case 0x5c -> new RecurseOverParty();
+            // case 0x5d -> new LoadAXPartyAttribute();
+            // case 0x5e -> new StoreAXPartyAttribute();
+            // case 0x5f -> new SetPartyFlag();
+            // case 0x60 -> new ClearPartyFlag();
+            // case 0x61 -> new TestPartyFlag();
+            // case 0x62 -> new SearchPartyFlag();
+            // case 0x63 -> new RecurseOverInventory();
+            // case 0x64 -> new PickUpItem();
+            // case 0x65 -> new SearchItem();
+            // case 0x66 -> new TestHeap();
+            // case 0x67 -> new DropItem();
+            case 0x8e -> Instruction.NOOP;
+            // case 0x93 -> new PushBL();
+            // case 0x94 -> new PopBL();
+            // case 0x99 -> new TestAX();
+            // case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
     }

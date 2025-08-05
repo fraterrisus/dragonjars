@@ -140,11 +140,13 @@ public class SimpleInstructionsTest {
     public void setNarrow() {
         final Interpreter i = new Interpreter(List.of(), 0, 0);
         i.setWidth(true);
+        i.setAX(0x0000ffff);
         final Instruction uut = Instruction.SET_NARROW;
 
         final Address newIP = uut.exec(i);
 
         assertFalse(i.isWide());
+        assertEquals(0x00000000, i.getAL());
         assertEquals(0, newIP.offset());
     }
 

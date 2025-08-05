@@ -12,7 +12,6 @@ class StoreAXHeapTest {
     @Test
     public void wide() {
         final Chunk program = new Chunk(List.of(
-                (byte)0x00, // SetWide
                 (byte)0x12, // StoreAXHeap
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
@@ -30,7 +29,6 @@ class StoreAXHeapTest {
     @Test
     public void narrow() {
         final Chunk program = new Chunk(List.of(
-                (byte)0x01, // SetNarrow
                 (byte)0x12, // StoreAXHeap
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
@@ -38,7 +36,7 @@ class StoreAXHeapTest {
         final Interpreter i = new Interpreter(List.of(program), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
-
+        i.setWidth(false);
         i.start();
 
         assertEquals(0x00000034, i.getHeapWord(0x3a));

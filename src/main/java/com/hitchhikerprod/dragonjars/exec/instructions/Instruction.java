@@ -16,6 +16,7 @@ public interface Instruction {
 
     Instruction SET_NARROW = (i) -> {
         i.setWidth(false);
+        i.setAL(0x00); // ???????
         return i.getIP().incr(OPCODE);
     };
 

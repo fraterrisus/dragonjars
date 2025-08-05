@@ -3,12 +3,14 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
-public class StoreAXHeap implements Instruction {
+public class PopAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
-        i.setHeap(heapIndex, i.getAX());
-        return ip.incr(OPCODE + IMMEDIATE);
+        int value = i.pop();
+        if (i.isWide()) {
+            value = value | (i.pop() << 8);
+        }
+        i.setAX(value);
+        return i.getIP().incr(OPCODE);
     }
 }

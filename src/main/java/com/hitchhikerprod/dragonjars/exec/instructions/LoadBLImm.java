@@ -6,9 +6,9 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class LoadBLImm implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int offset = i.getIP().offset();
-        final int value = i.readByte(offset + 1);
+        final Address ip = i.getIP();
+        final int value = i.readByte(ip.incr(1));
         i.setBL(value);
-        return i.getIP().incr(OPCODE + IMMEDIATE);
+        return ip.incr(OPCODE + IMMEDIATE);
     }
 }

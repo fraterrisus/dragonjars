@@ -6,9 +6,9 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class AddAXHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int offset = i.getIP().offset();
+        final Address ip = i.getIP();
         final int carryIn = (i.getCarry()) ? 1 : 0;
-        final int heapIndex = i.readByte(offset + 1);
+        final int heapIndex = i.readByte(ip.incr(1));
         final int value = i.getHeapWord(heapIndex);
         if (i.isWide()) {
             final int newValue = i.getAX() + value + carryIn;
@@ -19,6 +19,6 @@ public class AddAXHeap implements Instruction {
             i.setAL(newValue);
             i.setCarry((newValue & 0xffffff00) > 0);
         }
-        return i.getIP().incr(OPCODE + IMMEDIATE);
+        return ip.incr(OPCODE + IMMEDIATE);
     }
 }

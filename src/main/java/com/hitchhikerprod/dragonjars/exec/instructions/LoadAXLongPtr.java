@@ -6,12 +6,12 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class LoadAXLongPtr implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int offset = i.getIP().offset();
-        final int heapIndex = i.readByte(offset + 1);
+        final Address ip = i.getIP();
+        final int heapIndex = i.readByte(ip.incr(1));
         final int chunkId = i.getHeapByte(heapIndex);
         final int chunkOffset = i.getHeapWord(heapIndex + 1) + i.getBX(true);
-        final int chunkData = i.getChunk(chunkId).getWord(chunkOffset);
+        final int chunkData = i.readWord(chunkId, chunkOffset);
         i.setAX(chunkData);
-        return i.getIP().incr(OPCODE + IMMEDIATE);
+        return ip.incr(OPCODE + IMMEDIATE);
     }
 }

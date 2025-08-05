@@ -12,7 +12,6 @@ class StoreAXHeapOffsetTest {
     @Test
     public void wide() {
         final Chunk program = new Chunk(List.of(
-                (byte)0x00, // SetWide
                 (byte)0x13, // StoreAXHeapOffset
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
@@ -31,7 +30,6 @@ class StoreAXHeapOffsetTest {
     @Test
     public void narrow() {
         final Chunk program = new Chunk(List.of(
-                (byte)0x01, // SetNarrow
                 (byte)0x13, // StoreAXHeapOffset
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
@@ -40,6 +38,7 @@ class StoreAXHeapOffsetTest {
         i.setWidth(true);
         i.setAX(0x1234);
         i.setBL(0x02);
+        i.setWidth(false);
 
         i.start();
 

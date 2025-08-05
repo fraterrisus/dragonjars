@@ -6,9 +6,9 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class LoadAXImm implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int offset = i.getIP().offset();
-        final int value = (i.isWide()) ? i.readWord(offset + 1) : i.readByte(offset + 1);
+        final Address ip = i.getIP();
+        final int value = (i.isWide()) ? i.readWord(ip.incr(1)) : i.readByte(ip.incr(1));
         i.setAX(value);
-        return i.getIP().incr(OPCODE + wordSize(i));
+        return ip.incr(OPCODE + wordSize(i));
     }
 }

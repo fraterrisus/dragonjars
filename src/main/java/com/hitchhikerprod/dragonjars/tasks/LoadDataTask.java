@@ -21,7 +21,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             for (int i = 0; i < count; i++) {
                 if (isCancelled()) return null;
                 updateMessage("Loading chunk " + (i+1) + " of " + count);
-                chunks.add(table.getChunk(i));
+                chunks.add(table.getModifiableChunk(i));
                 updateProgress(i+1, count);
             }
             updateMessage("Finished.");
