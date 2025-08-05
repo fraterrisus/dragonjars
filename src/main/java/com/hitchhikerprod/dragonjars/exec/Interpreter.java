@@ -140,6 +140,10 @@ public class Interpreter {
         }
     }
 
+    public int getHeap(int index) {
+        return (width) ? getHeapWord(index) : getHeapByte(index);
+    }
+
     public int getHeapWord(int index) {
         final int lo = this.heap[index & MASK_LOW] & MASK_LOW;
         final int hi = this.heap[(index + 1) & MASK_LOW] & MASK_LOW;
@@ -196,6 +200,23 @@ public class Interpreter {
             case 0x11 -> new StoreZeroHeap();
             case 0x12 -> new StoreAXHeap();
             case 0x13 -> new StoreAXHeapOffset();
+            // case 0x14 -> new StoreAX();
+            // case 0x15 -> new StoreAXOffset();
+            // case 0x16 -> new StoreAXIndirect();
+            // case 0x17 -> new StoreAXLongPtr();
+            // case 0x18 -> new StoreAXIndirectImm();
+            case 0x19 -> new MoveHeap();
+            case 0x1a -> new StoreImmHeap();
+            // case 0x1b -> new MoveData();
+            // case 0x1c -> new StoreImm();
+            // case 0x1d -> new BufferCopy();
+            // 1E is "kill the executable", as opposed to 5A
+            case 0x1e -> new ExitInstruction();
+            // 1F is "read chunk table", which we don't need to do
+            case 0x1f -> new NoOp();
+            // 20 is never called
+            case 0x20 -> new NoOp();
+            // 5A is "stop executing program", which is useful for recursion
             case 0x5a -> new ExitInstruction();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };

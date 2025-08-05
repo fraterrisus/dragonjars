@@ -41,6 +41,23 @@ class InterpreterHeapTest {
     }
 
     @Test
+    public void getHeapNarrow() {
+        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        uut.setWidth(true);
+        uut.setHeap(0x10, 0xaabbccdd);
+        uut.setWidth(false);
+        assertEquals(0x000000dd, uut.getHeap(0x10));
+    }
+
+    @Test
+    public void getHeapWide() {
+        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        uut.setWidth(true);
+        uut.setHeap(0x10, 0xaabbccdd);
+        assertEquals(0x0000ccdd, uut.getHeap(0x10));
+    }
+
+    @Test
     public void setHeapMasksAddress() {
         final Interpreter uut = new Interpreter(List.of(), 0, 0);
         uut.setWidth(true);
