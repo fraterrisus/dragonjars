@@ -140,7 +140,7 @@ public class SimpleInstructionsTest {
     public void setNarrow() {
         final Interpreter i = new Interpreter(List.of(), 0, 0);
         i.setWidth(true);
-        final Instruction uut = new SetNarrow();
+        final Instruction uut = Instruction.SET_NARROW;
 
         final Address newIP = uut.exec(i);
 
@@ -152,7 +152,7 @@ public class SimpleInstructionsTest {
     public void setWide() {
         final Interpreter i = new Interpreter(List.of(), 0, 0);
         i.setWidth(false);
-        final Instruction uut = new SetWide();
+        final Instruction uut = Instruction.SET_WIDE;
 
         final Address newIP = uut.exec(i);
 

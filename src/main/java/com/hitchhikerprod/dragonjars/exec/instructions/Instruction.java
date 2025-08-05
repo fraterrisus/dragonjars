@@ -9,6 +9,18 @@ public interface Instruction {
     int ADDRESS = 2;
     int RECTANGLE = 4;
 
+    Instruction SET_WIDE = (i) -> {
+        i.setWidth(true);
+        return i.getIP().incr(OPCODE);
+    };
+
+    Instruction SET_NARROW = (i) -> {
+        i.setWidth(false);
+        return i.getIP().incr(OPCODE);
+    };
+
+    Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
+
     Address exec(Interpreter i);
 
     default int wordSize(Interpreter i) {

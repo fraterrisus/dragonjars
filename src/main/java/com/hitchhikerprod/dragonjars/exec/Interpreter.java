@@ -27,7 +27,9 @@ public class Interpreter {
     private int ds; // two bytes
     private int ax; // sometimes one byte, sometimes two
     private int bx; // sometimes one byte, sometimes two
-    private int flags; // one byte
+    private boolean flagCarry; // 0x0001
+    private boolean flagZero;  // 0x0040
+    private boolean flagSign;  // 0x0080
 
     public Interpreter(List<Chunk> dataChunks, int initialChunk, int initialAddr) {
         this.dataChunks = dataChunks;
@@ -38,7 +40,25 @@ public class Interpreter {
         this.ds = 0;
         this.ax = 0;
         this.bx = 0;
-        this.flags = 0;
+        this.flagCarry = false;
+        this.flagZero = false;
+        this.flagSign = false;
+    }
+
+    public boolean getCarry() {
+        return flagCarry;
+    }
+
+    public void setCarry(boolean flag) {
+        this.flagCarry = flag;
+    }
+
+    public boolean getZero() {
+        return flagZero;
+    }
+
+    public void setZero(boolean flag) {
+        this.flagZero = flag;
     }
 
     public void start() {
@@ -180,8 +200,8 @@ public class Interpreter {
 
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
-            case 0x00 -> new SetWide();
-            case 0x01 -> new SetNarrow();
+            case 0x00 -> Instruction.SET_WIDE;
+            case 0x01 -> Instruction.SET_NARROW;
             case 0x02 -> new PushDS();
             case 0x03 -> new PopDS();
             case 0x04 -> new PushCS();
@@ -211,13 +231,26 @@ public class Interpreter {
             // case 0x1c -> new StoreImm();
             // case 0x1d -> new BufferCopy();
             case 0x1e -> new ExitInstruction(); // "kill executable"
-            case 0x1f -> new NoOp(); // "read chunk table"
+            case 0x1f -> Instruction.NOOP; // "read chunk table"
             // 20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
             case 0x23 -> new IncHeap();
             case 0x24 -> new IncAX();
             case 0x25 -> new IncBL();
+            // case 0x26 -> new DecHeap();
+            // case 0x27 -> new DecAX();
+            // case 0x28 -> new DecBL();
+            // case 0x29 -> new LeftShiftHeap();
+            // case 0x2a -> new LeftShiftAX();
+            // case 0x2b -> new LeftShiftBL();
+            // case 0x2c -> new RightShiftHeap();
+            // case 0x2d -> new RightShiftAX();
+            // case 0x2e -> new RightShiftBL();
+            case 0x2f -> new AddAXHeap();
+            // case 0x30 -> new AddAXImm(); // with carry
+            // case 0x31 -> new SubAXHeap(); // with carry
+            // case 0x32 -> new SubAXImm(); // with carry
             case 0x5a -> new ExitInstruction(); // "stop executing instruction stream"
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
