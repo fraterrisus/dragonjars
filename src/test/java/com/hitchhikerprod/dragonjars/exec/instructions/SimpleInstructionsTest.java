@@ -64,12 +64,41 @@ public class SimpleInstructionsTest {
         final Interpreter i = new Interpreter(List.of(), 0, 0);
         i.setWidth(true);
         i.setBX(0xffff);
-        final Instruction uut = new LoadBLZero();
 
+        final Instruction uut = new LoadBLZero();
         final Address newIP = uut.exec(i);
 
         assertEquals(0x00000000, i.getBL());
         assertEquals(0x0000ff00, i.getBX());
+        assertEquals(0, newIP.offset());
+    }
+
+    @Test
+    public void moveALBL() {
+        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        i.setWidth(true);
+        i.setAX(0xffff);
+        i.setBX(0x0000);
+
+        final Instruction uut = new MoveALBL();
+        final Address newIP = uut.exec(i);
+
+        assertEquals(0x000000ff, i.getBL());
+        assertEquals(0, newIP.offset());
+    }
+
+    @Test
+    public void moveBXAX() {
+        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        i.setWidth(true);
+        i.setAX(0x0000);
+        i.setBX(0xffff);
+        i.setWidth(false);
+
+        final Instruction uut = new MoveBXAX();
+        final Address newIP = uut.exec(i);
+
+        assertEquals(0x0000ffff, i.getAX(true));
         assertEquals(0, newIP.offset());
     }
 

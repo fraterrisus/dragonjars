@@ -210,14 +210,12 @@ public class Interpreter {
             // case 0x1b -> new MoveData();
             // case 0x1c -> new StoreImm();
             // case 0x1d -> new BufferCopy();
-            // 1E is "kill the executable", as opposed to 5A
-            case 0x1e -> new ExitInstruction();
-            // 1F is "read chunk table", which we don't need to do
-            case 0x1f -> new NoOp();
-            // 20 is never called
-            case 0x20 -> new NoOp();
-            // 5A is "stop executing program", which is useful for recursion
-            case 0x5a -> new ExitInstruction();
+            case 0x1e -> new ExitInstruction(); // "kill executable"
+            case 0x1f -> new NoOp(); // "read chunk table"
+            // 20 sends the (real) IP to 0x0000, which is probably a segfault
+            case 0x21 -> new MoveALBL();
+            case 0x22 -> new MoveBXAX();
+            case 0x5a -> new ExitInstruction(); // "stop executing instruction stream"
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
     }
