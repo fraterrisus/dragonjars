@@ -26,6 +26,40 @@ public class SimpleInstructionsTest {
     }
 
     @Test
+    public void incBL() {
+        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        i.setWidth(true);
+        i.setBX(0x0000ffff);
+        final Instruction uut = new IncBL();
+
+        final Address newIP = uut.exec(i);
+
+        assertEquals(0x0000ff00, i.getBX());
+        assertEquals(0, newIP.offset());
+    }
+
+    @Test
+    public void incHeap() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x01, // SetNarrow
+                (byte)0x23, // IncHeap
+                (byte)0x74, // heap index
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        i.setWidth(false);
+        i.setHeap(0x74, 0xff);
+        i.setHeap(0x75, 0x01);
+
+        i.start();
+
+        i.setWidth(true);
+        assertEquals(0x00000200, i.getHeap(0x74));
+        assertEquals(program.getSize() - 1, i.getIP().offset());
+    }
+
+    @Test
     public void loadBLHeap() {
         final Chunk program = new Chunk(List.of(
                 (byte)0x00, // SetWide

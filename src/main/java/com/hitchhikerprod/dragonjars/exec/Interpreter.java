@@ -215,6 +215,9 @@ public class Interpreter {
             // 20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
+            case 0x23 -> new IncHeap();
+            case 0x24 -> new IncAX();
+            case 0x25 -> new IncBL();
             case 0x5a -> new ExitInstruction(); // "stop executing instruction stream"
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
