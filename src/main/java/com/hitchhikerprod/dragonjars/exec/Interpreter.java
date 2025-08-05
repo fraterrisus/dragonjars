@@ -1,0 +1,199 @@
+package com.hitchhikerprod.dragonjars.exec;
+
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.instructions.*;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.Objects;
+
+public class Interpreter {
+    private static final int MASK_LOW = 0x000000ff;
+    private static final int MASK_HIGH = 0x0000ff00;
+    private static final int MASK_WORD = 0x0000ffff;
+
+    private final List<Chunk> dataChunks;
+    private Chunk chunk;
+    private Address thisIP;
+    private Address nextIP;
+
+    private final Deque<Integer> stack = new ArrayDeque<>();
+    private final int[] heap = new int[256];
+    // TODO: image+memory as segmented by ds
+
+    private boolean width;
+    private int cs; // two bytes, although this is thisIP.chunk(), right?
+    private int ds; // two bytes
+    private int ax; // sometimes one byte, sometimes two
+    private int bx; // sometimes one byte, sometimes two
+    private int flags; // one byte
+
+    public Interpreter(List<Chunk> dataChunks, int initialChunk, int initialAddr) {
+        this.dataChunks = dataChunks;
+        this.thisIP = new Address(-1, -1);
+        this.nextIP = new Address(initialChunk, initialAddr);
+        this.width = false;
+        this.cs = 0;
+        this.ds = 0;
+        this.ax = 0;
+        this.bx = 0;
+        this.flags = 0;
+    }
+
+    public void start() {
+        while (Objects.nonNull(nextIP)) {
+            if (nextIP.chunk() != thisIP.chunk()) {
+                chunk = getChunk(nextIP.chunk());
+            }
+            thisIP = nextIP;
+            final int opcode = readByte(thisIP.offset());
+            final Instruction ins = decodeOpcode(opcode);
+            nextIP = ins.exec(this);
+        }
+    }
+
+    public Chunk getChunk(int index) {
+        return dataChunks.get(index);
+    }
+
+    public Address getIP() {
+        return thisIP;
+    }
+
+    public int getAL() {
+        return this.ax & MASK_LOW;
+    }
+
+    public int getAX(boolean forceWide) {
+        return (forceWide || width) ? this.ax & MASK_WORD : this.ax & MASK_LOW;
+    }
+
+    public int getAX() {
+        return getAX(false);
+    }
+
+    public void setAL(int val) {
+        this.ax = (this.ax & MASK_HIGH) | (val & MASK_LOW);
+    }
+
+    public void setAX(int val) {
+        if (width) {
+            this.ax = val & MASK_WORD;
+        } else {
+            setAL(val);
+        }
+    }
+
+    public int getBL() {
+        return this.bx & MASK_LOW;
+    }
+
+    public int getBX(boolean forceWide) {
+        return (forceWide || width) ? this.bx & MASK_WORD : this.bx & MASK_LOW;
+    }
+
+    public int getBX() {
+        return getBX(false);
+    }
+
+    public void setBL(int val) {
+        this.bx = (this.bx & MASK_HIGH) | (val & MASK_LOW);
+    }
+
+    public void setBX(int val) {
+        if (width) {
+            this.bx = val & MASK_WORD;
+        } else {
+            setBL(val);
+        }
+    }
+
+    public int getCS() {
+        return this.cs & MASK_WORD;
+    }
+
+    public void setCS(int val) {
+        this.cs = val & MASK_WORD;
+    }
+
+    public int getDS() {
+        return this.ds & MASK_WORD;
+    }
+
+    public void setDS(int val) {
+        this.ds = val & MASK_WORD;
+    }
+
+    public void push(int val) {
+        this.stack.push(val);
+    }
+
+    public int pop() {
+        return this.stack.pop() & MASK_WORD;
+    }
+
+    public void setHeap(int index, int val) {
+        this.heap[index & MASK_LOW] = val & MASK_LOW;
+        if (width) {
+            this.heap[(index & MASK_LOW) + 1] = (val & MASK_HIGH) >> 8;
+        }
+    }
+
+    public int getHeapWord(int index) {
+        final int lo = this.heap[index & MASK_LOW] & MASK_LOW;
+        final int hi = this.heap[(index + 1) & MASK_LOW] & MASK_LOW;
+        return (hi << 8) | lo;
+    }
+
+    public int getHeapByte(int index) {
+        return this.heap[index & MASK_LOW] & MASK_LOW;
+    }
+
+    public boolean isWide() {
+        return width;
+    }
+
+    public void setWidth(boolean width) {
+        this.width = width;
+    }
+
+    /**
+     * Retrieves a word (two bytes) from the current chunk pointer. Does not increment the pointer.
+     * @param offset
+     */
+    public int readWord(int offset) {
+        return chunk.getWord(offset);
+    }
+
+    /**
+     * Retrieves a single byte from the current chunk pointer. Does not increment the pointer.
+     * @param offset
+     */
+    public int readByte(int offset) {
+        return chunk.getUnsignedByte(offset);
+    }
+
+    private Instruction decodeOpcode(int opcode) {
+        return switch (opcode) {
+            case 0x00 -> new SetWide();
+            case 0x01 -> new SetNarrow();
+            case 0x02 -> new PushDS();
+            case 0x03 -> new PopDS();
+            case 0x04 -> new PushCS();
+            case 0x05 -> new LoadBLHeap();
+            case 0x06 -> new LoadBLImm();
+            case 0x07 -> new ZeroBL();
+            case 0x08 -> new StoreBLHeap();
+            case 0x09 -> new LoadAXImm();
+            case 0x0a -> new LoadAXHeap();
+            case 0x0b -> new LoadAXHeapOffset();
+            //case 0x0c -> new LoadAX();
+            //case 0x0d -> new LoadAXOffset();
+            //case 0x0e -> new LoadAXIndirect();
+            case 0x0f -> new LoadAXLongPtr();
+            case 0x5a -> new ExitInstruction();
+            default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
+        };
+    }
+}

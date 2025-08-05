@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
@@ -10,6 +11,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -53,6 +55,10 @@ public class DragonWarsApp extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    public void setKeyHandler(EventHandler<KeyEvent> handler) {
+        this.scene.setOnKeyReleased(handler);
     }
 
     public void exit() {
@@ -102,13 +108,20 @@ public class DragonWarsApp extends Application {
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
         RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
-        this.scene.setOnKeyReleased(this::titleScreenHandler);
+        setKeyHandler(this::titleScreenHandler);
+    }
+
+    private void startInterpreter() {
+        setKeyHandler(null);
+        final Interpreter interp = new Interpreter(this.dataChunks, 0, 0);
+        interp.start();
     }
 
     private void titleScreenHandler(KeyEvent event) {
         System.out.println(event.getCode().name());
         switch (event.getCode()) {
-            case ENTER, ESCAPE, SPACE -> Platform.exit();
+            case Q -> Platform.exit();
+            case ENTER, ESCAPE, SPACE -> startInterpreter();
         }
     }
 }
