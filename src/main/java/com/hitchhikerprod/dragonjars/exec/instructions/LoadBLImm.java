@@ -7,8 +7,7 @@ public class LoadBLImm implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int value = i.readByte(ip.incr(1));
-        i.setBL(value);
+        i.setBL(i.readByte(ip.incr(1)));
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

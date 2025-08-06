@@ -108,6 +108,8 @@ public class Interpreter {
         this.ax = ((val & 0x000000ff) << 8) | (this.ax & MASK_LOW);
     }
 
+    /** Writes the value to the AX register. In WIDE mode this method writes both AL and AH; in NARROW mode it only
+     * writes AL, and AH is untouched. */
     public void setAX(int val) {
         if (width) {
             this.ax = val & MASK_WORD;
@@ -252,7 +254,7 @@ public class Interpreter {
             case 0x0c -> new LoadAX();
             case 0x0d -> new LoadAXOffset();
             case 0x0e -> new LoadAXIndirect();
-            case 0x0f -> new LoadAXLongPtr();
+            case 0x0f -> new LoadAXLongPtr();  // checked for weird side effects
             // case 0x10 -> new LoadAXIndirectImm();
             case 0x11 -> new StoreZeroHeap();
             case 0x12 -> new StoreAXHeap();

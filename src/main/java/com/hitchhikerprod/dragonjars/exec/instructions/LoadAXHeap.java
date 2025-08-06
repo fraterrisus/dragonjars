@@ -8,8 +8,9 @@ public class LoadAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int heapValue = i.getHeapWord(heapIndex);
-        i.setAX(heapValue);
+        final int value = i.getHeapWord(heapIndex);
+        i.setAX(value);
+        if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

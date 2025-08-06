@@ -19,6 +19,8 @@ class LoadAXHeapTest {
         ));
 
         final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        i.setAH(0xff);
+        i.setAL(0xff);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
         i.start();
@@ -38,6 +40,8 @@ class LoadAXHeapTest {
         ));
 
         final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        i.setAH(0xff);
+        i.setAL(0xff);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
         i.start();

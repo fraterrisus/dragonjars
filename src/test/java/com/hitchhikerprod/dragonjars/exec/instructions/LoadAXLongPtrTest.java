@@ -24,9 +24,11 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(List.of(program, data), 0, 0);
-        i.setHeap(0x34, 0x01); // chunk ID
-        i.setHeap(0x35, 0x08); // chunk offset lo
-        i.setHeap(0x36, 0x00); // chunk offset hi
+        i.setAH(0xff);
+        i.setAL(0xff);
+        i.setHeap(0x34, 0x08); // chunk offset lo
+        i.setHeap(0x35, 0x00); // chunk offset hi
+        i.setHeap(0x36, 0x01); // chunk ID
 
         i.start();
 
@@ -50,9 +52,11 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(List.of(program, data), 0, 0);
-        i.setHeap(0x34, 0x01); // chunk ID
-        i.setHeap(0x35, 0x08); // chunk offset lo
-        i.setHeap(0x36, 0x00); // chunk offset hi
+        i.setAH(0xff);
+        i.setAL(0xff);
+        i.setHeap(0x34, 0x08); // chunk offset lo
+        i.setHeap(0x35, 0x00); // chunk offset hi
+        i.setHeap(0x36, 0x01); // chunk ID
 
         i.start();
 
