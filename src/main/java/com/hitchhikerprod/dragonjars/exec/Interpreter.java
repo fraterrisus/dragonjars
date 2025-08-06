@@ -286,7 +286,7 @@ public class Interpreter {
             case 0x1a -> new StoreImmHeap();
             case 0x1b -> new MoveData();
             case 0x1c -> new StoreImm();
-            case 0x1d -> new BufferCopy(); // checked for weird side effects
+            case 0x1d -> new BufferCopy();
             case 0x1e -> Instruction.EXIT; // "kill executable" aka "you lost"
             case 0x1f -> Instruction.NOOP; // "read chunk table"
             // 20 sends the (real) IP to 0x0000, which is probably a segfault
@@ -294,7 +294,7 @@ public class Interpreter {
             case 0x22 -> new MoveBXAX();
             case 0x23 -> new IncHeap();
             case 0x24 -> new IncAX();
-            case 0x25 -> new IncBL();
+            case 0x25 -> new IncBL(); // checked for weird side effects
             // case 0x26 -> new DecHeap();
             // case 0x27 -> new DecAX();
             // case 0x28 -> new DecBL();

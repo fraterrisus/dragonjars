@@ -9,10 +9,7 @@ public class IncHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
         final int value = i.getHeapWord(heapIndex) + 1;
-        final boolean width = i.isWide();
-        i.setWidth(true);
         i.setHeap(heapIndex, value);
-        i.setWidth(width);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

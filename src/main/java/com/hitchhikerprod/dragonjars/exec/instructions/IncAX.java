@@ -7,11 +7,8 @@ public class IncAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int value = i.getAX(true) + 1;
-        final boolean width = i.isWide();
-        /* A weird one; it runs `and ah, byte[wide]` which seems to mask AH down to 0 in Narrow mode */
-        i.setWidth(true);
-        i.setAX(width ? value : value & 0x000000ff);
-        i.setWidth(width);
+        i.setAX(value);
+        if (!i.isWide()) i.setAH(0x00);
         return i.getIP().incr(OPCODE);
     }
 }
