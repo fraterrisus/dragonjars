@@ -4,12 +4,15 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class MoveHeap implements Instruction {
+    // heap[imm:1]:w -> heap[imm:1]:w
+    // note ordering; first IMM is read address, second is write address
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapReadIndex = i.readByte(ip.incr(1));
         final int heapWriteIndex = i.readByte(ip.incr(2));
-        i.setHeap(heapWriteIndex, i.getHeap(heapReadIndex));
+        final int value = i.getHeap(heapReadIndex);
+        i.setHeap(heapWriteIndex, value);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
     }
 }

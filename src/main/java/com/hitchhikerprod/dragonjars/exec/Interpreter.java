@@ -20,7 +20,6 @@ public class Interpreter {
 
     private final Deque<Integer> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
-    // TODO: image+memory as segmented by ds
 
     private boolean width;
     // Metaregister CS is the index of the code chunk
@@ -47,6 +46,14 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
         this.instructionsExecuted = 0;
+    }
+
+    public void writeWidth(int chunk, int addr, int value) {
+        if (isWide()) {
+            writeWord(chunk, addr, value);
+        } else {
+            writeByte(chunk, addr, value);
+        }
     }
 
     public void start() {
@@ -258,14 +265,14 @@ public class Interpreter {
             case 0x10 -> new LoadAXIndirectImm();
             case 0x11 -> new StoreZeroHeap();
             case 0x12 -> new StoreAXHeap();
-            case 0x13 -> new StoreAXHeapOffset();  // checked for weird side effects
-            // case 0x14 -> new StoreAX();
-            // case 0x15 -> new StoreAXOffset();
-            // case 0x16 -> new StoreAXIndirect();
-            // case 0x17 -> new StoreAXLongPtr();
-            // case 0x18 -> new StoreAXIndirectImm();
+            case 0x13 -> new StoreAXHeapOffset();
+            case 0x14 -> new StoreAX();
+            case 0x15 -> new StoreAXOffset();
+            case 0x16 -> new StoreAXIndirect();
+            case 0x17 -> new StoreAXLongPtr();
+            case 0x18 -> new StoreAXIndirectImm();
             case 0x19 -> new MoveHeap();
-            case 0x1a -> new StoreImmHeap();
+            case 0x1a -> new StoreImmHeap();   // checked for weird side effects
             // case 0x1b -> new MoveData();
             // case 0x1c -> new StoreImm();
             // case 0x1d -> new BufferCopy();

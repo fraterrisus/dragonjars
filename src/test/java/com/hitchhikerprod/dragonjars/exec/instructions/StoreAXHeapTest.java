@@ -9,14 +9,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StoreAXHeapTest {
+    private static final Chunk PROGRAM = new Chunk(List.of(
+            (byte) 0x12, // StoreAXHeap
+            (byte) 0x3a, //   heap index
+            (byte) 0x5a  // Exit
+    ));
+
     @Test
     public void wide() {
-        final Chunk program = new Chunk(List.of(
-                (byte)0x12, // StoreAXHeap
-                (byte)0x3a, // heap index
-                (byte)0x5a  // Exit
-        ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
 
@@ -24,17 +25,12 @@ class StoreAXHeapTest {
 
         assertEquals(0x00001234, i.getHeapWord(0x3a));
         assertEquals(2, i.instructionsExecuted());
-        assertEquals(program.getSize() - 1, i.getIP().offset());
+        assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }
 
     @Test
     public void narrow() {
-        final Chunk program = new Chunk(List.of(
-                (byte)0x12, // StoreAXHeap
-                (byte)0x3a, // heap index
-                (byte)0x5a  // Exit
-        ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
         i.setWidth(false);
@@ -42,6 +38,6 @@ class StoreAXHeapTest {
 
         assertEquals(0x00000034, i.getHeapWord(0x3a));
         assertEquals(2, i.instructionsExecuted());
-        assertEquals(program.getSize() - 1, i.getIP().offset());
+        assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }
 }
