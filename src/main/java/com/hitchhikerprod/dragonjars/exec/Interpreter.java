@@ -18,7 +18,7 @@ public class Interpreter {
     private Address thisIP;
     private Address nextIP;
 
-    private final Deque<Integer> stack = new ArrayDeque<>(); // one-byte values
+    private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
@@ -165,11 +165,11 @@ public class Interpreter {
     }
 
     public void push(int val) {
-        this.stack.push(val);
+        this.stack.push(intToByte(val));
     }
 
     public int pop() {
-        return this.stack.pop() & MASK_WORD;
+        return byteToInt(this.stack.pop());
     }
 
     public void setHeap(int index, int val) {
@@ -248,11 +248,19 @@ public class Interpreter {
     }
 
     public int readBufferD1B0(int offset) {
-        return this.bufferD1B0[offset];
+        return byteToInt(this.bufferD1B0[offset]);
     }
 
     public void writeBufferD1B0(int offset, int value) {
-        this.bufferD1B0[offset] = (byte)(value & 0xff);
+        this.bufferD1B0[offset] = intToByte(value);
+    }
+
+    private int byteToInt(byte b) {
+        return MASK_LOW & ((int) b);
+    }
+
+    private byte intToByte(int i) {
+        return (byte)(i & MASK_LOW);
     }
 
     private Instruction decodeOpcode(int opcode) {
@@ -294,8 +302,8 @@ public class Interpreter {
             case 0x22 -> new MoveBXAX();
             case 0x23 -> new IncHeap();
             case 0x24 -> new IncAX();
-            case 0x25 -> new IncBL(); // checked for weird side effects
-            // case 0x26 -> new DecHeap();
+            case 0x25 -> new IncBL();
+            case 0x26 -> new DecHeap();
             // case 0x27 -> new DecAX();
             // case 0x28 -> new DecBL();
             // case 0x29 -> new LeftShiftHeap();
@@ -334,8 +342,8 @@ public class Interpreter {
             // case 0x48 -> new TestHeapSign();
             // case 0x49 -> new LoopBX();
             // case 0x4a -> new LoopBXLimit();
-            case 0x4b -> (i) -> { i.setCarry(true); return i.getIP().incr(Instruction.OPCODE); };
-            case 0x4c -> (i) -> { i.setCarry(false); return i.getIP().incr(Instruction.OPCODE); };
+            case 0x4b -> Instruction.SET_CARRY;
+            case 0x4c -> Instruction.CLEAR_CARRY;
             // case 0x4d -> new RandomAX();
             // case 0x4e -> new SetHeapBit();
             // case 0x4f -> new ClearHeapBit();

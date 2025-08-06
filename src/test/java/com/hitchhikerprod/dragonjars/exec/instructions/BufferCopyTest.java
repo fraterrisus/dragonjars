@@ -30,7 +30,8 @@ class BufferCopyTest {
         i.start();
 
         for (int idx = 0; idx < 0x700; idx++) {
-            assertEquals(i.readBufferD1B0(idx), data.getByte(idx), "Byte " + idx + " failed to match");
+            assertEquals(i.readBufferD1B0(idx), data.getUnsignedByte(idx),
+                    "Byte " + idx + " failed to match");
         }
         assertEquals(2, i.instructionsExecuted());
     }
@@ -51,7 +52,8 @@ class BufferCopyTest {
         i.start();
 
         for (int idx = 0; idx < 0x700; idx++) {
-            assertEquals(rawBytes[idx], i.readBufferD1B0(idx), "Byte " + idx + " failed to match");
+            assertEquals(data.getUnsignedByte(idx), i.readBufferD1B0(idx),
+                    "Byte " + idx + " failed to match");
         }
         assertEquals(2, i.instructionsExecuted());
     }

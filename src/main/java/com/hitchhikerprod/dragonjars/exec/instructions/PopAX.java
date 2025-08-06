@@ -6,9 +6,11 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class PopAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        int value = i.pop();
+        final int value;
         if (i.isWide()) {
-            value = value | (i.pop() << 8);
+            value = (i.pop() << 8) | (i.pop());
+        } else {
+            value = i.pop();
         }
         i.setAX(value);
         return i.getIP().incr(OPCODE);

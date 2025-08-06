@@ -20,6 +20,16 @@ public interface Instruction {
         return i.getIP().incr(OPCODE);
     };
 
+    Instruction CLEAR_CARRY = (i) -> {
+        i.setCarry(false);
+        return i.getIP().incr(OPCODE);
+    };
+
+    Instruction SET_CARRY = (i) -> {
+        i.setCarry(true);
+        return i.getIP().incr(OPCODE);
+    };
+
     Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
     Instruction EXIT = (i) -> null;
