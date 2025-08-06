@@ -9,14 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class InterpreterBXTest {
     @Test
     public void getBL() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setBX(0xffffffff);
         assertEquals(0x000000ff, uut.getBL());
     }
 
     @Test
     public void getBXWide() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         assertEquals(0x0000ffff, uut.getBX());
@@ -24,7 +24,7 @@ class InterpreterBXTest {
 
     @Test
     public void getBXNarrow() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         uut.setWidth(false);
@@ -33,7 +33,7 @@ class InterpreterBXTest {
 
     @Test
     public void getBXForce() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         uut.setWidth(false);
@@ -42,7 +42,7 @@ class InterpreterBXTest {
 
     @Test
     public void setBXNarrow1() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(false);
         uut.setBX(0xffffffff);
         assertEquals(0x000000ff, uut.getBX());
@@ -50,7 +50,7 @@ class InterpreterBXTest {
 
     @Test
     public void setBXNarrow2() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         uut.setWidth(false);
@@ -59,7 +59,7 @@ class InterpreterBXTest {
 
     @Test
     public void setBXNarrow3() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         uut.setWidth(false);
@@ -71,7 +71,7 @@ class InterpreterBXTest {
 
     @Test
     public void setBL() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setBX(0xffffffff);
         uut.setBL(0xaaaaaaaa);

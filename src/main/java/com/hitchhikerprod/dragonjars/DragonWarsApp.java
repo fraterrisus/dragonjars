@@ -113,7 +113,7 @@ public class DragonWarsApp extends Application {
 
     private void startInterpreter() {
         setKeyHandler(null);
-        final Interpreter interp = new Interpreter(this.dataChunks, 0, 0);
+        final Interpreter interp = new Interpreter(this, this.dataChunks, 0, 0);
         interp.start();
     }
 

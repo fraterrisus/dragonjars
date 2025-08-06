@@ -19,7 +19,7 @@ class StoreImmHeapTest {
                 (byte)0xbb,
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
 
         i.start();
 
@@ -37,7 +37,7 @@ class StoreImmHeapTest {
                 (byte)0xaa, // immediate value (1B)
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
 
         i.start();
 

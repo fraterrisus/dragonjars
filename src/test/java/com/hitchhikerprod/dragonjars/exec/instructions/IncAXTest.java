@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IncAXTest {
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0x02ff);
 
@@ -24,7 +24,7 @@ class IncAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0x02ff);
         i.setWidth(false);

@@ -16,7 +16,7 @@ class PopAXTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.push(0x7d);
         i.push(0xf3);
         i.setWidth(true);
@@ -28,7 +28,7 @@ class PopAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.push(0x7d);
         i.push(0xf3);
         i.setWidth(false);
@@ -53,7 +53,7 @@ class PopAXTest {
                 (byte) 0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.start();
 
         assertEquals(0xaabb, i.getAX());

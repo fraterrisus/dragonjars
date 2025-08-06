@@ -17,7 +17,7 @@ class StoreZeroHeapTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setHeap(0x3a, 0xff);
         i.setHeap(0x3b, 0xff);
 
@@ -36,7 +36,7 @@ class StoreZeroHeapTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setHeap(0x3a, 0xff);
         i.setHeap(0x3b, 0xff);
 

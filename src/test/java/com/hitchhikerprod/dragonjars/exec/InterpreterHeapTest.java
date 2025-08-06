@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class InterpreterHeapTest {
     @Test
     public void setHeapNarrow() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(false);
         uut.setHeap(0x10, 0xffffffff);
         assertEquals(0x000000ff, uut.getHeapByte(0x10));
@@ -20,7 +20,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapWide() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapByte(0x10));
@@ -31,7 +31,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWord() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeapWord(0x10));
@@ -42,7 +42,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapNarrow() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         uut.setWidth(false);
@@ -51,7 +51,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWide() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeap(0x10));
@@ -59,7 +59,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapMasksAddress() {
-        final Interpreter uut = new Interpreter(List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0xff10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapByte(0x10));

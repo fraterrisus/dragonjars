@@ -16,7 +16,7 @@ class StoreAXHeapOffsetTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
         i.setBL(0x02);
@@ -35,7 +35,7 @@ class StoreAXHeapOffsetTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
         i.setBL(0x02);

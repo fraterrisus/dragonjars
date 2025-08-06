@@ -25,7 +25,7 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
         i.setWidth(false);
         i.setDS(0x01);
         i.setAH(0xbb);
@@ -47,7 +47,7 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
         i.setWidth(false);
         i.setDS(0x01);
         i.setAH(0xbb);

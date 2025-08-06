@@ -19,7 +19,7 @@ public class LoadAXImmTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.start();
 
         assertEquals(0x0000bbaa, i.getAX());
@@ -36,7 +36,7 @@ public class LoadAXImmTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.start();
 
         assertEquals(0x000000aa, i.getAX());

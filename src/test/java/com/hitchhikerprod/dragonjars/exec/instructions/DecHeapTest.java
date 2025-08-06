@@ -17,7 +17,7 @@ class DecHeapTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.setWidth(false);
         i.setHeap(0xaa, 0x00);
         i.setHeap(0xab, 0x01);
@@ -32,7 +32,7 @@ class DecHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.setWidth(false);
         i.setHeap(0xaa, 0x00);
         i.setHeap(0xab, 0x01);

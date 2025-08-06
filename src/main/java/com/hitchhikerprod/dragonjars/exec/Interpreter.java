@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec;
 
+import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
@@ -13,6 +14,8 @@ public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
     private static final int MASK_HIGH = 0x0000ff00;
     private static final int MASK_WORD = 0x0000ffff;
+
+    private final DragonWarsApp app;
 
     private final List<Chunk> dataChunks;
     private Address thisIP;
@@ -35,7 +38,8 @@ public class Interpreter {
     // debugging information
     private int instructionsExecuted;
 
-    public Interpreter(List<Chunk> dataChunks, int initialChunk, int initialAddr) {
+    public Interpreter(DragonWarsApp app, List<Chunk> dataChunks, int initialChunk, int initialAddr) {
+        this.app = app;
         this.dataChunks = dataChunks;
         this.thisIP = new Address(-1, -1);
         this.nextIP = new Address(initialChunk, initialAddr);
@@ -371,10 +375,61 @@ public class Interpreter {
             // case 0x65 -> new SearchItem();
             // case 0x66 -> new TestHeap();
             // case 0x67 -> new DropItem();
+            // case 0x68 ->
+            // case 0x69 ->
+            // case 0x6a ->
+            // case 0x6b -> new RunAway();
+            // case 0x6c -> new StepForward();
+            // case 0x6d -> new DrawAutomap();
+            // case 0x6e -> new DrawCompass();
+            // case 0x6f ->
+            // case 0x70 ->
+            // case 0x71 ->
+            // case 0x72 ->
+            // case 0x73 ->
+            // case 0x74 ->
+            // case 0x75 ->
+            // case 0x76 ->
+            // case 0x77 ->
+            // case 0x78 ->
+            // case 0x79 ->
+            // case 0x7a ->
+            // case 0x7b ->
+            // case 0x7c ->
+            // case 0x7d ->
+            // case 0x7e ->
+            // case 0x7f ->
+            // case 0x80 ->
+            // case 0x81 ->
+            // case 0x82 ->
+            // case 0x83 ->
+            // case 0x84 ->
+            // case 0x85 ->
+            // case 0x86 ->
+            // case 0x87 ->
+            // case 0x88 ->
+            // case 0x89 ->
+            // case 0x8a ->
+            // case 0x8b ->
+            // case 0x8c ->
+            // case 0x8d ->
             case 0x8e -> Instruction.NOOP;
-            // case 0x93 -> new PushBL();
-            // case 0x94 -> new PopBL();
+            // case 0x8f ->
+            // case 0x90 -> new PlaySoundEffect();
+            // case 0x91 -> new PauseUntilKey();
+            // case 0x92 -> new PauseUntilKeyOrTime();
+            case 0x93 -> new PushBL();
+            case 0x94 -> new PopBL();
+            // case 0x95 -> new SetCursor();
+            // case 0x96 -> new EraseLine();
+            // case 0x97 -> new LoadAXPartyField();
+            // case 0x98 -> new StoreAXPartyField();
             // case 0x99 -> new TestAX();
+            // case 0x9a -> new StoreHeapOnes();
+            // case 0x9b -> new SetFlagOffset();
+            // case 0x9c -> new ClearFlagOffset();
+            // case 0x9d -> new TestFlagOffset();
+            // case 0x9e -> new GetStructSize();
             // case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };

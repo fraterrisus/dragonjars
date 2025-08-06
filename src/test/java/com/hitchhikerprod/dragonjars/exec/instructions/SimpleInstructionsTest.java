@@ -17,7 +17,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void exitInstruction() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         final Instruction uut = Instruction.EXIT;
 
         final Address newIP = uut.exec(i);
@@ -27,7 +27,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void incBL() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setBX(0x0000ffff);
         final Instruction uut = new IncBL();
@@ -47,7 +47,7 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
         i.start();
@@ -66,7 +66,7 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.start();
 
         assertEquals(0x000000aa, i.getBL());
@@ -76,7 +76,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void loadBLZero() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setBX(0xffff);
 
@@ -90,7 +90,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void moveALBL() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0xffff);
         i.setBX(0x0000);
@@ -104,7 +104,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void moveBXAX() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0x0000);
         i.setBX(0xffff);
@@ -119,7 +119,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void setNarrow() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0x0000ffff);
         final Instruction uut = Instruction.SET_NARROW;
@@ -133,7 +133,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void setWide() {
-        final Interpreter i = new Interpreter(List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(false);
         final Instruction uut = Instruction.SET_WIDE;
 
@@ -152,7 +152,7 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setBL(0xffff);
         i.start();
 

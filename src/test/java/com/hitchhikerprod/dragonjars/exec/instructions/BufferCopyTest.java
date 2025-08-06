@@ -19,7 +19,7 @@ class BufferCopyTest {
     public void fromBufferToChunk() {
         final Chunk data = new ModifiableChunk(new byte[0x700]);
 
-        final Interpreter i = new Interpreter(List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
         for (int idx = 0; idx < 0x700; idx++) {
             i.writeBufferD1B0(idx, (int)(Math.random() * 0xff));
         }
@@ -44,7 +44,7 @@ class BufferCopyTest {
         }
         final Chunk data = new Chunk(rawBytes);
 
-        final Interpreter i = new Interpreter(List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
         i.setDS(0x01);
         i.setAH(0x00);
         i.setAL(0x00);

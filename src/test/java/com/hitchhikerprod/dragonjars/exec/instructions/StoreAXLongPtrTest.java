@@ -27,7 +27,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(EMPTY, PROGRAM, data), 1, 1);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
         i.setWidth(false);
         i.setDS(0xff);
         i.setAH(0xbb);
@@ -51,7 +51,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(EMPTY, PROGRAM, data), 1, 1);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
         i.setWidth(false);
         i.setDS(0xff);
         i.setAH(0xbb);

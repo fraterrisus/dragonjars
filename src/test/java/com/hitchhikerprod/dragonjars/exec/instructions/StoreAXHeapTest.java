@@ -17,7 +17,7 @@ class StoreAXHeapTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
 
@@ -30,7 +30,7 @@ class StoreAXHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
         i.setWidth(true);
         i.setAX(0x1234);
         i.setWidth(false);

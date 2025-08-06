@@ -27,7 +27,7 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
         i.setDS(0x01);
         i.setWidth(true);
         i.start();
@@ -52,7 +52,7 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
         i.setDS(0x01);
         i.setWidth(false);
         i.start();

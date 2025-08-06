@@ -23,7 +23,7 @@ public class LoadAXIndirectTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM, DATA), 0, 1);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA), 0, 1);
         i.setWidth(true);
         i.setAX(0xffff);
         i.setHeap(0x31, 0x0005);
@@ -37,7 +37,7 @@ public class LoadAXIndirectTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(List.of(PROGRAM, DATA), 0, 1);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA), 0, 1);
         i.setWidth(true);
         i.setAX(0xffff);
         i.setHeap(0x31, 0x0005);
