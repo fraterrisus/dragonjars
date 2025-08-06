@@ -21,12 +21,12 @@ public interface Instruction {
     };
 
     Instruction CLEAR_CARRY = (i) -> {
-        i.setCarry(false);
+        i.setCarryFlag(false);
         return i.getIP().incr(OPCODE);
     };
 
     Instruction SET_CARRY = (i) -> {
-        i.setCarry(true);
+        i.setCarryFlag(true);
         return i.getIP().incr(OPCODE);
     };
 

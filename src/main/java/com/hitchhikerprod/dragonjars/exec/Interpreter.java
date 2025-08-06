@@ -78,20 +78,28 @@ public class Interpreter {
         return this.instructionsExecuted;
     }
 
-    public boolean getCarry() {
+    public boolean getCarryFlag() {
         return flagCarry;
     }
 
-    public void setCarry(boolean flag) {
+    public void setCarryFlag(boolean flag) {
         this.flagCarry = flag;
     }
 
-    public boolean getZero() {
+    public boolean getZeroFlag() {
         return flagZero;
     }
 
-    public void setZero(boolean flag) {
+    public void setZeroFlag(boolean flag) {
         this.flagZero = flag;
+    }
+
+    public boolean getSignFlag() {
+        return flagSign;
+    }
+
+    public void setSignFlag(boolean flag) {
+        this.flagSign = flag;
     }
 
     public Chunk getChunk(int index) {
@@ -336,13 +344,13 @@ public class Interpreter {
             // case 0x3e -> new CmpAXImm();
             // case 0x3f -> new CmpBXHeap();
             // case 0x40 -> new CmpBXImm(); // wide or no?
-            case 0x41 -> new JumpCarry();
-            // case 0x42 -> new JumpNotCarry();
-            // case 0x43 -> new JumpAbove();
-            // case 0x44 -> new JumpEqual();
-            // case 0x45 -> new JumpNotEqual();
-            // case 0x46 -> new JumpSign();
-            // case 0x47 -> new JumpNotSign();
+            case 0x41 -> new JumpIf((i) -> i.getCarryFlag());
+            case 0x42 -> new JumpIf((i) -> ! i.getCarryFlag());
+            case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag()); // "above"
+            case 0x44 -> new JumpIf((i) -> i.getZeroFlag()); // "equal"
+            case 0x45 -> new JumpIf((i) -> ! i.getZeroFlag()); // "not equal"
+            case 0x46 -> new JumpIf((i) -> i.getSignFlag());
+            case 0x47 -> new JumpIf((i) -> ! i.getSignFlag());
             // case 0x48 -> new TestHeapSign();
             // case 0x49 -> new LoopBX();
             // case 0x4a -> new LoopBXLimit();
@@ -353,7 +361,7 @@ public class Interpreter {
             // case 0x4f -> new ClearHeapBit();
             // case 0x50 -> new TestHeapBit();
             // case 0x51 -> new ArrayMax();
-            case 0x52 -> new Jump();
+            case 0x52 -> new JumpIf((i) -> true);
             // case 0x53 -> new Call();
             // case 0x54 -> new Return();
             case 0x55 -> new PopAX();

@@ -18,12 +18,12 @@ class AddAXHeapTest {
 
         final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setWidth(wide);
-        i.setCarry(carryIn);
+        i.setCarryFlag(carryIn);
         i.setAX(ax);
         i.setHeap(0x81, heap);
         i.start();
 
-        assertEquals(carryOut, i.getCarry());
+        assertEquals(carryOut, i.getCarryFlag());
         assertEquals(total, i.getAX());
         assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
