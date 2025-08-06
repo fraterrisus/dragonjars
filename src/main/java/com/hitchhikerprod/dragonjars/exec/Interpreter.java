@@ -20,6 +20,7 @@ public class Interpreter {
 
     private final Deque<Integer> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
+    private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
     private boolean width;
     // Metaregister CS is the index of the code chunk
@@ -57,7 +58,9 @@ public class Interpreter {
     }
 
     public void start() {
+        System.arraycopy(D1B0_INITIAL_VALUES, 0, this.bufferD1B0, 0, D1B0_INITIAL_VALUES.length);
         this.instructionsExecuted = 0;
+
         while (Objects.nonNull(nextIP)) {
             thisIP = nextIP;
             final int opcode = readByte(this.getIP());
@@ -243,7 +246,15 @@ public class Interpreter {
     public void writeWord(Address addr, int value) {
         writeWord(addr.chunk(), addr.offset(), value);
     }
-    
+
+    public int readBufferD1B0(int offset) {
+        return this.bufferD1B0[offset];
+    }
+
+    public void writeBufferD1B0(int offset, int value) {
+        this.bufferD1B0[offset] = (byte)(value & 0xff);
+    }
+
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instruction.SET_WIDE;
@@ -272,11 +283,11 @@ public class Interpreter {
             case 0x17 -> new StoreAXLongPtr();
             case 0x18 -> new StoreAXIndirectImm();
             case 0x19 -> new MoveHeap();
-            case 0x1a -> new StoreImmHeap();   // checked for weird side effects
-            // case 0x1b -> new MoveData();
-            // case 0x1c -> new StoreImm();
-            // case 0x1d -> new BufferCopy();
-            case 0x1e -> new ExitInstruction(); // "kill executable"
+            case 0x1a -> new StoreImmHeap();
+            case 0x1b -> new MoveData();
+            case 0x1c -> new StoreImm();
+            case 0x1d -> new BufferCopy(); // checked for weird side effects
+            case 0x1e -> Instruction.EXIT; // "kill executable" aka "you lost"
             case 0x1f -> Instruction.NOOP; // "read chunk table"
             // 20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
@@ -338,7 +349,7 @@ public class Interpreter {
             // case 0x57 -> new LongJump();
             // case 0x58 -> new LongCall();
             // case 0x59 -> new LongReturn();
-            case 0x5a -> new ExitInstruction(); // "stop executing instruction stream"
+            case 0x5a -> Instruction.EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
             // case 0x5c -> new RecurseOverParty();
             // case 0x5d -> new LoadAXPartyAttribute();
@@ -360,4 +371,27 @@ public class Interpreter {
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
     }
+
+    private static final byte[] D1B0_INITIAL_VALUES = {
+            (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0x05,
+            (byte) 0x64, (byte) 0x0a, (byte) 0x74, (byte) 0x0b,
+            (byte) 0xb4, (byte) 0x0b, (byte) 0xb4, (byte) 0x0c,
+            (byte) 0xe6, (byte) 0x0d, (byte) 0x2a, (byte) 0x0f,
+            (byte) 0x72, (byte) 0x0f, (byte) 0x93, (byte) 0x10,
+            (byte) 0x93, (byte) 0x11, (byte) 0xd3, (byte) 0x11,
+            (byte) 0x13, (byte) 0x12, (byte) 0x53, (byte) 0x12,
+            (byte) 0x93, (byte) 0x12, (byte) 0xb4, (byte) 0x13,
+            (byte) 0xf4, (byte) 0x13, (byte) 0xf4, (byte) 0x14,
+            (byte) 0x04, (byte) 0x16, (byte) 0x04, (byte) 0x1a,
+            (byte) 0x04, (byte) 0x1b, (byte) 0x36, (byte) 0x1c,
+            (byte) 0x87, (byte) 0x1c, (byte) 0xc7, (byte) 0x1c,
+            (byte) 0xd7, (byte) 0x1d, (byte) 0xd7, (byte) 0x1e,
+            (byte) 0xd6, (byte) 0x1f, (byte) 0x1e, (byte) 0x20,
+            (byte) 0x1e, (byte) 0x24, (byte) 0x5e, (byte) 0x24,
+            (byte) 0x5e, (byte) 0x25, (byte) 0x5e, (byte) 0x26,
+            (byte) 0x9e, (byte) 0x26, (byte) 0x9e, (byte) 0x27,
+            (byte) 0xae, (byte) 0x28, (byte) 0xae, (byte) 0x29,
+            (byte) 0x93, (byte) 0x2a, (byte) 0xbf, (byte) 0x2b,
+            (byte) 0xbf, (byte) 0x2c, (byte) 0xe0, (byte) 0x2d
+    };
 }

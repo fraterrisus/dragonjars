@@ -22,6 +22,8 @@ public interface Instruction {
 
     Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
+    Instruction EXIT = (i) -> null;
+
     Address exec(Interpreter i);
 
     default int wordSize(Interpreter i) {

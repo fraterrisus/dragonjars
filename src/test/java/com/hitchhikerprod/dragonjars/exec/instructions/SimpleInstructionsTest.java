@@ -18,7 +18,7 @@ public class SimpleInstructionsTest {
     @Test
     public void exitInstruction() {
         final Interpreter i = new Interpreter(List.of(), 0, 0);
-        final Instruction uut = new ExitInstruction();
+        final Instruction uut = Instruction.EXIT;
 
         final Address newIP = uut.exec(i);
 
