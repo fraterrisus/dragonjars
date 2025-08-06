@@ -336,7 +336,7 @@ public class Interpreter {
             // case 0x3e -> new CmpAXImm();
             // case 0x3f -> new CmpBXHeap();
             // case 0x40 -> new CmpBXImm(); // wide or no?
-            // case 0x41 -> new JumpCarry();
+            case 0x41 -> new JumpCarry();
             // case 0x42 -> new JumpNotCarry();
             // case 0x43 -> new JumpAbove();
             // case 0x44 -> new JumpEqual();
@@ -353,7 +353,7 @@ public class Interpreter {
             // case 0x4f -> new ClearHeapBit();
             // case 0x50 -> new TestHeapBit();
             // case 0x51 -> new ArrayMax();
-            // case 0x52 -> new Jump();
+            case 0x52 -> new Jump();
             // case 0x53 -> new Call();
             // case 0x54 -> new Return();
             case 0x55 -> new PopAX();

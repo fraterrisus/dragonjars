@@ -39,6 +39,25 @@ public class SimpleInstructionsTest {
     }
 
     @Test
+    public void jump() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x01, // SetNarrow
+                (byte)0x52, // Jump
+                (byte)0x05, //   target (lo)
+                (byte)0x00, //   target (hi)
+                (byte)0x55, // PopAX (skipped over)
+                (byte)0x5a  // Exit
+        ));
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setAL(0x00);
+        i.push(0xff);
+        i.start();
+
+        assertEquals(0x00, i.getAL());
+        assertEquals(3, i.instructionsExecuted());
+    }
+
+    @Test
     public void loadBLHeap() {
         final Chunk program = new Chunk(List.of(
                 (byte)0x00, // SetWide
