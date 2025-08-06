@@ -362,13 +362,13 @@ public class Interpreter {
             // case 0x50 -> new TestHeapBit();
             // case 0x51 -> new ArrayMax();
             case 0x52 -> new JumpIf((i) -> true);
-            // case 0x53 -> new Call();
-            // case 0x54 -> new Return();
+            case 0x53 -> new Call();
+            case 0x54 -> new Return();
             case 0x55 -> new PopAX();
             case 0x56 -> new PushAX();
-            // case 0x57 -> new LongJump();
-            // case 0x58 -> new LongCall();
-            // case 0x59 -> new LongReturn();
+            case 0x57 -> new LongJump();
+            case 0x58 -> new LongCall();
+            case 0x59 -> new LongReturn();
             case 0x5a -> Instruction.EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
             // case 0x5c -> new RecurseOverParty();
