@@ -254,11 +254,11 @@ public class Interpreter {
             case 0x0c -> new LoadAX();
             case 0x0d -> new LoadAXOffset();
             case 0x0e -> new LoadAXIndirect();
-            case 0x0f -> new LoadAXLongPtr();  // checked for weird side effects
-            // case 0x10 -> new LoadAXIndirectImm();
+            case 0x0f -> new LoadAXLongPtr();
+            case 0x10 -> new LoadAXIndirectImm();
             case 0x11 -> new StoreZeroHeap();
             case 0x12 -> new StoreAXHeap();
-            case 0x13 -> new StoreAXHeapOffset();
+            case 0x13 -> new StoreAXHeapOffset();  // checked for weird side effects
             // case 0x14 -> new StoreAX();
             // case 0x15 -> new StoreAXOffset();
             // case 0x16 -> new StoreAXIndirect();

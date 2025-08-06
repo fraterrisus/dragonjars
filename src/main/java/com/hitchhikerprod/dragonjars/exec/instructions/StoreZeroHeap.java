@@ -8,7 +8,7 @@ public class StoreZeroHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        i.setHeap(heapIndex, 0x00);
+        i.setHeap(heapIndex, 0x0000);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

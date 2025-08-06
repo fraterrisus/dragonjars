@@ -1,0 +1,51 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class LoadAXIndirectImmTest {
+    private static final Chunk PROGRAM = new Chunk(List.of(
+            (byte)0x5a, // padding
+            (byte)0x10, // LoadAXIndirectImm
+            (byte)0x31, // heap address
+            (byte)0x02, // offset
+            (byte)0x5a  // exit
+    ));
+    private static final Chunk DATA = new Chunk(List.of(
+            (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
+            (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xaa,
+            (byte)0xbb, (byte)0x00, (byte)0x00, (byte)0x00
+    ));
+
+    @Test
+    public void wide() {
+        final Interpreter i = new Interpreter(List.of(PROGRAM, DATA), 0, 1);
+        i.setWidth(true);
+        i.setAX(0xffff);
+        i.setHeap(0x31, 0x0005);
+        i.setDS(0x01);
+        i.start();
+
+        assertEquals(0x0000bbaa, i.getAX());
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void narrow() {
+        final Interpreter i = new Interpreter(List.of(PROGRAM, DATA), 0, 1);
+        i.setWidth(true);
+        i.setAX(0xffff);
+        i.setHeap(0x31, 0x0005);
+        i.setDS(0x1);
+        i.setWidth(false);
+        i.start();
+
+        assertEquals(0x000000aa, i.getAX());
+        assertEquals(2, i.instructionsExecuted());
+    }
+}
