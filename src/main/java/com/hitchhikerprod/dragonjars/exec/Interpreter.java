@@ -316,8 +316,8 @@ public class Interpreter {
             case 0x24 -> new IncAX();
             case 0x25 -> new IncBL();
             case 0x26 -> new DecHeap();
-            // case 0x27 -> new DecAX();
-            // case 0x28 -> new DecBL();
+            case 0x27 -> new DecAX();
+            case 0x28 -> new DecBL();
             // case 0x29 -> new LeftShiftHeap();
             // case 0x2a -> new LeftShiftAX();
             // case 0x2b -> new LeftShiftBL();
