@@ -102,8 +102,7 @@ public class SimpleInstructionsTest {
         final Instruction uut = new LoadBLZero();
         final Address newIP = uut.exec(i);
 
-        assertEquals(0x00000000, i.getBL());
-        assertEquals(0x0000ff00, i.getBX());
+        assertEquals(0xff00, i.getBX(true));
         assertEquals(0, newIP.offset());
     }
 

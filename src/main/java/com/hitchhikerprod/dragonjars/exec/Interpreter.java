@@ -156,6 +156,10 @@ public class Interpreter {
         this.bx = (this.bx & MASK_HIGH) | (val & MASK_LOW);
     }
 
+    public void setBH(int val) {
+        this.bx = ((val & 0x000000ff) << 8) | (this.bx & MASK_LOW);
+    }
+
     public void setBX(int val) {
         if (width) {
             this.bx = val & MASK_WORD;
@@ -318,12 +322,12 @@ public class Interpreter {
             case 0x26 -> new DecHeap();
             case 0x27 -> new DecAX();
             case 0x28 -> new DecBL();
-            // case 0x29 -> new LeftShiftHeap();
-            // case 0x2a -> new LeftShiftAX();
-            // case 0x2b -> new LeftShiftBL();
-            // case 0x2c -> new RightShiftHeap();
-            // case 0x2d -> new RightShiftAX();
-            // case 0x2e -> new RightShiftBL();
+            case 0x29 -> new LeftShiftHeap();
+            case 0x2a -> new LeftShiftAX();
+            case 0x2b -> new LeftShiftBL();
+            case 0x2c -> new RightShiftHeap();
+            case 0x2d -> new RightShiftAX();
+            case 0x2e -> new RightShiftBL();
             case 0x2f -> new AddAXHeap();
             case 0x30 -> new AddAXImm();
             case 0x31 -> new SubAXHeap();
