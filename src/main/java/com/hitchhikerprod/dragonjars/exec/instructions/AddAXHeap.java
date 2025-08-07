@@ -14,10 +14,10 @@ public class AddAXHeap implements Instruction {
         final ALU.Result result;
         final int heapIndex = i.readByte(ip.incr(1));
         if (i.isWide()) {
-            result = ALU.addWord(i.getAX(), i.getHeapWord(heapIndex));
+            result = ALU.addWord(i.getAX(), i.getHeapBytes(heapIndex, 2));
             i.setAX(result.value());
         } else {
-            result = ALU.addByte(i.getAL(), i.getHeapByte(heapIndex));
+            result = ALU.addByte(i.getAL(), i.getHeapBytes(heapIndex, 1));
             i.setAL(result.value());
         }
         // Unlike the subtraction and compare operations, we DON'T invert CF here

@@ -8,8 +8,8 @@ public class LoadAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int chunkOffset = i.getHeapWord(heapIndex) + i.getBX(true);
-        final int chunkId = i.getHeapByte(heapIndex + 2);
+        final int chunkOffset = i.getHeapBytes(heapIndex, 2) + i.getBX(true);
+        final int chunkId = i.getHeapBytes(heapIndex + 2, 1);
         final int chunkData = i.readWord(chunkId, chunkOffset);
         i.setAX(chunkData);
         if (!i.isWide()) i.setAH(0x00);

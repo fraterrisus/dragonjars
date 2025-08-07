@@ -12,9 +12,9 @@ public class CmpAXHeap implements Instruction {
         final int heapIndex = i.readByte(ip.incr(1));
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.subWord(i.getAX(), i.getHeapWord(heapIndex));
+            result = ALU.subWord(i.getAX(), i.getHeapBytes(heapIndex, 2));
         } else {
-            result = ALU.subByte(i.getAL(), i.getHeapByte(heapIndex));
+            result = ALU.subByte(i.getAL(), i.getHeapBytes(heapIndex, 1));
         }
         // I don't know why the assembly code flips CF before writing it, but it does
         i.setCarryFlag(!result.carry());

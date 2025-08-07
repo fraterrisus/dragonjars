@@ -136,6 +136,22 @@ public class SimpleInstructionsTest {
     }
 
     @Test
+    public void mulAXHeap() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x33, // MulAXHeap
+                (byte)0x10, //   heap index
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setAL(0x0a);
+        i.setAH(0x00);
+        i.setHeapBytes(0x10, 4, 0x00000020);
+        i.start();
+        assertEquals(0x140, i.getHeapBytes(0x37, 4));
+    }
+
+    @Test
     public void setNarrow() {
         final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
@@ -174,7 +190,7 @@ public class SimpleInstructionsTest {
         i.setBL(0xffff);
         i.start();
 
-        assertEquals(0x000000ff, i.getHeapByte(0x7a));
+        assertEquals(0x000000ff, i.getHeapBytes(0x7a, 1));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

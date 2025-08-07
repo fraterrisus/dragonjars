@@ -195,18 +195,25 @@ public class Interpreter {
         }
     }
 
+    public void setHeapBytes(int index, int count, int val) {
+        int value = val;
+        for (int i = 0; i < count; i++) {
+            this.heap[(index + i) & MASK_LOW] = val & MASK_LOW;
+            val = val >> 8;
+        }
+    }
+
     public int getHeap(int index) {
-        return (width) ? getHeapWord(index) : getHeapByte(index);
+        return getHeapBytes(index, (width) ? 2 : 1);
     }
 
-    public int getHeapWord(int index) {
-        final int lo = this.heap[index & MASK_LOW] & MASK_LOW;
-        final int hi = this.heap[(index + 1) & MASK_LOW] & MASK_LOW;
-        return (hi << 8) | lo;
-    }
-
-    public int getHeapByte(int index) {
-        return this.heap[index & MASK_LOW] & MASK_LOW;
+    public int getHeapBytes(int index, int count) {
+        int value = 0;
+        for (int i = count - 1; i >= 0; i--) {
+            value = value << 8;
+            value = value | (this.heap[(index & MASK_LOW) + i] & MASK_LOW);
+        }
+        return value;
     }
 
     public boolean isWide() {
@@ -332,8 +339,8 @@ public class Interpreter {
             case 0x30 -> new AddAXImm();
             case 0x31 -> new SubAXHeap();
             case 0x32 -> new SubAXImm();
-            // case 0x33 -> new MulAXHeap();
-            // case 0x34 -> new MulAXImm();
+            case 0x33 -> new MulAXHeap();
+            case 0x34 -> new MulAXImm();
             // case 0x35 -> new DivAXHeap();
             // case 0x36 -> new DivAXImm();
             // case 0x37 -> new AndAXHeap();

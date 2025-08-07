@@ -9,8 +9,8 @@ public class StoreAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int index = i.readByte(ip.incr(1));
-        final int addr = i.getHeapWord(index) + i.getBX(true);
-        final int chunk = i.getHeapByte(index + 2);
+        final int addr = i.getHeapBytes(index, 2) + i.getBX(true);
+        final int chunk = i.getHeapBytes(index + 2, 1);
         final int value = i.getAX(true);
         i.writeWidth(chunk, addr, value);
         return ip.incr(OPCODE + IMMEDIATE);

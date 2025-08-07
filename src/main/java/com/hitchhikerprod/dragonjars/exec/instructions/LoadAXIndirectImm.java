@@ -8,7 +8,7 @@ public class LoadAXIndirectImm implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int addr = i.getHeapWord(heapIndex) + i.readByte(ip.incr(2));
+        final int addr = i.getHeapBytes(heapIndex, 2) + i.readByte(ip.incr(2));
         final int value = i.readWord(i.getDS(), addr);
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);

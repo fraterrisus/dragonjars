@@ -10,7 +10,7 @@ public class CmpBLHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final ALU.Result result = ALU.subByte(i.getBL(), i.getHeapByte(heapIndex));
+        final ALU.Result result = ALU.subByte(i.getBL(), i.getHeapBytes(heapIndex, 1));
         i.setCarryFlag(!result.carry());
         i.setSignFlag(result.sign());
         i.setZeroFlag(result.zero());

@@ -99,7 +99,7 @@ class ShiftTest {
 
         // old: 0100 0001 1000 0001
         // new: 0010 0000 1100 0000
-        assertEquals(0x20c0, i.getHeapWord(0x03));
+        assertEquals(0x20c0, i.getHeapBytes(0x03, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -119,7 +119,7 @@ class ShiftTest {
 
         // old: 0100 0001 1000 0001  bit[8] is shifted to [7], but the high byte
         // new: 0100 0001 1100 0000  doesn't get written back
-        assertEquals(0x41c0, i.getHeapWord(0x03));
+        assertEquals(0x41c0, i.getHeapBytes(0x03, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -138,7 +138,7 @@ class ShiftTest {
 
         // old: 0100 0001 1000 0001
         // new: 1000 0011 0000 0010
-        assertEquals(0x8302, i.getHeapWord(0x03));
+        assertEquals(0x8302, i.getHeapBytes(0x03, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -158,7 +158,7 @@ class ShiftTest {
 
         // old: 0100 0001 1100 0001
         // new: 0100 0001 1000 0010
-        assertEquals(0x4182, i.getHeapWord(0x03));
+        assertEquals(0x4182, i.getHeapBytes(0x03, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 }

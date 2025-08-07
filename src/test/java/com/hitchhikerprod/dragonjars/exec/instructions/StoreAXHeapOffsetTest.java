@@ -23,7 +23,7 @@ class StoreAXHeapOffsetTest {
 
         i.start();
 
-        assertEquals(0x00001234, i.getHeapWord(0x3c));
+        assertEquals(0x00001234, i.getHeapBytes(0x3c, 2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -43,7 +43,7 @@ class StoreAXHeapOffsetTest {
 
         i.start();
 
-        assertEquals(0x00000034, i.getHeapWord(0x3c));
+        assertEquals(0x00000034, i.getHeapBytes(0x3c, 2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

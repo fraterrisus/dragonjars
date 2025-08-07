@@ -23,7 +23,7 @@ class StoreZeroHeapTest {
 
         i.start();
 
-        assertEquals(0x00000000, i.getHeapWord(0x3a));
+        assertEquals(0x00000000, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -42,7 +42,7 @@ class StoreZeroHeapTest {
 
         i.start();
 
-        assertEquals(0x0000ff00, i.getHeapWord(0x3a));
+        assertEquals(0x0000ff00, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

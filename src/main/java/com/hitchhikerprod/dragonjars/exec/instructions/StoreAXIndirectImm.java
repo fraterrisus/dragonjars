@@ -9,7 +9,7 @@ public class StoreAXIndirectImm implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int index = i.readByte(ip.incr(1));
-        final int addr = i.getHeapWord(index) + i.readByte(ip.incr(2));
+        final int addr = i.getHeapBytes(index, 2) + i.readByte(ip.incr(2));
         final int value = i.getAX(true);
         i.writeWidth(i.getDS(), addr, value);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
