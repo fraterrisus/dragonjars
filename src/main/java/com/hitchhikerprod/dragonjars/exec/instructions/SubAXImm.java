@@ -1,0 +1,25 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.exec.ALU;
+import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+
+public class SubAXImm implements Instruction {
+    @Override
+    public Address exec(Interpreter i) {
+        final Address ip = i.getIP();
+        final ALU.Result result;
+        if (i.isWide()) {
+            result = ALU.subWord(i.getAX(), i.readWord(ip.incr(1)));
+            i.setAX(result.value());
+        } else {
+            result = ALU.subByte(i.getAL(), i.readByte(ip.incr(1)));
+            i.setAL(result.value());
+        }
+        // I don't know why the assembly code flips CF before writing it, but it does
+        i.setCarryFlag(!result.carry());
+        i.setSignFlag(result.sign());
+        i.setZeroFlag(result.zero());
+        return ip.incr(OPCODE + wordSize(i));
+    }
+}

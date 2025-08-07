@@ -325,9 +325,9 @@ public class Interpreter {
             // case 0x2d -> new RightShiftAX();
             // case 0x2e -> new RightShiftBL();
             case 0x2f -> new AddAXHeap();
-            // case 0x30 -> new AddAXImm(); // with carry
-            // case 0x31 -> new SubAXHeap(); // with carry
-            // case 0x32 -> new SubAXImm(); // with carry
+            case 0x30 -> new AddAXImm();
+            case 0x31 -> new SubAXHeap();
+            case 0x32 -> new SubAXImm();
             // case 0x33 -> new MulAXHeap();
             // case 0x34 -> new MulAXImm();
             // case 0x35 -> new DivAXHeap();
@@ -338,12 +338,12 @@ public class Interpreter {
             // case 0x3a -> new OrAXImm();
             // case 0x3b -> new XorAXHeap();
             // case 0x3c -> new XorAXImm();
-            // The CMP instructions flip the carry bit before writing, which makes JC and JNC
-            // behave in the opposite manner. But ADD doesn't flip carry.
-            // case 0x3d -> new CmpAXHeap();
-            // case 0x3e -> new CmpAXImm();
-            // case 0x3f -> new CmpBXHeap();
-            // case 0x40 -> new CmpBXImm(); // wide or no?
+            // The SUB and CMP instructions flip the carry bit before writing, which makes
+            // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
+            case 0x3d -> new CmpAXHeap();
+            case 0x3e -> new CmpAXImm();
+            case 0x3f -> new CmpBLHeap();
+            case 0x40 -> new CmpBLImm();
             case 0x41 -> new JumpIf((i) -> i.getCarryFlag());
             case 0x42 -> new JumpIf((i) -> ! i.getCarryFlag());
             case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag()); // "above"

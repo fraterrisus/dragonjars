@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AddAXHeapTest {
-    private void helper(boolean wide, int ax, int heap, boolean carryIn, int total, boolean carryOut) {
+    private void helper(boolean wide, int ax, int heap, int total, boolean carryOut) {
         final Chunk program = new Chunk(List.of(
                 (byte)0x2f, // AddAXHeap
                 (byte)0x81, // heapIndex
@@ -18,7 +18,6 @@ class AddAXHeapTest {
 
         final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
         i.setWidth(wide);
-        i.setCarryFlag(carryIn);
         i.setAX(ax);
         i.setHeap(0x81, heap);
         i.start();
@@ -31,31 +30,21 @@ class AddAXHeapTest {
 
     @Test
     public void wide() {
-        helper(true, 0x1111, 0xbbaa, false, 0xccbb, false);
-    }
-
-    @Test
-    public void wideWithCarryIn() {
-        helper(true, 0x1111, 0xbbaa, true, 0xccbc, false);
+        helper(true, 0x1111, 0xbbaa, 0xccbb, false);
     }
 
     @Test
     public void wideWithCarryOut() {
-        helper(true, 0xaaaa, 0xbbbb, false, 0x6665, true);
+        helper(true, 0xaaaa, 0xbbbb, 0x6665, true);
     }
 
     @Test
     public void narrow() {
-        helper(false, 0x22, 0x33, false, 0x55, false);
-    }
-
-    @Test
-    public void narrowWithCarryIn() {
-        helper(false, 0x22, 0x33, true, 0x56, false);
+        helper(false, 0x22, 0x33, 0x55, false);
     }
 
     @Test
     public void narrowWithCarryOut() {
-        helper(false, 0x00aa, 0x00bb, false, 0x0065, true);
+        helper(false, 0x00aa, 0x00bb, 0x0065, true);
     }
 }

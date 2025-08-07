@@ -1,24 +1,29 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class AddAXHeap implements Instruction {
+    // Even though the assembly copies the meta CF flag into CF with SHR, it uses ADD to do
+    // the actual arithmetic and not ADC, so the input CF is ignored. The physical CF is
+    // copied to meta CF using RCL later, so the two operations do need to be symmetrical.
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int carryIn = (i.getCarryFlag()) ? 1 : 0;
+        final ALU.Result result;
         final int heapIndex = i.readByte(ip.incr(1));
-        final int value = i.getHeapWord(heapIndex);
         if (i.isWide()) {
-            final int newValue = i.getAX() + value + carryIn;
-            i.setAX(newValue);
-            i.setCarryFlag((newValue & 0xffff0000) > 0);
+            result = ALU.addWord(i.getAX(), i.getHeapWord(heapIndex));
+            i.setAX(result.value());
         } else {
-            final int newValue = i.getAL() + (value & 0x000000ff) + carryIn;
-            i.setAL(newValue);
-            i.setCarryFlag((newValue & 0xffffff00) > 0);
+            result = ALU.addByte(i.getAL(), i.getHeapByte(heapIndex));
+            i.setAL(result.value());
         }
+        // Unlike the subtraction and compare operations, we DON'T invert CF here
+        i.setCarryFlag(result.carry());
+        i.setSignFlag(result.sign());
+        i.setZeroFlag(result.zero());
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }
