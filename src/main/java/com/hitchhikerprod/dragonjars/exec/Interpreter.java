@@ -370,12 +370,12 @@ public class Interpreter {
             case 0x45 -> new JumpIf((i) -> ! i.getZeroFlag()); // "not equal"
             case 0x46 -> new JumpIf((i) -> i.getSignFlag());
             case 0x47 -> new JumpIf((i) -> ! i.getSignFlag());
-            // case 0x48 -> new TestHeapSign();
-            // case 0x49 -> new LoopBX();
-            // case 0x4a -> new LoopBXLimit();
+            case 0x48 -> new TestAndSetHeapSign();
+            case 0x49 -> new LoopBX();
+            case 0x4a -> new LoopBXLimit();
             case 0x4b -> Instruction.SET_CARRY;
             case 0x4c -> Instruction.CLEAR_CARRY;
-            // case 0x4d -> new RandomAX();
+            case 0x4d -> new RandomAX();
             // case 0x4e -> new SetHeapBit();
             // case 0x4f -> new ClearHeapBit();
             // case 0x50 -> new TestHeapBit();

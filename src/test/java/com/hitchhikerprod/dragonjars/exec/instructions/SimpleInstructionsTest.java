@@ -136,6 +136,18 @@ public class SimpleInstructionsTest {
     }
 
     @Test
+    public void randomAX() {
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        i.setWidth(false);
+        i.setAX(0x7f);
+
+        final Address newIP = new RandomAX().exec(i);
+
+        assertTrue(i.getAX() < 0x7f);
+        assertEquals(0, newIP.offset());
+    }
+
+    @Test
     public void setNarrow() {
         final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);

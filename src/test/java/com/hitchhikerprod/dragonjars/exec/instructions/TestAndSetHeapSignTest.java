@@ -1,0 +1,46 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TestAndSetHeapSignTest {
+    @Test
+    public void set() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x48, // TestHeapSign
+                (byte)0x06, //   heap index
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x06, 1, 0xff);
+        i.start();
+
+        assertFalse(i.getZeroFlag());
+        assertEquals(0x80, i.getHeapBytes(0x06, 1) & 0x80);
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void clear() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x48, // TestHeapSign
+                (byte)0x06, //   heap index
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x06, 1, 0x7f);
+        i.start();
+
+        assertTrue(i.getZeroFlag());
+        // bit gets set if not already set
+        assertEquals(0x80, i.getHeapBytes(0x06, 1) & 0x80);
+        assertEquals(2, i.instructionsExecuted());
+    }
+}
