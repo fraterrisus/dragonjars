@@ -244,6 +244,14 @@ public class Interpreter {
         return readWord(addr.chunk(), addr.offset());
     }
 
+    public int readData(int chunk, int offset, int size) {
+        return dataChunks.get(chunk).getData(offset, size);
+    }
+
+    public int readData(Address addr, int size) {
+        return readData(addr.chunk(), addr.offset(), size);
+    }
+
     public void writeByte(int chunk, int offset, int value) {
         final Chunk c = dataChunks.get(chunk);
         if (c instanceof ModifiableChunk m) {
@@ -343,12 +351,12 @@ public class Interpreter {
             case 0x34 -> new MulAXImm();
             case 0x35 -> new DivAXHeap();
             case 0x36 -> new DivAXImm();
-            // case 0x37 -> new AndAXHeap();
-            // case 0x38 -> new AndAXImm();
-            // case 0x39 -> new OrAXHeap();
-            // case 0x3a -> new OrAXImm();
-            // case 0x3b -> new XorAXHeap();
-            // case 0x3c -> new XorAXImm();
+            case 0x37 -> new AndAXHeap();
+            case 0x38 -> new AndAXImm();
+            case 0x39 -> new OrAXHeap();
+            case 0x3a -> new OrAXImm();
+            case 0x3b -> new XorAXHeap();
+            case 0x3c -> new XorAXImm();
             // The SUB and CMP instructions flip the carry bit before writing, which makes
             // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
             case 0x3d -> new CmpAXHeap();

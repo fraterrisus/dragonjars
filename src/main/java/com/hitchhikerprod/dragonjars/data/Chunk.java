@@ -50,6 +50,15 @@ public class Chunk {
         return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
     }
 
+    public int getData(int offset, int num) {
+        int value = 0;
+        for (int i = num - 1; i >= 0; i--) {
+            value = value << 8;
+            value = value | getUnsignedByte(i + offset);
+        }
+        return value;
+    }
+
     public void display() {
         display(0, raw.size());
     }
