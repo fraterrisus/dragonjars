@@ -1,0 +1,168 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class FlagOperationsTest {
+    @Test
+    public void setAL() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x4e, // FlagSetAL
+                (byte)0x03, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setAL((0x10 << 3) | (0x4)); // 0x80 >> 4 = 0x08
+        i.start();
+        // heap index 0x10 + 0x03
+        // mask 0x80 >> 4 = 0000_1000 = 0x08
+        assertEquals(0x08, i.getHeapBytes(0x13, 1));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void clearAL() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x4f, // FlagClearAL
+                (byte)0x02, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x12, 1, 0xff);
+        i.setAL((0x10 << 3) | (0x3));
+        i.start();
+        // heap index 0x10 + 0x02
+        // mask 0x80 >> 3 = 0001_0000 = 0x10
+        // value 1110_1111 = 0xef
+        assertEquals(0xef, i.getHeapBytes(0x12, 1));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void testALNotZero() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x50, // FlagTestAL
+                (byte)0x15, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x25, 1, 0x02);
+        i.setAL((0x10 << 3) | (0x6));
+        i.start();
+        // heap index 0x10 + 0x15
+        // mask 0x80 >> 6 = 0000_0010 = 0x02
+        assertFalse(i.getCarryFlag());
+        assertFalse(i.getZeroFlag());
+        assertFalse(i.getSignFlag());
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void testALZero() {
+        final Chunk program = new Chunk(List.of(
+                (byte)0x50, // FlagTestAL
+                (byte)0x15, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x25, 1, 0xfd);
+        i.setAL((0x10 << 3) | (0x6));
+        i.start();
+        // heap index 0x10 + 0x15
+        // mask 0x80 >> 6 = 0000_0010 = 0x02
+        //                  1111_1101 = 0xfd
+        assertFalse(i.getCarryFlag());
+        assertTrue(i.getZeroFlag());
+        assertFalse(i.getSignFlag());
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void setImm() {
+        final int val = (0x10 << 3) | 0x4;
+        final Chunk program = new Chunk(List.of(
+                (byte)0x9b, // FlagSetImm
+                (byte)val,  //   flag index
+                (byte)0x03, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.start();
+        // heap index 0x10 + 0x03
+        // mask 0x80 >> 4 = 0000_1000 = 0x08
+        assertEquals(0x08, i.getHeapBytes(0x13, 1));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void clearImm() {
+        final int val = (0x10 << 3) | 0x3;
+        final Chunk program = new Chunk(List.of(
+                (byte)0x9c, // FlagClearImm
+                (byte)val,  //   flag index
+                (byte)0x02, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x12, 1, 0xff);
+        i.start();
+        // heap index 0x10 + 0x02
+        // mask 0x80 >> 3 = 0001_0000 = 0x10
+        // value 1110_1111 = 0xef
+        assertEquals(0xef, i.getHeapBytes(0x12, 1));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void testImmNotZero() {
+        final int val = ((0x10 << 3) | (0x6));
+        final Chunk program = new Chunk(List.of(
+                (byte)0x9d, // FlagTestImm
+                (byte)val,  //   flag index
+                (byte)0x15, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x25, 1, 0x02);
+        i.start();
+        // heap index 0x10 + 0x15
+        // mask 0x80 >> 6 = 0000_0010 = 0x02
+        assertFalse(i.getCarryFlag());
+        assertFalse(i.getZeroFlag());
+        assertFalse(i.getSignFlag());
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void testImmZero() {
+        final int val = ((0x10 << 3) | (0x6));
+        final Chunk program = new Chunk(List.of(
+                (byte)0x9d, // FlagTestImm
+                (byte)val,  //   flag index
+                (byte)0x15, //   heap offset
+                (byte)0x5a  // Exit
+        ));
+
+        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        i.setHeapBytes(0x25, 1, 0xfd);
+        i.start();
+        // heap index 0x10 + 0x15
+        // mask 0x80 >> 6 = 0000_0010 = 0x02
+        //                  1111_1101 = 0xfd
+        assertFalse(i.getCarryFlag());
+        assertTrue(i.getZeroFlag());
+        assertFalse(i.getSignFlag());
+        assertEquals(2, i.instructionsExecuted());
+    }}

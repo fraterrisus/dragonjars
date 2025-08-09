@@ -376,9 +376,9 @@ public class Interpreter {
             case 0x4b -> Instruction.SET_CARRY;
             case 0x4c -> Instruction.CLEAR_CARRY;
             case 0x4d -> new RandomAX();
-            // case 0x4e -> new SetHeapBit();
-            // case 0x4f -> new ClearHeapBit();
-            // case 0x50 -> new TestHeapBit();
+            case 0x4e -> new FlagSetAL();
+            case 0x4f -> new FlagClearAL();
+            case 0x50 -> new FlagTestAL();
             // case 0x51 -> new ArrayMax();
             case 0x52 -> new JumpIf((i) -> true);
             case 0x53 -> new Call();
@@ -453,9 +453,9 @@ public class Interpreter {
             // case 0x98 -> new StoreAXPartyField();
             // case 0x99 -> new TestAX();
             // case 0x9a -> new StoreHeapOnes();
-            // case 0x9b -> new SetFlagOffset();
-            // case 0x9c -> new ClearFlagOffset();
-            // case 0x9d -> new TestFlagOffset();
+            case 0x9b -> new FlagSetImm();
+            case 0x9c -> new FlagClearImm();
+            case 0x9d -> new FlagTestImm();
             // case 0x9e -> new GetStructSize();
             // case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
