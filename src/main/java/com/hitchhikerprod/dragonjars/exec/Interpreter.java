@@ -341,8 +341,8 @@ public class Interpreter {
             case 0x32 -> new SubAXImm();
             case 0x33 -> new MulAXHeap();
             case 0x34 -> new MulAXImm();
-            // case 0x35 -> new DivAXHeap();
-            // case 0x36 -> new DivAXImm();
+            case 0x35 -> new DivAXHeap();
+            case 0x36 -> new DivAXImm();
             // case 0x37 -> new AndAXHeap();
             // case 0x38 -> new AndAXImm();
             // case 0x39 -> new OrAXHeap();
