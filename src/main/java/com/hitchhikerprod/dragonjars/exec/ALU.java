@@ -43,4 +43,8 @@ public class ALU {
                 (value & 0xff) == 0
         );
     }
+
+    public static int decByte(int val) {
+        return (val - 1) & 0xff;
+    }
 }

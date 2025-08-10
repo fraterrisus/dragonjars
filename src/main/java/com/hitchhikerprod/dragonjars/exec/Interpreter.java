@@ -177,6 +177,8 @@ public class Interpreter {
     }
 
     public void setDS(int val) {
+        // TODO: implement an actual loading/unloading system so we can make non-persistent
+        //   edits to chunk data. This is important for (re)loading map chunks.
         this.dataChunkIndex = val;
     }
 
@@ -328,7 +330,7 @@ public class Interpreter {
             case 0x1d -> new BufferCopy();
             case 0x1e -> Instruction.EXIT; // "kill executable" aka "you lost"
             case 0x1f -> Instruction.NOOP; // "read chunk table"
-            // 20 sends the (real) IP to 0x0000, which is probably a segfault
+            //   0x20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
             case 0x23 -> new IncHeap();
@@ -357,12 +359,12 @@ public class Interpreter {
             case 0x3a -> new OrAXImm();
             case 0x3b -> new XorAXHeap();
             case 0x3c -> new XorAXImm();
-            // The SUB and CMP instructions flip the carry bit before writing, which makes
-            // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
             case 0x3d -> new CmpAXHeap();
             case 0x3e -> new CmpAXImm();
             case 0x3f -> new CmpBLHeap();
             case 0x40 -> new CmpBLImm();
+            // The SUB and CMP instructions flip the carry bit before writing, which makes
+            // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
             case 0x41 -> new JumpIf((i) -> i.getCarryFlag());
             case 0x42 -> new JumpIf((i) -> ! i.getCarryFlag());
             case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag()); // "above"
@@ -379,7 +381,7 @@ public class Interpreter {
             case 0x4e -> new FlagSetAL();
             case 0x4f -> new FlagClearAL();
             case 0x50 -> new FlagTestAL();
-            // case 0x51 -> new ArrayMax();
+            case 0x51 -> new ArrayMax();
             case 0x52 -> new JumpIf((i) -> true);
             case 0x53 -> new Call();
             case 0x54 -> new Return();
