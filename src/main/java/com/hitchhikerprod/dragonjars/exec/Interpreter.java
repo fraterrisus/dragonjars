@@ -406,11 +406,11 @@ public class Interpreter {
             // case 0x63 -> new RecurseOverInventory();
             // case 0x64 -> new PickUpItem();
             // case 0x65 -> new SearchItem();
-            // case 0x66 -> new TestHeap();
+            case 0x66 -> new TestHeap();
             // case 0x67 -> new DropItem();
             // case 0x68 -> new ReadInventory();
             // case 0x69 -> new WriteInventory();
-            // case 0x6a -> new IsPartyInBox();
+            case 0x6a -> new IsPartyInBox();
             // case 0x6b -> new RunAway();
             // case 0x6c -> new StepForward();
             // case 0x6d -> new DrawAutomap();
@@ -457,7 +457,7 @@ public class Interpreter {
             // case 0x96 -> new EraseLine();
             // case 0x97 -> new LoadAXPartyField();
             // case 0x98 -> new StoreAXPartyField();
-            // case 0x99 -> new TestAX();
+            case 0x99 -> new TestAX();
             case 0x9a -> new LoadHeapOnes();
             case 0x9b -> new FlagSetImm();
             case 0x9c -> new FlagClearImm();
