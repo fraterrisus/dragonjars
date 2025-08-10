@@ -445,9 +445,9 @@ public class Interpreter {
             // case 0x8a ->
             // case 0x8b ->
             // case 0x8c ->
-            // case 0x8d ->
+            // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instruction.NOOP;
-            // case 0x8f ->
+            case 0x8f -> new StrToInt();
             // case 0x90 -> new PlaySoundEffect();
             // case 0x91 -> new PauseUntilKey();
             // case 0x92 -> new PauseUntilKeyOrTime();
@@ -458,7 +458,7 @@ public class Interpreter {
             // case 0x97 -> new LoadAXPartyField();
             // case 0x98 -> new StoreAXPartyField();
             // case 0x99 -> new TestAX();
-            // case 0x9a -> new StoreHeapOnes();
+            case 0x9a -> new LoadHeapOnes();
             case 0x9b -> new FlagSetImm();
             case 0x9c -> new FlagClearImm();
             case 0x9d -> new FlagTestImm();

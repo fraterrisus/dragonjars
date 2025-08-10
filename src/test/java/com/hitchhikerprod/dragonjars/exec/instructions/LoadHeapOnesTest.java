@@ -1,0 +1,38 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class LoadHeapOnesTest {
+    public static final Chunk PROGRAM = new Chunk(List.of(
+            (byte) 0x9a, // LoadHeapOnes
+            (byte) 0x48, //   heap index
+            (byte) 0x5a  // Exit
+    ));
+
+    @Test
+    public void wide() {
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        i.setWidth(true);
+        i.setHeapBytes(0x48, 2, 0x0000);
+        i.start();
+        assertEquals(0xffff, i.getHeapBytes(0x48, 2));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+    @Test
+    public void narrow() {
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        i.setWidth(false);
+        i.setHeapBytes(0x48, 2, 0x0000);
+        i.start();
+        assertEquals(0x00ff, i.getHeapBytes(0x48, 2));
+        assertEquals(2, i.instructionsExecuted());
+    }
+
+}

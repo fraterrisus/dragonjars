@@ -190,4 +190,19 @@ public class SimpleInstructionsTest {
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
+
+    @Test
+    public void strToInt() {
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final char[] chars = new char[]{'1', '5', '3', '9', '4'};
+        int pointer = 0xc6;
+        for (char ch : chars) {
+            i.setHeapBytes(pointer++, 1, ((int)ch) | 0x80);
+        }
+        i.setHeapBytes(pointer, 1, 0x00);
+
+        final Address nextIP = new StrToInt().exec(i);
+
+        assertEquals(15394, i.getHeapBytes(0x37, 4));
+    }
 }
