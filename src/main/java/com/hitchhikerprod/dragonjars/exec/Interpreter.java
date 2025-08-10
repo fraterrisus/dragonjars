@@ -302,11 +302,11 @@ public class Interpreter {
 
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
-            case 0x00 -> Instruction.SET_WIDE;
-            case 0x01 -> Instruction.SET_NARROW;
-            case 0x02 -> new PushDS();
-            case 0x03 -> new PopDS();
-            case 0x04 -> new PushCS();
+            case 0x00 -> Instructions.SET_WIDE;
+            case 0x01 -> Instructions.SET_NARROW;
+            case 0x02 -> Instructions.PUSH_DS;
+            case 0x03 -> Instructions.POP_DS;
+            case 0x04 -> Instructions.PUSH_CS;
             case 0x05 -> new LoadBLHeap();
             case 0x06 -> new LoadBLImm();
             case 0x07 -> new LoadBLZero();
@@ -332,8 +332,8 @@ public class Interpreter {
             case 0x1b -> new MoveData();
             case 0x1c -> new StoreImm();
             case 0x1d -> new BufferCopy();
-            case 0x1e -> Instruction.EXIT; // "kill executable" aka "you lost"
-            case 0x1f -> Instruction.NOOP; // "read chunk table"
+            case 0x1e -> Instructions.EXIT; // "kill executable" aka "you lost"
+            case 0x1f -> Instructions.NOOP; // "read chunk table"
             //   0x20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
@@ -379,8 +379,8 @@ public class Interpreter {
             case 0x48 -> new TestAndSetHeapSign();
             case 0x49 -> new LoopBX();
             case 0x4a -> new LoopBXLimit();
-            case 0x4b -> Instruction.SET_CARRY;
-            case 0x4c -> Instruction.CLEAR_CARRY;
+            case 0x4b -> Instructions.SET_CARRY;
+            case 0x4c -> Instructions.CLEAR_CARRY;
             case 0x4d -> new RandomAX();
             case 0x4e -> new FlagSetAL();
             case 0x4f -> new FlagClearAL();
@@ -394,7 +394,7 @@ public class Interpreter {
             case 0x57 -> new LongJump();
             case 0x58 -> new LongCall();
             case 0x59 -> new LongReturn();
-            case 0x5a -> Instruction.EXIT; // "stop executing instruction stream"
+            case 0x5a -> Instructions.EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
             // case 0x5c -> new RecurseOverParty();
             // case 0x5d -> new LoadAXPartyAttribute();
@@ -408,45 +408,45 @@ public class Interpreter {
             // case 0x65 -> new SearchItem();
             // case 0x66 -> new TestHeap();
             // case 0x67 -> new DropItem();
-            // case 0x68 ->
-            // case 0x69 ->
-            // case 0x6a ->
+            // case 0x68 -> new ReadInventory();
+            // case 0x69 -> new WriteInventory();
+            // case 0x6a -> new IsPartyInBox();
             // case 0x6b -> new RunAway();
             // case 0x6c -> new StepForward();
             // case 0x6d -> new DrawAutomap();
             // case 0x6e -> new DrawCompass();
-            // case 0x6f ->
-            // case 0x70 ->
-            // case 0x71 ->
-            // case 0x72 ->
-            // case 0x73 ->
-            // case 0x74 ->
-            // case 0x75 ->
-            // case 0x76 ->
-            // case 0x77 ->
-            // case 0x78 ->
-            // case 0x79 ->
-            // case 0x7a ->
-            // case 0x7b ->
-            // case 0x7c ->
-            // case 0x7d ->
-            // case 0x7e ->
-            // case 0x7f ->
-            // case 0x80 ->
-            // case 0x81 ->
-            // case 0x82 ->
-            // case 0x83 ->
-            // case 0x84 ->
-            // case 0x85 ->
-            // case 0x86 ->
-            // case 0x87 ->
-            // case 0x88 ->
-            // case 0x89 ->
-            // case 0x8a ->
-            // case 0x8b ->
-            // case 0x8c ->
+            // case 0x6f -> new RotateMapView();
+            // case 0x70 -> new UnrotateMapView();
+            // case 0x71 -> new RunSpecialEvent();
+            // case 0x72 -> new UseItem();
+            case 0x73 -> Instructions.COPY_HEAP_3E_3F;
+            // case 0x74 -> new DrawModal();
+            // case 0x75 -> new DrawStringAndResetBBox();
+            // case 0x76 -> new FillBBox();
+            // case 0x77 -> new FillBBoxAndDecodeStringCS();
+            // case 0x78 -> new DecodeStringCS();
+            // case 0x79 -> new FillBBoxAndDecodeStringDS();
+            // case 0x7a -> new DecodeStringDS();
+            // case 0x7b -> new DecodeTitleStringCS();
+            // case 0x7c -> new DecodeTitleStringDS();
+            // case 0x7d -> new IndirectCharName();
+            // case 0x7e -> new IndirectCharItem();
+            // case 0x7f -> new IndirectString();
+            // case 0x80 -> new Indent();
+            // case 0x81 -> new PrintAX4d(); // 4-digit number
+            // case 0x82 -> new PrintHeap9d(); // 9-digit number
+            // case 0x83 -> new IndirectChar();
+            // case 0x84 -> new AllocateSegment();
+            // case 0x85 -> new FreeStructMemory();
+            // case 0x86 -> new UnpackChunk();
+            // case 0x87 -> new PersistChunk();
+            // case 0x88 -> new WaitForEscapeKey();
+            // case 0x89 -> new ReadKeySwitch();
+            // case 0x8a -> new ShowMonsterImage();
+            // case 0x8b -> new DrawCurrentViewport();
+            // case 0x8c -> new ShowYesNoModal();
             // case 0x8d -> new PromptAndReadInput();
-            case 0x8e -> Instruction.NOOP;
+            case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
             // case 0x90 -> new PlaySoundEffect();
             // case 0x91 -> new PauseUntilKey();

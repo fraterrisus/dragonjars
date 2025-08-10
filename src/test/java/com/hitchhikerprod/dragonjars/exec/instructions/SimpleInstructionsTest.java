@@ -16,11 +16,20 @@ public class SimpleInstructionsTest {
     /* Remember that the Interpreter starts at (-1,-1) */
 
     @Test
+    public void copyHeap3E3F() {
+        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        i.setHeapBytes(0x3e, 2, 0xff00);
+
+        final Address newIP = Instructions.COPY_HEAP_3E_3F.exec(i);
+
+        assertEquals(0xff, i.getHeapBytes(0x3e, 1));
+    }
+    
+    @Test
     public void exitInstruction() {
         final Interpreter i = new Interpreter(null, List.of(), 0, 0);
-        final Instruction uut = Instruction.EXIT;
 
-        final Address newIP = uut.exec(i);
+        final Address newIP = Instructions.EXIT.exec(i);
 
         assertNull(newIP);
     }
@@ -152,7 +161,7 @@ public class SimpleInstructionsTest {
         final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(true);
         i.setAX(0x0000ffff);
-        final Instruction uut = Instruction.SET_NARROW;
+        final Instruction uut = Instructions.SET_NARROW;
 
         final Address newIP = uut.exec(i);
 
@@ -165,7 +174,7 @@ public class SimpleInstructionsTest {
     public void setWide() {
         final Interpreter i = new Interpreter(null, List.of(), 0, 0);
         i.setWidth(false);
-        final Instruction uut = Instruction.SET_WIDE;
+        final Instruction uut = Instructions.SET_WIDE;
 
         final Address newIP = uut.exec(i);
 
