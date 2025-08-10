@@ -9,11 +9,8 @@ public class RightShiftAX implements Instruction {
     //   0x3ca7  shr word[mp.ax], 1
     @Override
     public Address exec(Interpreter i) {
-        final boolean width = i.isWide();
-        i.setWidth(true);
-        final int value = i.getAX() >> 1;
-        i.setAX(value);
-        i.setWidth(width);
+        final int value = i.getAX(true) >> 1;
+        i.setAX(value, true);
         return i.getIP().incr();
     }
 }

@@ -12,10 +12,7 @@ public class AndAXHeap implements Instruction {
         final int op1 = i.getHeapBytes(heapIndex, 2);
         final int op2 = i.getAX(true);
         final int result = op1 & op2;
-        final boolean width = i.isWide();
-        i.setWidth(true);
-        i.setAX(result);
-        i.setWidth(width);
+        i.setAX(result, true);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

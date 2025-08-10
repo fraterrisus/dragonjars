@@ -130,14 +130,18 @@ public class Interpreter {
         this.ax = ((val & 0x000000ff) << 8) | (this.ax & MASK_LOW);
     }
 
-    /** Writes the value to the AX register. In WIDE mode this method writes both AL and AH; in NARROW mode it only
-     * writes AL, and AH is untouched. */
-    public void setAX(int val) {
-        if (width) {
+    public void setAX(int val, boolean forceWide) {
+        if (forceWide || width) {
             this.ax = val & MASK_WORD;
         } else {
             setAL(val);
         }
+    }
+
+    /** Writes the value to the AX register. In WIDE mode this method writes both AL and AH; in NARROW mode it only
+     * writes AL, and AH is untouched. */
+    public void setAX(int val) {
+        setAX(val, false);
     }
 
     public int getBL() {
@@ -458,7 +462,7 @@ public class Interpreter {
             case 0x9b -> new FlagSetImm();
             case 0x9c -> new FlagClearImm();
             case 0x9d -> new FlagTestImm();
-            // case 0x9e -> new GetStructSize();
+            case 0x9e -> new GetChunkSize();
             // case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };
