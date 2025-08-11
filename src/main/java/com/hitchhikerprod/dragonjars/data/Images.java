@@ -1,10 +1,26 @@
 package com.hitchhikerprod.dragonjars.data;
 
 import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 
 import java.util.function.Function;
 
 public class Images {
+    public static WritableImage blankImage(int dimX, int dimY) {
+        final WritableImage image = new WritableImage(dimX, dimY);
+        final PixelWriter writer = image.getPixelWriter();
+        final int black = convertColorIndex(0);
+        final int white = convertColorIndex(7);
+        for (int y = 0; y < dimY; y++) {
+            for (int x = 0; x < dimX; x++) {
+                writer.setColor(x, y, Color.gray(0.40));
+                //writer.setArgb(x, y, ((x % 8 == 0) || (y % 8 == 0)) ? white : black);
+            }
+        }
+        return image;
+    }
+
     public static void convertEgaData(PixelWriter writer, Function<Integer, Integer> lookup,
                                       int baseIndex, int x, int y) {
         final int[] indices = new int[4];
@@ -339,5 +355,9 @@ public class Images {
                 return 0xff333333;
             }
         }
+    }
+
+    public class Colors {
+        public static final Color BLACK = Color.color(0, 0, 0, 0);
     }
 }

@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
+import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
@@ -15,6 +16,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
@@ -103,25 +105,76 @@ public class DragonWarsApp extends Application {
     }
 
     private void showTitleScreen() {
-        this.stage.setWidth(320 * SCALE_FACTOR);
-        this.stage.setHeight(200 * SCALE_FACTOR);
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
         RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
+        this.stage.sizeToScene();
         setKeyHandler(this::titleScreenHandler);
     }
 
     private void startInterpreter() {
         setKeyHandler(null);
+        RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
+        this.stage.sizeToScene();
         final Interpreter interp = new Interpreter(this, this.dataChunks, 0, 0);
         interp.start();
+    }
+
+    private void testPattern() {
+        setKeyHandler(null);
+        RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
+        this.stage.sizeToScene();
+        final Interpreter interp = new Interpreter(this, this.dataChunks, 0, 0);
+
+        interp.drawString("Test Pattern", 14, 0, true);
+        interp.drawString("Press Q to exit", 13, 24, true);
+
+        for (int x = 0; x < 16; x++) {
+            final int fx = (x + 2) * 16;
+            final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
+            interp.drawChar(ch, fx, 18, true);
+        }
+        for (int y = 0; y < 2; y++) {
+            final int fy = (y + 2) * 16;
+            interp.drawChar(0x30 + y, 12, fy, true);
+            interp.drawChar('x', 20, fy, true);
+            for (int x = 0; x < 16; x++) {
+                final int fx = (x + 2) * 16;
+                final int ch = (16 * y) + x;
+                interp.drawChar(ch, fx, fy, false);
+            }
+        }
+
+        for (int x = 0; x < 16; x++) {
+            final int fx = (x + 4) * 8;
+            final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
+            interp.drawChar(ch, fx, 68, true);
+        }
+        for (int y = 2; y < 8; y++) {
+            final int fy = (y + 8) * 8;
+            interp.drawChar(0x30 + y, 12, fy, true);
+            interp.drawChar('x', 20, fy, true);
+            for (int x = 0; x < 16; x++) {
+                final int fx = (x + 4) * 8;
+                final int ch = (16 * y) + x;
+                interp.drawChar(ch, fx, fy, false);
+            }
+        }
+
+        setKeyHandler(event -> {
+            if (event.getCode() == KeyCode.Q || event.getCode() == KeyCode.ESCAPE) {
+                Platform.exit();
+            }
+        });
     }
 
     private void titleScreenHandler(KeyEvent event) {
         System.out.println(event.getCode().name());
         switch (event.getCode()) {
             case Q -> Platform.exit();
+            case T -> testPattern();
             case ENTER, ESCAPE, SPACE -> startInterpreter();
         }
     }
+
 }
