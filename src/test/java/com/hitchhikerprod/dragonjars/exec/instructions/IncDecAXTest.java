@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IncDecAXTest {
+    private static final Chunk EMPTY = new Chunk(List.of());
+
     @Test
     public void incWide() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(true);
         i.setAX(0x02ff);
 
@@ -24,7 +27,7 @@ class IncDecAXTest {
 
     @Test
     public void incNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(true);
         i.setAX(0x02ff);
         i.setWidth(false);
@@ -38,7 +41,7 @@ class IncDecAXTest {
 
     @Test
     public void decNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(false);
         i.setAH(0x43); // writes 0x00 because narrow
         i.setAL(0x00); // 0x00 - 1 = 0xff
@@ -51,7 +54,7 @@ class IncDecAXTest {
 
     @Test
     public void decWide() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(true);
         i.setAH(0x43);
         i.setAL(0x00);

@@ -13,6 +13,18 @@ public class LongCall implements Instruction {
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);
         i.push(returnAddress.chunk());
+        i.setDS(chunkId);
+        i.loadChunk(chunkId);
         return new Address(chunkId, address);
     }
+
+    /* Assembly operation:
+     * - lookup the destination chunk ID in the frobs table
+     * - if the chunk ID is in the table and frob is not 0x02, we don't have to do anything (dl <- 0x00)
+     * - otherwise, load the chunk into a free segment and set its frob to 0x01 (dl <- 0xff)
+     * - push dl so we know how to reverse that step
+     * - set seg1_idx _and_ seg2_idx to the new code segment (this was returned from the unpack() call)
+     * - update the segment pointers (load seg1 from seg1_idx, etc.)
+     * - si <- destination address, es <- new code segment
+     */
 }

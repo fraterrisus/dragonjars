@@ -11,6 +11,10 @@ public class ModifiableChunk extends Chunk {
         super(rawBytes);
     }
 
+    public ModifiableChunk(Chunk chunk) {
+        super(chunk);
+    }
+
     public void setByte(int index, byte value) {
         this.raw.set(index, value);
     }

@@ -17,7 +17,7 @@ class BufferCopyTest {
 
     @Test
     public void fromBufferToChunk() {
-        final Chunk data = new ModifiableChunk(new byte[0x700]);
+        final Chunk data = new Chunk(new byte[0x700]);
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
         for (int idx = 0; idx < 0x700; idx++) {
@@ -29,8 +29,10 @@ class BufferCopyTest {
         i.setBL(0x00);
         i.start();
 
+        final Chunk newData = i.getChunk(0x01);
+
         for (int idx = 0; idx < 0x700; idx++) {
-            assertEquals(i.readBufferD1B0(idx), data.getUnsignedByte(idx),
+            assertEquals(i.readBufferD1B0(idx), newData.getUnsignedByte(idx),
                     "Byte " + idx + " failed to match");
         }
         assertEquals(2, i.instructionsExecuted());

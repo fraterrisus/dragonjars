@@ -2,15 +2,11 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
-import com.hitchhikerprod.dragonjars.ui.RootWindow;
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +18,8 @@ public class Interpreter {
 
     private final DragonWarsApp app;
 
-    private final List<Chunk> dataChunks;
+    private final List<Chunk> allChunks;
+    private final List<ModifiableChunk> loadedChunks;
     private Address thisIP;
     private Address nextIP;
 
@@ -45,7 +42,11 @@ public class Interpreter {
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks, int initialChunk, int initialAddr) {
         this.app = app;
-        this.dataChunks = dataChunks;
+        this.allChunks = dataChunks;
+        this.loadedChunks = new ArrayList<>(dataChunks.size());
+        for (int i = 0; i < dataChunks.size(); i++) {
+            loadedChunks.add(null);
+        }
         this.thisIP = new Address(-1, -1);
         this.nextIP = new Address(initialChunk, initialAddr);
         this.width = false;
@@ -56,14 +57,8 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
         this.instructionsExecuted = 0;
-    }
 
-    public void writeWidth(int chunk, int addr, int value) {
-        if (isWide()) {
-            writeWord(chunk, addr, value);
-        } else {
-            writeByte(chunk, addr, value);
-        }
+        loadChunk(initialChunk);
     }
 
     public void start() {
@@ -81,6 +76,18 @@ public class Interpreter {
 
     public int instructionsExecuted() {
         return this.instructionsExecuted;
+    }
+
+    public void loadChunk(int chunkId) {
+        if (Objects.nonNull(loadedChunks.get(chunkId))) return;
+        final ModifiableChunk chunk = new ModifiableChunk(allChunks.get(chunkId));
+        loadedChunks.set(chunkId, chunk);
+    }
+
+    public void unloadChunk(int chunkId) {
+        if (Objects.nonNull(loadedChunks.get(chunkId))) {
+            loadedChunks.set(chunkId, null);
+        }
     }
 
     public boolean getCarryFlag() {
@@ -108,7 +115,7 @@ public class Interpreter {
     }
 
     public Chunk getChunk(int index) {
-        return dataChunks.get(index);
+        return loadedChunks.get(index);
     }
 
     public Address getIP() {
@@ -186,9 +193,10 @@ public class Interpreter {
     }
 
     public void setDS(int val) {
-        // TODO: implement an actual loading/unloading system so we can make non-persistent
-        //   edits to chunk data. This is important for (re)loading map chunks.
-        this.dataChunkIndex = val;
+        if (val != this.dataChunkIndex) {
+            loadChunk(val);
+            this.dataChunkIndex = val;
+        }
     }
 
     public void push(int val) {
@@ -237,7 +245,7 @@ public class Interpreter {
 
     /** Retrieves a single byte from chunk data. */
     public int readByte(int chunk, int offset) {
-        return dataChunks.get(chunk).getUnsignedByte(offset);
+        return Objects.requireNonNull(loadedChunks.get(chunk)).getUnsignedByte(offset);
     }
 
     /** Retrieves a single byte from chunk data. */
@@ -247,7 +255,7 @@ public class Interpreter {
 
     /** Retrieves a word (two bytes) from chunk data. */
     public int readWord(int chunk, int offset) {
-        return dataChunks.get(chunk).getWord(offset);
+        return Objects.requireNonNull(loadedChunks.get(chunk)).getWord(offset);
     }
 
     /** Retrieves a word (two bytes) from chunk data. */
@@ -256,7 +264,7 @@ public class Interpreter {
     }
 
     public int readData(int chunk, int offset, int size) {
-        return dataChunks.get(chunk).getData(offset, size);
+        return Objects.requireNonNull(loadedChunks.get(chunk)).getData(offset, size);
     }
 
     public int readData(Address addr, int size) {
@@ -264,12 +272,8 @@ public class Interpreter {
     }
 
     public void writeByte(int chunk, int offset, int value) {
-        final Chunk c = dataChunks.get(chunk);
-        if (c instanceof ModifiableChunk m) {
-            m.setByte(offset, value);
-        } else {
-            throw new RuntimeException("Chunk " + chunk + " can't be written");
-        }
+        final ModifiableChunk c = Objects.requireNonNull(loadedChunks.get(chunk));
+        c.setByte(offset, value);
     }
 
     public void writeByte(Address addr, int value) {
@@ -277,16 +281,20 @@ public class Interpreter {
     }
     
     public void writeWord(int chunk, int offset, int value) {
-        final Chunk c = dataChunks.get(chunk);
-        if (c instanceof ModifiableChunk m) {
-            m.setWord(offset, value);
-        } else {
-            throw new RuntimeException("Chunk " + chunk + " can't be written");
-        }
+        final ModifiableChunk c = Objects.requireNonNull(loadedChunks.get(chunk));
+        c.setWord(offset, value);
     }
 
     public void writeWord(Address addr, int value) {
         writeWord(addr.chunk(), addr.offset(), value);
+    }
+
+    public void writeWidth(int chunk, int addr, int value) {
+        if (isWide()) {
+            writeWord(chunk, addr, value);
+        } else {
+            writeByte(chunk, addr, value);
+        }
     }
 
     public int readBufferD1B0(int offset) {
@@ -308,22 +316,7 @@ public class Interpreter {
     public void drawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
         System.arraycopy(B9A2_INITIAL_VALUES, index * 8, bitmask, 0, 8);
-        final Image image = RootWindow.getInstance().getImage();
-        final int black = Images.convertColorIndex(0);
-        final int white = Images.convertColorIndex(7);
-        if (image instanceof WritableImage wimage) {
-            final PixelWriter writer = wimage.getPixelWriter();
-            for (int dy = 0; dy < 8; dy++) {
-                final int b = bitmask[dy];
-                final int mask = 0x80;
-                for (int dx = 0; dx < 8; dx++) {
-                    final boolean draw = (b & (mask >> dx)) > 0;
-                    writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
-                }
-            }
-        } else {
-            throw new RuntimeException("Can't write the image");
-        }
+        app.drawBitmask(bitmask, x, y, invert);
     }
 
     public void drawString(String s, int x, int y, boolean invert) {
@@ -335,17 +328,25 @@ public class Interpreter {
         }
     }
 
-    public void drawModal(int x, int y) {
+    /**
+     * Draws a dialog box on the screen. The requested size will be the size of the _inside_ of the box; the border
+     * will extend one square in each direction around the requested space.
+     * @param x Character coordinate of the left side of the box's frame.
+     * @param y Character coordinate of the top of the box's frame.
+     * @param sx Width (in characters) of the box's interior
+     * @param sy Height (in characters) of the box's interior
+     */
+    public void drawModal(int x, int y, int sx, int sy) {
         drawChar(0x00, 8*(x++), 8*y, false);
-        for (int dx = 0; dx < 16; dx++) {
+        for (int dx = 0; dx < sx; dx++) {
             drawChar(0x01, 8*(x++), 8*y, false);
         }
         drawChar(0x02, 8*x, 8*y, false);
         y++;
-        for (int dy = 0; dy < 4; dy++) {
+        for (int dy = 0; dy < sy; dy++) {
             x = 1;
             drawChar(0x03, 8*(x++), 8*y, false);
-            for (int dx = 0; dx < 16; dx++) {
+            for (int dx = 0; dx < sx; dx++) {
                 drawChar(0x7f, 8*(x++), 8*y, false);
             }
             drawChar(0x04, 8*x, 8*y, false);
@@ -353,7 +354,7 @@ public class Interpreter {
         }
         x = 1;
         drawChar(0x05, 8*(x++), 8*y, false);
-        for (int dx = 0; dx < 16; dx++) {
+        for (int dx = 0; dx < sx; dx++) {
             drawChar(0x06, 8*(x++), 8*y, false);
         }
         drawChar(0x07, 8*x, 8*y, false);        

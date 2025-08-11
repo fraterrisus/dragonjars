@@ -8,6 +8,8 @@ public class LongReturn implements Instruction {
     public Address exec(Interpreter i) {
         final int chunkId = i.pop();
         final int address = (i.pop() << 8) | (i.pop());
+        i.unloadChunk(i.getIP().chunk());
+        i.setDS(chunkId);
         return new Address(chunkId, address);
     }
 }

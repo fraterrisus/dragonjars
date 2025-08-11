@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class StoreAXLongPtr implements Instruction {
     // longptr[heap[imm:1]:3 + bx:2]:w <- ax:w
+    // The assembly doesn't check whether or not the chunks's already been loaded, so good luck?
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();

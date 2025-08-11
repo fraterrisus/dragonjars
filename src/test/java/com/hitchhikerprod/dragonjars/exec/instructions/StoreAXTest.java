@@ -54,22 +54,4 @@ class StoreAXTest {
         assertEquals(0x00aa, i.readWord(0x01, 0x05));
         assertEquals(2, i.instructionsExecuted());
     }
-
-    @Test
-    public void unmodifiable() {
-        final Chunk data = new Chunk(List.of(
-                (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00,
-                (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00,
-                (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
-        ));
-
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
-        i.setDS(0x01);
-        i.setAH(0xbb);
-        i.setAL(0xaa);
-        i.setWidth(false);
-
-        assertThrowsExactly(RuntimeException.class, i::start,
-                "Chunk 1 can't be written");
-    }
 }

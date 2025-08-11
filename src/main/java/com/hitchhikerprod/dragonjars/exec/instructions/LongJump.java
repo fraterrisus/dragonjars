@@ -9,6 +9,8 @@ public class LongJump implements Instruction {
         final Address ip = i.getIP();
         final int chunkId = i.readByte(ip.incr(1));
         final int address = i.readWord(ip.incr(2));
+        i.unloadChunk(ip.chunk());
+        i.loadChunk(chunkId);
         return new Address(chunkId, address);
     }
 }

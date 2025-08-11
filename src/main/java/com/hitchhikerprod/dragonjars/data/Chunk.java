@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Chunk {
-    List<Byte> raw;
+    final List<Byte> raw;
 
     public Chunk(List<Byte> raw) {
         this.raw = new ArrayList<>(raw);
@@ -15,6 +15,10 @@ public class Chunk {
         this(IntStream.range(0, rawBytes.length)
                 .mapToObj(i -> rawBytes[i])
                 .toList());
+    }
+
+    public Chunk(Chunk that) {
+        this.raw = new ArrayList<>(that.raw);
     }
 
     public byte getByte(int i) {

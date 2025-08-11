@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec;
 
+import com.hitchhikerprod.dragonjars.data.Chunk;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -7,9 +8,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterpreterHeapTest {
+    private static final Chunk EMPTY = new Chunk(List.of());
+
     @Test
     public void setHeapNarrow() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(false);
         uut.setHeap(0x10, 0xffffffff);
         assertEquals(0x000000ff, uut.getHeapBytes(0x10, 1));
@@ -20,7 +23,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapWide() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapBytes(0x10, 1));
@@ -31,7 +34,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWord() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeapBytes(0x10, 2));
@@ -42,7 +45,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapNarrow() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         uut.setWidth(false);
@@ -51,7 +54,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWide() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeap(0x10));
@@ -59,7 +62,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapMasksAddress() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(true);
         uut.setHeap(0xff10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapBytes(0x10, 1));
@@ -70,7 +73,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapBytes() {
-        final Interpreter uut = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
         uut.setWidth(false);
         uut.setHeap(0x10, 0xaa);
         uut.setHeap(0x11, 0xbb);

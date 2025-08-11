@@ -16,6 +16,8 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
@@ -63,8 +65,30 @@ public class DragonWarsApp extends Application {
         this.scene.setOnKeyReleased(handler);
     }
 
-    public void exit() {
-        Platform.exit();
+    /**
+     * Draws an 8x8 bitmask on the screen. The bitmask should be an array of bytes, one byte per vertical line.
+     * @param bitmask A `byte[8]`, each byte (8 bits) corresponding to 8 pixels in the X dimension
+     * @param x Screen coordinate (in pixels) of the left-hand side
+     * @param y Screen coordinate (in pixels) of the top side
+     * @param invert Draw black-on-white if false, or white-on-black if true.
+     */
+    public void drawBitmask(byte[] bitmask, int x, int y, boolean invert) {
+        final Image image = RootWindow.getInstance().getImage();
+        final int black = Images.convertColorIndex(0);
+        final int white = Images.convertColorIndex(7);
+        if (image instanceof WritableImage wimage) {
+            final PixelWriter writer = wimage.getPixelWriter();
+            for (int dy = 0; dy < 8; dy++) {
+                final int b = bitmask[dy];
+                final int mask = 0x80;
+                for (int dx = 0; dx < 8; dx++) {
+                    final boolean draw = (b & (mask >> dx)) > 0;
+                    writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
+                }
+            }
+        } else {
+            throw new RuntimeException("Can't write the image");
+        }
     }
 
     private void loadDataFiles() {
@@ -118,6 +142,7 @@ public class DragonWarsApp extends Application {
         this.stage.sizeToScene();
         final Interpreter interp = new Interpreter(this, this.dataChunks, 0, 0);
         interp.start();
+        Platform.exit();
     }
 
     private void testPattern() {

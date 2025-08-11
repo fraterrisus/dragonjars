@@ -19,6 +19,7 @@ class GetChunkSizeTest {
         final Chunk data = new Chunk(new byte[0x135]);
 
         final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        i.loadChunk(0x01);
         i.setWidth(true);
         i.setAL(0x0001);
         i.start();

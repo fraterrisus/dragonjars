@@ -10,9 +10,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ShiftTest {
+    private static final Chunk EMPTY = new Chunk(List.of());
+
     @Test
     public void leftAXNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(false);
         i.setAH(0xff);
         i.setAL(0x79);
@@ -27,7 +29,7 @@ class ShiftTest {
 
     @Test
     public void leftAXWide() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setWidth(true);
         i.setAH(0x40);
         i.setAL(0x81);
@@ -41,7 +43,7 @@ class ShiftTest {
 
     @Test
     public void rightAX() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setAH(0xf1);
         i.setAL(0x13);
         i.setWidth(false); // red herring, ignored
@@ -56,7 +58,7 @@ class ShiftTest {
 
     @Test
     public void leftBL() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setBH(0xff);
         i.setBL(0x44);
         i.setWidth(false); // red herring, ignored
@@ -71,7 +73,7 @@ class ShiftTest {
 
     @Test
     public void rightBL() {
-        final Interpreter i = new Interpreter(null, List.of(), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
         i.setBH(0xff);
         i.setBL(0x44);
         i.setWidth(false); // red herring, ignored
