@@ -27,6 +27,22 @@ public class Interpreter {
     private final int[] heap = new int[256];
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
+    private int draw_borders; // 0x253e
+    private int bbox_x0; // 0x2547 (ch)
+    private int bbox_y0; // 0x2549 (px)
+    private int bbox_x1; // 0x254a (ch)
+    private int bbox_y1; // 0x254c (px)
+
+    private int strlen_313c;
+    private List<Integer> string_313e = new ArrayList<>();
+
+    private int x_3166;
+    private int y_3168;
+    private int x_31ed; // default for draw_char
+    private int y_31ef; // default for draw_char
+
+    private int invert_3431;
+
     private boolean width;
     // Metaregister CS is the index of the code chunk
     // Likewise, DS is the index of the data chunk
@@ -59,6 +75,9 @@ public class Interpreter {
         this.instructionsExecuted = 0;
 
         loadChunk(initialChunk);
+        drawString313e();
+        resetBbox();
+        this.invert_3431 = 0x00;
     }
 
     public void start() {
@@ -88,6 +107,18 @@ public class Interpreter {
         if (Objects.nonNull(loadedChunks.get(chunkId))) {
             loadedChunks.set(chunkId, null);
         }
+    }
+
+    public void resetBbox() {
+        draw_borders = 0x00;
+
+        bbox_x0 = 0x01;
+        bbox_x1 = 0x27;
+        bbox_y0 = 0x98;
+        bbox_y1 = 0xb8;
+
+        x_31ed = 0x01;
+        y_31ef = 0x98;
     }
 
     public boolean getCarryFlag() {
@@ -319,6 +350,27 @@ public class Interpreter {
         app.drawBitmask(bitmask, x, y, invert);
     }
 
+    public void drawStringAndResetBBox() {
+        drawString313e();
+        if (draw_borders != 0x00) {
+            drawHudBorders();
+        }
+        resetBbox();
+    }
+
+    public void drawString313e() {
+        for (int i = 0; i < strlen_313c; i++) {
+            drawChar(string_313e.get(i), x_31ed * 8, y_31ef, false);
+            x_31ed += 8;
+        }
+        strlen_313c = 0;
+        x_3166 = x_31ed;
+    }
+
+    public void fillRectangle() {
+        app.drawRectangle(invert_3431, bbox_x0, bbox_y0, bbox_x1, bbox_y1);
+    }
+
     public void drawString(String s, int x, int y, boolean invert) {
         int fx = x * 8;
         int fy = y * 8;
@@ -328,36 +380,41 @@ public class Interpreter {
         }
     }
 
+    public void drawHudBorders() {
+        // TODO?
+    }
+
     /**
-     * Draws a dialog box on the screen. The requested size will be the size of the _inside_ of the box; the border
-     * will extend one square in each direction around the requested space.
-     * @param x Character coordinate of the left side of the box's frame.
-     * @param y Character coordinate of the top of the box's frame.
-     * @param sx Width (in characters) of the box's interior
-     * @param sy Height (in characters) of the box's interior
+     * Draws an empty box on the screen.
+     * @param x0 Pixel coordinate of the left side of the box's frame.
+     * @param y0 Pixel coordinate of the top of the box's frame.
+     * @param x1 Pixel coordinate of the right side of the box's frame.
+     * @param y1 Pixel coordinate of the bottom of the box's frame.
      */
-    public void drawModal(int x, int y, int sx, int sy) {
-        drawChar(0x00, 8*(x++), 8*y, false);
-        for (int dx = 0; dx < sx; dx++) {
-            drawChar(0x01, 8*(x++), 8*y, false);
+    public void drawModal(int x0, int y0, int x1, int y1) {
+        int x;
+        int y = y0;
+        for (x = x0; x < x1; x += 8) {
+            drawChar(0x01, x, y, false);
         }
-        drawChar(0x02, 8*x, 8*y, false);
-        y++;
-        for (int dy = 0; dy < sy; dy++) {
-            x = 1;
-            drawChar(0x03, 8*(x++), 8*y, false);
-            for (int dx = 0; dx < sx; dx++) {
-                drawChar(0x7f, 8*(x++), 8*y, false);
+        drawChar(0x00, x0, y, false);
+        drawChar(0x02, x1 - 8, y, false);
+
+        y += 8;
+        while (y < y1) {
+            for (x = x0; x < x1; x += 8) {
+                drawChar(0x7f, x, y, false);
             }
-            drawChar(0x04, 8*x, 8*y, false);
-            y++;
+            drawChar(0x03, x0, y, false);
+            drawChar(0x04, x1 - 8, y, false);
+            y += 8;
         }
-        x = 1;
-        drawChar(0x05, 8*(x++), 8*y, false);
-        for (int dx = 0; dx < sx; dx++) {
-            drawChar(0x06, 8*(x++), 8*y, false);
+
+        for (x = x0; x < x1; x += 8) {
+            drawChar(0x06, x, y, false);
         }
-        drawChar(0x07, 8*x, 8*y, false);        
+        drawChar(0x05, x0, y, false);
+        drawChar(0x07, x1 - 8, y, false);
     }
 
     private int byteToInt(byte b) {
@@ -488,9 +545,9 @@ public class Interpreter {
             // case 0x71 -> new RunSpecialEvent();
             // case 0x72 -> new UseItem();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
-            // case 0x74 -> new DrawModal();
-            // case 0x75 -> new DrawStringAndResetBBox();
-            // case 0x76 -> new FillBBox();
+            case 0x74 -> new DrawModal();
+            case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
+            case 0x76 -> (i) -> { i.fillRectangle(); return i.getIP().incr(); }; // FillBBox
             // case 0x77 -> new FillBBoxAndDecodeStringCS();
             // case 0x78 -> new DecodeStringCS();
             // case 0x79 -> new FillBBoxAndDecodeStringDS();

@@ -75,7 +75,7 @@ public class DragonWarsApp extends Application {
     public void drawBitmask(byte[] bitmask, int x, int y, boolean invert) {
         final Image image = RootWindow.getInstance().getImage();
         final int black = Images.convertColorIndex(0);
-        final int white = Images.convertColorIndex(7);
+        final int white = Images.convertColorIndex(15);
         if (image instanceof WritableImage wimage) {
             final PixelWriter writer = wimage.getPixelWriter();
             for (int dy = 0; dy < 8; dy++) {
@@ -84,6 +84,21 @@ public class DragonWarsApp extends Application {
                 for (int dx = 0; dx < 8; dx++) {
                     final boolean draw = (b & (mask >> dx)) > 0;
                     writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
+                }
+            }
+        } else {
+            throw new RuntimeException("Can't write the image");
+        }
+    }
+
+    public void drawRectangle(int color, int x0, int y0, int x1, int y1) {
+        final Image image = RootWindow.getInstance().getImage();
+        final int colorValue = Images.convertColorIndex(color);
+        if (image instanceof WritableImage wimage) {
+            final PixelWriter writer = wimage.getPixelWriter();
+            for (int y = y0; y < y1; y++) {
+                for (int x = x0; x < x1; x++) {
+                    writer.setArgb(x, y, colorValue);
                 }
             }
         } else {
@@ -185,6 +200,11 @@ public class DragonWarsApp extends Application {
                 interp.drawChar(ch, fx, fy, false);
             }
         }
+
+        // Test case: drawModal(0x16,0x00,0x28,0x98) is the combat dialog
+        // which is 16 characters wide plus border
+        // interp.drawModal(8 * 0x16, 0x00, 8 * 0x28, 0x98);
+        // interp.drawString("You still face 4", 0x17, 0x01, false);
 
         setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Q || event.getCode() == KeyCode.ESCAPE) {
