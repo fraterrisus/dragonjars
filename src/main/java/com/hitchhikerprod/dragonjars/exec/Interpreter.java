@@ -74,6 +74,8 @@ public class Interpreter {
         this.flagSign = false;
         this.instructionsExecuted = 0;
 
+        loadChunk(0x00);
+        loadChunk(0x01);
         loadChunk(initialChunk);
         drawString313e();
         resetBbox();
@@ -87,6 +89,7 @@ public class Interpreter {
         while (Objects.nonNull(nextIP)) {
             thisIP = nextIP;
             final int opcode = readByte(this.getIP());
+            System.out.format("%02x %08x %02x\n", thisIP.chunk(), thisIP.offset(), opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -99,7 +102,12 @@ public class Interpreter {
 
     public void loadChunk(int chunkId) {
         if (Objects.nonNull(loadedChunks.get(chunkId))) return;
-        final ModifiableChunk chunk = new ModifiableChunk(allChunks.get(chunkId));
+        final Chunk readOnlyChunk = allChunks.get(chunkId);
+        final List<Byte> raw = readOnlyChunk.getBytes(0, readOnlyChunk.getSize());
+        for (int i = 0; i <= readOnlyChunk.getSize() % 256; i++) {
+            raw.add((byte)0x00);
+        }
+        final ModifiableChunk chunk = new ModifiableChunk(raw);
         loadedChunks.set(chunkId, chunk);
     }
 
@@ -246,7 +254,6 @@ public class Interpreter {
     }
 
     public void setHeapBytes(int index, int count, int val) {
-        int value = val;
         for (int i = 0; i < count; i++) {
             this.heap[(index + i) & MASK_LOW] = val & MASK_LOW;
             val = val >> 8;
@@ -346,7 +353,7 @@ public class Interpreter {
      */
     public void drawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
-        System.arraycopy(B9A2_INITIAL_VALUES, index * 8, bitmask, 0, 8);
+        System.arraycopy(B9A2_INITIAL_VALUES, (index & 0x7f) * 8, bitmask, 0, 8);
         app.drawBitmask(bitmask, x, y, invert);
     }
 
@@ -369,6 +376,22 @@ public class Interpreter {
 
     public void fillRectangle() {
         app.drawRectangle(invert_3431, bbox_x0, bbox_y0, bbox_x1, bbox_y1);
+    }
+
+    public void setCharCoordinates(int x, int y) {
+        this.x_31ed = x;
+        this.y_31ef = y;
+    }
+
+    public void setInvertChar(int invert) {
+        this.invert_3431 = invert;
+    }
+
+    public void drawString(List<Integer> s) {
+        for (int ch : s) {
+            drawChar(ch, x_31ed * 8, y_31ef, invert_3431 != 0);
+            x_31ed += 1;
+        }
     }
 
     public void drawString(String s, int x, int y, boolean invert) {
@@ -494,8 +517,8 @@ public class Interpreter {
             case 0x40 -> new CmpBLImm();
             // The SUB and CMP instructions flip the carry bit before writing, which makes
             // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
-            case 0x41 -> new JumpIf((i) -> i.getCarryFlag());
-            case 0x42 -> new JumpIf((i) -> ! i.getCarryFlag());
+            case 0x41 -> new JumpIf((i) -> ! i.getCarryFlag());
+            case 0x42 -> new JumpIf((i) -> i.getCarryFlag());
             case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag()); // "above"
             case 0x44 -> new JumpIf((i) -> i.getZeroFlag()); // "equal"
             case 0x45 -> new JumpIf((i) -> ! i.getZeroFlag()); // "not equal"
@@ -547,13 +570,13 @@ public class Interpreter {
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
-            case 0x76 -> (i) -> { i.fillRectangle(); return i.getIP().incr(); }; // FillBBox
-            // case 0x77 -> new FillBBoxAndDecodeStringCS();
-            // case 0x78 -> new DecodeStringCS();
-            // case 0x79 -> new FillBBoxAndDecodeStringDS();
-            // case 0x7a -> new DecodeStringDS();
-            // case 0x7b -> new DecodeTitleStringCS();
-            // case 0x7c -> new DecodeTitleStringDS();
+            case 0x76 -> Instructions.FILL_BBOX;
+            case 0x77 -> (i) -> Instructions.compose(i, Instructions.FILL_BBOX, new DecodeStringCS());
+            case 0x78 -> new DecodeStringCS();
+            case 0x79 -> (i) -> Instructions.compose(i, Instructions.FILL_BBOX, new DecodeStringDS());
+            case 0x7a -> new DecodeStringDS();
+            case 0x7b -> new DecodeTitleStringCS();
+            case 0x7c -> new DecodeTitleStringDS();
             // case 0x7d -> new IndirectCharName();
             // case 0x7e -> new IndirectCharItem();
             // case 0x7f -> new IndirectString();
@@ -562,8 +585,13 @@ public class Interpreter {
             // case 0x82 -> new PrintHeap9d(); // 9-digit number
             // case 0x83 -> new IndirectChar();
             // case 0x84 -> new AllocateSegment();
-            // case 0x85 -> new FreeStructMemory();
-            // case 0x86 -> new UnpackChunk();
+            case 0x85 -> (i) -> { // FreeStructMemory
+                if (0x01 < i.getAL() && i.getAL() != 0xff) {
+                    i.unloadChunk(i.getAL());
+                }
+                return i.getIP().incr();
+            };
+            case 0x86 -> (i) -> { i.loadChunk(i.getAL()); return i.getIP().incr(); };
             // case 0x87 -> new PersistChunk();
             // case 0x88 -> new WaitForEscapeKey();
             // case 0x89 -> new ReadKeySwitch();

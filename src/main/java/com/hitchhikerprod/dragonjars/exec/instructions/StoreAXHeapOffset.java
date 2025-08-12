@@ -10,6 +10,7 @@ public class StoreAXHeapOffset implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1)) + i.getBL();
+        System.out.format("  heap[imm:%02x + bl:%02x] <- ax:%04x", i.readByte(ip.incr(1)), i.getBL(), i.getAX(true));
         i.setHeap(heapIndex, i.getAX());
         return ip.incr(OPCODE + IMMEDIATE);
     }
