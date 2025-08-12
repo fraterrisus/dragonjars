@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
@@ -103,6 +104,20 @@ public class DragonWarsApp extends Application {
             }
         } else {
             throw new RuntimeException("Can't write the image");
+        }
+    }
+
+    public void drawGameplayCorners() {
+        // TODO: we only need to build this buffer once and make it static, really.
+        final RomImageDecoder decoder = new RomImageDecoder();
+        final Image image = RootWindow.getInstance().getImage();
+        if (image instanceof WritableImage wimage) {
+            final int[] buffer = new int[0x3e80];
+            for (int i = 3; i >= 0; i--) {
+                decoder.decode652e(buffer, i);
+            }
+            final PixelWriter writer = wimage.getPixelWriter();
+            decoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
         }
     }
 

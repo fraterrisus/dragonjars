@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec;
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 
 import java.util.ArrayDeque;
@@ -76,6 +77,13 @@ public class Interpreter {
         this.flagSign = false;
         this.instructionsExecuted = 0;
 
+        // cs:0150  ax <- 0x0000
+        // cs:0155  heap[0x00..0x7f] <- 0x00
+        // cs:0157  di <- 0xb6a2 [chunks]
+        // cs:015a  ax <- 0xffff
+        // cs:015b  cx <- 0x0180
+        // cs:015e  chunk_map[0x0000..0x017f] <- 0x00
+
         // create segments 0 and 1, which have the same segment address, to store party data [0x0e00 bytes]
         final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
         this.chunkIds.add(0xffff); // doesn't correspond to a disk segment
@@ -87,16 +95,41 @@ public class Interpreter {
         this.segments.add(partyChunk);
         this.segments.add(partyChunk);
 
+        // build "x50" multiplication table
+        // which sets ax to 0x2a..
+        // cs:0166  al <- 0xff
+        // cs:0168  frob.4d32 <- 0xff
+        setHeapBytes(0x56, 2, 0xffff);
+        setHeapBytes(0x5a, 2, 0xffff);
+        // cs:0177  struct_idx.4d33 <- 0xff
+        setHeapBytes(0x08, 1, 0xff);
+        // cs:017d  inc ax  (ax <- 0x2b00)
+        setHeapBytes(0xdc, 1, 0x00);
+        // set_invert():
+        //   si = (ax >> 3) & 0x10 which is 0x0000, wtf
+        //   [3431]:2 <- [3433 + si]:2, but [3433] is init'd to 0xffff
+        //   [342f]:1 <- [3430], which is 0x00
+        invert_3431 = 0xffff;
+        // run_opening_titles, which we already did
+        // erase_video_buffer():
+        //   set the frob for segment_idx[4d33] to 0x02
+        //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
+        //     also this doesn't have any effect because there's no segment loaded?
+        app.drawGameplayCorners();
+        // 0x377c <- 0x00
+
         this.cs = getSegmentForChunk(initialChunk, Frob.CLEAN);
         this.ip = initialAddr;
         this.ds = this.cs;
         drawString313e();
-        resetBbox();
+        setBBox(0x01, 0x27, 0x08, 0xb8);
+        draw_borders = 0xff;
+        drawStringAndResetBBox();
         setInvertChar(0x00);
     }
 
     public void start() {
-        System.arraycopy(D1B0_INITIAL_VALUES, 0, this.bufferD1B0, 0, D1B0_INITIAL_VALUES.length);
+        System.arraycopy(INITIAL_VALUES_d1b0, 0, this.bufferD1B0, 0, INITIAL_VALUES_d1b0.length);
         this.instructionsExecuted = 0;
 
         Address nextIP = new Address(this.cs, this.ip);
@@ -168,12 +201,25 @@ public class Interpreter {
         bbox_y1 = y1;
     }
 
-    public void resetBbox() {
+    public void resetBBox() {
         draw_borders = 0x00;
         setBBox(0x01, 0x27, 0x98, 0xb8);
-
         x_31ed = 0x01;
         y_31ef = 0x98;
+    }
+
+    public void expandBBox() {
+        bbox_y1 = bbox_y1 + 8;
+        bbox_y0 = bbox_y0 - 8;
+        bbox_x1 = bbox_x1 + 1;
+        bbox_x0 = bbox_x0 - 1;
+    }
+
+    public void shrinkBBox() {
+        bbox_y1 = bbox_y1 - 8;
+        bbox_y0 = bbox_y0 + 8;
+        bbox_x1 = bbox_x1 - 1;
+        bbox_x0 = bbox_x0 + 1;
     }
 
     public boolean getCarryFlag() {
@@ -398,7 +444,7 @@ public class Interpreter {
      */
     public void drawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
-        System.arraycopy(B9A2_INITIAL_VALUES, (index & 0x7f) * 8, bitmask, 0, 8);
+        System.arraycopy(INITIAL_VALUES_b9a2, (index & 0x7f) * 8, bitmask, 0, 8);
         app.drawBitmask(bitmask, x, y, invert);
     }
 
@@ -407,7 +453,7 @@ public class Interpreter {
         if (draw_borders != 0x00) {
             drawHudBorders();
         }
-        resetBbox();
+        resetBBox();
     }
 
     public void drawString313e() {
@@ -448,44 +494,93 @@ public class Interpreter {
         }
     }
 
+    private boolean forceBoundsCheck(int regionId) {
+        expandBBox();
+        final Rectangle region = HUD_REGIONS_2644.get(regionId);
+        if (region.x0() >= bbox_x1) { shrinkBBox(); return false; }
+        if (region.y0() >= bbox_y1) { shrinkBBox(); return false; }
+        if (bbox_x0 >= region.x1()) { shrinkBBox(); return false; }
+        if (bbox_y0 >= region.y1()) { shrinkBBox(); return false; }
+        shrinkBBox();
+        return true;
+    }
+
     public void drawHudBorders() {
-        // TODO?
+        draw_borders = 0x00;
+        int regionId = 0;
+        if (forceBoundsCheck(regionId)) {
+            switch(regionId) {
+                case 0x09 -> {}
+                case 0x0a -> {}
+                case 0x0b -> {}
+                case 0x0c -> {}
+                case 0x0d -> {}
+                default -> {
+
+                }
+            }
+        }
     }
 
     /**
      * Draws an empty box on the screen.
-     * @param x0 Pixel coordinate of the left side of the box's frame.
-     * @param y0 Pixel coordinate of the top of the box's frame.
-     * @param x1 Pixel coordinate of the right side of the box's frame.
-     * @param y1 Pixel coordinate of the bottom of the box's frame.
      */
-    public void drawModal(int x0, int y0, int x1, int y1) {
+    public void drawModal(Address addr) {
+        final int x0 = readByte(addr) * 8; // ch adr -> pix adr
+        final int y0 = readByte(addr.incr(1)); // this is already a pix adr
+        final int x1 = readByte(addr.incr(2)) * 8;
+        final int y1 = readByte(addr.incr(3));
+        boolean invert = invert_3431 != 0;
+
+        // four immediates: 16 00 28 98 (combat window)
+        // written as words to 0x253f/tmp
+        // draw_string_313e (to empty buffer??)
+        // if 0x253e/draw_borders > 0 {           <- come back to this
+        //   expand bounding box()
+        //   do some bounds checking?...   ???
+        //   shrink bounding box()
+        //   draw_hud_borders()
+        // }
+        // copy 0x253f/tmp to 0x2547/bbox
+        // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
+        // al <- 0x80 // top-left double border char
+        // draw_modal_border() {
+        //   print al
+        //   al++
+        //   for (i=0x31ed/x0; i<0x2547/x1; i++) print al
+        //   al++
+        //   print al
+        // }
+        // draw vertical edges
+        // draw bottom border
+        // shrink bbox
+        // call fill_rectangle() and return
+
         int x;
         int y = y0;
         for (x = x0; x < x1; x += 8) {
-            drawChar(0x01, x, y, false);
+            drawChar(0x01, x, y, invert);
         }
-        drawChar(0x00, x0, y, false);
-        drawChar(0x02, x1 - 8, y, false);
+        drawChar(0x00, x0, y, invert);
+        drawChar(0x02, x1 - 8, y, invert);
 
         y += 8;
         while (y < y1) {
             for (x = x0; x < x1; x += 8) {
-                drawChar(0x7f, x, y, false);
+                drawChar(0x7f, x, y, invert);
             }
-            drawChar(0x03, x0, y, false);
-            drawChar(0x04, x1 - 8, y, false);
+            drawChar(0x03, x0, y, invert);
+            drawChar(0x04, x1 - 8, y, invert);
             y += 8;
         }
 
         for (x = x0; x < x1; x += 8) {
-            drawChar(0x06, x, y, false);
+            drawChar(0x06, x, y, invert);
         }
-        drawChar(0x05, x0, y, false);
-        drawChar(0x07, x1 - 8, y, false);
+        drawChar(0x05, x0, y, invert);
+        drawChar(0x07, x1 - 8, y, invert);
 
-        // shrink by one
-        setBBox(x0 + 1, y0 + 8, x0 - 1, y0 - 8);
+        shrinkBBox();
     }
 
     private int byteToInt(byte b) {
@@ -664,8 +759,27 @@ public class Interpreter {
         };
     }
 
+    public record Rectangle(int x0, int x1, int y0, int y1) {};
+
+    private static final List<Rectangle> HUD_REGIONS_2644 = List.of(
+            new Rectangle(0x00, 0x28, 0xb8, 0xc0), // text area, bottom border
+            new Rectangle(0x00, 0x01, 0x98, 0xb8), // text area, left border
+            new Rectangle(0x27, 0x28, 0x98, 0xb8), // text area, right border
+            new Rectangle(0x00, 0x28, 0x90, 0x98), // text area, top border
+            new Rectangle(0x27, 0x28, 0x00, 0x90), // combat area, right border
+            new Rectangle(0x1b, 0x27, 0x00, 0x20), // combat area, top border
+            new Rectangle(0x00, 0x02, 0x00, 0x90), // viewport, left border
+            new Rectangle(0x02, 0x04, 0x00, 0x08), // viewport, top-left
+            new Rectangle(0x14, 0x16, 0x00, 0x08), // viewport, top-right
+            new Rectangle(0x16, 0x1b, 0x00, 0x90), // compass bar
+            new Rectangle(0x02, 0x16, 0x08, 0x90), // viewport
+            new Rectangle(0x1b, 0x27, 0x08, 0x78), // combat area
+            new Rectangle(0x04, 0x14, 0x00, 0x08), // title bar (viewport top-center)
+            new Rectangle(0x01, 0x27, 0x98, 0xb8)  // text area
+    );
+
     // Character bitmaps
-    private static final byte[] B9A2_INITIAL_VALUES = {
+    private static final byte[] INITIAL_VALUES_b9a2 = {
             (byte)0xff, (byte)0xff, (byte)0xc0, (byte)0xc0, (byte)0xcf, (byte)0xcf, (byte)0xcc, (byte)0xcc,
             (byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00, (byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00,
             (byte)0xff, (byte)0xff, (byte)0x03, (byte)0x03, (byte)0xf3, (byte)0xf3, (byte)0x33, (byte)0x33,
@@ -796,7 +910,7 @@ public class Interpreter {
             (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
     };
 
-    private static final byte[] D1B0_INITIAL_VALUES = {
+    private static final byte[] INITIAL_VALUES_d1b0 = {
             (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0x05,
             (byte) 0x64, (byte) 0x0a, (byte) 0x74, (byte) 0x0b,
             (byte) 0xb4, (byte) 0x0b, (byte) 0xb4, (byte) 0x0c,
