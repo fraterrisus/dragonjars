@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
-        i.getSegmentForChunk(0x02);
+        i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
@@ -52,7 +53,7 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
-        i.getSegmentForChunk(0x02);
+        i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);

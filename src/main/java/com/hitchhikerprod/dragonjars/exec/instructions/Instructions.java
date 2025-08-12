@@ -77,6 +77,7 @@ public class Instructions {
         i.setCharCoordinates(x, 0);
         i.setInvertChar(0xff);
         i.drawString(chars);
+        i.setInvertChar(0x00);
         return new Address(addr.segment(), decoder.getPointer());
     }
 

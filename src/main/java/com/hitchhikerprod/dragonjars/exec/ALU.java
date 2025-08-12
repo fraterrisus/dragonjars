@@ -38,7 +38,7 @@ public class ALU {
         final int value = (op1 & 0xff) - (op2 & 0xff);
         return new Result(
                 value & 0xff,
-                ((op1 & 0x80) == 0) && ((value & 0x80) > 0),
+                (value < 0),
                 (value & 0x80) > 0,
                 (value & 0xff) == 0
         );

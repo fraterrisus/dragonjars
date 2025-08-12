@@ -161,13 +161,16 @@ public class Interpreter {
         }
     }
 
+    public void setBBox(int x0, int x1, int y0, int y1) {
+        bbox_x0 = x0;
+        bbox_y0 = y0;
+        bbox_x1 = x1;
+        bbox_y1 = y1;
+    }
+
     public void resetBbox() {
         draw_borders = 0x00;
-
-        bbox_x0 = 0x01;
-        bbox_x1 = 0x27;
-        bbox_y0 = 0x98;
-        bbox_y1 = 0xb8;
+        setBBox(0x01, 0x27, 0x98, 0xb8);
 
         x_31ed = 0x01;
         y_31ef = 0x98;
@@ -276,6 +279,7 @@ public class Interpreter {
     }
 
     public void setDS(int val) {
+        System.out.format("  ds <- 0x%02x\n", val);
         this.ds = val;
     }
 
@@ -430,7 +434,7 @@ public class Interpreter {
 
     public void drawString(List<Integer> s) {
         for (int ch : s) {
-            drawChar(ch, x_31ed * 8, y_31ef, invert_3431 != 0);
+            drawChar(ch, (x_31ed) * 8, (y_31ef), invert_3431 != 0);
             x_31ed += 1;
         }
     }
@@ -479,6 +483,9 @@ public class Interpreter {
         }
         drawChar(0x05, x0, y, false);
         drawChar(0x07, x1 - 8, y, false);
+
+        // shrink by one
+        setBBox(x0 + 1, y0 + 8, x0 - 1, y0 - 8);
     }
 
     private int byteToInt(byte b) {

@@ -13,7 +13,7 @@ public class StoreAXLongPtr implements Instruction {
         final int addr = i.getHeapBytes(index, 2) + i.getBX(true);
         final int segmentId = i.getHeapBytes(index + 2, 1);
         final int value = i.getAX(true);
-        System.out.format("  [s:%02x,a:%08x] <- %04x\n", segmentId, addr, value);
+        //System.out.format("  [s=%02x,a=%08x] <- %04x\n", segmentId, addr, value);
         i.writeWidth(segmentId, addr, value);
         return ip.incr(OPCODE + IMMEDIATE);
     }

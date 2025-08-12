@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
-        i.getSegmentForChunk(0x1);
+        i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
         i.setHeap(0x34, 0x08); // segment offset lo
@@ -53,7 +54,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
-        i.getSegmentForChunk(0x1);
+        i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
         i.setHeap(0x34, 0x08); // segment offset lo
