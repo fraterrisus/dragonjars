@@ -69,7 +69,7 @@ public class Instructions {
     }
 
     public static Address decodeTitleString(Interpreter i, Address addr) {
-        final StringDecoder decoder = new StringDecoder(i.getChunk(addr.chunk()));
+        final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (chars.getFirst() == 0x00) return addr;
@@ -77,11 +77,11 @@ public class Instructions {
         i.setCharCoordinates(x, 0);
         i.setInvertChar(0xff);
         i.drawString(chars);
-        return new Address(addr.chunk(), decoder.getPointer());
+        return new Address(addr.segment(), decoder.getPointer());
     }
 
     public static Address decodeString(Interpreter i, Address addr) {
-        final StringDecoder decoder = new StringDecoder(i.getChunk(addr.chunk()));
+        final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (chars.getFirst() == 0x00) return addr;
@@ -117,6 +117,6 @@ public class Instructions {
             i.drawString(plural);
         }
 
-        return new Address(addr.chunk(), decoder.getPointer());
+        return new Address(addr.segment(), decoder.getPointer());
     }
 }

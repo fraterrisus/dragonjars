@@ -7,6 +7,6 @@ public class Return implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int address = (i.pop() << 8) | (i.pop());
-        return new Address(i.getIP().chunk(), address);
+        return new Address(i.getIP().segment(), address);
     }
 }

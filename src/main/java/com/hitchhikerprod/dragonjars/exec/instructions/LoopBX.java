@@ -14,7 +14,7 @@ public class LoopBX implements Instruction {
         if (value == 0xff) {
             return ip.incr(OPCODE + ADDRESS);
         } else {
-            return new Address(ip.chunk(), address);
+            return new Address(ip.segment(), address);
         }
     }
 }

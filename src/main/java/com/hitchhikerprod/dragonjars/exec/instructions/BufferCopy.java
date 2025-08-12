@@ -4,18 +4,19 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class BufferCopy implements Instruction {
-    // Copies a 0x700-byte buffer between a chunk (at address AX) and a buffer
+    // Copies a 0x700-byte buffer between a segment (at address AX) and a buffer
     // in the code segment located at 0xd1b0. If BL & 0x80 == 0 we read the buffer
-    // and write the chunk; otherwise, the other way around.
+    // and write the segment; otherwise, the other way around.
     @Override
     public Address exec(Interpreter i) {
-        final boolean toChunk = (i.getBL() & 0x80) == 0;
+        final boolean toSegment = (i.getBL() & 0x80) == 0;
+        final int segmentId = i.getDS();
         final int index = i.getAX(true);
         for (int offset = 0; offset < 0x700; offset++) {
-            if (toChunk) {
-                i.writeByte(i.getDS(), index + offset, i.readBufferD1B0(offset));
+            if (toSegment) {
+                i.writeByte(segmentId, index + offset, i.readBufferD1B0(offset));
             } else {
-                i.writeBufferD1B0(offset, i.readByte(i.getDS(), index + offset));
+                i.writeBufferD1B0(offset, i.readByte(segmentId, index + offset));
             }
         }
         return i.getIP().incr(OPCODE);

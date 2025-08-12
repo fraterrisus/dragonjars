@@ -11,6 +11,6 @@ public class Call implements Instruction {
         final Address returnAddress = ip.incr(OPCODE + ADDRESS);
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);
-        return new Address(ip.chunk(), targetAddress);
+        return new Address(ip.segment(), targetAddress);
     }
 }

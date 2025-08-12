@@ -14,7 +14,7 @@ public class LoopBXLimit implements Instruction {
         if (value == limit) {
             return ip.incr(OPCODE + IMMEDIATE + ADDRESS);
         } else {
-            return new Address(ip.chunk(), address);
+            return new Address(ip.segment(), address);
         }
     }
 }

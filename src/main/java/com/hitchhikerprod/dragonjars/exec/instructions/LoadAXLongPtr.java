@@ -8,13 +8,11 @@ public class LoadAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int chunkOffset = i.getHeapBytes(heapIndex, 2) + i.getBX(true);
-        // FIXME this isn't a chunk ID, it's a segment ID. And segment 0x01 (at least)
-        //   was pre-allocated as a large temporary buffer.
-        final int chunkId = i.getHeapBytes(heapIndex + 2, 1);
-        System.out.format("  ax <- [%02x,%08x]\n", chunkId, chunkOffset);
-        final int chunkData = i.readWord(chunkId, chunkOffset);
-        i.setAX(chunkData);
+        final int offset = i.getHeapBytes(heapIndex, 2) + i.getBX(true);
+        final int segmentId = i.getHeapBytes(heapIndex + 2, 1);
+        System.out.format("  ax <- [s:%02x,a:%08x]\n", segmentId, offset);
+        final int value = i.readWord(segmentId, offset);
+        i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + IMMEDIATE);
     }

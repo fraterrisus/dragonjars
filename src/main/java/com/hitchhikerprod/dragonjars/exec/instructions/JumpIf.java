@@ -17,7 +17,7 @@ public class JumpIf implements Instruction {
         final Address ip = i.getIP();
         final int address = i.readWord(ip.incr(1));
         if (takeJump.apply(i)) {
-            return new Address(ip.chunk(), address);
+            return new Address(ip.segment(), address);
         } else {
             return ip.incr(OPCODE + ADDRESS);
         }

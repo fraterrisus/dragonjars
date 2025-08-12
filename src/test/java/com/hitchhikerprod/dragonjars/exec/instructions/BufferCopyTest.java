@@ -1,7 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +28,7 @@ class BufferCopyTest {
         i.setBL(0x00);
         i.start();
 
-        final Chunk newData = i.getChunk(0x01);
+        final Chunk newData = i.getSegment(0x01);
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(i.readBufferD1B0(idx), newData.getUnsignedByte(idx),

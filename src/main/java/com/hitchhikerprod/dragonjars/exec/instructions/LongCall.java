@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class LongCall implements Instruction {
@@ -12,10 +13,10 @@ public class LongCall implements Instruction {
         final Address returnAddress = ip.incr(OPCODE + IMMEDIATE + ADDRESS);
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);
-        i.push(returnAddress.chunk());
-        i.setDS(chunkId);
-        i.loadChunk(chunkId);
-        return new Address(chunkId, address);
+        i.push(returnAddress.segment());
+        final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
+        i.setDS(segmentId);
+        return new Address(segmentId, address);
     }
 
     /* Assembly operation:

@@ -18,10 +18,13 @@ public class Interpreter {
 
     private final DragonWarsApp app;
 
+    /* Memory space */
+
     private final List<Chunk> allChunks;
-    private final List<ModifiableChunk> loadedChunks;
-    private Address thisIP;
-    private Address nextIP;
+    private final List<ModifiableChunk> segments = new ArrayList<>();
+    private final List<Integer> chunkSizes = new ArrayList<>();
+    private final List<Integer> chunkFrobs = new ArrayList<>();
+    private final List<Integer> chunkIds = new ArrayList<>();
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
@@ -43,12 +46,18 @@ public class Interpreter {
 
     private int invert_3431;
 
+    /* Architectural registers */
+
+    // In assembly, metaregister CS contains the address of the segment to which the current code segment
+    // has been loaded. Here I store the structure index instead.
+    private int cs;
+    private int ds;
+
+    private int ip;
+
     private boolean width;
-    // Metaregister CS is the index of the code chunk
-    // Likewise, DS is the index of the data chunk
-    private int dataChunkIndex;
-    private int ax; // sometimes one byte, sometimes two
-    private int bx; // sometimes one byte, sometimes two
+    private int ax;
+    private int bx;
     private boolean flagCarry; // 0x0001
     private boolean flagZero;  // 0x0040
     private boolean flagSign;  // 0x0080
@@ -59,14 +68,7 @@ public class Interpreter {
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks, int initialChunk, int initialAddr) {
         this.app = app;
         this.allChunks = dataChunks;
-        this.loadedChunks = new ArrayList<>(dataChunks.size());
-        for (int i = 0; i < dataChunks.size(); i++) {
-            loadedChunks.add(null);
-        }
-        this.thisIP = new Address(-1, -1);
-        this.nextIP = new Address(initialChunk, initialAddr);
         this.width = false;
-        this.dataChunkIndex = 0;
         this.ax = 0;
         this.bx = 0;
         this.flagCarry = false;
@@ -74,22 +76,35 @@ public class Interpreter {
         this.flagSign = false;
         this.instructionsExecuted = 0;
 
-        loadChunk(0x00);
-        loadChunk(0x01);
-        loadChunk(initialChunk);
+        // create segments 0 and 1, which have the same segment address, to store party data [0x0e00 bytes]
+        final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
+        this.chunkIds.add(0xffff); // doesn't correspond to a disk segment
+        this.chunkIds.add(0xffff);
+        this.chunkFrobs.add(0xff); // don't touch me
+        this.chunkFrobs.add(0xff);
+        this.chunkSizes.add(0x0001); // shrug?
+        this.chunkSizes.add(0x0e00); // accurate
+        this.segments.add(partyChunk);
+        this.segments.add(partyChunk);
+
+        this.cs = getSegmentForChunk(initialChunk, Frob.CLEAN);
+        this.ip = initialAddr;
+        this.ds = this.cs;
         drawString313e();
         resetBbox();
-        this.invert_3431 = 0x00;
+        setInvertChar(0x00);
     }
 
     public void start() {
         System.arraycopy(D1B0_INITIAL_VALUES, 0, this.bufferD1B0, 0, D1B0_INITIAL_VALUES.length);
         this.instructionsExecuted = 0;
 
+        Address nextIP = new Address(this.cs, this.ip);
         while (Objects.nonNull(nextIP)) {
-            thisIP = nextIP;
-            final int opcode = readByte(this.getIP());
-            System.out.format("%02x %08x %02x\n", thisIP.chunk(), thisIP.offset(), opcode);
+            this.cs = nextIP.segment();
+            this.ip = nextIP.offset();
+            final int opcode = readByte(nextIP);
+            System.out.format("%02x %08x %02x\n", cs, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -100,20 +115,49 @@ public class Interpreter {
         return this.instructionsExecuted;
     }
 
-    public void loadChunk(int chunkId) {
-        if (Objects.nonNull(loadedChunks.get(chunkId))) return;
-        final Chunk readOnlyChunk = allChunks.get(chunkId);
-        final List<Byte> raw = readOnlyChunk.getBytes(0, readOnlyChunk.getSize());
-        for (int i = 0; i <= readOnlyChunk.getSize() % 256; i++) {
-            raw.add((byte)0x00);
+    /**
+     * Examines the segment table to translate a chunk ID into a segment ID. Note that this may have the side effect
+     * of loading the requested chunk into a new segment, if it doesn't exist.
+     * @param chunkId The desired chunk ID
+     * @param frob The desired new value of the segment's frob
+     * @return The segment ID of the (new) segment
+     */
+    public int getSegmentForChunk(int chunkId, Frob frob) {
+        int segmentId = chunkIds.indexOf(chunkId);
+        if (segmentId == -1 || (chunkId & 0x8000) > 0) {
+            final ModifiableChunk newChunk = new ModifiableChunk(allChunks.get(chunkId));
+            final int firstFreeSegment = chunkFrobs.indexOf(0x00);
+            if (firstFreeSegment == -1) {
+                segmentId = segments.size();
+                segments.add(newChunk);
+                chunkFrobs.add(frob.value());
+                chunkIds.add(chunkId);
+                chunkSizes.add(newChunk.getSize());
+            } else {
+                segmentId = firstFreeSegment;
+                segments.set(segmentId, newChunk);
+                chunkFrobs.set(segmentId, frob.value());
+                chunkIds.set(segmentId, chunkId);
+                chunkSizes.set(segmentId, newChunk.getSize());
+            }
         }
-        final ModifiableChunk chunk = new ModifiableChunk(raw);
-        loadedChunks.set(chunkId, chunk);
+        // should there be a "don't overwrite frob 0xff" guard here?
+        chunkFrobs.set(segmentId, frob.value());
+        return segmentId;
     }
 
-    public void unloadChunk(int chunkId) {
-        if (Objects.nonNull(loadedChunks.get(chunkId))) {
-            loadedChunks.set(chunkId, null);
+    public Frob getFrob(int segmentId) {
+        final int value = chunkFrobs.get(segmentId);
+        return Frob.of(value);
+    }
+
+    public void setFrob(int segmentId, Frob frob) {
+        chunkFrobs.set(segmentId, frob.value());
+    }
+
+    public void unloadSegment(int segmentId) {
+        if (chunkFrobs.get(segmentId) != 0xff) {
+            chunkFrobs.set(segmentId, 0x00);
         }
     }
 
@@ -153,12 +197,12 @@ public class Interpreter {
         this.flagSign = flag;
     }
 
-    public Chunk getChunk(int index) {
-        return loadedChunks.get(index);
+    public Chunk getSegment(int index) {
+        return segments.get(index);
     }
 
     public Address getIP() {
-        return thisIP;
+        return new Address(this.cs, this.ip);
     }
 
     public int getAL() {
@@ -224,18 +268,15 @@ public class Interpreter {
     }
 
     public int getCS() {
-        return this.thisIP.chunk();
+        return this.cs;
     }
 
     public int getDS() {
-        return this.dataChunkIndex;
+        return this.ds;
     }
 
     public void setDS(int val) {
-        if (val != this.dataChunkIndex) {
-            loadChunk(val);
-            this.dataChunkIndex = val;
-        }
+        this.ds = val;
     }
 
     public void push(int val) {
@@ -281,57 +322,57 @@ public class Interpreter {
         this.width = width;
     }
 
-    /** Retrieves a single byte from chunk data. */
-    public int readByte(int chunk, int offset) {
-        return Objects.requireNonNull(loadedChunks.get(chunk)).getUnsignedByte(offset);
+    /** Retrieves a single byte from segment data. */
+    public int readByte(int segmentId, int offset) {
+        return Objects.requireNonNull(segments.get(segmentId)).getUnsignedByte(offset);
     }
 
-    /** Retrieves a single byte from chunk data. */
+    /** Retrieves a single byte from segment data. */
     public int readByte(Address addr) {
-        return readByte(addr.chunk(), addr.offset());
+        return readByte(addr.segment(), addr.offset());
     }
 
-    /** Retrieves a word (two bytes) from chunk data. */
-    public int readWord(int chunk, int offset) {
-        return Objects.requireNonNull(loadedChunks.get(chunk)).getWord(offset);
+    /** Retrieves a word (two bytes) from segment data. */
+    public int readWord(int segmentId, int offset) {
+        return Objects.requireNonNull(segments.get(segmentId)).getWord(offset);
     }
 
-    /** Retrieves a word (two bytes) from chunk data. */
+    /** Retrieves a word (two bytes) from segment data. */
     public int readWord(Address addr) {
-        return readWord(addr.chunk(), addr.offset());
+        return readWord(addr.segment(), addr.offset());
     }
 
-    public int readData(int chunk, int offset, int size) {
-        return Objects.requireNonNull(loadedChunks.get(chunk)).getData(offset, size);
+    public int readData(int segmentId, int offset, int size) {
+        return Objects.requireNonNull(segments.get(segmentId)).getData(offset, size);
     }
 
     public int readData(Address addr, int size) {
-        return readData(addr.chunk(), addr.offset(), size);
+        return readData(addr.segment(), addr.offset(), size);
     }
 
-    public void writeByte(int chunk, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(loadedChunks.get(chunk));
+    public void writeByte(int segmentId, int offset, int value) {
+        final ModifiableChunk c = Objects.requireNonNull(segments.get(segmentId));
         c.setByte(offset, value);
     }
 
     public void writeByte(Address addr, int value) {
-        writeByte(addr.chunk(), addr.offset(), value);
+        writeByte(addr.segment(), addr.offset(), value);
     }
     
-    public void writeWord(int chunk, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(loadedChunks.get(chunk));
+    public void writeWord(int segmentId, int offset, int value) {
+        final ModifiableChunk c = Objects.requireNonNull(segments.get(segmentId));
         c.setWord(offset, value);
     }
 
     public void writeWord(Address addr, int value) {
-        writeWord(addr.chunk(), addr.offset(), value);
+        writeWord(addr.segment(), addr.offset(), value);
     }
 
-    public void writeWidth(int chunk, int addr, int value) {
+    public void writeWidth(int segmentId, int addr, int value) {
         if (isWide()) {
-            writeWord(chunk, addr, value);
+            writeWord(segmentId, addr, value);
         } else {
-            writeByte(chunk, addr, value);
+            writeByte(segmentId, addr, value);
         }
     }
 
@@ -481,7 +522,7 @@ public class Interpreter {
             case 0x1c -> new StoreImm();
             case 0x1d -> new BufferCopy();
             case 0x1e -> Instructions.EXIT; // "kill executable" aka "you lost"
-            case 0x1f -> Instructions.NOOP; // "read chunk table"
+            case 0x1f -> Instructions.NOOP; // "read segment table"
             //   0x20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
@@ -585,13 +626,8 @@ public class Interpreter {
             // case 0x82 -> new PrintHeap9d(); // 9-digit number
             // case 0x83 -> new IndirectChar();
             // case 0x84 -> new AllocateSegment();
-            case 0x85 -> (i) -> { // FreeStructMemory
-                if (0x01 < i.getAL() && i.getAL() != 0xff) {
-                    i.unloadChunk(i.getAL());
-                }
-                return i.getIP().incr();
-            };
-            case 0x86 -> (i) -> { i.loadChunk(i.getAL()); return i.getIP().incr(); };
+            case 0x85 -> new FreeSegmentAL();
+            case 0x86 -> new LoadChunkAX();
             // case 0x87 -> new PersistChunk();
             // case 0x88 -> new WaitForEscapeKey();
             // case 0x89 -> new ReadKeySwitch();
@@ -615,7 +651,7 @@ public class Interpreter {
             case 0x9b -> new FlagSetImm();
             case 0x9c -> new FlagClearImm();
             case 0x9d -> new FlagTestImm();
-            case 0x9e -> new GetChunkSize();
+            case 0x9e -> new GetSegmentSize();
             // case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
         };

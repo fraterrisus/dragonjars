@@ -28,13 +28,13 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
-        i.loadChunk(0x02);
+        i.getSegmentForChunk(0x02);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x03); // address (lo)
         i.setHeap(0x5c, 0x00); // address (hi)
-        i.setHeap(0x5d, 0x02); // chunk#
+        i.setHeap(0x5d, 0x02); // segment#
         i.setBL(0x03); // address offset
         i.setWidth(true);
         i.start();
@@ -52,13 +52,13 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
-        i.loadChunk(0x02);
+        i.getSegmentForChunk(0x02);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x03); // address (lo)
         i.setHeap(0x5c, 0x00); // address (hi)
-        i.setHeap(0x5d, 0x02); // chunk#
+        i.setHeap(0x5d, 0x02); // segment#
         i.setBL(0x03); // address offset
         i.start();
 
