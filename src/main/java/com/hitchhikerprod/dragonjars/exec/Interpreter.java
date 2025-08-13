@@ -3,13 +3,19 @@ package com.hitchhikerprod.dragonjars.exec;
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
+import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -26,6 +32,8 @@ public class Interpreter {
     private final List<Integer> chunkSizes = new ArrayList<>();
     private final List<Integer> chunkFrobs = new ArrayList<>();
     private final List<Integer> chunkIds = new ArrayList<>();
+
+    private final RomImageDecoder decoder;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final int[] heap = new int[256];
@@ -80,6 +88,8 @@ public class Interpreter {
         this.cs = getSegmentForChunk(initialChunk, Frob.CLEAN);
         this.ip = initialAddr;
         this.ds = this.cs;
+
+        this.decoder = new RomImageDecoder(this.codeChunk);
     }
 
     public void start() {
@@ -123,7 +133,7 @@ public class Interpreter {
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
-        app.drawGameplayCorners();
+        drawGameplayCorners();
         // 0x377c <- 0x00
 
         drawString313e();
@@ -201,13 +211,6 @@ public class Interpreter {
         bbox_y0 = y0;
         bbox_x1 = x1;
         bbox_y1 = y1;
-    }
-
-    public void resetBBox() {
-        draw_borders = 0x00;
-        setBBox(0x01, 0x27, 0x98, 0xb8);
-        x_31ed = 0x01;
-        y_31ef = 0x98;
     }
 
     public void expandBBox() {
@@ -463,7 +466,10 @@ public class Interpreter {
         if (draw_borders != 0x00) {
             drawHudBorders();
         }
-        resetBBox();
+        draw_borders = 0x00;
+        setBBox(0x01, 0x27, 0x98, 0xb8);
+        x_31ed = 0x01;
+        y_31ef = 0x98;
     }
 
     public void drawString313e() {
@@ -476,7 +482,7 @@ public class Interpreter {
     }
 
     public void fillRectangle() {
-        app.drawRectangle(invert_3431, bbox_x0, bbox_y0, bbox_x1, bbox_y1);
+        app.drawRectangle(invert_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
     }
 
     public void setCharCoordinates(int x, int y) {
@@ -504,13 +510,36 @@ public class Interpreter {
         }
     }
 
+    private void getImageWriter(Consumer<PixelWriter> fn) {
+        final Image image = RootWindow.getInstance().getImage();
+        if (image instanceof WritableImage wimage) {
+            final PixelWriter writer = wimage.getPixelWriter();
+            fn.accept(writer);
+        }
+    }
+
+    public void drawGameplayCorners() {
+        // TODO: we only need to build this buffer once and make it static, really.
+        getImageWriter(writer -> {
+            final int[] buffer = new int[0x3e80];
+            for (int i = 3; i >= 0; i--) {
+                decoder.decode652e(buffer, i);
+            }
+            decoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
+        });
+    }
+
     private boolean boundsCheck(int regionId) {
         expandBBox();
 
         final byte[] rec = new byte[4]; // x0, y0, x1, y1
         loadFromCodeSegment(0x2644, 4 * regionId, rec, 4);
+        final int rec_x0 = rec[0] & 0xff;
+        final int rec_y0 = rec[1] & 0xff;
+        final int rec_x1 = rec[2] & 0xff;
+        final int rec_y1 = rec[3] & 0xff;
 
-        if ((rec[0] >= bbox_x1) || (rec[1] >= bbox_y1) || (bbox_x0 >= rec[2]) || (bbox_y0 >= rec[3])) {
+        if ((rec_x0 >= bbox_x1) || (rec_y0 >= bbox_y1) || (bbox_x0 >= rec_x1) || (bbox_y0 >= rec_y1)) {
             shrinkBBox();
             return false;
         } else {
@@ -524,21 +553,38 @@ public class Interpreter {
         for (int regionId = 0; regionId < 14; regionId++) {
             if (boundsCheck(regionId)) {
                 switch (regionId) {
-                    case 0x09 -> {
-                        // there is also an entry for region 9?
+                    case 0x09 -> { // the vertical column with spell icons
+                        final int finalRegionId = regionId;
+                        getImageWriter(writer -> decoder.decode68c0(finalRegionId, writer));
+                        // ax <- 0x0000
+                        // [4a71] <- ax
+                        // [4a73] <- ax
+                        // CF <- 1
                     }
-                    case 0x0a -> {
+                    case 0x0a -> { // viewport
+                        // if bounds_check(0xa)
+                        //   ... we already did that
+                        // check_and_push_video_data(0xa)
+                        //   which seems to bitblast the most recent buffer data to the video card
+                        // TODO: keep a separate 'video' buffer for the viewport
+                        //   (and maybe reblast the 'corners' afterwards)
                     }
-                    case 0x0b -> {
+                    case 0x0b -> { // party status area
+                        // cs:1a08
                     }
-                    case 0x0c -> {
+                    case 0x0c -> { // map title
+                        // cs:2cd4
+                        // see DecodeTitleString instruction; might need to save that string somewhere
                     }
-                    case 0x0d -> {
+                    case 0x0d -> { // message pane
+                        // cs:267c
+                        setBBox(0x01, 0x27, 0x98, 0xb8);
+                        fillRectangle();
                     }
                     default -> {
-                        // drawHudSection();
+                        final int finalRegionId = regionId;
+                        getImageWriter(writer -> decoder.decode68c0(finalRegionId, writer));
                         // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
-                        // lookup regionID on 0x68c0/HUD_img_pointer_table
                     }
                 }
             }

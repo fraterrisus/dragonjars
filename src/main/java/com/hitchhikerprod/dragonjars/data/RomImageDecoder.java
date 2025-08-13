@@ -7,6 +7,53 @@ import java.util.List;
 public class RomImageDecoder {
     record Corner(List<Byte> data, int width, int height) {}
 
+    private final Chunk executable;
+
+    public RomImageDecoder(Chunk executable) {
+        this.executable = executable;
+    }
+
+    // 0x68c0 is the lookup table for most ROM image data
+    public void decode68c0(int index, PixelWriter writer) {
+        // address LUT: 0x68c0:2 - 0x6914:2
+        final List<Byte> lut = executable.getBytes(0x67c0, 0x56);
+        final int baseAddress = (lut.get((2 * index) + 1) & 0xff) << 8 |
+                (lut.get(2 * index) & 0xff);
+
+        int pointer = baseAddress - 0x0100;
+
+        final int innerCounter = executable.getUnsignedByte(pointer);
+        final int outerCounter = executable.getUnsignedByte(pointer + 1);
+        int x0 = executable.getUnsignedByte(pointer + 2);
+        int baseBit = (x0 % 2 == 1) ? 2 : 6;
+        x0 = x0 / 2;
+        final int y0 = executable.getUnsignedByte(pointer + 3);
+
+        pointer += 4;
+
+        for (int i = 0; i < outerCounter; i++) {
+            final int y = y0 + i;
+            int innerBit = baseBit;
+            int x = x0 * 8;
+            for (int j = 0; j < innerCounter; j++) {
+                final int colorIndex = executable.getUnsignedByte(pointer);
+                pointer++;
+                writer.setArgb(x + (7 - innerBit), y, Images.convertColorIndex(colorIndex));
+
+                innerBit++;
+                writer.setArgb(x + (7 - innerBit), y, Images.convertColorIndex(colorIndex >> 4));
+
+                innerBit -= 2;
+                if (innerBit < 0) {
+                    innerBit = 7;
+                    x += 8;
+                }
+                innerBit--;
+            }
+        }
+    }
+
+    // 0x652e is the lookup table for the little viewport corner decorations
     public void decode652e(int[] buffer, int index) {
 //        final int factor = 0x50;
 //        final int val100e = 0x00;

@@ -107,20 +107,6 @@ public class DragonWarsApp extends Application {
         }
     }
 
-    public void drawGameplayCorners() {
-        // TODO: we only need to build this buffer once and make it static, really.
-        final RomImageDecoder decoder = new RomImageDecoder();
-        final Image image = RootWindow.getInstance().getImage();
-        if (image instanceof WritableImage wimage) {
-            final int[] buffer = new int[0x3e80];
-            for (int i = 3; i >= 0; i--) {
-                decoder.decode652e(buffer, i);
-            }
-            final PixelWriter writer = wimage.getPixelWriter();
-            decoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
-        }
-    }
-
     private void loadDataFiles() {
         final LoadDataTask task = new LoadDataTask();
 
