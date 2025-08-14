@@ -4,7 +4,6 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
-import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
@@ -173,32 +172,32 @@ public class DragonWarsApp extends Application {
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            interp.drawChar(ch, fx, 18, true);
+            interp.lowLevelDrawChar(ch, fx, 18, true);
         }
         for (int y = 0; y < 2; y++) {
             final int fy = (y + 2) * 16;
-            interp.drawChar(0x30 + y, 12, fy, true);
-            interp.drawChar('x', 20, fy, true);
+            interp.lowLevelDrawChar(0x30 + y, 12, fy, true);
+            interp.lowLevelDrawChar('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 2) * 16;
                 final int ch = (16 * y) + x;
-                interp.drawChar(ch, fx, fy, false);
+                interp.lowLevelDrawChar(ch, fx, fy, false);
             }
         }
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 4) * 8;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            interp.drawChar(ch, fx, 68, true);
+            interp.lowLevelDrawChar(ch, fx, 68, true);
         }
         for (int y = 2; y < 8; y++) {
             final int fy = (y + 8) * 8;
-            interp.drawChar(0x30 + y, 12, fy, true);
-            interp.drawChar('x', 20, fy, true);
+            interp.lowLevelDrawChar(0x30 + y, 12, fy, true);
+            interp.lowLevelDrawChar('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 4) * 8;
                 final int ch = (16 * y) + x;
-                interp.drawChar(ch, fx, fy, false);
+                interp.lowLevelDrawChar(ch, fx, fy, false);
             }
         }
 

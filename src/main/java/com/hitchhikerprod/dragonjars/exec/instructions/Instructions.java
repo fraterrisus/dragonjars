@@ -72,12 +72,8 @@ public class Instructions {
         final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
+        i.setTitleString(chars);
         if (chars.getFirst() == 0x00) return addr;
-        final int x = (16 - chars.size()) / 2 + 4;
-        i.setCharCoordinates(x, 0);
-        i.setInvertChar(0xff);
-        i.drawString(chars);
-        i.setInvertChar(0x00);
         return new Address(addr.segment(), decoder.getPointer());
     }
 

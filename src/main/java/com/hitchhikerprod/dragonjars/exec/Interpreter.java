@@ -47,13 +47,16 @@ public class Interpreter {
 
     private int strlen_313c;
     private List<Integer> string_313e = new ArrayList<>();
+    private List<Integer> titleString = List.of(); // maybe 0x274c?
 
     private int x_3166;
     private int y_3168;
     private int x_31ed; // default for draw_char
     private int y_31ef; // default for draw_char
 
-    private int invert_3431;
+    private int invert_342f = 0x00;
+    private int invert_3430 = 0x00;
+    private int invert_3431 = 0x00;
 
     /* Architectural registers */
 
@@ -123,11 +126,7 @@ public class Interpreter {
         setHeapBytes(0x08, 1, 0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
         setHeapBytes(0xdc, 1, 0x00);
-        // set_invert():
-        //   si = (ax >> 3) & 0x10 which is 0x0000, wtf
-        //   [3431]:2 <- [3433 + si]:2, but [3433] is init'd to 0xffff
-        //   [342f]:1 <- [3430], which is 0x00
-        invert_3431 = 0xffff;
+        setInvertChar(0x2f00);
         // run_opening_titles, which we already did
         // erase_video_buffer():
         //   set the frob for segment_idx[4d33] to 0x02
@@ -140,7 +139,7 @@ public class Interpreter {
         setBBox(0x01, 0x27, 0x08, 0xb8);
         draw_borders = 0xff;
         drawStringAndResetBBox();
-        setInvertChar(0x00);
+        //setInvertChar(0x00); // something's not right here
 
         this.instructionsExecuted = 0;
 
@@ -447,7 +446,7 @@ public class Interpreter {
      * @param y Screen coordinate in pixels.
      * @param invert If true, draws white-on-black instead of black-on-white.
      */
-    public void drawChar(int index, int x, int y, boolean invert) {
+    public void lowLevelDrawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
         loadFromCodeSegment(0xb9a2, (index & 0x7f) * 8, bitmask, 8);
         app.drawBitmask(bitmask, x, y, invert);
@@ -474,7 +473,7 @@ public class Interpreter {
 
     public void drawString313e() {
         for (int i = 0; i < strlen_313c; i++) {
-            drawChar(string_313e.get(i), x_31ed * 8, y_31ef, false);
+            lowLevelDrawChar(string_313e.get(i), x_31ed * 8, y_31ef, false);
             x_31ed += 8;
         }
         strlen_313c = 0;
@@ -483,6 +482,10 @@ public class Interpreter {
 
     public void fillRectangle() {
         app.drawRectangle(invert_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
+        x_31ed = bbox_x0; // 0x32a8
+        x_3166 = bbox_x0;
+        y_31ef = bbox_y0;
+        strlen_313c = 0;
     }
 
     public void setCharCoordinates(int x, int y) {
@@ -490,22 +493,37 @@ public class Interpreter {
         this.y_31ef = y;
     }
 
-    public void setInvertChar(int invert) {
-        this.invert_3431 = invert;
+    public void setInvertChar() {
+        setInvertChar(invert_342f);
+    }
+
+    public void setInvertChar(int al) {
+        this.invert_3431 = ((al & 0x10) > 0) ? 0x0000 : 0xffff;
+        this.invert_342f = this.invert_3430;
+        this.invert_3430 = al;
     }
 
     public void drawString(List<Integer> s) {
+        int x = x_31ed;
+        int y = y_31ef;
         for (int ch : s) {
-            drawChar(ch, (x_31ed) * 8, (y_31ef), invert_3431 != 0);
-            x_31ed += 1;
+            if (ch == 0x8d) {
+                x = x_31ed;
+                y += 8;
+            } else {
+                lowLevelDrawChar(ch, x * 8, y, invert_3431 != 0);
+                x += 1;
+            }
         }
+        x_31ed = x;
+        y_31ef = y;
     }
 
     public void drawString(String s, int x, int y, boolean invert) {
         int fx = x * 8;
         int fy = y * 8;
         for (char ch : s.toCharArray()) {
-            drawChar(ch, fx, fy, invert);
+            lowLevelDrawChar(ch, fx, fy, invert);
             fx += 8;
         }
     }
@@ -569,13 +587,8 @@ public class Interpreter {
                         // TODO: keep a separate 'video' buffer for the viewport
                         //   (and maybe reblast the 'corners' afterwards)
                     }
-                    case 0x0b -> { // party status area
-                        // cs:1a08
-                    }
-                    case 0x0c -> { // map title
-                        // cs:2cd4
-                        // see DecodeTitleString instruction; might need to save that string somewhere
-                    }
+                    case 0x0b -> drawPartyInfoArea();
+                    case 0x0c -> drawMapTitle();
                     case 0x0d -> { // message pane
                         // cs:267c
                         setBBox(0x01, 0x27, 0x98, 0xb8);
@@ -591,13 +604,52 @@ public class Interpreter {
         }
     }
 
+    private void drawPartyInfoArea() { // 0x1a08
+        setHeapBytes(0x18, 7, 0x00); // heap[18:1e] <- 0x00
+        if (! boundsCheck(0x0b)) return;
+
+        final int save_31ed = x_31ed;
+        final int save_31ef = y_31ef;
+        final int save_heap_06 = getHeapBytes(0x06, 1);
+
+
+
+        setHeapBytes(0x06, 1, save_heap_06);
+        x_31ed = save_31ed;
+        y_31ef = save_31ef;
+    }
+
+    public void setTitleString(List<Integer> chars) {
+        this.titleString = List.copyOf(chars);
+        drawMapTitle();
+    }
+
+    private void drawMapTitle() { // 0x2cd4
+        // x_31ed and y_31ef are preserved across this call, but I don't use them
+        // in this implementation. They're also more clever about only decoding the
+        // image bytes for spaces where they aren't writing characters.
+
+        for (int x = 0; x < 16; x++) {
+            final int pictureId = 0x1b + x;
+            getImageWriter(writer -> decoder.decode68c0(pictureId, writer));
+        }
+
+        setInvertChar(0x10);
+        int x = 0x04 + ((16 - this.titleString.size()) / 2);
+        for (int ch : this.titleString) {
+            lowLevelDrawChar(ch, x * 8, 0, invert_3431 > 0);
+            x += 1;
+        }
+        setInvertChar();
+    }
+
     /**
      * Draws an empty box on the screen.
      */
     public void drawModal(Address addr) {
-        final int x0 = readByte(addr) * 8; // ch adr -> pix adr
-        final int y0 = readByte(addr.incr(1)); // this is already a pix adr
-        final int x1 = readByte(addr.incr(2)) * 8;
+        final int x0 = readByte(addr);         // ch adr
+        final int y0 = readByte(addr.incr(1)); // pix adr
+        final int x1 = readByte(addr.incr(2));
         final int y1 = readByte(addr.incr(3));
         boolean invert = invert_3431 != 0;
 
@@ -611,45 +663,35 @@ public class Interpreter {
         //   draw_hud_borders()
         // }
         // copy 0x253f/tmp to 0x2547/bbox
+        setBBox(x0, x1, y0, y1);
         // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
-        // al <- 0x80 // top-left double border char
-        // draw_modal_border() {
-        //   print al
-        //   al++
-        //   for (i=0x31ed/x0; i<0x2547/x1; i++) print al
-        //   al++
-        //   print al
-        // }
-        // draw vertical edges
-        // draw bottom border
-        // shrink bbox
-        // call fill_rectangle() and return
+        x_31ed = x0;
+        y_31ef = y0;
 
         int x;
         int y = y0;
-        for (x = x0; x < x1; x += 8) {
-            drawChar(0x01, x, y, invert);
+        // draw top border
+        for (x = x0; x < x1; x += 1) {
+            lowLevelDrawChar(0x01, x * 8, y, invert);
         }
-        drawChar(0x00, x0, y, invert);
-        drawChar(0x02, x1 - 8, y, invert);
-
+        lowLevelDrawChar(0x00, x0 * 8, y, invert);
+        lowLevelDrawChar(0x02, (x1 - 1) * 8, y, invert);
+        // draw vertical edges
         y += 8;
-        while (y < y1) {
-            for (x = x0; x < x1; x += 8) {
-                drawChar(0x7f, x, y, invert);
-            }
-            drawChar(0x03, x0, y, invert);
-            drawChar(0x04, x1 - 8, y, invert);
+        while (y < y1 - 8) {
+            lowLevelDrawChar(0x03, x0 * 8, y, invert);
+            lowLevelDrawChar(0x04, (x1 - 1) * 8, y, invert);
             y += 8;
         }
-
-        for (x = x0; x < x1; x += 8) {
-            drawChar(0x06, x, y, invert);
+        // draw bottom border
+        for (x = x0; x < x1; x += 1) {
+            lowLevelDrawChar(0x06, x * 8, y, invert);
         }
-        drawChar(0x05, x0, y, invert);
-        drawChar(0x07, x1 - 8, y, invert);
+        lowLevelDrawChar(0x05, x0 * 8, y, invert);
+        lowLevelDrawChar(0x07, (x1 - 1) * 8, y, invert);
 
         shrinkBBox();
+        fillRectangle();
     }
 
     private int byteToInt(byte b) {
@@ -801,7 +843,7 @@ public class Interpreter {
             case 0x86 -> new LoadChunkAX();
             // case 0x87 -> new PersistChunk();
             // case 0x88 -> new WaitForEscapeKey();
-            // case 0x89 -> new ReadKeySwitch();
+            // case 0x89 -> new ReadKeySwitch(); // TODO
             // case 0x8a -> new ShowMonsterImage();
             // case 0x8b -> new DrawCurrentViewport();
             // case 0x8c -> new ShowYesNoModal();
