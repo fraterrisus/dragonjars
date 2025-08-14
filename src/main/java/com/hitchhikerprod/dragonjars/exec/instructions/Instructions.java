@@ -69,11 +69,14 @@ public class Instructions {
     }
 
     public static Address decodeTitleString(Interpreter i, Address addr) {
+        // (See 0x2693.) Sets the indirect function pointer to 0x26aa, which saves the decoded string at 0x273a
+        // instead of printing it to the screen. Then it resets the indirect function to 0x30c1 and calls a helper
+        // (0x26be) which forwards to drawMapTitle() (0x26d4) after doing a bounds check that we ignore, heh. We
+        // roll that call into i.setTitleString, below.
         final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         i.setTitleString(chars);
-        if (chars.getFirst() == 0x00) return addr;
         return new Address(addr.segment(), decoder.getPointer());
     }
 

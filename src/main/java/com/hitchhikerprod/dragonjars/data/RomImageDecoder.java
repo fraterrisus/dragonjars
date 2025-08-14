@@ -148,7 +148,7 @@ public class RomImageDecoder {
                 final int adr = x + (y * 0x50);
                 int oldValue = buffer[adr];
                 int newValue = (oldValue & byteAnd) | byteOr;
-                System.out.printf("(%03d,%03d:%05x)  %02x <- %02x\n", x, y, adr, oldValue, newValue);
+                // System.out.printf("(%03d,%03d:%05x)  %02x <- %02x\n", x, y, adr, oldValue, newValue);
                 buffer[adr] = newValue;
             }
         }

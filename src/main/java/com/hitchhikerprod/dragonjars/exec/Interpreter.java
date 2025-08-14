@@ -47,16 +47,16 @@ public class Interpreter {
 
     private int strlen_313c;
     private List<Integer> string_313e = new ArrayList<>();
-    private List<Integer> titleString = List.of(); // maybe 0x274c?
+    private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
 
     private int x_3166;
     private int y_3168;
     private int x_31ed; // default for draw_char
     private int y_31ef; // default for draw_char
 
-    private int invert_342f = 0x00;
-    private int invert_3430 = 0x00;
-    private int invert_3431 = 0x00;
+    private int mem_342f = 0x00;
+    private int mem_3430 = 0x00;
+    private int bg_color_3431 = 0xffff;
 
     /* Architectural registers */
 
@@ -126,22 +126,23 @@ public class Interpreter {
         setHeapBytes(0x08, 1, 0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
         setHeapBytes(0xdc, 1, 0x00);
-        setInvertChar(0x2f00);
+        // 0x377c <- 0x00  ; @0x017e
+        setBackground(0x00);
         // run_opening_titles, which we already did
         // erase_video_buffer():
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
+        //   but it also includes:
         drawGameplayCorners();
-        // 0x377c <- 0x00
 
-        drawString313e();
         setBBox(0x01, 0x27, 0x08, 0xb8);
         draw_borders = 0xff;
         drawStringAndResetBBox();
-        //setInvertChar(0x00); // something's not right here
 
         this.instructionsExecuted = 0;
+        // [width] <- 0x00
+        // [3923] <- 0x00
 
         Address nextIP = new Address(this.cs, this.ip);
         while (Objects.nonNull(nextIP)) {
@@ -481,7 +482,7 @@ public class Interpreter {
     }
 
     public void fillRectangle() {
-        app.drawRectangle(invert_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
+        app.drawRectangle(bg_color_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
         x_31ed = bbox_x0; // 0x32a8
         x_3166 = bbox_x0;
         y_31ef = bbox_y0;
@@ -493,14 +494,19 @@ public class Interpreter {
         this.y_31ef = y;
     }
 
-    public void setInvertChar() {
-        setInvertChar(invert_342f);
+    public void setBackground() {
+        setBackground(mem_342f);
     }
 
-    public void setInvertChar(int al) {
-        this.invert_3431 = ((al & 0x10) > 0) ? 0x0000 : 0xffff;
-        this.invert_342f = this.invert_3430;
-        this.invert_3430 = al;
+    /**
+     * Sets the background color of forthcoming text to WHITE, unless the input value has bit 0x10 set, in which
+     * case the background color is set to BLACK.
+     */
+    public void setBackground(int al) {
+        // confirm: input 0x10 -> al 0x02 -> bx 0x0000
+        this.bg_color_3431 = ((al & 0x10) > 0) ? 0x0000 : 0xffff;
+        this.mem_342f = this.mem_3430 & 0xff;
+        this.mem_3430 = al & 0xff;
     }
 
     public void drawString(List<Integer> s) {
@@ -511,7 +517,7 @@ public class Interpreter {
                 x = x_31ed;
                 y += 8;
             } else {
-                lowLevelDrawChar(ch, x * 8, y, invert_3431 != 0);
+                lowLevelDrawChar(ch, x * 8, y, bg_color_3431 == 0);
                 x += 1;
             }
         }
@@ -589,8 +595,7 @@ public class Interpreter {
                     }
                     case 0x0b -> drawPartyInfoArea();
                     case 0x0c -> drawMapTitle();
-                    case 0x0d -> { // message pane
-                        // cs:267c
+                    case 0x0d -> { // message pane, 0x267c
                         setBBox(0x01, 0x27, 0x98, 0xb8);
                         fillRectangle();
                     }
@@ -612,7 +617,7 @@ public class Interpreter {
         final int save_31ef = y_31ef;
         final int save_heap_06 = getHeapBytes(0x06, 1);
 
-
+        // TODO
 
         setHeapBytes(0x06, 1, save_heap_06);
         x_31ed = save_31ed;
@@ -620,6 +625,7 @@ public class Interpreter {
     }
 
     public void setTitleString(List<Integer> chars) {
+        // TODO: add bounds check, titleString can't be more than 16 ch
         this.titleString = List.copyOf(chars);
         drawMapTitle();
     }
@@ -634,13 +640,13 @@ public class Interpreter {
             getImageWriter(writer -> decoder.decode68c0(pictureId, writer));
         }
 
-        setInvertChar(0x10);
+        setBackground(0x10);
         int x = 0x04 + ((16 - this.titleString.size()) / 2);
         for (int ch : this.titleString) {
-            lowLevelDrawChar(ch, x * 8, 0, invert_3431 > 0);
+            lowLevelDrawChar(ch, x * 8, 0, bg_color_3431 == 0);
             x += 1;
         }
-        setInvertChar();
+        setBackground();
     }
 
     /**
@@ -651,7 +657,7 @@ public class Interpreter {
         final int y0 = readByte(addr.incr(1)); // pix adr
         final int x1 = readByte(addr.incr(2));
         final int y1 = readByte(addr.incr(3));
-        boolean invert = invert_3431 != 0;
+        boolean invert = bg_color_3431 == 0;
 
         // four immediates: 16 00 28 98 (combat window)
         // written as words to 0x253f/tmp

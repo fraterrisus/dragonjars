@@ -340,7 +340,7 @@ public class Images {
             case 3 ->  { return 0xff00aaaa; } // cyan
             case 4 ->  { return 0xffaa0000; } // red
             case 5 ->  { return 0xffaa00aa; } // magenta
-            case 6 ->  { return 0xffaaff00; } // brown
+            case 6 ->  { return 0xffaa5500; } // brown
             case 7 ->  { return 0xffaaaaaa; } // white
             case 8 ->  { return 0xff555555; } // dark gray
             case 9 ->  { return 0xff5555ff; } // light blue
