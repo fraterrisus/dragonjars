@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import javafx.scene.input.KeyCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,5 +119,11 @@ public class Instructions {
         }
 
         return new Address(addr.segment(), decoder.getPointer());
+    }
+
+    public static KeyCode keyCodeOf(int code) {
+        return switch(code) {
+            default -> KeyCode.valueOf(String.valueOf((char)(code & 0x7f)));
+        };
     }
 }

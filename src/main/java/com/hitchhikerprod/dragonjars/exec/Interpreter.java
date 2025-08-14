@@ -2,18 +2,23 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -145,6 +150,15 @@ public class Interpreter {
         // [3923] <- 0x00
 
         Address nextIP = new Address(this.cs, this.ip);
+        mainLoop(nextIP);
+    }
+
+    public void restart(Address startPoint) {
+        mainLoop(startPoint);
+    }
+
+    private void mainLoop(Address startPoint) {
+        Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
             this.ip = nextIP.offset();
@@ -593,7 +607,10 @@ public class Interpreter {
                         // TODO: keep a separate 'video' buffer for the viewport
                         //   (and maybe reblast the 'corners' afterwards)
                     }
-                    case 0x0b -> drawPartyInfoArea();
+                    case 0x0b -> {
+                        setHeapBytes(0x18, 7, 0x00); // heap[18:1e] <- 0x00
+                        drawPartyInfoArea();
+                    }
                     case 0x0c -> drawMapTitle();
                     case 0x0d -> { // message pane, 0x267c
                         setBBox(0x01, 0x27, 0x98, 0xb8);
@@ -610,23 +627,59 @@ public class Interpreter {
     }
 
     private void drawPartyInfoArea() { // 0x1a08
-        setHeapBytes(0x18, 7, 0x00); // heap[18:1e] <- 0x00
         if (! boundsCheck(0x0b)) return;
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
         final int save_heap_06 = getHeapBytes(0x06, 1);
 
-        // TODO
+        // set the indirect function to draw_char()
+
+        for (int charId = 6; charId >= 0; charId--) {
+            int ax = getHeapBytes(0x18 + charId, 1);
+            if ((ax & 0x80) > 0) continue;
+            drawCharacterInfo(charId, ax);
+            setHeapBytes(0x18 + charId, 1, 0xff);
+        }
 
         setHeapBytes(0x06, 1, save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
     }
 
+    private void drawCharacterInfo(int charId, int flag) {
+        // input flag is either 0x10 or 0x01
+        final int simpleFlag = flag & 0x0f; // either 0 or 1
+        setBackground(flag);
+
+        int y0 = (charId << 4) + 0x20;
+        int x0 = 0x1b;
+
+        final int charsInParty = getHeapBytes(0x1f, 1);
+        if (charId >= charsInParty) {
+            getImageWriter(writer -> {
+                final int black = Images.convertColorIndex(0);
+                for (int y = y0; y < y0 + 0x10; y++) {
+                    for (int x = x0 * 8; x < 0x27 * 8; x++) {
+                        writer.setArgb(x, y, black);
+                    }
+                }
+            });
+            setBackground();
+            return;
+        }
+
+        final int charBaseAddress = getCharBaseAddress(charId);
+        // TODO after we get party data loaded somewhere useful
+    }
+
+    private int getCharBaseAddress(int charId) {
+        final int orderId = getHeapBytes(0x0a + charId, 1);
+        return 0xc3a0 + (orderId << 8);
+    }
+
     public void setTitleString(List<Integer> chars) {
-        // TODO: add bounds check, titleString can't be more than 16 ch
-        this.titleString = List.copyOf(chars);
+        this.titleString = (chars.size() > 16) ? List.copyOf(chars.subList(0, 16)) : List.copyOf(chars);
         drawMapTitle();
     }
 
@@ -700,6 +753,17 @@ public class Interpreter {
         fillRectangle();
     }
 
+    public void setPrompt(Map<KeyCode, Address> prompts) {
+        final EventHandler<KeyEvent> keyHandler = event -> {
+            for (KeyCode code : prompts.keySet()) {
+                if (event.getCode() == code) {
+                    this.restart(prompts.get(code));
+                }
+            }
+        };
+        app.setKeyHandler(keyHandler);
+    }
+    
     private int byteToInt(byte b) {
         return MASK_LOW & ((int) b);
     }
@@ -707,7 +771,7 @@ public class Interpreter {
     private byte intToByte(int i) {
         return (byte)(i & MASK_LOW);
     }
-
+    
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instructions.SET_WIDE;
@@ -804,7 +868,7 @@ public class Interpreter {
             case 0x59 -> new LongReturn();
             case 0x5a -> Instructions.EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
-            // case 0x5c -> new RecurseOverParty();
+            // case 0x5c -> new RecurseOverParty(); // FIXME
             // case 0x5d -> new LoadAXPartyAttribute();
             // case 0x5e -> new StoreAXPartyAttribute();
             // case 0x5f -> new SetPartyFlag();
@@ -849,7 +913,7 @@ public class Interpreter {
             case 0x86 -> new LoadChunkAX();
             // case 0x87 -> new PersistChunk();
             // case 0x88 -> new WaitForEscapeKey();
-            // case 0x89 -> new ReadKeySwitch(); // TODO
+            case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
             // case 0x8b -> new DrawCurrentViewport();
             // case 0x8c -> new ShowYesNoModal();

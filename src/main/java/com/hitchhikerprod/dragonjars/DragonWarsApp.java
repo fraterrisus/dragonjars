@@ -157,7 +157,6 @@ public class DragonWarsApp extends Application {
         this.stage.sizeToScene();
         final Interpreter interp = new Interpreter(this, this.dataChunks, 0, 0);
         interp.start();
-        Platform.exit();
     }
 
     private void testPattern() {
