@@ -547,7 +547,7 @@ public class Interpreter {
         getImageWriter(writer -> {
             final int[] buffer = new int[0x3e80];
             for (int i = 3; i >= 0; i--) {
-                decoder.decode652e(buffer, i);
+                decoder.decodeCorner(buffer, i);
             }
             decoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
         });
@@ -579,7 +579,7 @@ public class Interpreter {
                 switch (regionId) {
                     case 0x09 -> { // the vertical column with spell icons
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> decoder.decode68c0(finalRegionId, writer));
+                        getImageWriter(writer -> decoder.decodeRomImage(finalRegionId, writer));
                         // ax <- 0x0000
                         // [4a71] <- ax
                         // [4a73] <- ax
@@ -601,7 +601,7 @@ public class Interpreter {
                     }
                     default -> {
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> decoder.decode68c0(finalRegionId, writer));
+                        getImageWriter(writer -> decoder.decodeRomImage(finalRegionId, writer));
                         // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
                     }
                 }
@@ -637,7 +637,7 @@ public class Interpreter {
 
         for (int x = 0; x < 16; x++) {
             final int pictureId = 0x1b + x;
-            getImageWriter(writer -> decoder.decode68c0(pictureId, writer));
+            getImageWriter(writer -> decoder.decodeRomImage(pictureId, writer));
         }
 
         setBackground(0x10);
