@@ -17,11 +17,11 @@ class StoreZeroHeapTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeap(0x3a, 0xff);
         i.setHeap(0x3b, 0xff);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00000000, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
@@ -36,11 +36,11 @@ class StoreZeroHeapTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeap(0x3a, 0xff);
         i.setHeap(0x3b, 0xff);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0000ff00, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());

@@ -21,10 +21,10 @@ class TestValueTest {
     ));
 
     private void heapHelper(boolean width, int heap, boolean zero, boolean sign) {
-        final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM));
         i.setWidth(width);
         i.setHeapBytes(0x1a, 2, heap);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");
         assertEquals(sign, i.getSignFlag(), "Sign flag is wrong");
@@ -32,10 +32,10 @@ class TestValueTest {
     }
 
     private void axHelper(boolean width, int ax, boolean zero, boolean sign) {
-        final Interpreter i = new Interpreter(null, List.of(AX_PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(AX_PROGRAM));
         i.setWidth(width);
         i.setAX(ax, true);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");
         assertEquals(sign, i.getSignFlag(), "Sign flag is wrong");

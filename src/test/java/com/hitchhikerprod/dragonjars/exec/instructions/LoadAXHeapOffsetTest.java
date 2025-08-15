@@ -18,7 +18,7 @@ class LoadAXHeapOffsetTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setBL(0x04);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
@@ -27,7 +27,7 @@ class LoadAXHeapOffsetTest {
         i.setHeap(0x2a, 0xee);
         i.setHeap(0x2b, 0xff);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0000ffee, i.getAX());
         assertEquals(3, i.instructionsExecuted());
@@ -43,7 +43,7 @@ class LoadAXHeapOffsetTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setBL(0x04);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
@@ -52,7 +52,7 @@ class LoadAXHeapOffsetTest {
         i.setHeap(0x2a, 0xee);
         i.setHeap(0x2b, 0xff);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000ee, i.getAX());
         assertEquals(3, i.instructionsExecuted());

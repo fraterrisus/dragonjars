@@ -18,11 +18,11 @@ class MoveHeapTest {
                 (byte)0x18, // write index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setHeap(0x3a, 0x1234);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00001234, i.getHeapBytes(0x18, 2));
         assertEquals(3, i.instructionsExecuted());
@@ -38,11 +38,11 @@ class MoveHeapTest {
                 (byte)0x18, // write index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setHeap(0x3a, 0x1234);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00000034, i.getHeapBytes(0x18, 2));
         assertEquals(3, i.instructionsExecuted());

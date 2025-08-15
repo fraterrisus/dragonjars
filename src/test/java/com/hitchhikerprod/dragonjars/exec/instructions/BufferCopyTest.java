@@ -18,7 +18,7 @@ class BufferCopyTest {
     public void fromBufferToChunk() {
         final Chunk data = new Chunk(new byte[0x700]);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         for (int idx = 0; idx < 0x700; idx++) {
             i.writeBufferD1B0(idx, (int)(Math.random() * 0xff));
         }
@@ -26,7 +26,7 @@ class BufferCopyTest {
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0x00);
-        i.start();
+        i.start(0, 0);
 
         final Chunk newData = i.getSegment(0x01);
 
@@ -45,12 +45,12 @@ class BufferCopyTest {
         }
         final Chunk data = new Chunk(rawBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         i.setDS(0x01);
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0xff);
-        i.start();
+        i.start(0, 0);
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(data.getUnsignedByte(idx), i.readBufferD1B0(idx),

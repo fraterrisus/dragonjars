@@ -27,10 +27,10 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.setDS(0x01);
         i.setWidth(true);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xbbaa, i.readWord(0x01, 0x06));
         assertEquals(2, i.instructionsExecuted());
@@ -52,10 +52,10 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.setDS(0x01);
         i.setWidth(false);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00aa, i.readWord(0x01, 0x06));
         assertEquals(2, i.instructionsExecuted());

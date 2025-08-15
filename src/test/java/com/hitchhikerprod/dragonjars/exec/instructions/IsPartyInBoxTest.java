@@ -44,10 +44,10 @@ class IsPartyInBoxTest {
                 (byte)0x5a // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeapBytes(0x00, 1, party.y());
         i.setHeapBytes(0x01, 1, party.x());
-        i.start();
+        i.start(0, 0);
 
         assertEquals(expected, i.getZeroFlag());
         assertEquals(2, i.instructionsExecuted());

@@ -24,7 +24,7 @@ public class LoadAXLongPtrTest {
                 (byte)0xaa, (byte)0xbb, (byte)0xcc, (byte)0xdd,
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
@@ -32,7 +32,7 @@ public class LoadAXLongPtrTest {
         i.setHeap(0x35, 0x00); // segment offset hi
         i.setHeap(0x36, 0x01); // segment ID
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0000bbaa, i.getAX());
         assertEquals(3, i.instructionsExecuted());
@@ -53,7 +53,7 @@ public class LoadAXLongPtrTest {
                 (byte)0xaa, (byte)0xbb, (byte)0xcc, (byte)0xdd,
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
@@ -61,7 +61,7 @@ public class LoadAXLongPtrTest {
         i.setHeap(0x35, 0x00); // segment offset hi
         i.setHeap(0x36, 0x01); // segment ID
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(3, i.instructionsExecuted());

@@ -59,7 +59,10 @@ public class Instructions {
 
     public static final Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
-    public static final Instruction EXIT = (i) -> null;
+    public static final Instruction EXIT = (i) -> {
+        System.out.println("** exit");
+        return null;
+    };
 
     public static Address compose(Interpreter i, Instruction... ins) {
         Address result = null;

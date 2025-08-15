@@ -27,11 +27,11 @@ class ArrayMaxTest {
         dataBytes[0x115] = (byte)0x31;
         final Chunk data = new Chunk(dataBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.setWidth(true);
         i.setDS(0x01);
         i.setBX(0x0106);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x03, i.getBL());
         assertEquals(0xf2, i.getAL());

@@ -67,10 +67,10 @@ public class Interpreter {
 
     // In assembly, metaregister CS contains the address of the segment to which the current code segment
     // has been loaded. Here I store the structure index instead.
-    private int cs;
-    private int ds;
+    private int cs = -1;
+    private int ds = -1;
 
-    private int ip;
+    private int ip = -1;
 
     private boolean width;
     private int ax;
@@ -82,7 +82,7 @@ public class Interpreter {
     // debugging information
     private int instructionsExecuted = 0;
 
-    public Interpreter(DragonWarsApp app, List<Chunk> dataChunks, int initialChunk, int initialAddr) {
+    public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
         this.dataChunks = dataChunks;
         this.codeChunk = dataChunks.removeLast();
@@ -93,14 +93,10 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
 
-        this.cs = getSegmentForChunk(initialChunk, Frob.CLEAN);
-        this.ip = initialAddr;
-        this.ds = this.cs;
-
         this.decoder = new RomImageDecoder(this.codeChunk);
     }
 
-    public void start() {
+    public void start(int chunk, int addr) {
         loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
 
         // cs:0150  ax <- 0x0000
@@ -149,11 +145,13 @@ public class Interpreter {
         // [width] <- 0x00
         // [3923] <- 0x00
 
-        Address nextIP = new Address(this.cs, this.ip);
+        final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
+        Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
     }
 
     public void restart(Address startPoint) {
+        System.out.println("** restart");
         mainLoop(startPoint);
     }
 
@@ -161,6 +159,7 @@ public class Interpreter {
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
+            if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = readByte(nextIP);
             System.out.format("%02x %08x %02x\n", cs, ip, opcode);
@@ -265,7 +264,7 @@ public class Interpreter {
         this.flagSign = flag;
     }
 
-    public Chunk getSegment(int index) {
+    public ModifiableChunk getSegment(int index) {
         return segments.get(index);
     }
 
@@ -868,9 +867,9 @@ public class Interpreter {
             case 0x59 -> new LongReturn();
             case 0x5a -> Instructions.EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
-            // case 0x5c -> new RecurseOverParty(); // FIXME
-            // case 0x5d -> new LoadAXPartyAttribute();
-            // case 0x5e -> new StoreAXPartyAttribute();
+            case 0x5c -> new RecurseOverParty();
+            case 0x5d -> new LoadAXPartyAttribute();
+            case 0x5e -> new StoreAXPartyAttribute();
             // case 0x5f -> new SetPartyFlag();
             // case 0x60 -> new ClearPartyFlag();
             // case 0x61 -> new TestPartyFlag();

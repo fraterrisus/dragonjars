@@ -19,9 +19,9 @@ class StoreImmHeapTest {
                 (byte)0xbb,
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0000bbaa, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
@@ -37,9 +37,9 @@ class StoreImmHeapTest {
                 (byte)0xaa, // immediate value (1B)
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000aa, i.getHeapBytes(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());

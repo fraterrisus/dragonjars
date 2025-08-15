@@ -18,7 +18,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void copyHeap3E3F() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setHeapBytes(0x3e, 2, 0xff00);
 
         final Address newIP = Instructions.COPY_HEAP_3E_3F.exec(i);
@@ -28,7 +28,7 @@ public class SimpleInstructionsTest {
     
     @Test
     public void exitInstruction() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
 
         final Address newIP = Instructions.EXIT.exec(i);
 
@@ -37,7 +37,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void incBL() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setBX(0x0000ffff);
         final Instruction uut = new IncBL();
@@ -58,10 +58,10 @@ public class SimpleInstructionsTest {
                 (byte)0x55, // PopAX (skipped over)
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setAL(0x00);
         i.push(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00, i.getAL());
         assertEquals(3, i.instructionsExecuted());
@@ -76,10 +76,10 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
         assertEquals(3, i.instructionsExecuted());
@@ -95,8 +95,8 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
-        i.start();
+        final Interpreter i = new Interpreter(null, List.of(program));
+        i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
         assertEquals(3, i.instructionsExecuted());
@@ -105,7 +105,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void loadBLZero() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setBX(0xffff);
 
@@ -118,7 +118,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void moveALBL() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAX(0xffff);
         i.setBX(0x0000);
@@ -132,7 +132,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void moveBXAX() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAX(0x0000);
         i.setBX(0xffff);
@@ -147,7 +147,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void randomAX() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(false);
         i.setAX(0x7f);
 
@@ -159,7 +159,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void setNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         final Instruction uut = Instructions.SET_NARROW;
@@ -173,7 +173,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void setWide() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(false);
         final Instruction uut = Instructions.SET_WIDE;
 
@@ -192,9 +192,9 @@ public class SimpleInstructionsTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setBL(0xffff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000ff, i.getHeapBytes(0x7a, 1));
         assertEquals(3, i.instructionsExecuted());
@@ -203,7 +203,7 @@ public class SimpleInstructionsTest {
 
     @Test
     public void strToInt() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         final char[] chars = new char[]{'1', '5', '3', '9', '4'};
         int pointer = 0xc6;
         for (char ch : chars) {

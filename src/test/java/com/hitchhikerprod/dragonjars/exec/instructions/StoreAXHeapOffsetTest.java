@@ -16,12 +16,12 @@ class StoreAXHeapOffsetTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setAX(0x1234);
         i.setBL(0x02);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00001234, i.getHeapBytes(0x3c, 2));
         assertEquals(2, i.instructionsExecuted());
@@ -35,13 +35,13 @@ class StoreAXHeapOffsetTest {
                 (byte)0x3a, // heap index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setAX(0x1234);
         i.setBL(0x02);
         i.setWidth(false);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00000034, i.getHeapBytes(0x3c, 2));
         assertEquals(2, i.instructionsExecuted());

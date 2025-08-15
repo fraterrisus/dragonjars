@@ -12,7 +12,7 @@ class InterpreterWidthTest {
 
     @Test
     void isWide() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         assertTrue(uut.isWide());
         uut.setWidth(false);

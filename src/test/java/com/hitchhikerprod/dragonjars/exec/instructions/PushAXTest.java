@@ -17,11 +17,11 @@ class PushAXTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(true);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x81, i.pop());
         assertEquals(0xdd, i.pop());
@@ -30,11 +30,11 @@ class PushAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(false);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xdd, i.pop());
         assertThrows(NoSuchElementException.class, i::pop);

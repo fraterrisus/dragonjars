@@ -14,7 +14,7 @@ class IncDecAXTest {
 
     @Test
     public void incWide() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAX(0x02ff);
 
@@ -27,7 +27,7 @@ class IncDecAXTest {
 
     @Test
     public void incNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAX(0x02ff);
         i.setWidth(false);
@@ -41,7 +41,7 @@ class IncDecAXTest {
 
     @Test
     public void decNarrow() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(false);
         i.setAH(0x43); // writes 0x00 because narrow
         i.setAL(0x00); // 0x00 - 1 = 0xff
@@ -54,7 +54,7 @@ class IncDecAXTest {
 
     @Test
     public void decWide() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.setWidth(true);
         i.setAH(0x43);
         i.setAL(0x00);

@@ -17,9 +17,9 @@ class TestAndSetHeapSignTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeapBytes(0x06, 1, 0xff);
-        i.start();
+        i.start(0, 0);
 
         assertFalse(i.getZeroFlag());
         assertEquals(0x80, i.getHeapBytes(0x06, 1) & 0x80);
@@ -34,9 +34,9 @@ class TestAndSetHeapSignTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setHeapBytes(0x06, 1, 0x7f);
-        i.start();
+        i.start(0, 0);
 
         assertTrue(i.getZeroFlag());
         // bit gets set if not already set

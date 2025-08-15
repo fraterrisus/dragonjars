@@ -16,11 +16,11 @@ class AddAXHeapTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(wide);
         i.setAX(ax);
         i.setHeap(0x81, heap);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(carryOut, i.getCarryFlag());
         assertEquals(total, i.getAX());

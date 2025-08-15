@@ -12,14 +12,14 @@ class InterpreterAXTest {
 
     @Test
     public void getAL() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setAX(0xffffffff);
         assertEquals(0x000000ff, uut.getAL());
     }
 
     @Test
     public void getAXWide() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         assertEquals(0x0000ffff, uut.getAX());
@@ -27,7 +27,7 @@ class InterpreterAXTest {
 
     @Test
     public void getAXNarrow() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         uut.setWidth(false);
@@ -36,7 +36,7 @@ class InterpreterAXTest {
 
     @Test
     public void getAXForce() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         uut.setWidth(false);
@@ -45,7 +45,7 @@ class InterpreterAXTest {
 
     @Test
     public void setAXNarrow1() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(false);
         uut.setAX(0xffffffff);
         assertEquals(0x000000ff, uut.getAX());
@@ -53,7 +53,7 @@ class InterpreterAXTest {
 
     @Test
     public void setAXNarrow2() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         uut.setWidth(false);
@@ -62,7 +62,7 @@ class InterpreterAXTest {
 
     @Test
     public void setAXNarrow3() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         uut.setWidth(false);
@@ -74,7 +74,7 @@ class InterpreterAXTest {
 
     @Test
     public void setAL() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setAX(0xffffffff);
         uut.setAL(0xaaaaaaaa);

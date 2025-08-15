@@ -29,9 +29,9 @@ public class LongCallAndReturnTest {
 
     @Test
     public void roundTrip() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM_1, PROGRAM_2), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM_1, PROGRAM_2));
         i.setAL(0x00);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xaa, i.getAL());
         assertEquals(5, i.instructionsExecuted());

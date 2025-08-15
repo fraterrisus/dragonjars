@@ -17,10 +17,10 @@ class SubAXImmTest {
         if (wide) instructions.add((byte)((imm >> 8)& 0xff));
         instructions.add((byte)0x5a); // Exit
         final Chunk program = new Chunk(instructions);
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(wide);
         i.setAX(ax);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(2, i.instructionsExecuted(), "Wrong number of instructions");
         assertEquals(result, i.getAX(), "Incorrect result");

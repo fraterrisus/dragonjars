@@ -17,20 +17,20 @@ class LoadHeapOnesTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setWidth(true);
         i.setHeapBytes(0x48, 2, 0x0000);
-        i.start();
+        i.start(0, 0);
         assertEquals(0xffff, i.getHeapBytes(0x48, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setWidth(false);
         i.setHeapBytes(0x48, 2, 0x0000);
-        i.start();
+        i.start(0, 0);
         assertEquals(0x00ff, i.getHeapBytes(0x48, 2));
         assertEquals(2, i.instructionsExecuted());
     }

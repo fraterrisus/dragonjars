@@ -25,7 +25,7 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         i.setWidth(false);
         i.setDS(0x01);
         i.setAH(0xbb);
@@ -33,7 +33,7 @@ class StoreAXIndirectImmTest {
         i.setHeap(0x5b, 0x07);
         i.setHeap(0x5c, 0x00);
         i.setWidth(true);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xbbaa, i.readWord(0x01, 0x0a));
         assertEquals(2, i.instructionsExecuted());
@@ -47,14 +47,14 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         i.setWidth(false);
         i.setDS(0x01);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x07);
         i.setHeap(0x5c, 0x00);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00aa, i.readWord(0x01, 0x0a));
         assertEquals(2, i.instructionsExecuted());

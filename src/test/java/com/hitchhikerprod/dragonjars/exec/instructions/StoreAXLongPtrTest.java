@@ -28,7 +28,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data));
         i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -38,7 +38,7 @@ class StoreAXLongPtrTest {
         i.setHeap(0x5d, 0x02); // segment#
         i.setBL(0x03); // address offset
         i.setWidth(true);
-        i.start();
+        i.start(1, 1);
 
         assertEquals(0xbbaa, i.readWord(0x02, 0x06));
         assertEquals(2, i.instructionsExecuted());
@@ -52,7 +52,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data), 1, 1);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data));
         i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -61,7 +61,7 @@ class StoreAXLongPtrTest {
         i.setHeap(0x5c, 0x00); // address (hi)
         i.setHeap(0x5d, 0x02); // segment#
         i.setBL(0x03); // address offset
-        i.start();
+        i.start(1, 1);
 
         assertEquals(0x00aa, i.readWord(0x02, 0x06));
         assertEquals(2, i.instructionsExecuted());

@@ -31,10 +31,10 @@ class CmpAXImmTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(false);
         i.setAX(ax);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(carry, i.getCarryFlag(), "Carry flag is wrong"); // because 97 > 96 but carry is flipped
         assertEquals(sign, i.getSignFlag(), "Sign flag is wrong");

@@ -19,9 +19,9 @@ class LoopTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setBL(0x03); // runs loop four times
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xff, i.getBL());
         assertEquals(9, i.instructionsExecuted());
@@ -38,9 +38,9 @@ class LoopTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setBL(0x00);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x03, i.getBL());
         assertEquals(7, i.instructionsExecuted());

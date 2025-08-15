@@ -24,14 +24,14 @@ class StoreAXIndirectTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         i.setWidth(true);
         i.setDS(0x01);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x0001);
         i.setBL(0x04);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xbbaa, i.readWord(0x01, 0x05));
         assertEquals(2, i.instructionsExecuted());
@@ -45,7 +45,7 @@ class StoreAXIndirectTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
         i.setWidth(true);
         i.setDS(0x01);
         i.setAH(0xbb);
@@ -53,7 +53,7 @@ class StoreAXIndirectTest {
         i.setHeap(0x5b, 0x0001);
         i.setBL(0x04);
         i.setWidth(false);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00aa, i.readWord(0x01, 0x05));
         assertEquals(2, i.instructionsExecuted());

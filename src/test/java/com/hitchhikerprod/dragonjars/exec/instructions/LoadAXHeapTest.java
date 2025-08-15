@@ -18,12 +18,12 @@ class LoadAXHeapTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setAH(0xff);
         i.setAL(0xff);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0000bbaa, i.getAX());
         assertEquals(3, i.instructionsExecuted());
@@ -39,12 +39,12 @@ class LoadAXHeapTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setAH(0xff);
         i.setAL(0xff);
         i.setHeap(0x26, 0xaa);
         i.setHeap(0x27, 0xbb);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(3, i.instructionsExecuted());

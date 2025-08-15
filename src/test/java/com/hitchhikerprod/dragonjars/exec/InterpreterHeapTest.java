@@ -12,7 +12,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapNarrow() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(false);
         uut.setHeap(0x10, 0xffffffff);
         assertEquals(0x000000ff, uut.getHeapBytes(0x10, 1));
@@ -23,7 +23,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapWide() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapBytes(0x10, 1));
@@ -34,7 +34,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWord() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeapBytes(0x10, 2));
@@ -45,7 +45,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapNarrow() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         uut.setWidth(false);
@@ -54,7 +54,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapWide() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setHeap(0x10, 0xaabbccdd);
         assertEquals(0x0000ccdd, uut.getHeap(0x10));
@@ -62,7 +62,7 @@ class InterpreterHeapTest {
 
     @Test
     public void setHeapMasksAddress() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(true);
         uut.setHeap(0xff10, 0xaabbccdd);
         assertEquals(0x000000dd, uut.getHeapBytes(0x10, 1));
@@ -73,7 +73,7 @@ class InterpreterHeapTest {
 
     @Test
     public void getHeapBytes() {
-        final Interpreter uut = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter uut = new Interpreter(null, List.of(EMPTY));
         uut.setWidth(false);
         uut.setHeap(0x10, 0xaa);
         uut.setHeap(0x11, 0xbb);

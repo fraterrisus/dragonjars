@@ -19,11 +19,11 @@ class GetSegmentSizeTest {
 
         final Chunk data = new Chunk(new byte[0x135]);
 
-        final Interpreter i = new Interpreter(null, List.of(program, data), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program, data));
         i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setWidth(true);
         i.setAL(0x0001);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x0135, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

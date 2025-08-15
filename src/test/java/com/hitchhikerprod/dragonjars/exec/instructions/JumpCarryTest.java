@@ -21,10 +21,10 @@ class JumpCarryTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setAL(0x00);
         i.push(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00, i.getAL());
         assertEquals(4, i.instructionsExecuted());
@@ -42,10 +42,10 @@ class JumpCarryTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setAL(0x00);
         i.push(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xff, i.getAL());
         assertEquals(5, i.instructionsExecuted());

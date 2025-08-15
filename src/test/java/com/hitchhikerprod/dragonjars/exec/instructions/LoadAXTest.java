@@ -24,11 +24,11 @@ public class LoadAXTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA), 0, 1);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setDS(0x01);
-        i.start();
+        i.start(0, 1);
 
         assertEquals(0x0000bbaa, i.getAX());
         assertEquals(2, i.instructionsExecuted());
@@ -36,12 +36,12 @@ public class LoadAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA), 0, 1);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setDS(0x1);
         i.setWidth(false);
-        i.start();
+        i.start(0, 1);
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(2, i.instructionsExecuted());

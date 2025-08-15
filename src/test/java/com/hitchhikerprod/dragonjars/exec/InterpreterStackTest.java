@@ -12,7 +12,7 @@ public class InterpreterStackTest {
 
     @Test
     public void roundTrip() {
-        final Interpreter i = new Interpreter(null, List.of(EMPTY), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(EMPTY));
         i.push(0xffff);
         final int value = i.pop();
         assertEquals(0xff, value);

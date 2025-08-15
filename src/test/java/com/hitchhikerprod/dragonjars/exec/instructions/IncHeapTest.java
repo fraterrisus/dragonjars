@@ -17,12 +17,12 @@ class IncHeapTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setHeap(0x74, 0xff);
         i.setHeap(0x75, 0x01);
         i.setWidth(true);
 
-        i.start();
+        i.start(0, 0);
 
         i.setWidth(false);
         assertEquals(0x00, i.getHeap(0x74));
@@ -33,11 +33,11 @@ class IncHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setHeap(0x74, 0xff);
         i.setHeap(0x75, 0x01);
 
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00, i.getHeap(0x74));
         assertEquals(0x01, i.getHeap(0x75));

@@ -17,13 +17,13 @@ public class OrAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setHeap(0x1a, 0x5a);
         i.setHeap(0x1b, 0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xffff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -37,13 +37,13 @@ public class OrAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(false);
         i.setHeap(0x1a, 0x5a);
         i.setHeap(0x1b, 0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x00ff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -58,11 +58,11 @@ public class OrAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xffff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -76,11 +76,11 @@ public class OrAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(false);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x3cff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

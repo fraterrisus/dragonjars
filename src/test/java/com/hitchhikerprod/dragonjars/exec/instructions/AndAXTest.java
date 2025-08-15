@@ -17,13 +17,13 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(false);
         i.setHeap(0x1a, 0x7c);
         i.setHeap(0x1b, 0x81);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x817c, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -37,11 +37,11 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(false);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xff77, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -56,11 +56,11 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(program));
         i.setWidth(true);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0x7777, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

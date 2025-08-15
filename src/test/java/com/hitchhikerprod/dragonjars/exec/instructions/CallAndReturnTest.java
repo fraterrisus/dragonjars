@@ -22,9 +22,9 @@ class CallAndReturnTest {
 
     @Test
     public void roundTrip() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM), 0, 0);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
         i.setAL(0x00);
-        i.start();
+        i.start(0, 0);
 
         assertEquals(0xff, i.getAL());
         assertEquals(5, i.instructionsExecuted());
