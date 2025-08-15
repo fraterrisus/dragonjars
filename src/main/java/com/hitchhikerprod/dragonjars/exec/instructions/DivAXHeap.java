@@ -11,9 +11,14 @@ public class DivAXHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
         final int op1 = i.getHeapBytes(heapIndex, 4);
+        i.setMulResult(op1); // 0x3dae
         final int op2 = i.getAX(true);
-        i.setHeapBytes(0x37, 4, op1 / op2);
-        i.setHeapBytes(0x3b, 2, op1 % op2);
+        final int divResult = op1 / op2;
+        final int modResult = op1 % op2;
+        i.setMulResult(divResult);
+        i.setDivResult(modResult);
+        i.setHeapBytes(0x37, 4, divResult);
+        i.setHeapBytes(0x3b, 2, modResult);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

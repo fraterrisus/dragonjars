@@ -11,7 +11,9 @@ public class MulAXHeap implements Instruction {
         final int heapIndex = i.readByte(ip.incr(1));
         final int op1 = i.getHeapBytes(heapIndex, 4);
         final int op2 = i.getAX(true);
-        i.setHeapBytes(0x37, 4, op1 * op2);
+        final int result = op1 * op2;
+        i.setMulResult(result);
+        i.setHeapBytes(0x37, 4, result);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

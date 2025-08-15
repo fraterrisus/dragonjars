@@ -14,8 +14,12 @@ public class DivAXImm implements Instruction {
         final Address ip = i.getIP();
         final int op2 = (i.isWide()) ? i.readWord(ip.incr(1)) : i.readByte(ip.incr(1));
         final int op1 = i.getAX(true);
-        i.setHeapBytes(0x37, 4, op1 / op2);
-        i.setHeapBytes(0x3b, 2, op1 % op2);
+        final int divResult = op1 / op2;
+        final int modResult = op1 % op2;
+        i.setMulResult(divResult);
+        i.setDivResult(modResult);
+        i.setHeapBytes(0x37, 4, divResult);
+        i.setHeapBytes(0x3b, 2, modResult);
         return ip.incr(OPCODE + wordSize(i));
     }
 }

@@ -7,6 +7,7 @@ import javafx.scene.input.KeyCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
@@ -128,5 +129,12 @@ public class Instructions {
         return switch(code) {
             default -> KeyCode.valueOf(String.valueOf((char)(code & 0x7f)));
         };
+    }
+
+    public static Address printNumber(Interpreter i, int val) {
+        i.drawString(String.valueOf(val).chars()
+                .map(ch -> ch | 0x80)
+                .boxed().toList());
+        return i.getIP().incr(OPCODE);
     }
 }

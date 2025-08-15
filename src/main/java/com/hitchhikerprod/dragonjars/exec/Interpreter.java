@@ -47,6 +47,9 @@ public class Interpreter {
     private final int[] heap = new int[256];
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
+    private int mul_result; // 0x1166:4
+    private int div_result; // 0x116a:4
+
     private int draw_borders; // 0x253e
     private int bbox_x0; // 0x2547 (ch)
     private int bbox_y0; // 0x2549 (px)
@@ -57,10 +60,10 @@ public class Interpreter {
     private List<Integer> string_313e = new ArrayList<>();
     private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
 
-    private int x_3166;
-    private int y_3168;
-    private int x_31ed; // default for draw_char
-    private int y_31ef; // default for draw_char
+    public int x_3166;
+    public int y_3168;
+    public int x_31ed; // default for draw_char
+    public int y_31ef; // default for draw_char
 
     private int mem_342f = 0x00;
     private int mem_3430 = 0x00;
@@ -234,6 +237,12 @@ public class Interpreter {
         }
     }
 
+    public record Rectangle(int x0, int x1, int y0, int y1) {}
+
+    public Rectangle getBBox() {
+        return new Rectangle(bbox_x0, bbox_y0, bbox_x1, bbox_y1);
+    }
+
     public void setBBox(int x0, int x1, int y0, int y1) {
         bbox_x0 = x0;
         bbox_y0 = y0;
@@ -253,6 +262,22 @@ public class Interpreter {
         bbox_y0 = bbox_y0 + 8;
         bbox_x1 = bbox_x1 - 1;
         bbox_x0 = bbox_x0 + 1;
+    }
+
+    public int getMulResult() {
+        return mul_result;
+    }
+
+    public void setMulResult(int mulResult) {
+        this.mul_result = mulResult;
+    }
+
+    public int getDivResult() {
+        return div_result;
+    }
+
+    public void setDivResult(int divResult) {
+        this.div_result = divResult;
     }
 
     public boolean getCarryFlag() {
@@ -965,9 +990,9 @@ public class Interpreter {
             case 0x5c -> new RecurseOverParty();
             case 0x5d -> new LoadAXPartyAttribute();
             case 0x5e -> new StoreAXPartyAttribute();
-            // case 0x5f -> new SetPartyFlag();
-            // case 0x60 -> new ClearPartyFlag();
-            // case 0x61 -> new TestPartyFlag();
+            case 0x5f -> new SetPartyFlag();
+            case 0x60 -> new ClearPartyFlag();
+            case 0x61 -> new TestPartyFlag();
             // case 0x62 -> new SearchPartyFlag();
             // case 0x63 -> new RecurseOverInventory();
             // case 0x64 -> new PickUpItem();
@@ -999,10 +1024,10 @@ public class Interpreter {
             // case 0x7e -> new IndirectCharItem();
             // case 0x7f -> new IndirectString();
             case 0x80 -> new IndentAX();
-            // case 0x81 -> new PrintAX4d(); // 4-digit number
-            // case 0x82 -> new PrintHeap9d(); // 9-digit number
+            case 0x81 -> (i) -> Instructions.printNumber(i, i.getAX(true)); // print 4d number
+            case 0x82 -> (i) -> Instructions.printNumber(i, i.getMulResult()); // print 9d number
             // case 0x83 -> new IndirectChar();
-            // case 0x84 -> new AllocateSegment();
+            // case 0x84 -> new AllocateSegment(); // should just be getSegmentForChunk() but the call pattern is weird
             case 0x85 -> new FreeSegmentAL();
             case 0x86 -> new LoadChunkAX();
             // case 0x87 -> new PersistChunk();
@@ -1019,7 +1044,7 @@ public class Interpreter {
             // case 0x92 -> new PauseUntilKeyOrTime();
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();
-            // case 0x95 -> new SetCursor();
+            case 0x95 -> new SetCursor();
             // case 0x96 -> new EraseLine();
             // case 0x97 -> new LoadAXPartyField();
             // case 0x98 -> new StoreAXPartyField();

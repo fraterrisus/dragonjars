@@ -10,7 +10,9 @@ public class MulAXImm implements Instruction {
         final Address ip = i.getIP();
         final int op1 = (i.isWide()) ? i.readWord(ip.incr(1)) : i.readByte(ip.incr(1));
         final int op2 = i.getAX(true);
-        i.setHeapBytes(0x37, 4, op1 * op2);
+        final int result = op1 * op2;
+        i.setMulResult(result);
+        i.setHeapBytes(0x37, 4, result);
         return ip.incr(OPCODE + wordSize(i));
     }
 }
