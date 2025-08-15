@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +36,6 @@ public class LongCallAndReturnTest {
 
         assertEquals(0xaa, i.getAL());
         assertEquals(5, i.instructionsExecuted());
-        assertEquals(new Address(0x00, 0x05), i.getIP());
+        assertEquals(new Address(i.getSegmentForChunk(0, Frob.CLEAN), 0x05), i.getIP());
     }
 }

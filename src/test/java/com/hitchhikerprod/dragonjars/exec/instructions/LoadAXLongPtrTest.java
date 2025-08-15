@@ -25,12 +25,11 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
-        i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.setHeap(0x34, 0x08); // segment offset lo
-        i.setHeap(0x35, 0x00); // segment offset hi
-        i.setHeap(0x36, 0x01); // segment ID
+        i.setHeapBytes(0x34, 2, 0x0008); // segment offset lo
+        i.setHeapBytes(0x36, 1, dataSegment); // segment ID
 
         i.start(0, 0);
 
@@ -54,12 +53,11 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
-        i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.setHeap(0x34, 0x08); // segment offset lo
-        i.setHeap(0x35, 0x00); // segment offset hi
-        i.setHeap(0x36, 0x01); // segment ID
+        i.setHeapBytes(0x34, 2, 0x0008); // segment offset lo
+        i.setHeapBytes(0x36, 1, dataSegment); // segment ID
 
         i.start(0, 0);
 
