@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
+import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
@@ -26,6 +27,8 @@ public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
     private static final int MASK_HIGH = 0x0000ff00;
     private static final int MASK_WORD = 0x0000ffff;
+
+    public static final int PARTY_SEGMENT = 1;
 
     private final DragonWarsApp app;
 
@@ -426,7 +429,20 @@ public class Interpreter {
     public void writeByte(Address addr, int value) {
         writeByte(addr.segment(), addr.offset(), value);
     }
-    
+
+    public void writeData(int segmentId, int offset, int size, int value) {
+        int v = value;
+        final ModifiableChunk chunk = Objects.requireNonNull(segments.get(segmentId));
+        for (int i = 0; i < size; i++) {
+            chunk.setByte(offset + i, v & 0xff);
+            v = v >> 8;
+        }
+    }
+
+    public void writeData(Address addr, int size, int value) {
+        writeData(addr.segment(), addr.offset(), size, value);
+    }
+
     public void writeWord(int segmentId, int offset, int value) {
         final ModifiableChunk c = Objects.requireNonNull(segments.get(segmentId));
         c.setWord(offset, value);
@@ -477,7 +493,7 @@ public class Interpreter {
     public void drawStringAndResetBBox() {
         drawString313e();
         if (draw_borders != 0x00) {
-            drawHudBorders();
+            drawHud();
         }
         draw_borders = 0x00;
         setBBox(0x01, 0x27, 0x98, 0xb8);
@@ -487,7 +503,7 @@ public class Interpreter {
 
     public void drawString313e() {
         for (int i = 0; i < strlen_313c; i++) {
-            lowLevelDrawChar(string_313e.get(i), x_31ed * 8, y_31ef, false);
+            lowLevelDrawChar(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
             x_31ed += 8;
         }
         strlen_313c = 0;
@@ -500,11 +516,6 @@ public class Interpreter {
         x_3166 = bbox_x0;
         y_31ef = bbox_y0;
         strlen_313c = 0;
-    }
-
-    public void setCharCoordinates(int x, int y) {
-        this.x_31ed = x;
-        this.y_31ef = y;
     }
 
     public void setBackground() {
@@ -585,7 +596,7 @@ public class Interpreter {
         }
     }
 
-    public void drawHudBorders() {
+    public void drawHud() {
         draw_borders = 0x00;
         for (int regionId = 0; regionId < 14; regionId++) {
             if (boundsCheck(regionId)) {
@@ -634,9 +645,12 @@ public class Interpreter {
 
         // set the indirect function to draw_char()
 
-        for (int charId = 6; charId >= 0; charId--) {
+        for (int charId = 0; charId < 7; charId++) {
+            // Assembly loops in the other direction, but our bar-drawing code needs to go this way
+            // to avoid mishaps with the black pixels between bars.
             int ax = getHeapBytes(0x18 + charId, 1);
             if ((ax & 0x80) > 0) continue;
+            ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, ax);
             setHeapBytes(0x18 + charId, 1, 0xff);
         }
@@ -648,19 +662,19 @@ public class Interpreter {
 
     private void drawCharacterInfo(int charId, int flag) {
         // input flag is either 0x10 or 0x01
-        final int simpleFlag = flag & 0x0f; // either 0 or 1
+        // final int simpleFlag = flag & 0x0f; // either 0 or 1
         setBackground(flag);
 
-        int y0 = (charId << 4) + 0x20;
-        int x0 = 0x1b;
+        y_31ef = (charId << 4) + 0x20;
+        x_31ed = 0x1b;
 
         final int charsInParty = getHeapBytes(0x1f, 1);
         if (charId >= charsInParty) {
             getImageWriter(writer -> {
                 final int black = Images.convertColorIndex(0);
-                for (int y = y0; y < y0 + 0x10; y++) {
-                    for (int x = x0 * 8; x < 0x27 * 8; x++) {
-                        writer.setArgb(x, y, black);
+                for (int dy = 0; dy < 0x10; dy++) {
+                    for (int x = x_31ed * 8; x < 0x27 * 8; x++) {
+                        writer.setArgb(x, y_31ef + dy, black);
                     }
                 }
             });
@@ -668,13 +682,68 @@ public class Interpreter {
             return;
         }
 
-        final int charBaseAddress = getCharBaseAddress(charId);
-        // TODO after we get party data loaded somewhere useful
+        final int charBaseAddress = getHeapBytes(0x0a + charId, 1) << 8;
+
+        final List<Integer> nameCh = new ArrayList<>();
+        int pointer = charBaseAddress;
+        int ch = 0x80;
+        while ((ch & 0x80) > 0) {
+            ch = readData(PARTY_SEGMENT, pointer, 1);
+            nameCh.add(ch);
+            pointer++;
+        }
+        int limit = 0x1b + ((0x0d - nameCh.size()) >> 1);
+        while (x_31ed < limit) drawString(List.of(0xa0));
+        drawString(nameCh);
+        while (x_31ed < 0x27) drawString(List.of(0xa0));
+
+        x_31ed = 0x1b;
+
+        final int statuses = readData(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
+        boolean drawBars = true;
+        for (int i = 3; i >= 0; i--) {
+            final int mask = codeChunk.getUnsignedByte(0x1a61 + i);
+            if ((statuses & mask) > 0) {
+                drawBars = false;
+                final int wordAddress = codeChunk.getData(0x1a69 + (2 * i), 2) - 0x100;
+                final int xOffset = codeChunk.getUnsignedByte(0x1a65 + i);
+                final StringDecoder sd = new StringDecoder(codeChunk);
+                sd.decodeString(wordAddress);
+                final List<Integer> chars = new ArrayList<>();
+                chars.add(0xe9); // 'i'
+                chars.add(0xf3); // 's'
+                chars.add(0xa0); // ' '
+                chars.addAll(sd.getDecodedChars());
+                y_31ef += 8;
+                while (x_31ed < xOffset) drawString(List.of(0xa0));
+                drawString(chars);
+                while (x_31ed < 0x27) drawString(List.of(0xa0));
+                break;
+            }
+        }
+
+        if (drawBars) {
+            drawBarHelper(0x08, charBaseAddress + 0x14, 12);
+            drawBarHelper(0x0b, charBaseAddress + 0x18, 10);
+            drawBarHelper(0x0e, charBaseAddress + 0x1c, 9);
+        }
+
+        setBackground();
     }
 
-    private int getCharBaseAddress(int charId) {
-        final int orderId = getHeapBytes(0x0a + charId, 1);
-        return 0xc3a0 + (orderId << 8);
+    private void drawBarHelper(int y, int attributeAddr, int color) {
+        getImageWriter(writer -> {
+            final int cur = readData(PARTY_SEGMENT, attributeAddr, 2);
+            final int max = readData(PARTY_SEGMENT, attributeAddr + 2, 2);
+            final int barWidth = 0x60 * cur / max;
+            final int black = Images.convertColorIndex(0);
+            final int colorValue = Images.convertColorIndex(color);
+            for (int dx = 0; dx < barWidth; dx++) {
+                writer.setArgb((x_31ed * 8) + dx, y_31ef + y, colorValue);
+                writer.setArgb((x_31ed * 8) + dx, y_31ef + y + 1, colorValue);
+                writer.setArgb((x_31ed * 8) + dx, y_31ef + y + 2, black);
+            }
+        });
     }
 
     public void setTitleString(List<Integer> chars) {

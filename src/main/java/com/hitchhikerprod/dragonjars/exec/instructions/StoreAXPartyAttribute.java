@@ -10,11 +10,7 @@ public class StoreAXPartyAttribute implements Instruction {
         final int charId = i.getHeapBytes(0x06, 1);
         final int attributeOffset = i.readByte(ip.incr(1));
         final int address = (charId << 8) | attributeOffset;
-        if (i.isWide()) {
-            i.getSegment(1).setWord(address, i.getAX());
-        } else {
-            i.getSegment(1).setByte(address, i.getAL());
-        }
+        i.writeData(Interpreter.PARTY_SEGMENT, address, (i.isWide()) ? 2 : 1, i.getAX());
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

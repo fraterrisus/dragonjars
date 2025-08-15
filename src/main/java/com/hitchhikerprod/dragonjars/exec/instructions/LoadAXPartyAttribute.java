@@ -10,7 +10,7 @@ public class LoadAXPartyAttribute implements Instruction {
         final int charId = i.getHeapBytes(0x06, 1);
         final int attributeOffset = i.readByte(ip.incr(1));
         final int address = (charId << 8) | attributeOffset;
-        final int value = i.getSegment(1).getWord(address);
+        final int value = i.readData(Interpreter.PARTY_SEGMENT, address, 2);
         i.setAX(value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
