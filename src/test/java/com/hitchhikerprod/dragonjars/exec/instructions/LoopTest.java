@@ -19,7 +19,7 @@ class LoopTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x03); // runs loop four times
         i.start(0, 0);
 
@@ -38,7 +38,7 @@ class LoopTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x00);
         i.start(0, 0);
 

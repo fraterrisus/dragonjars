@@ -9,14 +9,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AddAXHeapTest {
-    private void helper(boolean wide, int ax, int heap, int total, boolean carryOut) {
-        final Chunk program = new Chunk(List.of(
-                (byte)0x2f, // AddAXHeap
-                (byte)0x81, // heapIndex
-                (byte)0x5a  // Exit
-        ));
+    private static final Chunk CODE = new Chunk(List.of());
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+    private static final Chunk PROGRAM = new Chunk(List.of(
+            (byte)0x2f, // AddAXHeap
+            (byte)0x81, // heapIndex
+            (byte)0x5a  // Exit
+    ));
+
+    private void helper(boolean wide, int ax, int heap, int total, boolean carryOut) {
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
         i.setWidth(wide);
         i.setAX(ax);
         i.setHeap(0x81, heap);
@@ -25,7 +27,7 @@ class AddAXHeapTest {
         assertEquals(carryOut, i.getCarryFlag());
         assertEquals(total, i.getAX());
         assertEquals(2, i.instructionsExecuted());
-        assertEquals(program.getSize() - 1, i.getIP().offset());
+        assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }
 
     @Test

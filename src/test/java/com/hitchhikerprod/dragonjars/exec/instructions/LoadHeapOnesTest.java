@@ -17,7 +17,7 @@ class LoadHeapOnesTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setHeapBytes(0x48, 2, 0x0000);
         i.start(0, 0);
@@ -27,7 +27,7 @@ class LoadHeapOnesTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeapBytes(0x48, 2, 0x0000);
         i.start(0, 0);

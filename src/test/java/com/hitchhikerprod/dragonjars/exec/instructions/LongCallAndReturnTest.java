@@ -29,7 +29,7 @@ public class LongCallAndReturnTest {
 
     @Test
     public void roundTrip() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM_1, PROGRAM_2));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM_1, PROGRAM_2, Chunk.EMPTY)).init();
         i.setAL(0x00);
         i.start(0, 0);
 

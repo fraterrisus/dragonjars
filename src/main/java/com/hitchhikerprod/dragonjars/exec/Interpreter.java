@@ -87,8 +87,8 @@ public class Interpreter {
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
-        this.dataChunks = dataChunks;
-        this.codeChunk = dataChunks.removeLast();
+        this.dataChunks = dataChunks.subList(0, dataChunks.size() - 1);
+        this.codeChunk = dataChunks.getLast();
         this.width = false;
         this.ax = 0;
         this.bx = 0;
@@ -99,8 +99,10 @@ public class Interpreter {
         this.decoder = new RomImageDecoder(this.codeChunk);
     }
 
-    public void start(int chunk, int addr) {
-        loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
+    public Interpreter init() {
+        final boolean testMode = Objects.isNull(app);
+
+        if (!testMode) loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
 
         // cs:0150  ax <- 0x0000
         // cs:0155  heap[0x00..0x7f] <- 0x00
@@ -138,22 +140,32 @@ public class Interpreter {
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
         //   but it also includes:
-        drawGameplayCorners();
+        if (!testMode) drawGameplayCorners();
 
         setBBox(0x01, 0x27, 0x08, 0xb8);
-        draw_borders = 0xff;
+        if (!testMode) draw_borders = 0xff;
         drawStringAndResetBBox();
 
         this.instructionsExecuted = 0;
         // [width] <- 0x00
         // [3923] <- 0x00
 
+        return this; // for call chaining
+    }
+
+    /**
+     * Start the interpreter from the provided chunk ID (NOT segment) and address.
+     */
+    public void start(int chunk, int addr) {
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
     }
 
-    public void restart(Address startPoint) {
+    /**
+     * Start the interpreter from the provided Address, which contains a segment/address pair.
+     */
+    public void start(Address startPoint) {
         System.out.println("** restart");
         mainLoop(startPoint);
     }
@@ -558,16 +570,9 @@ public class Interpreter {
         }
     }
 
-    private void getImageWriter(Consumer<PixelWriter> fn) {
-        final Image image = RootWindow.getInstance().getImage();
-        if (image instanceof WritableImage wimage) {
-            final PixelWriter writer = wimage.getPixelWriter();
-            fn.accept(writer);
-        }
-    }
-
     public void drawGameplayCorners() {
-        // TODO: we only need to build this buffer once and make it static, really.
+        // TODO: refactor this
+        // we only need to build this buffer once and make it static, really.
         getImageWriter(writer -> {
             final int[] buffer = new int[0x3e80];
             for (int i = 3; i >= 0; i--) {
@@ -665,8 +670,8 @@ public class Interpreter {
         // final int simpleFlag = flag & 0x0f; // either 0 or 1
         setBackground(flag);
 
-        y_31ef = (charId << 4) + 0x20;
         x_31ed = 0x1b;
+        y_31ef = (charId << 4) + 0x20;
 
         final int charsInParty = getHeapBytes(0x1f, 1);
         if (charId >= charsInParty) {
@@ -684,6 +689,39 @@ public class Interpreter {
 
         final int charBaseAddress = getHeapBytes(0x0a + charId, 1) << 8;
 
+        final List<Integer> nameCh = getCharacterName(charBaseAddress);
+        indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));
+        drawString(nameCh);
+        indentTo(0x27);
+
+        x_31ed = 0x1b;
+
+        final int statuses = readData(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
+        for (int i = 3; i >= 0; i--) {
+            final int mask = codeChunk.getUnsignedByte(0x1a61 + i);
+            if ((statuses & mask) > 0) {
+                drawStatusHelper(i);
+                setBackground();
+                return;
+            }
+        }
+
+        drawBarHelper(0x08, charBaseAddress + 0x14, 12);
+        drawBarHelper(0x0b, charBaseAddress + 0x18, 10);
+        drawBarHelper(0x0e, charBaseAddress + 0x1c, 9);
+
+        setBackground();
+    }
+
+    public void indentFromBbox(int dx) {
+        indentTo(bbox_x0 + dx);
+    }
+
+    private void indentTo(int limit) {
+        while (x_31ed < limit) drawString(List.of(0xa0));
+    }
+
+    private List<Integer> getCharacterName(int charBaseAddress) {
         final List<Integer> nameCh = new ArrayList<>();
         int pointer = charBaseAddress;
         int ch = 0x80;
@@ -692,43 +730,23 @@ public class Interpreter {
             nameCh.add(ch);
             pointer++;
         }
-        int limit = 0x1b + ((0x0d - nameCh.size()) >> 1);
-        while (x_31ed < limit) drawString(List.of(0xa0));
-        drawString(nameCh);
-        while (x_31ed < 0x27) drawString(List.of(0xa0));
+        return nameCh;
+    }
 
-        x_31ed = 0x1b;
-
-        final int statuses = readData(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
-        boolean drawBars = true;
-        for (int i = 3; i >= 0; i--) {
-            final int mask = codeChunk.getUnsignedByte(0x1a61 + i);
-            if ((statuses & mask) > 0) {
-                drawBars = false;
-                final int wordAddress = codeChunk.getData(0x1a69 + (2 * i), 2) - 0x100;
-                final int xOffset = codeChunk.getUnsignedByte(0x1a65 + i);
-                final StringDecoder sd = new StringDecoder(codeChunk);
-                sd.decodeString(wordAddress);
-                final List<Integer> chars = new ArrayList<>();
-                chars.add(0xe9); // 'i'
-                chars.add(0xf3); // 's'
-                chars.add(0xa0); // ' '
-                chars.addAll(sd.getDecodedChars());
-                y_31ef += 8;
-                while (x_31ed < xOffset) drawString(List.of(0xa0));
-                drawString(chars);
-                while (x_31ed < 0x27) drawString(List.of(0xa0));
-                break;
-            }
-        }
-
-        if (drawBars) {
-            drawBarHelper(0x08, charBaseAddress + 0x14, 12);
-            drawBarHelper(0x0b, charBaseAddress + 0x18, 10);
-            drawBarHelper(0x0e, charBaseAddress + 0x1c, 9);
-        }
-
-        setBackground();
+    private void drawStatusHelper(int i) {
+        final int wordAddress = codeChunk.getData(0x1a69 + (2 * i), 2) - 0x100;
+        final int xOffset = codeChunk.getUnsignedByte(0x1a65 + i);
+        final StringDecoder sd = new StringDecoder(codeChunk);
+        sd.decodeString(wordAddress);
+        final List<Integer> chars = new ArrayList<>();
+        chars.add(0xe9); // 'i'
+        chars.add(0xf3); // 's'
+        chars.add(0xa0); // ' '
+        chars.addAll(sd.getDecodedChars());
+        y_31ef += 8;
+        indentTo(xOffset);
+        drawString(chars);
+        indentTo(0x27);
     }
 
     private void drawBarHelper(int y, int attributeAddr, int color) {
@@ -825,13 +843,13 @@ public class Interpreter {
         final EventHandler<KeyEvent> keyHandler = event -> {
             for (KeyCode code : prompts.keySet()) {
                 if (event.getCode() == code) {
-                    this.restart(prompts.get(code));
+                    this.start(prompts.get(code));
                 }
             }
         };
         app.setKeyHandler(keyHandler);
     }
-    
+
     private int byteToInt(byte b) {
         return MASK_LOW & ((int) b);
     }
@@ -839,7 +857,15 @@ public class Interpreter {
     private byte intToByte(int i) {
         return (byte)(i & MASK_LOW);
     }
-    
+
+    private void getImageWriter(Consumer<PixelWriter> fn) {
+        final Image image = RootWindow.getInstance().getImage();
+        if (image instanceof WritableImage wimage) {
+            final PixelWriter writer = wimage.getPixelWriter();
+            fn.accept(writer);
+        }
+    }
+
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instructions.SET_WIDE;
@@ -972,7 +998,7 @@ public class Interpreter {
             // case 0x7d -> new IndirectCharName();
             // case 0x7e -> new IndirectCharItem();
             // case 0x7f -> new IndirectString();
-            // case 0x80 -> new Indent();
+            case 0x80 -> new IndentAX();
             // case 0x81 -> new PrintAX4d(); // 4-digit number
             // case 0x82 -> new PrintHeap9d(); // 9-digit number
             // case 0x83 -> new IndirectChar();
@@ -983,7 +1009,7 @@ public class Interpreter {
             // case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
-            // case 0x8b -> new DrawCurrentViewport();
+            // case 0x8b -> new DrawCurrentViewport(); // FIXME
             // case 0x8c -> new ShowYesNoModal();
             // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instructions.NOOP;
@@ -1004,7 +1030,7 @@ public class Interpreter {
             case 0x9d -> new FlagTestImm();
             case 0x9e -> new GetSegmentSize();
             // case 0x9f -> new YouWin();
-            default -> throw new IllegalArgumentException("Unknown opcode " + opcode);
+            default -> throw new IllegalArgumentException("Unimplemented opcode " + opcode);
         };
     }
 }

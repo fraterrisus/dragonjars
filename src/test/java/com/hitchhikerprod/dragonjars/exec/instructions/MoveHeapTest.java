@@ -18,7 +18,7 @@ class MoveHeapTest {
                 (byte)0x18, // write index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setHeap(0x3a, 0x1234);
 
@@ -38,7 +38,7 @@ class MoveHeapTest {
                 (byte)0x18, // write index
                 (byte)0x5a  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setHeap(0x3a, 0x1234);
 

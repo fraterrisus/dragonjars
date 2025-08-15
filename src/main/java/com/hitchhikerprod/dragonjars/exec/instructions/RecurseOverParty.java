@@ -16,7 +16,7 @@ public class RecurseOverParty implements Instruction {
             final int save_heap06 = i.getHeapBytes(0x06, 1);
             for (int charId = 0; charId < partySize; charId++) {
                 i.setHeapBytes(0x06, 1, charId);
-                i.restart(new Address(ip.segment(), funcPtr));
+                i.start(new Address(ip.segment(), funcPtr));
             }
             i.setHeapBytes(0x06, 1, save_heap06);
         }

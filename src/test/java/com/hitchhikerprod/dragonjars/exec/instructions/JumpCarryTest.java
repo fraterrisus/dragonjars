@@ -14,14 +14,14 @@ class JumpCarryTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x01, // SetNarrow
                 (byte)0x4b, // SetCarry
-                (byte)0x41, // JumpCarry
+                (byte)0x42, // JumpCarry
                 (byte)0x06, //   target (lo)
                 (byte)0x00, //   target (hi)
                 (byte)0x55, // PopAX (skipped over)
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL(0x00);
         i.push(0xff);
         i.start(0, 0);
@@ -35,14 +35,14 @@ class JumpCarryTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x01, // SetNarrow
                 (byte)0x4c, // ClearCarry
-                (byte)0x41, // JumpCarry
+                (byte)0x42, // JumpCarry
                 (byte)0x06, //   target (lo)
                 (byte)0x00, //   target (hi)
                 (byte)0x55, // PopAX
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL(0x00);
         i.push(0xff);
         i.start(0, 0);

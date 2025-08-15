@@ -21,7 +21,7 @@ class TestValueTest {
     ));
 
     private void heapHelper(boolean width, int heap, boolean zero, boolean sign) {
-        final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(width);
         i.setHeapBytes(0x1a, 2, heap);
         i.start(0, 0);
@@ -32,7 +32,7 @@ class TestValueTest {
     }
 
     private void axHelper(boolean width, int ax, boolean zero, boolean sign) {
-        final Interpreter i = new Interpreter(null, List.of(AX_PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(AX_PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(width);
         i.setAX(ax, true);
         i.start(0, 0);

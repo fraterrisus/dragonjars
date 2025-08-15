@@ -18,8 +18,6 @@ class StoreAXLongPtrTest {
             (byte) 0x5a  // Exit
     ));
 
-    private static final Chunk EMPTY = new Chunk(List.of());
-
     @Test
     public void wide() {
         final ModifiableChunk data = new ModifiableChunk(List.of(
@@ -28,7 +26,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data));
+        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY)).init();
         i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -52,7 +50,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(EMPTY, PROGRAM, data));
+        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY)).init();
         i.getSegmentForChunk(0x02, Frob.CLEAN);
         i.setWidth(false);
         i.setAH(0xbb);

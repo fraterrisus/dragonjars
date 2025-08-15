@@ -17,7 +17,7 @@ class DecHeapTest {
 
     @Test
     public void wideUnderflow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeap(0xaa, 0x00);
         i.setHeap(0xab, 0x01);
@@ -32,7 +32,7 @@ class DecHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeap(0xaa, 0x16);
         i.setHeap(0xab, 0xff);
@@ -45,7 +45,7 @@ class DecHeapTest {
 
     @Test
     public void narrowUnderflow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeap(0xaa, 0x00);
         i.setHeap(0xab, 0x01);

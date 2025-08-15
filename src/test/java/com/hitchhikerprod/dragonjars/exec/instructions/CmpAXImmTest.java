@@ -31,7 +31,7 @@ class CmpAXImmTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setAX(ax);
         i.start(0, 0);

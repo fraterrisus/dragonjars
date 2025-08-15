@@ -24,7 +24,7 @@ public class LoadAXLongPtrTest {
                 (byte)0xaa, (byte)0xbb, (byte)0xcc, (byte)0xdd,
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
-        final Interpreter i = new Interpreter(null, List.of(program, data));
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
         i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
@@ -53,7 +53,7 @@ public class LoadAXLongPtrTest {
                 (byte)0xaa, (byte)0xbb, (byte)0xcc, (byte)0xdd,
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
-        final Interpreter i = new Interpreter(null, List.of(program, data));
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
         i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);

@@ -17,7 +17,7 @@ class PushAXTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(true);
@@ -30,7 +30,7 @@ class PushAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(false);

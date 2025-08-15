@@ -17,7 +17,7 @@ public class XorAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setHeap(0x1a, 0xff);
         i.setHeap(0x1b, 0xff);
@@ -37,7 +37,7 @@ public class XorAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeap(0x1a, 0x5a);
         i.setHeap(0x1b, 0xc3);
@@ -58,7 +58,7 @@ public class XorAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setAL(0xa5);
         i.setAH(0x3c);
@@ -76,7 +76,7 @@ public class XorAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setAL(0xa5);
         i.setAH(0x3c);

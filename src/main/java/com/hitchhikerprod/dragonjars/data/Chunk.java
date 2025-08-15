@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Chunk {
+    public static final Chunk EMPTY = new Chunk(List.of());
+
     final List<Byte> raw;
 
     public Chunk(List<Byte> raw) {

@@ -17,7 +17,7 @@ class SubAXImmTest {
         if (wide) instructions.add((byte)((imm >> 8)& 0xff));
         instructions.add((byte)0x5a); // Exit
         final Chunk program = new Chunk(instructions);
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(wide);
         i.setAX(ax);
         i.start(0, 0);

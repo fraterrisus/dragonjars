@@ -155,7 +155,7 @@ public class DragonWarsApp extends Application {
         setKeyHandler(null);
         RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
         this.stage.sizeToScene();
-        new Interpreter(this, this.dataChunks).start(0, 0);
+        new Interpreter(this, this.dataChunks).init().start(0, 0);
     }
 
     private void testPattern() {
@@ -163,7 +163,7 @@ public class DragonWarsApp extends Application {
         RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
         this.stage.sizeToScene();
         final Interpreter interp = new Interpreter(this, this.dataChunks);
-        interp.start(0, 0);
+        //interp.init().start(0, 0);
 
         interp.drawString("Test Pattern", 14, 0, true);
         interp.drawString("Press Q to exit", 13, 24, true);

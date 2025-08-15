@@ -94,10 +94,10 @@ class ShiftTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         i.setHeap(0x03, 0x4181);
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 0010 0000 1100 0000
@@ -113,11 +113,11 @@ class ShiftTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
         i.setHeap(0x03, 0x81);
         i.setHeap(0x04, 0x41);
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001  bit[8] is shifted to [7], but the high byte
         // new: 0100 0001 1100 0000  doesn't get written back
@@ -133,10 +133,10 @@ class ShiftTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         i.setHeap(0x03, 0x4181);
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 1000 0011 0000 0010
@@ -152,11 +152,11 @@ class ShiftTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
         i.setHeap(0x03, 0xc1);
         i.setHeap(0x04, 0x41);
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         // old: 0100 0001 1100 0001
         // new: 0100 0001 1000 0010

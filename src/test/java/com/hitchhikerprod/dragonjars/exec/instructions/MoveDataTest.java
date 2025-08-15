@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -27,12 +28,13 @@ class MoveDataTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
-        i.setDS(0x01);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        i.setDS(dataSegment);
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0xbbaa, i.readWord(0x01, 0x06));
+        assertEquals(0xbbaa, i.readWord(dataSegment, 0x06));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -44,12 +46,13 @@ class MoveDataTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
-        i.setDS(0x01);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        i.setDS(dataSegment);
         i.setWidth(false);
         i.start(0, 0);
 
-        assertEquals(0x00aa, i.readWord(0x01, 0x06));
+        assertEquals(0x00aa, i.readWord(dataSegment, 0x06));
         assertEquals(2, i.instructionsExecuted());
     }
 

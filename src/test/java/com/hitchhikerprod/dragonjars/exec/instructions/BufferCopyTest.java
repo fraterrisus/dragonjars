@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -18,17 +19,18 @@ class BufferCopyTest {
     public void fromBufferToChunk() {
         final Chunk data = new Chunk(new byte[0x700]);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
         for (int idx = 0; idx < 0x700; idx++) {
             i.writeBufferD1B0(idx, (int)(Math.random() * 0xff));
         }
-        i.setDS(0x01);
+        final int segmentId = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        i.setDS(segmentId);
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0x00);
         i.start(0, 0);
 
-        final Chunk newData = i.getSegment(0x01);
+        final Chunk newData = i.getSegment(segmentId);
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(i.readBufferD1B0(idx), newData.getUnsignedByte(idx),
@@ -45,8 +47,8 @@ class BufferCopyTest {
         }
         final Chunk data = new Chunk(rawBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
-        i.setDS(0x01);
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        i.setDS(i.getSegmentForChunk(0x01, Frob.CLEAN));
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0xff);

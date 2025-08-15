@@ -17,11 +17,11 @@ class StoreAXHeapTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x1234);
 
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         assertEquals(0x00001234, i.getHeapBytes(0x3a, 2));
         assertEquals(2, i.instructionsExecuted());
@@ -30,11 +30,11 @@ class StoreAXHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x1234);
         i.setWidth(false);
-        i.start(0, 0);
+        i.init().start(0, 0);
 
         assertEquals(0x00000034, i.getHeapBytes(0x3a, 2));
         assertEquals(2, i.instructionsExecuted());

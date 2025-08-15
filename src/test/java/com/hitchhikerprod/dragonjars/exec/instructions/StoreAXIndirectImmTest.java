@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +26,10 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.setDS(0x01);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x07);
@@ -35,7 +37,7 @@ class StoreAXIndirectImmTest {
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0xbbaa, i.readWord(0x01, 0x0a));
+        assertEquals(0xbbaa, i.readWord(dataSegment, 0x0a));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -47,16 +49,17 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.setDS(0x01);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
         i.setHeap(0x5b, 0x07);
         i.setHeap(0x5c, 0x00);
         i.start(0, 0);
 
-        assertEquals(0x00aa, i.readWord(0x01, 0x0a));
+        assertEquals(0x00aa, i.readWord(dataSegment, 0x0a));
         assertEquals(2, i.instructionsExecuted());
     }
 }

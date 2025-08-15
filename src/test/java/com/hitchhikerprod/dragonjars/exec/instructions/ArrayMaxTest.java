@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +28,9 @@ class ArrayMaxTest {
         dataBytes[0x115] = (byte)0x31;
         final Chunk data = new Chunk(dataBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(program, data));
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.setDS(0x01);
+        i.setDS(i.getSegmentForChunk(1, Frob.CLEAN));
         i.setBX(0x0106);
         i.start(0, 0);
 

@@ -17,7 +17,7 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setHeap(0x1a, 0x7c);
         i.setHeap(0x1b, 0x81);
@@ -37,7 +37,7 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
         i.setAL(0xff);
         i.setAH(0xff);
@@ -56,7 +56,7 @@ class AndAXTest {
                 (byte)0x5a  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setAL(0xff);
         i.setAH(0xff);
