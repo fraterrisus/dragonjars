@@ -23,7 +23,7 @@ class PartyFlagTest {
         i.heap().write(0x0d, 1, 0x02);
         i.start(0, 0);
 
-        assertEquals(0x08, i.readData(Interpreter.PARTY_SEGMENT, 0x024d, 1));
+        assertEquals(0x08, i.memory().read(Interpreter.PARTY_SEGMENT, 0x024d, 1));
     }
 
     @Test
@@ -38,10 +38,10 @@ class PartyFlagTest {
         i.setAL((0x01 << 3) | 0x04);
         i.heap().write(0x06, 1, 0x03);
         i.heap().write(0x0d, 1, 0x02);
-        i.writeData(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
+        i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);
 
-        assertEquals(0xf7, i.readData(Interpreter.PARTY_SEGMENT, 0x024d, 1));
+        assertEquals(0xf7, i.memory().read(Interpreter.PARTY_SEGMENT, 0x024d, 1));
     }
 
     @Test
@@ -56,7 +56,7 @@ class PartyFlagTest {
         i.setAL((0x01 << 3) | 0x00);
         i.heap().write(0x06, 1, 0x03);
         i.heap().write(0x0d, 1, 0x02);
-        i.writeData(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
+        i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);
 
         assertTrue(i.getSignFlag());

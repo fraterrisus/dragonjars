@@ -12,7 +12,7 @@ public class DivAXImm implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int op2 = (i.isWide()) ? i.readWord(ip.incr(1)) : i.readByte(ip.incr(1));
+        final int op2 = i.memory().read(ip.incr(1), i.isWide() ? 2 : 1);
         final int op1 = i.getAX(true);
         final int divResult = op1 / op2;
         final int modResult = op1 % op2;

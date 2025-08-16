@@ -8,7 +8,7 @@ public class LoadAXHeapOffset implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         // I *think* this can't go over 256, so reading BL is okay
-        final int heapIndex = i.readByte(ip.incr(1)) + i.getBL();
+        final int heapIndex = i.memory().read(ip.incr(1), 1) + i.getBL();
         final int value = i.heap().read(heapIndex, 2);
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);

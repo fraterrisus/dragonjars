@@ -10,10 +10,10 @@ public class IsPartyInBox implements Instruction {
         final Address ip = i.getIP();
         final int yParty = i.heap().read(0x00, 1);
         final int xParty = i.heap().read(0x01, 1);
-        final int yMin = i.readByte(ip.incr(1));
-        final int xMin = i.readByte(ip.incr(2));
-        final int yMax = i.readByte(ip.incr(3));
-        final int xMax = i.readByte(ip.incr(4));
+        final int yMin = i.memory().read(ip.incr(1), 1);
+        final int xMin = i.memory().read(ip.incr(2), 1);
+        final int yMax = i.memory().read(ip.incr(3), 1);
+        final int xMax = i.memory().read(ip.incr(4), 1);
         i.setZeroFlag(yParty >= yMin && yParty <= yMax && xParty >= xMin && xParty <= xMax);
         return ip.incr(OPCODE + RECTANGLE);
     }

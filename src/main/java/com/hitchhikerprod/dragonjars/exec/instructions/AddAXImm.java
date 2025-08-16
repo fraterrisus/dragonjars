@@ -11,10 +11,10 @@ public class AddAXImm implements Instruction {
         final Address ip = i.getIP();
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.addWord(i.getAX(), i.readWord(ip.incr(1)));
+            result = ALU.addWord(i.getAX(), i.memory().read(ip.incr(1), 2));
             i.setAX(result.value());
         } else {
-            result = ALU.addByte(i.getAL(), i.readByte(ip.incr(1)));
+            result = ALU.addByte(i.getAL(), i.memory().read(ip.incr(1), 1));
             i.setAL(result.value());
         }
         i.setCarryFlag(result.carry());

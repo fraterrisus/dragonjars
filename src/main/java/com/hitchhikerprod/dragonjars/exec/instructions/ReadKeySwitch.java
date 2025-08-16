@@ -12,22 +12,22 @@ public class ReadKeySwitch implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         i.drawString313e(); //?
-        final int imm1 = i.readByte(ip.incr(1));
-        int imm2 = i.readByte(ip.incr(2));
+        final int imm1 = i.memory().read(ip.incr(1), 1);
+        int imm2 = i.memory().read(ip.incr(2), 1);
         // [2a44] <- imm1
         // [2a45] <- imm2
         int pointer = ip.offset() + 3;
         // [4a7c] <- imm2 & 0x20;
         if ((imm2 & 0x10) != 0) {
-            imm2 = i.readByte(ip.incr(3));
+            imm2 = i.memory().read(ip.incr(3), 1);
             pointer++;
         }
         // [2a46] <- imm2
         final Map<KeyCode, Address> prompts = new HashMap<>();
         while (true) {
-            final int ch = i.readByte(ip.segment(), pointer);
+            final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
-            final int target = i.readWord(ip.segment(), pointer + 1);
+            final int target = i.memory().read(ip.segment(), pointer + 1, 2);
             prompts.put(Instructions.keyCodeOf(ch), new Address(ip.segment(), target));
             pointer += 3;
         }

@@ -8,10 +8,10 @@ public class StoreAXIndirect implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int index = i.readByte(ip.incr(1));
+        final int index = i.memory().read(ip.incr(1), 1);
         final int addr = i.heap().read(index, 2) + i.getBX(true);
         final int value = i.getAX(true);
-        i.writeWidth(i.getDS(), addr, value);
+        i.memory().write(i.getDS(), addr, i.isWide() ? 2 : 1, value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

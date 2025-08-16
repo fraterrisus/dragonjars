@@ -56,7 +56,7 @@ public class Chunk {
         return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
     }
 
-    public int getData(int offset, int num) {
+    public int read(int offset, int num) {
         int value = 0;
         for (int i = num - 1; i >= 0; i--) {
             value = value << 8;

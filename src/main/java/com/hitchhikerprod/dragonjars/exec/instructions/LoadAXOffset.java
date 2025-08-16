@@ -7,8 +7,8 @@ public class LoadAXOffset implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int addr = i.readWord(ip.incr(1)) + i.getBX(true);
-        final int value = i.readWord(i.getDS(), addr);
+        final int addr = i.memory().read(ip.incr(1), 2) + i.getBX(true);
+        final int value = i.memory().read(i.getDS(), addr, 2);
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + ADDRESS);

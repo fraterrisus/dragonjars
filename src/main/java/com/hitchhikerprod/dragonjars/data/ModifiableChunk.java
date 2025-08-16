@@ -15,16 +15,11 @@ public class ModifiableChunk extends Chunk {
         super(chunk);
     }
 
-    public void setByte(int index, byte value) {
-        this.raw.set(index, value);
-    }
-
-    public void setByte(int index, int value) {
-        this.raw.set(index, (byte) (value & 0xff));
-    }
-
-    public void setWord(int index, int value) {
-        this.raw.set(index, (byte) (value & 0x00ff));
-        this.raw.set(index + 1, (byte) ((value & 0xff00) >> 8));
+    public void write(int index, int length, int value) {
+        int v = value;
+        for (int i = 0; i < length; i++) {
+            this.raw.set(index + i, (byte) (v & 0xff));
+            v = v >> 8;
+        }
     }
 }

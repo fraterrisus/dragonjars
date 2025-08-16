@@ -8,8 +8,8 @@ public class LongJump implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int chunkId = i.readByte(ip.incr(1));
-        final int address = i.readWord(ip.incr(2));
+        final int chunkId = i.memory().read(ip.incr(1), 1);
+        final int address = i.memory().read(ip.incr(2), 2);
         i.freeSegment(ip.segment());
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
         return new Address(segmentId, address);

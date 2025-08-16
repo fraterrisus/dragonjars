@@ -35,7 +35,7 @@ public class Interpreter {
     /* Memory space */
 
     private final Memory memory;
-    public final Heap heap;
+    private final Heap heap;
 
     private final RomImageDecoder decoder;
 
@@ -115,8 +115,8 @@ public class Interpreter {
 
         // create segments 0 and 1, which have the same segment address, to store party data [0x0e00 bytes]
         final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
-        this.memory().addSegment(partyChunk, 0xffff, 0x0001, Frob.FROZEN);
-        this.memory().addSegment(partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
+        memory().addSegment(partyChunk, 0xffff, 0x0001, Frob.FROZEN);
+        memory().addSegment(partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
 
         // build "x50" multiplication table
         // which sets ax to 0x2a..
@@ -172,7 +172,7 @@ public class Interpreter {
             this.cs = nextIP.segment();
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
-            final int opcode = readByte(nextIP);
+            final int opcode = memory().read(nextIP, 1);
             System.out.format("%02x %08x %02x\n", cs, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
@@ -391,75 +391,6 @@ public class Interpreter {
 
     public void setWidth(boolean width) {
         this.width = width;
-    }
-
-    // TODO: refactor (and probably rename) all the various memory read and write operations
-
-    /** Retrieves a single byte from segment data. */
-    public int readByte(int segmentId, int offset) {
-        return Objects.requireNonNull(memory().getSegment(segmentId)).getUnsignedByte(offset);
-    }
-
-    /** Retrieves a single byte from segment data. */
-    public int readByte(Address addr) {
-        return readByte(addr.segment(), addr.offset());
-    }
-
-    /** Retrieves a word (two bytes) from segment data. */
-    public int readWord(int segmentId, int offset) {
-        return Objects.requireNonNull(memory().getSegment(segmentId)).getWord(offset);
-    }
-
-    /** Retrieves a word (two bytes) from segment data. */
-    public int readWord(Address addr) {
-        return readWord(addr.segment(), addr.offset());
-    }
-
-    public int readData(int segmentId, int offset, int size) {
-        return Objects.requireNonNull(memory().getSegment(segmentId)).getData(offset, size);
-    }
-
-    public int readData(Address addr, int size) {
-        return readData(addr.segment(), addr.offset(), size);
-    }
-
-    public void writeByte(int segmentId, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(memory().getSegment(segmentId));
-        c.setByte(offset, value);
-    }
-
-    public void writeByte(Address addr, int value) {
-        writeByte(addr.segment(), addr.offset(), value);
-    }
-
-    public void writeData(int segmentId, int offset, int size, int value) {
-        int v = value;
-        final ModifiableChunk chunk = Objects.requireNonNull(memory().getSegment(segmentId));
-        for (int i = 0; i < size; i++) {
-            chunk.setByte(offset + i, v & 0xff);
-            v = v >> 8;
-        }
-    }
-
-    public void writeData(Address addr, int size, int value) {
-        writeData(addr.segment(), addr.offset(), size, value);
-    }
-
-    public void writeWord(int segmentId, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(memory().getSegment(segmentId));
-        c.setWord(offset, value);
-    }
-
-    public void writeWord(Address addr, int value) {
-        writeWord(addr.segment(), addr.offset(), value);
-    }
-
-    public void writeWidth(int segmentId, int addr, int value) {
-        if (isWide()) {
-            writeWord(segmentId, addr, value);
-        } else {
-            writeByte(segmentId, addr, value);
-        }
     }
 
     public int readBufferD1B0(int offset) {
@@ -686,7 +617,7 @@ public class Interpreter {
 
         x_31ed = 0x1b;
 
-        final int statuses = readData(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
+        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
         for (int i = 3; i >= 0; i--) {
             final int mask = memory().getCodeChunk().getUnsignedByte(0x1a61 + i);
             if ((statuses & mask) > 0) {
@@ -716,7 +647,7 @@ public class Interpreter {
         int pointer = charBaseAddress;
         int ch = 0x80;
         while ((ch & 0x80) > 0) {
-            ch = readData(PARTY_SEGMENT, pointer, 1);
+            ch = memory().read(PARTY_SEGMENT, pointer, 1);
             nameCh.add(ch);
             pointer++;
         }
@@ -724,7 +655,7 @@ public class Interpreter {
     }
 
     private void drawStatusHelper(int i) {
-        final int wordAddress = memory().getCodeChunk().getData(0x1a69 + (2 * i), 2) - 0x100;
+        final int wordAddress = memory().getCodeChunk().read(0x1a69 + (2 * i), 2) - 0x100;
         final int xOffset = memory().getCodeChunk().getUnsignedByte(0x1a65 + i);
         final StringDecoder sd = new StringDecoder(memory().getCodeChunk());
         sd.decodeString(wordAddress);
@@ -741,8 +672,8 @@ public class Interpreter {
 
     private void drawBarHelper(int y, int attributeAddr, int color) {
         getImageWriter(writer -> {
-            final int cur = readData(PARTY_SEGMENT, attributeAddr, 2);
-            final int max = readData(PARTY_SEGMENT, attributeAddr + 2, 2);
+            final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
+            final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
             final int barWidth = 0x60 * cur / max;
             final int black = Images.convertColorIndex(0);
             final int colorValue = Images.convertColorIndex(color);
@@ -782,10 +713,10 @@ public class Interpreter {
      * Draws an empty box on the screen.
      */
     public void drawModal(Address addr) {
-        final int x0 = readByte(addr);         // ch adr
-        final int y0 = readByte(addr.incr(1)); // pix adr
-        final int x1 = readByte(addr.incr(2));
-        final int y1 = readByte(addr.incr(3));
+        final int x0 = memory().read(addr, 1);         // ch adr
+        final int y0 = memory().read(addr.incr(1), 1); // pix adr
+        final int x1 = memory().read(addr.incr(2), 1);
+        final int y1 = memory().read(addr.incr(3), 1);
         boolean invert = bg_color_3431 == 0;
 
         // four immediates: 16 00 28 98 (combat window)

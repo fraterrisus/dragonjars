@@ -12,7 +12,7 @@ public class AddAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final ALU.Result result;
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         if (i.isWide()) {
             result = ALU.addWord(i.getAX(), i.heap().read(heapIndex, 2));
             i.setAX(result.value());

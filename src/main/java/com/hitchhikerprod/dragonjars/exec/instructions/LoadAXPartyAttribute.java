@@ -8,9 +8,9 @@ public class LoadAXPartyAttribute implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int charId = i.heap().read(0x06, 1);
-        final int attributeOffset = i.readByte(ip.incr(1));
+        final int attributeOffset = i.memory().read(ip.incr(1), 1);
         final int address = (charId << 8) | attributeOffset;
-        final int value = i.readData(Interpreter.PARTY_SEGMENT, address, 2);
+        final int value = i.memory().read(Interpreter.PARTY_SEGMENT, address, 2);
         i.setAX(value);
         return ip.incr(OPCODE + IMMEDIATE);
     }

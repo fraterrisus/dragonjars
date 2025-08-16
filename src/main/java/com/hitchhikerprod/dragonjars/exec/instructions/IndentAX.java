@@ -7,7 +7,7 @@ public class IndentAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int x = i.readByte(ip.incr(1));
+        final int x = i.memory().read(ip.incr(1), 1);
         i.indentFromBbox(x);
         return ip.incr(OPCODE + IMMEDIATE);
     }

@@ -14,9 +14,9 @@ public class BufferCopy implements Instruction {
         final int index = i.getAX(true);
         for (int offset = 0; offset < 0x700; offset++) {
             if (toSegment) {
-                i.writeByte(segmentId, index + offset, i.readBufferD1B0(offset));
+                i.memory().write(segmentId, index + offset, 1, i.readBufferD1B0(offset));
             } else {
-                i.writeBufferD1B0(offset, i.readByte(segmentId, index + offset));
+                i.writeBufferD1B0(offset, i.memory().read(segmentId, index + offset, 1));
             }
         }
         return i.getIP().incr(OPCODE);

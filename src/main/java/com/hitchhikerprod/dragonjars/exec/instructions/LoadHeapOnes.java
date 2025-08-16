@@ -8,7 +8,7 @@ public class LoadHeapOnes implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         i.writeHeap(heapIndex, 0xffff);
         System.out.format("  heap[%02x] <- %s\n", heapIndex, (i.isWide()) ? "0xffff" : "0xff");
         return ip.incr(OPCODE + IMMEDIATE);

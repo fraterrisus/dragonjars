@@ -34,7 +34,7 @@ class StoreAXTest {
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0xbbaa, i.readWord(dataSegment, 0x05));
+        assertEquals(0xbbaa, i.memory().read(dataSegment, 0x05, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -54,7 +54,7 @@ class StoreAXTest {
         i.setWidth(false);
         i.start(0, 0);
 
-        assertEquals(0x00aa, i.readWord(dataSegment, 0x05));
+        assertEquals(0x00aa, i.memory().read(dataSegment, 0x05, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 }

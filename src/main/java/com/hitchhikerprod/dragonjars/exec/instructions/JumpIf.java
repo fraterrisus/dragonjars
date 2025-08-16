@@ -15,7 +15,7 @@ public class JumpIf implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int address = i.readWord(ip.incr(1));
+        final int address = i.memory().read(ip.incr(1), 2);
         if (takeJump.apply(i)) {
             return new Address(ip.segment(), address);
         } else {

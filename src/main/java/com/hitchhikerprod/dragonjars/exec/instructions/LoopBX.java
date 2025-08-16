@@ -8,7 +8,7 @@ public class LoopBX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int address = i.readWord(ip.incr(1));
+        final int address = i.memory().read(ip.incr(1), 2);
         final int value = ALU.decByte(i.getBL());
         i.setBL(value);
         if (value == 0xff) {

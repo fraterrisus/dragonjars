@@ -10,10 +10,10 @@ public class SubAXImm implements Instruction {
         final Address ip = i.getIP();
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.subWord(i.getAX(), i.readWord(ip.incr(1)));
+            result = ALU.subWord(i.getAX(), i.memory().read(ip.incr(1), 2));
             i.setAX(result.value());
         } else {
-            result = ALU.subByte(i.getAL(), i.readByte(ip.incr(1)));
+            result = ALU.subByte(i.getAL(), i.memory().read(ip.incr(1), 1));
             i.setAL(result.value());
         }
         // I don't know why the assembly code flips CF before writing it, but it does

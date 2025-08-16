@@ -41,7 +41,7 @@ class StoreAXLongPtrTest {
         i.setWidth(true);
         i.start(1, 1);
 
-        assertEquals(0xbbaa, i.readWord(0x02, 0x06));
+        assertEquals(0xbbaa, i.memory().read(0x02, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -67,7 +67,7 @@ class StoreAXLongPtrTest {
         i.setBL(0x03); // address offset
         i.start(1, 1);
 
-        assertEquals(0x00aa, i.readWord(0x02, 0x06));
+        assertEquals(0x00aa, i.memory().read(0x02, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 }

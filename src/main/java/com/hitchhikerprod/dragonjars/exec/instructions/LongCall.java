@@ -8,8 +8,8 @@ public class LongCall implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int chunkId = i.readByte(ip.incr(1));
-        final int address = i.readWord(ip.incr(2));
+        final int chunkId = i.memory().read(ip.incr(1), 1);
+        final int address = i.memory().read(ip.incr(2), 2);
         final Address returnAddress = ip.incr(OPCODE + IMMEDIATE + ADDRESS);
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);

@@ -11,7 +11,7 @@ public class TestAndSetHeapSign implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int value = i.heap().read(heapIndex, 1);
         if ((value & 0x80) == 0) {
             i.heap().write(heapIndex, 1, (value | 0x80));

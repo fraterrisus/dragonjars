@@ -9,12 +9,12 @@ public class StoreAXLongPtr implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int index = i.readByte(ip.incr(1));
+        final int index = i.memory().read(ip.incr(1), 1);
         final int addr = i.heap().read(index, 2) + i.getBX(true);
         final int segmentId = i.heap().read(index + 2, 1);
         final int value = i.getAX(true);
         //System.out.format("  [s=%02x,a=%08x] <- %04x\n", segmentId, addr, value);
-        i.writeWidth(segmentId, addr, value);
+        i.memory().write(segmentId, addr, i.isWide() ? 2 : 1, value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

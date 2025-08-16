@@ -9,8 +9,8 @@ public class MoveHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapReadIndex = i.readByte(ip.incr(1));
-        final int heapWriteIndex = i.readByte(ip.incr(2));
+        final int heapReadIndex = i.memory().read(ip.incr(1), 1);
+        final int heapWriteIndex = i.memory().read(ip.incr(2), 1);
         final int value = i.readHeap(heapReadIndex);
         i.writeHeap(heapWriteIndex, value);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);

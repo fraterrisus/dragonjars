@@ -8,8 +8,8 @@ public class StoreImmHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
-        final int value = i.readWord(ip.incr(2));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
+        final int value = i.memory().read(ip.incr(2), 2);
         i.writeHeap(heapIndex, value);
         return i.getIP().incr(OPCODE + IMMEDIATE + wordSize(i));
     }

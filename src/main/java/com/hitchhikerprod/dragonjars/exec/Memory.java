@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 public class Memory {
@@ -43,7 +44,7 @@ public class Memory {
     }
 
     public ModifiableChunk getSegment(int segmentId) {
-        return segments.get(segmentId).chunk();
+        return Objects.requireNonNull(segments.get(segmentId)).chunk();
     }
 
     public void addSegment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
@@ -77,5 +78,21 @@ public class Memory {
                 .filter(i -> segments.get(i).chunkId() == chunkId)
                 .findFirst()
                 .orElse(-1);
+    }
+
+    public int read(int segmentId, int offset, int length) {
+        return getSegment(segmentId).read(offset, length);
+    }
+
+    public int read(Address address, int length) {
+        return read(address.segment(), address.offset(), length);
+    }
+
+    public void write(int segmentId, int offset, int length, int data) {
+        getSegment(segmentId).write(offset, length, data);
+    }
+
+    public void write(Address address, int length, int data) {
+        write(address.segment(), address.offset(), length, data);
     }
 }

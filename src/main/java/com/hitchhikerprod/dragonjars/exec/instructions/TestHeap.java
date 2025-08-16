@@ -8,7 +8,7 @@ public class TestHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int value = i.readHeap(heapIndex);
         if (i.isWide()) {
             i.setZeroFlag(value == 0x0000);

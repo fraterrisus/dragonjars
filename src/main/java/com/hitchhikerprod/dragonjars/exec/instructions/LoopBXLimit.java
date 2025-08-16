@@ -7,8 +7,8 @@ public class LoopBXLimit implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int limit = i.readByte(ip.incr(1));
-        final int address = i.readWord(ip.incr(2));
+        final int limit = i.memory().read(ip.incr(1), 1);
+        final int address = i.memory().read(ip.incr(2), 2);
         final int value = (i.getBL() + 1) & 0xff;
         i.setBL(value);
         if (value == limit) {

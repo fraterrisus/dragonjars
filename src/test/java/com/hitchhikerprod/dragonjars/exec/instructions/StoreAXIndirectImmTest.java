@@ -37,7 +37,7 @@ class StoreAXIndirectImmTest {
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0xbbaa, i.readWord(dataSegment, 0x0a));
+        assertEquals(0xbbaa, i.memory().read(dataSegment, 0x0a, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -59,7 +59,7 @@ class StoreAXIndirectImmTest {
         i.writeHeap(0x5c, 0x00);
         i.start(0, 0);
 
-        assertEquals(0x00aa, i.readWord(dataSegment, 0x0a));
+        assertEquals(0x00aa, i.memory().read(dataSegment, 0x0a, 2));
         assertEquals(2, i.instructionsExecuted());
     }
 }

@@ -9,13 +9,13 @@ public class CmpBLHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         final ALU.Result result = ALU.subByte(i.getBL(), i.heap().read(heapIndex, 1));
         i.setCarryFlag(!result.carry());
         i.setSignFlag(result.sign());
         i.setZeroFlag(result.zero());
         System.out.format("  cmp bl=%02x heap[imm=%02x]=%02x -> zf:%d sf:%d cf:%d\n",
-                i.getBL(), i.readByte(ip.incr(1)), i.heap().read(heapIndex, 1),
+                i.getBL(), i.memory().read(ip.incr(1), 1), i.heap().read(heapIndex, 1),
                 result.zero() ? 1 : 0, result.sign() ? 1 : 0, result.carry() ? 0 : 1);
         return ip.incr(OPCODE + IMMEDIATE);
     }

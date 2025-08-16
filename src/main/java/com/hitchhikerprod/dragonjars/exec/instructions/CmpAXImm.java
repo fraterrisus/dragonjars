@@ -11,14 +11,14 @@ public class CmpAXImm implements Instruction {
         final Address ip = i.getIP();
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.subWord(i.getAX(), i.readWord(ip.incr(1)));
+            result = ALU.subWord(i.getAX(), i.memory().read(ip.incr(1), 2));
             System.out.format("  cmp ax=%04x imm=%04x -> zf:%d sf:%d cf:%d\n",
-                    i.getAX(), i.readWord(ip.incr(1)), result.zero() ? 1 : 0,
+                    i.getAX(), i.memory().read(ip.incr(1), 2), result.zero() ? 1 : 0,
                     result.sign() ? 1 : 0, result.carry() ? 0 : 1);
         } else {
-            result = ALU.subByte(i.getAL(), i.readByte(ip.incr(1)));
+            result = ALU.subByte(i.getAL(), i.memory().read(ip.incr(1), 1));
             System.out.format("  cmp al=%02x imm=%02x -> zf:%d sf:%d cf:%d\n",
-                    i.getAL(), i.readByte(ip.incr(1)), result.zero() ? 1 : 0,
+                    i.getAL(), i.memory().read(ip.incr(1), 1), result.zero() ? 1 : 0,
                     result.sign() ? 1 : 0, result.carry() ? 0 : 1);
         }
         i.setCarryFlag(!result.carry());

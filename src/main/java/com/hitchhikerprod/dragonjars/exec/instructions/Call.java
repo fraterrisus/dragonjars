@@ -7,7 +7,7 @@ public class Call implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int targetAddress = i.readWord(ip.incr(1));
+        final int targetAddress = i.memory().read(ip.incr(1), 2);
         final Address returnAddress = ip.incr(OPCODE + ADDRESS);
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);

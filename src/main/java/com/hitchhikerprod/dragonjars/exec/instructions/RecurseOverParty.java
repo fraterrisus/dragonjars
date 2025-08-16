@@ -9,7 +9,7 @@ public class RecurseOverParty implements Instruction {
         final Address ip = i.getIP();
         i.setWidth(false);
         i.setAH(0x00);
-        final int funcPtr = i.readWord(ip.incr(1));
+        final int funcPtr = i.memory().read(ip.incr(1), 2);
 
         final int partySize = i.heap().read(0x1f, 1);
         if (partySize != 0) {

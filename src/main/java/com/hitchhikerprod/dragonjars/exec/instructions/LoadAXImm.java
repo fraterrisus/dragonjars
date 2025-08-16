@@ -8,7 +8,7 @@ public class LoadAXImm implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         // in narrow mode, reading two bytes doesn't hurt and we just don't write AH
-        final int value = i.readWord(ip.incr(1));
+        final int value = i.memory().read(ip.incr(1), 2);
         i.setAX(value);
         return ip.incr(OPCODE + wordSize(i));
     }

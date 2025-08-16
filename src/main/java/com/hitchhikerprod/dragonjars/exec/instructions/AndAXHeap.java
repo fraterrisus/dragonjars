@@ -8,7 +8,7 @@ public class AndAXHeap implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int heapIndex = i.readByte(ip.incr(1));
+        final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int op1 = i.heap().read(heapIndex, 2);
         final int op2 = i.getAX(true);
         final int result = op1 & op2;
