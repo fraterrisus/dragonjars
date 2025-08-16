@@ -34,12 +34,7 @@ public class Interpreter {
 
     /* Memory space */
 
-    private final Chunk codeChunk; // contents of DRAGON.COM binary
-    private final List<Chunk> dataChunks;
-    private final List<ModifiableChunk> segments = new ArrayList<>();
-    private final List<Integer> chunkSizes = new ArrayList<>();
-    private final List<Integer> chunkFrobs = new ArrayList<>();
-    private final List<Integer> chunkIds = new ArrayList<>();
+    private final Memory memory;
 
     private final RomImageDecoder decoder;
 
@@ -90,8 +85,11 @@ public class Interpreter {
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
-        this.dataChunks = dataChunks.subList(0, dataChunks.size() - 1);
-        this.codeChunk = dataChunks.getLast();
+        this.memory = new Memory(
+                dataChunks.getLast(),
+                dataChunks.subList(0, dataChunks.size() - 1)
+        );
+
         this.width = false;
         this.ax = 0;
         this.bx = 0;
@@ -99,7 +97,7 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
 
-        this.decoder = new RomImageDecoder(this.codeChunk);
+        this.decoder = new RomImageDecoder(this.memory().getCodeChunk());
     }
 
     public Interpreter init() {
@@ -116,14 +114,8 @@ public class Interpreter {
 
         // create segments 0 and 1, which have the same segment address, to store party data [0x0e00 bytes]
         final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
-        this.chunkIds.add(0xffff); // doesn't correspond to a disk segment
-        this.chunkIds.add(0xffff);
-        this.chunkFrobs.add(0xff); // don't touch me
-        this.chunkFrobs.add(0xff);
-        this.chunkSizes.add(0x0001); // shrug?
-        this.chunkSizes.add(0x0e00); // accurate
-        this.segments.add(partyChunk);
-        this.segments.add(partyChunk);
+        this.memory().addSegment(partyChunk, 0xffff, 0x0001, Frob.FROZEN);
+        this.memory().addSegment(partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
 
         // build "x50" multiplication table
         // which sets ax to 0x2a..
@@ -199,42 +191,25 @@ public class Interpreter {
      * @return The segment ID of the (new) segment
      */
     public int getSegmentForChunk(int chunkId, Frob frob) {
-        int segmentId = chunkIds.indexOf(chunkId);
+        int segmentId = memory().lookupChunkId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
-            final ModifiableChunk newChunk = new ModifiableChunk(dataChunks.get(chunkId));
-            final int firstFreeSegment = chunkFrobs.indexOf(0x00);
-            if (firstFreeSegment == -1) {
-                segmentId = segments.size();
-                segments.add(newChunk);
-                chunkFrobs.add(frob.value());
-                chunkIds.add(chunkId);
-                chunkSizes.add(newChunk.getSize());
-            } else {
-                segmentId = firstFreeSegment;
-                segments.set(segmentId, newChunk);
-                chunkFrobs.set(segmentId, frob.value());
-                chunkIds.set(segmentId, chunkId);
-                chunkSizes.set(segmentId, newChunk.getSize());
-            }
+            final ModifiableChunk newChunk = memory().copyChunk(chunkId);
+            segmentId = memory().getFreeSegmentId();
+            memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
         }
         // should there be a "don't overwrite frob 0xff" guard here?
-        chunkFrobs.set(segmentId, frob.value());
+        memory().setFrob(segmentId, frob);
         return segmentId;
     }
 
-    public Frob getFrob(int segmentId) {
-        final int value = chunkFrobs.get(segmentId);
-        return Frob.of(value);
-    }
-
-    public void setFrob(int segmentId, Frob frob) {
-        chunkFrobs.set(segmentId, frob.value());
-    }
-
     public void unloadSegment(int segmentId) {
-        if (chunkFrobs.get(segmentId) != 0xff) {
-            chunkFrobs.set(segmentId, 0x00);
+        if (memory().getFrob(segmentId) != Frob.FROZEN) {
+            memory().setFrob(segmentId, Frob.EMPTY);
         }
+    }
+
+    public Memory memory() {
+        return memory;
     }
 
     public record Rectangle(int x0, int x1, int y0, int y1) {}
@@ -305,7 +280,7 @@ public class Interpreter {
     }
 
     public ModifiableChunk getSegment(int index) {
-        return segments.get(index);
+        return memory().getSegment(index);
     }
 
     public Address getIP() {
@@ -432,7 +407,7 @@ public class Interpreter {
 
     /** Retrieves a single byte from segment data. */
     public int readByte(int segmentId, int offset) {
-        return Objects.requireNonNull(segments.get(segmentId)).getUnsignedByte(offset);
+        return Objects.requireNonNull(memory().getSegment(segmentId)).getUnsignedByte(offset);
     }
 
     /** Retrieves a single byte from segment data. */
@@ -442,7 +417,7 @@ public class Interpreter {
 
     /** Retrieves a word (two bytes) from segment data. */
     public int readWord(int segmentId, int offset) {
-        return Objects.requireNonNull(segments.get(segmentId)).getWord(offset);
+        return Objects.requireNonNull(memory().getSegment(segmentId)).getWord(offset);
     }
 
     /** Retrieves a word (two bytes) from segment data. */
@@ -451,7 +426,7 @@ public class Interpreter {
     }
 
     public int readData(int segmentId, int offset, int size) {
-        return Objects.requireNonNull(segments.get(segmentId)).getData(offset, size);
+        return Objects.requireNonNull(memory().getSegment(segmentId)).getData(offset, size);
     }
 
     public int readData(Address addr, int size) {
@@ -459,7 +434,7 @@ public class Interpreter {
     }
 
     public void writeByte(int segmentId, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(segments.get(segmentId));
+        final ModifiableChunk c = Objects.requireNonNull(memory().getSegment(segmentId));
         c.setByte(offset, value);
     }
 
@@ -469,7 +444,7 @@ public class Interpreter {
 
     public void writeData(int segmentId, int offset, int size, int value) {
         int v = value;
-        final ModifiableChunk chunk = Objects.requireNonNull(segments.get(segmentId));
+        final ModifiableChunk chunk = Objects.requireNonNull(memory().getSegment(segmentId));
         for (int i = 0; i < size; i++) {
             chunk.setByte(offset + i, v & 0xff);
             v = v >> 8;
@@ -481,7 +456,7 @@ public class Interpreter {
     }
 
     public void writeWord(int segmentId, int offset, int value) {
-        final ModifiableChunk c = Objects.requireNonNull(segments.get(segmentId));
+        final ModifiableChunk c = Objects.requireNonNull(memory().getSegment(segmentId));
         c.setWord(offset, value);
     }
 
@@ -521,7 +496,7 @@ public class Interpreter {
 
     private void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
         final int addr = base - 0x0100 + offset;
-        final List<Byte> bytes = codeChunk.getBytes(addr, length);
+        final List<Byte> bytes = memory().getCodeChunk().getBytes(addr, length);
         for (int i = 0; i < length; i++) {
             dest[i] = bytes.get(i);
         }
@@ -723,7 +698,7 @@ public class Interpreter {
 
         final int statuses = readData(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
         for (int i = 3; i >= 0; i--) {
-            final int mask = codeChunk.getUnsignedByte(0x1a61 + i);
+            final int mask = memory().getCodeChunk().getUnsignedByte(0x1a61 + i);
             if ((statuses & mask) > 0) {
                 drawStatusHelper(i);
                 setBackground();
@@ -759,9 +734,9 @@ public class Interpreter {
     }
 
     private void drawStatusHelper(int i) {
-        final int wordAddress = codeChunk.getData(0x1a69 + (2 * i), 2) - 0x100;
-        final int xOffset = codeChunk.getUnsignedByte(0x1a65 + i);
-        final StringDecoder sd = new StringDecoder(codeChunk);
+        final int wordAddress = memory().getCodeChunk().getData(0x1a69 + (2 * i), 2) - 0x100;
+        final int xOffset = memory().getCodeChunk().getUnsignedByte(0x1a65 + i);
+        final StringDecoder sd = new StringDecoder(memory().getCodeChunk());
         sd.decodeString(wordAddress);
         final List<Integer> chars = new ArrayList<>();
         chars.add(0xe9); // 'i'
