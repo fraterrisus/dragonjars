@@ -10,7 +10,7 @@ public class FlagTestAL implements Instruction {
         final int op = i.getAL();
         final int mask = 0x80 >> (op & 0x7);
         final int heapIndex = (op >> 3) + i.readByte(ip.incr(1));
-        final int value = i.getHeapBytes(heapIndex, 1) & mask;
+        final int value = i.heap().read(heapIndex, 1) & mask;
         i.setCarryFlag(false);
         i.setZeroFlag(value == 0x00);
         i.setSignFlag(value == 0x80);

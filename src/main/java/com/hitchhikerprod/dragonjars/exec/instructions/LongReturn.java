@@ -9,8 +9,8 @@ public class LongReturn implements Instruction {
     public Address exec(Interpreter i) {
         final int segmentId = i.pop();
         final int address = (i.pop() << 8) | (i.pop());
-        i.unloadSegment(i.getIP().segment());
-        i.memory().setFrob(segmentId, Frob.DIRTY);
+        i.freeSegment(i.getIP().segment());
+        i.memory().setSegmentFrob(segmentId, Frob.DIRTY);
         i.setDS(segmentId);
         return new Address(segmentId, address);
     }

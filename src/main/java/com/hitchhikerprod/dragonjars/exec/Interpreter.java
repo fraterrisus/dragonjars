@@ -35,11 +35,11 @@ public class Interpreter {
     /* Memory space */
 
     private final Memory memory;
+    public final Heap heap;
 
     private final RomImageDecoder decoder;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
-    private final int[] heap = new int[256];
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
     private int mul_result; // 0x1166:4
@@ -89,6 +89,7 @@ public class Interpreter {
                 dataChunks.getLast(),
                 dataChunks.subList(0, dataChunks.size() - 1)
         );
+        this.heap = new Heap();
 
         this.width = false;
         this.ax = 0;
@@ -121,12 +122,12 @@ public class Interpreter {
         // which sets ax to 0x2a..
         // cs:0166  al <- 0xff
         // cs:0168  frob.4d32 <- 0xff
-        setHeapBytes(0x56, 2, 0xffff);
-        setHeapBytes(0x5a, 2, 0xffff);
+        heap().write(0x56, 2, 0xffff);
+        heap().write(0x5a, 2, 0xffff);
         // cs:0177  struct_idx.4d33 <- 0xff
-        setHeapBytes(0x08, 1, 0xff);
+        heap().write(0x08, 1, 0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
-        setHeapBytes(0xdc, 1, 0x00);
+        heap().write(0xdc, 1, 0x00);
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
@@ -183,9 +184,17 @@ public class Interpreter {
         return this.instructionsExecuted;
     }
 
+    public Memory memory() {
+        return this.memory;
+    }
+
+    public Heap heap() {
+        return this.heap;
+    }
+
     /**
-     * Examines the segment table to translate a chunk ID into a segment ID. Note that this may have the side effect
-     * of loading the requested chunk into a new segment, if it doesn't exist.
+     * Examines the segment table to translate a chunk ID into a segment ID. If the chunk doesn't exist in the segment
+     * table, a new segment will be allocated for it; if it does exist, its frob will be overwritten with the new value.
      * @param chunkId The desired chunk ID
      * @param frob The desired new value of the segment's frob
      * @return The segment ID of the (new) segment
@@ -193,23 +202,33 @@ public class Interpreter {
     public int getSegmentForChunk(int chunkId, Frob frob) {
         int segmentId = memory().lookupChunkId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
-            final ModifiableChunk newChunk = memory().copyChunk(chunkId);
+            final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             segmentId = memory().getFreeSegmentId();
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
         }
         // should there be a "don't overwrite frob 0xff" guard here?
-        memory().setFrob(segmentId, frob);
+        memory().setSegmentFrob(segmentId, frob);
         return segmentId;
     }
 
-    public void unloadSegment(int segmentId) {
-        if (memory().getFrob(segmentId) != Frob.FROZEN) {
-            memory().setFrob(segmentId, Frob.EMPTY);
+    /**
+     * Marks a segment as available to be unloaded, but doesn't actually remove it. If a subsequent call to
+     * getSegmentForChunk() occurs for the same chunk, there's a chance that the existing segment will be revived
+     * (rather than unloading and reloading it).
+     * @param segmentId
+     */
+    public void freeSegment(int segmentId) {
+        if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
+            memory().setSegmentFrob(segmentId, Frob.EMPTY);
         }
     }
 
-    public Memory memory() {
-        return memory;
+    public void writeHeap(int index, int val) {
+        heap().write(index, isWide() ? 2 : 1, val);
+    }
+
+    public int readHeap(int index) {
+        return heap().read(index, isWide() ? 2 : 1);
     }
 
     public record Rectangle(int x0, int x1, int y0, int y1) {}
@@ -277,10 +296,6 @@ public class Interpreter {
 
     public void setSignFlag(boolean flag) {
         this.flagSign = flag;
-    }
-
-    public ModifiableChunk getSegment(int index) {
-        return memory().getSegment(index);
     }
 
     public Address getIP() {
@@ -370,33 +385,6 @@ public class Interpreter {
         return byteToInt(this.stack.pop());
     }
 
-    public void setHeap(int index, int val) {
-        this.heap[index & MASK_LOW] = val & MASK_LOW;
-        if (width) {
-            this.heap[(index & MASK_LOW) + 1] = (val & MASK_HIGH) >> 8;
-        }
-    }
-
-    public void setHeapBytes(int index, int count, int val) {
-        for (int i = 0; i < count; i++) {
-            this.heap[(index + i) & MASK_LOW] = val & MASK_LOW;
-            val = val >> 8;
-        }
-    }
-
-    public int getHeap(int index) {
-        return getHeapBytes(index, (width) ? 2 : 1);
-    }
-
-    public int getHeapBytes(int index, int count) {
-        int value = 0;
-        for (int i = count - 1; i >= 0; i--) {
-            value = value << 8;
-            value = value | (this.heap[(index & MASK_LOW) + i] & MASK_LOW);
-        }
-        return value;
-    }
-
     public boolean isWide() {
         return width;
     }
@@ -404,6 +392,8 @@ public class Interpreter {
     public void setWidth(boolean width) {
         this.width = width;
     }
+
+    // TODO: refactor (and probably rename) all the various memory read and write operations
 
     /** Retrieves a single byte from segment data. */
     public int readByte(int segmentId, int offset) {
@@ -623,7 +613,7 @@ public class Interpreter {
                         //   (and maybe reblast the 'corners' afterwards)
                     }
                     case 0x0b -> {
-                        setHeapBytes(0x18, 7, 0x00); // heap[18:1e] <- 0x00
+                        heap().write(0x18, 7, 0x00); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
                     }
                     case 0x0c -> drawMapTitle();
@@ -646,21 +636,21 @@ public class Interpreter {
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
-        final int save_heap_06 = getHeapBytes(0x06, 1);
+        final int save_heap_06 = heap().read(0x06, 1);
 
         // set the indirect function to draw_char()
 
         for (int charId = 0; charId < 7; charId++) {
             // Assembly loops in the other direction, but our bar-drawing code needs to go this way
             // to avoid mishaps with the black pixels between bars.
-            int ax = getHeapBytes(0x18 + charId, 1);
+            int ax = heap().read(0x18 + charId, 1);
             if ((ax & 0x80) > 0) continue;
             ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, ax);
-            setHeapBytes(0x18 + charId, 1, 0xff);
+            heap().write(0x18 + charId, 1, 0xff);
         }
 
-        setHeapBytes(0x06, 1, save_heap_06);
+        heap().write(0x06, 1, save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
     }
@@ -673,7 +663,7 @@ public class Interpreter {
         x_31ed = 0x1b;
         y_31ef = (charId << 4) + 0x20;
 
-        final int charsInParty = getHeapBytes(0x1f, 1);
+        final int charsInParty = heap().read(0x1f, 1);
         if (charId >= charsInParty) {
             getImageWriter(writer -> {
                 final int black = Images.convertColorIndex(0);
@@ -687,7 +677,7 @@ public class Interpreter {
             return;
         }
 
-        final int charBaseAddress = getHeapBytes(0x0a + charId, 1) << 8;
+        final int charBaseAddress = heap().read(0x0a + charId, 1) << 8;
 
         final List<Integer> nameCh = getCharacterName(charBaseAddress);
         indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));

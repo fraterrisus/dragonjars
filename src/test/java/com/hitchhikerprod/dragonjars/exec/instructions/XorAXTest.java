@@ -19,8 +19,8 @@ public class XorAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.setHeap(0x1a, 0xff);
-        i.setHeap(0x1b, 0xff);
+        i.writeHeap(0x1a, 0xff);
+        i.writeHeap(0x1b, 0xff);
         i.setAL(0xff);
         i.setAH(0xff);
         i.start(0, 0);
@@ -39,8 +39,8 @@ public class XorAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.setHeap(0x1a, 0x5a);
-        i.setHeap(0x1b, 0xc3);
+        i.writeHeap(0x1a, 0x5a);
+        i.writeHeap(0x1b, 0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
         i.start(0, 0);

@@ -23,7 +23,7 @@ class StoreImmHeapTest {
 
         i.start(0, 0);
 
-        assertEquals(0x0000bbaa, i.getHeapBytes(0x3a, 2));
+        assertEquals(0x0000bbaa, i.heap().read(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -41,7 +41,7 @@ class StoreImmHeapTest {
 
         i.start(0, 0);
 
-        assertEquals(0x000000aa, i.getHeapBytes(0x3a, 2));
+        assertEquals(0x000000aa, i.heap().read(0x3a, 2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

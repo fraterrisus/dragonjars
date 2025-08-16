@@ -7,7 +7,6 @@ import javafx.scene.input.KeyCode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
@@ -49,7 +48,7 @@ public class Instructions {
     };
 
     public static final Instruction COPY_HEAP_3E_3F = (i) -> {
-        i.setHeapBytes(0x3e, 1, i.getHeapBytes(0x3f, 1));
+        i.heap().write(0x3e, 1, i.heap().read(0x3f, 1));
         return i.getIP().incr(OPCODE);
     };
 
@@ -78,7 +77,7 @@ public class Instructions {
         // instead of printing it to the screen. Then it resets the indirect function to 0x30c1 and calls a helper
         // (0x26be) which forwards to drawMapTitle() (0x26d4) after doing a bounds check that we ignore, heh. We
         // roll that call into i.setTitleString, below.
-        final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
+        final StringDecoder decoder = new StringDecoder(i.memory().getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         i.setTitleString(chars);
@@ -86,13 +85,13 @@ public class Instructions {
     }
 
     public static Address decodeString(Interpreter i, Address addr) {
-        final StringDecoder decoder = new StringDecoder(i.getSegment(addr.segment()));
+        final StringDecoder decoder = new StringDecoder(i.memory().getSegment(addr.segment()));
         decoder.decodeString(addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (chars.getFirst() == 0x00) return addr;
 
-        if ((i.getHeapBytes(0x08, 1) & 0x80) == 0) {
-            i.setHeapBytes(0x08, 1, chars.getFirst() | 0x80);
+        if ((i.heap().read(0x08, 1) & 0x80) == 0) {
+            i.heap().write(0x08, 1, chars.getFirst() | 0x80);
         }
 
         boolean writeSingular = true;
@@ -116,7 +115,7 @@ public class Instructions {
             }
         }
 
-        if (i.getHeapBytes(0x09, 1) == 0x00) {
+        if (i.heap().read(0x09, 1) == 0x00) {
             i.drawString(singular);
         } else {
             i.drawString(plural);

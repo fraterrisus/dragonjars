@@ -20,12 +20,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.setHeap(0x26, 0xaa);
-        i.setHeap(0x27, 0xbb);
-        i.setHeap(0x28, 0xcc);
-        i.setHeap(0x29, 0xdd);
-        i.setHeap(0x2a, 0xee);
-        i.setHeap(0x2b, 0xff);
+        i.writeHeap(0x26, 0xaa);
+        i.writeHeap(0x27, 0xbb);
+        i.writeHeap(0x28, 0xcc);
+        i.writeHeap(0x29, 0xdd);
+        i.writeHeap(0x2a, 0xee);
+        i.writeHeap(0x2b, 0xff);
 
         i.start(0, 0);
 
@@ -45,12 +45,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.setHeap(0x26, 0xaa);
-        i.setHeap(0x27, 0xbb);
-        i.setHeap(0x28, 0xcc);
-        i.setHeap(0x29, 0xdd);
-        i.setHeap(0x2a, 0xee);
-        i.setHeap(0x2b, 0xff);
+        i.writeHeap(0x26, 0xaa);
+        i.writeHeap(0x27, 0xbb);
+        i.writeHeap(0x28, 0xcc);
+        i.writeHeap(0x29, 0xdd);
+        i.writeHeap(0x2a, 0xee);
+        i.writeHeap(0x2b, 0xff);
 
         i.start(0, 0);
 

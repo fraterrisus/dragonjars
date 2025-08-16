@@ -10,7 +10,7 @@ public class StoreImmHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
         final int value = i.readWord(ip.incr(2));
-        i.setHeap(heapIndex, value);
+        i.writeHeap(heapIndex, value);
         return i.getIP().incr(OPCODE + IMMEDIATE + wordSize(i));
     }
 }

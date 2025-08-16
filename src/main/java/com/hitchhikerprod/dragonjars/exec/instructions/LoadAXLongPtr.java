@@ -8,8 +8,8 @@ public class LoadAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int offset = i.getHeapBytes(heapIndex, 2) + i.getBX(true);
-        final int segmentId = i.getHeapBytes(heapIndex + 2, 1);
+        final int offset = i.heap().read(heapIndex, 2) + i.getBX(true);
+        final int segmentId = i.heap().read(heapIndex + 2, 1);
         //System.out.format("  ax <- [s=%02x,a=%08x]\n", segmentId, offset);
         final int value = i.readWord(segmentId, offset);
         i.setAX(value);

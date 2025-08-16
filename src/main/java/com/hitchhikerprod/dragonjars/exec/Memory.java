@@ -5,16 +5,18 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Memory {
+    private record Segment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
+        private Segment withFrob(Frob newFrob) {
+            return new Segment(chunk, chunkId, size, newFrob);
+        }
+    }
+
     private final Chunk codeChunk; // contents of DRAGON.COM binary
     private final List<Chunk> dataChunks;
-
-    private final List<ModifiableChunk> segments = new ArrayList<>();
-    private final List<Integer> chunkSizes = new ArrayList<>();
-    private final List<Integer> chunkFrobs = new ArrayList<>();
-    private final List<Integer> chunkIds = new ArrayList<>();
-
+    private final List<Segment> segments = new ArrayList<>();
 
     public Memory(Chunk codeChunk, List<Chunk> dataChunks) {
         this.codeChunk = codeChunk;
@@ -25,38 +27,8 @@ public class Memory {
         return codeChunk;
     }
 
-    public ModifiableChunk copyChunk(int chunkId) {
+    public ModifiableChunk copyDataChunk(int chunkId) {
         return new ModifiableChunk(dataChunks.get(chunkId));
-    }
-
-    public void addSegment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
-        segments.add(chunk);
-        chunkIds.add(chunkId);
-        chunkSizes.add(size);
-        chunkFrobs.add(frob.value());
-    }
-
-    public void setSegment(int segmentId, ModifiableChunk chunk, int chunkId, int size, Frob frob) {
-        if (segmentId == segments.size()) {
-            addSegment(chunk, chunkId, size, frob);
-        } else {
-            segments.set(segmentId, chunk);
-            chunkIds.set(segmentId, chunkId);
-            chunkSizes.set(segmentId, size);
-            chunkFrobs.set(segmentId, frob.value());
-        }
-    }
-
-    public Frob getFrob(int segmentId) {
-        return Frob.of(chunkFrobs.get(segmentId));
-    }
-
-    public void setFrob(int segmentId, Frob frob) {
-        chunkFrobs.set(segmentId, frob.value());
-    }
-
-    public int lookupChunkId(int chunkId) {
-        return chunkIds.indexOf(chunkId);
     }
 
     /**
@@ -64,12 +36,46 @@ public class Memory {
      * or an index equal to the size of the data structure, which can be used to add a new segment.
      */
     public int getFreeSegmentId() {
-        final int firstFreeSegmentId = chunkFrobs.indexOf(0x00);
-        if (firstFreeSegmentId == -1) return chunkFrobs.size();
-        return firstFreeSegmentId;
+        return IntStream.range(0, segments.size())
+                .filter(i -> segments.get(i).frob() == Frob.EMPTY)
+                .findFirst()
+                .orElse(segments.size());
     }
 
     public ModifiableChunk getSegment(int segmentId) {
-        return segments.get(segmentId);
+        return segments.get(segmentId).chunk();
+    }
+
+    public void addSegment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
+        segments.add(new Segment(chunk, chunkId, size, frob));
+    }
+
+    public void setSegment(int segmentId, ModifiableChunk chunk, int chunkId, int size, Frob frob) {
+        if (segmentId > segments.size()) {
+            throw new IllegalArgumentException("Segment ID " + segmentId + " is too large");
+        } else if (segmentId == segments.size()) {
+            addSegment(chunk, chunkId, size, frob);
+        } else {
+            segments.set(segmentId, new Segment(chunk, chunkId, size, frob));
+        }
+    }
+
+    public Frob getSegmentFrob(int segmentId) {
+        return segments.get(segmentId).frob();
+    }
+
+    public void setSegmentFrob(int segmentId, Frob frob) {
+        segments.set(segmentId, segments.get(segmentId).withFrob(frob));
+    }
+
+    public int getSegmentSize(int segmentId) {
+        return segments.get(segmentId).size();
+    }
+
+    public int lookupChunkId(int chunkId) {
+        return IntStream.range(0, segments.size())
+                .filter(i -> segments.get(i).chunkId() == chunkId)
+                .findFirst()
+                .orElse(-1);
     }
 }

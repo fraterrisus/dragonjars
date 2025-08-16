@@ -10,15 +10,15 @@ public class DivAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int op1 = i.getHeapBytes(heapIndex, 4);
+        final int op1 = i.heap().read(heapIndex, 4);
         i.setMulResult(op1); // 0x3dae
         final int op2 = i.getAX(true);
         final int divResult = op1 / op2;
         final int modResult = op1 % op2;
         i.setMulResult(divResult);
         i.setDivResult(modResult);
-        i.setHeapBytes(0x37, 4, divResult);
-        i.setHeapBytes(0x3b, 2, modResult);
+        i.heap().write(0x37, 4, divResult);
+        i.heap().write(0x3b, 2, modResult);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

@@ -22,7 +22,7 @@ class FlagOperationsTest {
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, i.getHeapBytes(0x13, 1));
+        assertEquals(0x08, i.heap().read(0x13, 1));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -35,13 +35,13 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x12, 1, 0xff);
+        i.heap().write(0x12, 1, 0xff);
         i.setAL((0x10 << 3) | (0x3));
         i.start(0, 0);
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
-        assertEquals(0xef, i.getHeapBytes(0x12, 1));
+        assertEquals(0xef, i.heap().read(0x12, 1));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -54,7 +54,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x25, 1, 0x02);
+        i.heap().write(0x25, 1, 0x02);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
         // heap index 0x10 + 0x15
@@ -74,7 +74,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x25, 1, 0xfd);
+        i.heap().write(0x25, 1, 0xfd);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
         // heap index 0x10 + 0x15
@@ -100,7 +100,7 @@ class FlagOperationsTest {
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, i.getHeapBytes(0x13, 1));
+        assertEquals(0x08, i.heap().read(0x13, 1));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -115,12 +115,12 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x12, 1, 0xff);
+        i.heap().write(0x12, 1, 0xff);
         i.start(0, 0);
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
-        assertEquals(0xef, i.getHeapBytes(0x12, 1));
+        assertEquals(0xef, i.heap().read(0x12, 1));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -135,7 +135,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x25, 1, 0x02);
+        i.heap().write(0x25, 1, 0x02);
         i.start(0, 0);
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
@@ -156,7 +156,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeapBytes(0x25, 1, 0xfd);
+        i.heap().write(0x25, 1, 0xfd);
         i.start(0, 0);
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02

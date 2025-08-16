@@ -32,8 +32,8 @@ class StoreAXIndirectImmTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.setHeap(0x5b, 0x07);
-        i.setHeap(0x5c, 0x00);
+        i.writeHeap(0x5b, 0x07);
+        i.writeHeap(0x5c, 0x00);
         i.setWidth(true);
         i.start(0, 0);
 
@@ -55,8 +55,8 @@ class StoreAXIndirectImmTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.setHeap(0x5b, 0x07);
-        i.setHeap(0x5c, 0x00);
+        i.writeHeap(0x5b, 0x07);
+        i.writeHeap(0x5c, 0x00);
         i.start(0, 0);
 
         assertEquals(0x00aa, i.readWord(dataSegment, 0x0a));

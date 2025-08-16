@@ -17,11 +17,11 @@ public class SimpleInstructionsTest {
     @Test
     public void copyHeap3E3F() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-        i.setHeapBytes(0x3e, 2, 0xff00);
+        i.heap().write(0x3e, 2, 0xff00);
 
         final Address newIP = Instructions.COPY_HEAP_3E_3F.exec(i);
 
-        assertEquals(0xff, i.getHeapBytes(0x3e, 1));
+        assertEquals(0xff, i.heap().read(0x3e, 1));
     }
     
     @Test
@@ -75,8 +75,8 @@ public class SimpleInstructionsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setHeap(0x26, 0xaa);
-        i.setHeap(0x27, 0xbb);
+        i.writeHeap(0x26, 0xaa);
+        i.writeHeap(0x27, 0xbb);
         i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
@@ -194,7 +194,7 @@ public class SimpleInstructionsTest {
         i.setBL(0xffff);
         i.start(0, 0);
 
-        assertEquals(0x000000ff, i.getHeapBytes(0x7a, 1));
+        assertEquals(0x000000ff, i.heap().read(0x7a, 1));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -205,12 +205,12 @@ public class SimpleInstructionsTest {
         final char[] chars = new char[]{'1', '5', '3', '9', '4'};
         int pointer = 0xc6;
         for (char ch : chars) {
-            i.setHeapBytes(pointer++, 1, ((int)ch) | 0x80);
+            i.heap().write(pointer++, 1, ((int)ch) | 0x80);
         }
-        i.setHeapBytes(pointer, 1, 0x00);
+        i.heap().write(pointer, 1, 0x00);
 
         final Address nextIP = new StrToInt().exec(i);
 
-        assertEquals(15394, i.getHeapBytes(0x37, 4));
+        assertEquals(15394, i.heap().read(0x37, 4));
     }
 }

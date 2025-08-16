@@ -9,7 +9,7 @@ public class TestHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int value = i.getHeap(heapIndex);
+        final int value = i.readHeap(heapIndex);
         if (i.isWide()) {
             i.setZeroFlag(value == 0x0000);
             i.setSignFlag((value & 0x8000) > 0);

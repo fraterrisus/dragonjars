@@ -23,7 +23,7 @@ class StoreAXHeapTest {
 
         i.init().start(0, 0);
 
-        assertEquals(0x00001234, i.getHeapBytes(0x3a, 2));
+        assertEquals(0x00001234, i.heap().read(0x3a, 2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }
@@ -36,7 +36,7 @@ class StoreAXHeapTest {
         i.setWidth(false);
         i.init().start(0, 0);
 
-        assertEquals(0x00000034, i.getHeapBytes(0x3a, 2));
+        assertEquals(0x00000034, i.heap().read(0x3a, 2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }

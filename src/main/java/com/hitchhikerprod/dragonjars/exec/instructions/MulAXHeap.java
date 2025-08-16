@@ -9,11 +9,11 @@ public class MulAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        final int op1 = i.getHeapBytes(heapIndex, 4);
+        final int op1 = i.heap().read(heapIndex, 4);
         final int op2 = i.getAX(true);
         final int result = op1 * op2;
         i.setMulResult(result);
-        i.setHeapBytes(0x37, 4, result);
+        i.heap().write(0x37, 4, result);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

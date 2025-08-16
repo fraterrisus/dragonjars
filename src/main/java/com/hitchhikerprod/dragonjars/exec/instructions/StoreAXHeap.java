@@ -8,7 +8,7 @@ public class StoreAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.readByte(ip.incr(1));
-        i.setHeap(heapIndex, i.getAX());
+        i.writeHeap(heapIndex, i.getAX());
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

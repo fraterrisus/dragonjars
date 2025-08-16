@@ -23,7 +23,7 @@ class TestValueTest {
     private void heapHelper(boolean width, int heap, boolean zero, boolean sign) {
         final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(width);
-        i.setHeapBytes(0x1a, 2, heap);
+        i.heap().write(0x1a, 2, heap);
         i.start(0, 0);
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");

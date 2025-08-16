@@ -10,7 +10,7 @@ public class LongJump implements Instruction {
         final Address ip = i.getIP();
         final int chunkId = i.readByte(ip.incr(1));
         final int address = i.readWord(ip.incr(2));
-        i.unloadSegment(ip.segment());
+        i.freeSegment(ip.segment());
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
         return new Address(segmentId, address);
     }

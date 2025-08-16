@@ -10,7 +10,7 @@ public class StrToInt implements Instruction {
         final StringBuilder digits = new StringBuilder();
         int pointer = 0xc6;
         while (true) {
-            final int ord = i.getHeapBytes(pointer, 1);
+            final int ord = i.heap().read(pointer, 1);
             final char c = (char)(ord & 0x7f);
             // The original code skips *leading* spaces, but this should also work.
             if (c == ' ') continue;
@@ -22,7 +22,7 @@ public class StrToInt implements Instruction {
             pointer++;
         }
         final int value = Integer.parseInt(digits.toString());
-        i.setHeapBytes(0x37, 4, value);
+        i.heap().write(0x37, 4, value);
         return i.getIP().incr();
     }
 }

@@ -30,7 +30,7 @@ class BufferCopyTest {
         i.setBL(0x00);
         i.start(0, 0);
 
-        final Chunk newData = i.getSegment(segmentId);
+        final Chunk newData = i.memory().getSegment(segmentId);
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(i.readBufferD1B0(idx), newData.getUnsignedByte(idx),

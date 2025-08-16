@@ -11,14 +11,14 @@ public class RecurseOverParty implements Instruction {
         i.setAH(0x00);
         final int funcPtr = i.readWord(ip.incr(1));
 
-        final int partySize = i.getHeapBytes(0x1f, 1);
+        final int partySize = i.heap().read(0x1f, 1);
         if (partySize != 0) {
-            final int save_heap06 = i.getHeapBytes(0x06, 1);
+            final int save_heap06 = i.heap().read(0x06, 1);
             for (int charId = 0; charId < partySize; charId++) {
-                i.setHeapBytes(0x06, 1, charId);
+                i.heap().write(0x06, 1, charId);
                 i.start(new Address(ip.segment(), funcPtr));
             }
-            i.setHeapBytes(0x06, 1, save_heap06);
+            i.heap().write(0x06, 1, save_heap06);
         }
 
         return ip.incr(OPCODE + ADDRESS);
