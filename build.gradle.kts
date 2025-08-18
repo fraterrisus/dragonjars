@@ -21,6 +21,8 @@ java {
     }
 }
 
+val mockitoAgent = configurations.create("mockitoAgent")
+
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
@@ -37,11 +39,15 @@ javafx {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.mockito:mockito-core:5.+")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    mockitoAgent("org.mockito:mockito-core:5.+") { isTransitive = false }
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs?.add("-javaagent:${mockitoAgent.asPath}")
+    jvmArgs?.add("-XX+EnableDynamicAgentLoading")
 }
 
 jlink {

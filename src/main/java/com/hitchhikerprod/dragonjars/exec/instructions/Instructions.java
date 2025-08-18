@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
@@ -72,21 +73,31 @@ public class Instructions {
         return result;
     }
 
+    /**
+     * Decodes a string from the provided pointer. The decoded string is passed to the interpreter's #setTitleString()
+     * method for further handling.
+     * @param i Interpreter.
+     * @param addr Segment/offset pair to begin decoding.
+     * @return Segment/offset pair pointing at the last decoded byte. When executing an instruction, the next opcode
+     * will be one byte beyond this pointer.
+     */
     public static Address decodeTitleString(Interpreter i, Address addr) {
         // (See 0x2693.) Sets the indirect function pointer to 0x26aa, which saves the decoded string at 0x273a
         // instead of printing it to the screen. Then it resets the indirect function to 0x30c1 and calls a helper
         // (0x26be) which forwards to drawMapTitle() (0x26d4) after doing a bounds check that we ignore, heh. We
         // roll that call into i.setTitleString, below.
-        final StringDecoder decoder = new StringDecoder(i.memory().getSegment(addr.segment()));
-        decoder.decodeString(addr.offset());
+        final StringDecoder decoder = i.stringDecoder();
+        final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
+        decoder.decodeString(chunk, addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         i.setTitleString(chars);
         return new Address(addr.segment(), decoder.getPointer());
     }
 
     public static Address decodeString(Interpreter i, Address addr) {
-        final StringDecoder decoder = new StringDecoder(i.memory().getSegment(addr.segment()));
-        decoder.decodeString(addr.offset());
+        final StringDecoder decoder = i.stringDecoder();
+        final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
+        decoder.decodeString(chunk, addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (chars.getFirst() == 0x00) return addr;
 

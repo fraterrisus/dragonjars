@@ -37,7 +37,8 @@ public class Interpreter {
     private final Memory memory;
     private final Heap heap;
 
-    private final RomImageDecoder decoder;
+    private final RomImageDecoder romImageDecoder;
+    private final StringDecoder stringDecoder;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
@@ -98,7 +99,8 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
 
-        this.decoder = new RomImageDecoder(this.memory().getCodeChunk());
+        this.romImageDecoder = new RomImageDecoder(this.memory().getCodeChunk());
+        this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
     }
 
     public Interpreter init() {
@@ -190,6 +192,10 @@ public class Interpreter {
 
     public Heap heap() {
         return this.heap;
+    }
+
+    public StringDecoder stringDecoder() {
+        return this.stringDecoder;
     }
 
     /**
@@ -319,7 +325,7 @@ public class Interpreter {
     }
 
     public void setAH(int val) {
-        this.ax = ((val & 0x000000ff) << 8) | (this.ax & MASK_LOW);
+        this.ax = ((val & MASK_LOW) << 8) | (this.ax & MASK_LOW);
     }
 
     public void setAX(int val, boolean forceWide) {
@@ -497,9 +503,9 @@ public class Interpreter {
         getImageWriter(writer -> {
             final int[] buffer = new int[0x3e80];
             for (int i = 3; i >= 0; i--) {
-                decoder.decodeCorner(buffer, i);
+                romImageDecoder.decodeCorner(buffer, i);
             }
-            decoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
+            romImageDecoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
         });
     }
 
@@ -529,7 +535,7 @@ public class Interpreter {
                 switch (regionId) {
                     case 0x09 -> { // the vertical column with spell icons
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> decoder.decodeRomImage(finalRegionId, writer));
+                        getImageWriter(writer -> romImageDecoder.decodeRomImage(finalRegionId, writer));
                         // ax <- 0x0000
                         // [4a71] <- ax
                         // [4a73] <- ax
@@ -554,7 +560,7 @@ public class Interpreter {
                     }
                     default -> {
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> decoder.decodeRomImage(finalRegionId, writer));
+                        getImageWriter(writer -> romImageDecoder.decodeRomImage(finalRegionId, writer));
                         // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
                     }
                 }
@@ -657,13 +663,12 @@ public class Interpreter {
     private void drawStatusHelper(int i) {
         final int wordAddress = memory().getCodeChunk().read(0x1a69 + (2 * i), 2) - 0x100;
         final int xOffset = memory().getCodeChunk().getUnsignedByte(0x1a65 + i);
-        final StringDecoder sd = new StringDecoder(memory().getCodeChunk());
-        sd.decodeString(wordAddress);
+        this.stringDecoder.decodeString(memory().getCodeChunk(), wordAddress);
         final List<Integer> chars = new ArrayList<>();
         chars.add(0xe9); // 'i'
         chars.add(0xf3); // 's'
         chars.add(0xa0); // ' '
-        chars.addAll(sd.getDecodedChars());
+        chars.addAll(stringDecoder.getDecodedChars());
         y_31ef += 8;
         indentTo(xOffset);
         drawString(chars);
@@ -686,7 +691,11 @@ public class Interpreter {
     }
 
     public void setTitleString(List<Integer> chars) {
-        this.titleString = (chars.size() > 16) ? List.copyOf(chars.subList(0, 16)) : List.copyOf(chars);
+        if (chars.size() > 16) {
+            this.titleString = List.copyOf(chars.subList(0, 16));
+        } else {
+            this.titleString = List.copyOf(chars);
+        }
         drawMapTitle();
     }
 
@@ -694,10 +703,9 @@ public class Interpreter {
         // x_31ed and y_31ef are preserved across this call, but I don't use them
         // in this implementation. They're also more clever about only decoding the
         // image bytes for spaces where they aren't writing characters.
-
         for (int x = 0; x < 16; x++) {
             final int pictureId = 0x1b + x;
-            getImageWriter(writer -> decoder.decodeRomImage(pictureId, writer));
+            getImageWriter(writer -> romImageDecoder.decodeRomImage(pictureId, writer));
         }
 
         setBackground(0x10);
@@ -930,7 +938,7 @@ public class Interpreter {
             // case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
-            // case 0x8b -> new DrawCurrentViewport(); // FIXME
+            // case 0x8b -> new DrawCurrentViewport(); // FIXME, need map chunk decoder and texture decoder
             // case 0x8c -> new ShowYesNoModal();
             // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instructions.NOOP;
