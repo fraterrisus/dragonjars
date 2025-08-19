@@ -11,10 +11,10 @@ public class SubAXHeap implements Instruction {
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.subWord(i.getAX(), i.heap().read(heapIndex, 2));
+            result = ALU.subWord(i.getAX(), i.heap(heapIndex).read(2));
             i.setAX(result.value());
         } else {
-            result = ALU.subByte(i.getAL(), i.heap().read(heapIndex, 1));
+            result = ALU.subByte(i.getAL(), i.heap(heapIndex).read(1));
             i.setAL(result.value());
         }
         // I don't know why the assembly code flips CF before writing it, but it does

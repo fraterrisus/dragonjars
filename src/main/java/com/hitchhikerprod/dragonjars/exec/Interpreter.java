@@ -194,10 +194,6 @@ public class Interpreter {
         return heap.get(index);
     }
 
-    public Heap heap() {
-        return this.heap;
-    }
-
     public StringDecoder stringDecoder() {
         return this.stringDecoder;
     }
@@ -576,11 +572,12 @@ public class Interpreter {
         for (int charId = 0; charId < 7; charId++) {
             // Assembly loops in the other direction, but our bar-drawing code needs to go this way
             // to avoid mishaps with the black pixels between bars.
-            int ax = heap().read(0x18 + charId, 1);
+            final int heapIndex = 0x18 + charId;
+            int ax = heap(heapIndex).read();
             if ((ax & 0x80) > 0) continue;
             ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, ax);
-            heap().write(0x18 + charId, 1, 0xff);
+            heap(heapIndex).write(0xff);
         }
 
         heap(0x06).write(save_heap_06);
@@ -610,7 +607,7 @@ public class Interpreter {
             return;
         }
 
-        final int charBaseAddress = heap().read(0x0a + charId, 1) << 8;
+        final int charBaseAddress = heap(0x0a + charId).read() << 8;
 
         final List<Integer> nameCh = getCharacterName(charBaseAddress);
         indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));

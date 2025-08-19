@@ -10,8 +10,8 @@ public class FlagClearImm implements Instruction {
         final int op = i.memory().read(ip.incr(1), 1);
         final int mask = 0x80 >> (op & 0x7);
         final int heapIndex = (op >> 3) + i.memory().read(ip.incr(2), 1);
-        final int value = i.heap().read(heapIndex, 1) & ~mask;
-        i.heap().write(heapIndex, 1, value);
+        final int value = i.heap(heapIndex).read(1) & ~mask;
+        i.heap(heapIndex).write(value);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
     }
 }

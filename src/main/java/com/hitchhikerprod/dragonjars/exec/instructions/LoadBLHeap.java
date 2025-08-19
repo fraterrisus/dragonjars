@@ -8,7 +8,7 @@ public class LoadBLHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final int heapValue = i.heap().read(heapIndex, 1);
+        final int heapValue = i.heap(heapIndex).read(1);
         i.setBL(heapValue);
         return ip.incr(OPCODE + IMMEDIATE);
     }

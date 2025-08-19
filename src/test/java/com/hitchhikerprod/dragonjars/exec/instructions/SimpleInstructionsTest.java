@@ -205,9 +205,9 @@ public class SimpleInstructionsTest {
         final char[] chars = new char[]{'1', '5', '3', '9', '4'};
         int pointer = 0xc6;
         for (char ch : chars) {
-            i.heap().write(pointer++, 1, ((int)ch) | 0x80);
+            i.heap(pointer++).write(((int)ch) | 0x80);
         }
-        i.heap().write(pointer, 1, 0x00);
+        i.heap(pointer).write(0x00);
 
         final Address nextIP = new StrToInt().exec(i);
 

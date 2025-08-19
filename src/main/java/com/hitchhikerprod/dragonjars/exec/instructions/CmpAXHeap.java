@@ -12,14 +12,14 @@ public class CmpAXHeap implements Instruction {
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         final ALU.Result result;
         if (i.isWide()) {
-            result = ALU.subWord(i.getAX(), i.heap().read(heapIndex, 2));
+            result = ALU.subWord(i.getAX(), i.heap(heapIndex).read(2));
             System.out.format("  cmp ax=%04x heap[imm=%02x]=%04x -> zf:%d sf:%d cf:%d\n",
-                    i.getAX(), i.memory().read(ip.incr(1), 1), i.heap().read(heapIndex, 2),
+                    i.getAX(), i.memory().read(ip.incr(1), 1), i.heap(heapIndex).read(2),
                     result.zero() ? 1 : 0, result.sign() ? 1 : 0, result.carry() ? 0 : 1);
         } else {
-            result = ALU.subByte(i.getAL(), i.heap().read(heapIndex, 1));
+            result = ALU.subByte(i.getAL(), i.heap(heapIndex).read(1));
             System.out.format("  cmp al=%02x heap[imm=%02x]=%02x -> zf:%d sf:%d cf:%d\n",
-                    i.getAL(), i.memory().read(ip.incr(1), 1), i.heap().read(heapIndex, 1),
+                    i.getAL(), i.memory().read(ip.incr(1), 1), i.heap(heapIndex).read(1),
                     result.zero() ? 1 : 0, result.sign() ? 1 : 0, result.carry() ? 0 : 1);
         }
         // I don't know why the assembly code flips CF before writing it, but it does

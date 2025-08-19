@@ -6,7 +6,7 @@ import java.util.function.Function;
 public class Heap {
     private final int[] storage = new int[256];
 
-    public void write(int index, int count, int val) {
+    private void write(int index, int count, int val) {
         if (count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
             storage[(index + i) & 0xff] = val & 0xff;
@@ -14,7 +14,7 @@ public class Heap {
         }
     }
 
-    public int read(int index, int count) {
+    private int read(int index, int count) {
         if (count > 4) throw new IllegalArgumentException();
         int value = 0;
         for (int i = count - 1; i >= 0; i--) {

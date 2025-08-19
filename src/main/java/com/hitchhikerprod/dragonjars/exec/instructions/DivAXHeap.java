@@ -10,7 +10,7 @@ public class DivAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final int op1 = i.heap().read(heapIndex, 4);
+        final int op1 = i.heap(heapIndex).read(4);
         i.setMulResult(op1); // 0x3dae
         final int op2 = i.getAX(true);
         final int divResult = op1 / op2;

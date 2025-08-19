@@ -10,8 +10,8 @@ public class StoreAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int index = i.memory().read(ip.incr(1), 1);
-        final int addr = i.heap().read(index, 2) + i.getBX(true);
-        final int segmentId = i.heap().read(index + 2, 1);
+        final int addr = i.heap(index).read(2) + i.getBX(true);
+        final int segmentId = i.heap(index + 2).read();
         final int value = i.getAX(true);
         //System.out.format("  [s=%02x,a=%08x] <- %04x\n", segmentId, addr, value);
         i.memory().write(segmentId, addr, i.isWide() ? 2 : 1, value);
