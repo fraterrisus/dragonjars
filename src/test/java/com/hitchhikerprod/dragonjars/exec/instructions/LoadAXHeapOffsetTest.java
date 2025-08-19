@@ -20,12 +20,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.writeHeap(0x26, 0xaa);
-        i.writeHeap(0x27, 0xbb);
-        i.writeHeap(0x28, 0xcc);
-        i.writeHeap(0x29, 0xdd);
-        i.writeHeap(0x2a, 0xee);
-        i.writeHeap(0x2b, 0xff);
+        i.heap(0x26).write(0xaa);
+        i.heap(0x27).write(0xbb);
+        i.heap(0x28).write(0xcc);
+        i.heap(0x29).write(0xdd);
+        i.heap(0x2a).write(0xee);
+        i.heap(0x2b).write(0xff);
 
         i.start(0, 0);
 
@@ -45,12 +45,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.writeHeap(0x26, 0xaa);
-        i.writeHeap(0x27, 0xbb);
-        i.writeHeap(0x28, 0xcc);
-        i.writeHeap(0x29, 0xdd);
-        i.writeHeap(0x2a, 0xee);
-        i.writeHeap(0x2b, 0xff);
+        i.heap(0x26).write(0xaa);
+        i.heap(0x27).write(0xbb);
+        i.heap(0x28).write(0xcc);
+        i.heap(0x29).write(0xdd);
+        i.heap(0x2a).write(0xee);
+        i.heap(0x2b).write(0xff);
 
         i.start(0, 0);
 

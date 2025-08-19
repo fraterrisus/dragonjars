@@ -31,12 +31,9 @@ class StoreAXLongPtrTest {
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        // address (lo)
-        i.writeHeap(0x5b, 0x03);
-        // address (hi)
-        i.writeHeap(0x5c, 0x00);
-        // segment#
-        i.writeHeap(0x5d, 0x02);
+        i.heap(0x5b).write(0x03); // address (lo)
+        i.heap(0x5c).write(0x00); // address (hi)
+        i.heap(0x5d).write(0x02); // segment#
         i.setBL(0x03); // address offset
         i.setWidth(true);
         i.start(1, 1);
@@ -58,12 +55,9 @@ class StoreAXLongPtrTest {
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        // address (lo)
-        i.writeHeap(0x5b, 0x03);
-        // address (hi)
-        i.writeHeap(0x5c, 0x00);
-        // segment#
-        i.writeHeap(0x5d, 0x02);
+        i.heap(0x5b).write(0x03);
+        i.heap(0x5c).write(0x00);
+        i.heap(0x5d).write(0x02);
         i.setBL(0x03); // address offset
         i.start(1, 1);
 

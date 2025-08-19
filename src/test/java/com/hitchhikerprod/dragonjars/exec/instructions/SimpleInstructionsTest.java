@@ -17,11 +17,11 @@ public class SimpleInstructionsTest {
     @Test
     public void copyHeap3E3F() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-        i.heap().write(0x3e, 2, 0xff00);
+        i.heap(0x3e).write(0xff00, 2);
 
         final Address newIP = Instructions.COPY_HEAP_3E_3F.exec(i);
 
-        assertEquals(0xff, i.heap().read(0x3e, 1));
+        assertEquals(0xff, i.heap(0x3e).read());
     }
     
     @Test
@@ -75,8 +75,8 @@ public class SimpleInstructionsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.writeHeap(0x26, 0xaa);
-        i.writeHeap(0x27, 0xbb);
+        i.heap(0x26).write(0xaa);
+        i.heap(0x27).write(0xbb);
         i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
@@ -194,7 +194,7 @@ public class SimpleInstructionsTest {
         i.setBL(0xffff);
         i.start(0, 0);
 
-        assertEquals(0x000000ff, i.heap().read(0x7a, 1));
+        assertEquals(0x000000ff, i.heap(0x7a).read());
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -211,6 +211,6 @@ public class SimpleInstructionsTest {
 
         final Address nextIP = new StrToInt().exec(i);
 
-        assertEquals(15394, i.heap().read(0x37, 4));
+        assertEquals(15394, i.heap(0x37).read(4));
     }
 }

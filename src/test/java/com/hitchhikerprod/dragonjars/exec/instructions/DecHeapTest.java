@@ -19,14 +19,14 @@ class DecHeapTest {
     public void wideUnderflow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.writeHeap(0xaa, 0x00);
-        i.writeHeap(0xab, 0x01);
+        i.heap(0xaa).write(0x00);
+        i.heap(0xab).write(0x01);
         i.setWidth(true);
         i.start(0, 0);
 
         i.setWidth(false);
-        assertEquals(0xff, i.readHeap(0xaa));
-        assertEquals(0x00, i.readHeap(0xab));
+        assertEquals(0xff, i.heap(0xaa).read());
+        assertEquals(0x00, i.heap(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -34,12 +34,12 @@ class DecHeapTest {
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.writeHeap(0xaa, 0x16);
-        i.writeHeap(0xab, 0xff);
+        i.heap(0xaa).write(0x16);
+        i.heap(0xab).write(0xff);
         i.start(0, 0);
 
-        assertEquals(0x15, i.readHeap(0xaa));
-        assertEquals(0xff, i.readHeap(0xab));
+        assertEquals(0x15, i.heap(0xaa).read());
+        assertEquals(0xff, i.heap(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -47,12 +47,12 @@ class DecHeapTest {
     public void narrowUnderflow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.writeHeap(0xaa, 0x00);
-        i.writeHeap(0xab, 0x01);
+        i.heap(0xaa).write(0x00);
+        i.heap(0xab).write(0x01);
         i.start(0, 0);
 
-        assertEquals(0xff, i.readHeap(0xaa));
-        assertEquals(0x01, i.readHeap(0xab));
+        assertEquals(0xff, i.heap(0xaa).read());
+        assertEquals(0x01, i.heap(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 }

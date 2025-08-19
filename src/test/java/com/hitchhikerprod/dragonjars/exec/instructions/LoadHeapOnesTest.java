@@ -19,9 +19,9 @@ class LoadHeapOnesTest {
     public void wide() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap().write(0x48, 2, 0x0000);
+        i.heap(0x48).write(0x0000, 2);
         i.start(0, 0);
-        assertEquals(0xffff, i.heap().read(0x48, 2));
+        assertEquals(0xffff, i.heap(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -29,9 +29,9 @@ class LoadHeapOnesTest {
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap().write(0x48, 2, 0x0000);
+        i.heap(0x48).write(0x0000, 2);
         i.start(0, 0);
-        assertEquals(0x00ff, i.heap().read(0x48, 2));
+        assertEquals(0x00ff, i.heap(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 

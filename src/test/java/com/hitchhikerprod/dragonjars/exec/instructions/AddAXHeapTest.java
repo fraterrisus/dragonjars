@@ -21,7 +21,7 @@ class AddAXHeapTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
         i.setWidth(wide);
         i.setAX(ax);
-        i.writeHeap(0x81, heap);
+        i.heap(0x81).write(heap, wide ? 2 : 1);
         i.start(0, 0);
 
         assertEquals(carryOut, i.getCarryFlag());

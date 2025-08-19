@@ -96,12 +96,12 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
-        i.writeHeap(0x03, 0x4181);
+        i.heap(0x03).write(0x4181, 2);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 0010 0000 1100 0000
-        assertEquals(0x20c0, i.heap().read(0x03, 2));
+        assertEquals(0x20c0, i.heap(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -115,13 +115,13 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
-        i.writeHeap(0x03, 0x81);
-        i.writeHeap(0x04, 0x41);
+        i.heap(0x03).write(0x81);
+        i.heap(0x04).write(0x41);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001  bit[8] is shifted to [7], but the high byte
         // new: 0100 0001 1100 0000  doesn't get written back
-        assertEquals(0x41c0, i.heap().read(0x03, 2));
+        assertEquals(0x4140, i.heap(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -135,12 +135,12 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
-        i.writeHeap(0x03, 0x4181);
+        i.heap(0x03).write(0x4181, 2);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 1000 0011 0000 0010
-        assertEquals(0x8302, i.heap().read(0x03, 2));
+        assertEquals(0x8302, i.heap(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -154,13 +154,13 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
-        i.writeHeap(0x03, 0xc1);
-        i.writeHeap(0x04, 0x41);
+        i.heap(0x03).write(0xc1);
+        i.heap(0x04).write(0x41);
         i.init().start(0, 0);
 
         // old: 0100 0001 1100 0001
         // new: 0100 0001 1000 0010
-        assertEquals(0x4182, i.heap().read(0x03, 2));
+        assertEquals(0x4182, i.heap(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 }

@@ -7,7 +7,7 @@ public class TestPartyFlag implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int charId = i.heap().read(0x06, 1);
+        final int charId = i.heap(0x06).read();
         final int charBaseAddress = i.heap().read(0x0a + charId, 1) << 8;
         final int offset = (i.getAL() >> 3) + i.memory().read(ip.incr(1), 1);
         final int value = i.memory().read(Interpreter.PARTY_SEGMENT, charBaseAddress + offset, 1);

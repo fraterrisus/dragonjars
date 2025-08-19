@@ -9,7 +9,7 @@ public class StoreBLHeap implements Instruction {
         final Address ip = i.getIP();
         final int index = i.memory().read(ip.incr(1), 1);
         final int value = i.getBL();
-        i.writeHeap(index, value);
+        i.heap(index).write(value, 1);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

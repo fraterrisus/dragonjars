@@ -23,7 +23,7 @@ class LoadAXPartyAttributeTest {
         i.setWidth(true);
         // value to retrieve
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x21e, 2, 0xf1c3);
-        i.heap().write(0x06, 1, 0x02); // character ID
+        i.heap(0x06).write(0x02); // character ID
         i.start(0, 0);
 
         assertEquals(0xf1c3, i.getAX(true));
@@ -34,7 +34,7 @@ class LoadAXPartyAttributeTest {
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x21e, 2, 0xf1c3);
-        i.heap().write(0x06, 1, 0x02); // character ID
+        i.heap(0x06).write(0x02); // character ID
         i.start(0, 0);
 
         assertEquals(0x00c3, i.getAX(true));

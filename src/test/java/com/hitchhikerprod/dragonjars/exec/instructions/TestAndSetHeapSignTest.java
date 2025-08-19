@@ -18,11 +18,11 @@ class TestAndSetHeapSignTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap().write(0x06, 1, 0xff);
+        i.heap(0x06).write(0xff);
         i.start(0, 0);
 
         assertFalse(i.getZeroFlag());
-        assertEquals(0x80, i.heap().read(0x06, 1) & 0x80);
+        assertEquals(0x80, i.heap(0x06).read() & 0x80);
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -35,12 +35,12 @@ class TestAndSetHeapSignTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap().write(0x06, 1, 0x7f);
+        i.heap(0x06).write(0x7f);
         i.start(0, 0);
 
         assertTrue(i.getZeroFlag());
         // bit gets set if not already set
-        assertEquals(0x80, i.heap().read(0x06, 1) & 0x80);
+        assertEquals(0x80, i.heap(0x06).read() & 0x80);
         assertEquals(2, i.instructionsExecuted());
     }
 }

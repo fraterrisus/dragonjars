@@ -19,8 +19,8 @@ public class OrAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap().write(0x1a, 1, 0x5a);
-        i.heap().write(0x1b, 1, 0xc3);
+        i.heap(0x1a).write(0x5a);
+        i.heap(0x1b).write(0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
         i.start(0, 0);
@@ -39,8 +39,8 @@ public class OrAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap().write(0x1a, 1, 0x5a);
-        i.heap().write(0x1b, 1, 0xc3);
+        i.heap(0x1a).write(0x5a);
+        i.heap(0x1b).write(0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
         i.start(0, 0);

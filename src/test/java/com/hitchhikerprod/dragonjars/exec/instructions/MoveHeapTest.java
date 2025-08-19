@@ -20,11 +20,11 @@ class MoveHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.writeHeap(0x3a, 0x1234);
+        i.heap(0x3a).write(0x1234, 2);
 
         i.start(0, 0);
 
-        assertEquals(0x00001234, i.heap().read(0x18, 2));
+        assertEquals(0x00001234, i.heap(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -40,11 +40,11 @@ class MoveHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.writeHeap(0x3a, 0x1234);
+        i.heap(0x3a).write(0x1234, 2);
 
         i.start(0, 0);
 
-        assertEquals(0x00000034, i.heap().read(0x18, 2));
+        assertEquals(0x00000034, i.heap(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

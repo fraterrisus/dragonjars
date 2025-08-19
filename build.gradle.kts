@@ -46,8 +46,8 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    jvmArgs?.add("-javaagent:${mockitoAgent.asPath}")
-    jvmArgs?.add("-XX+EnableDynamicAgentLoading")
+    // jvmArgs?.add("-javaagent:${mockitoAgent.asPath}")
+    // jvmArgs?.add("-XX+EnableDynamicAgentLoading")
 }
 
 jlink {

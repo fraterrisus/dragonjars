@@ -18,14 +18,13 @@ class IncHeapTest {
     @Test
     public void wide() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
-        i.writeHeap(0x74, 0xff);
-        i.writeHeap(0x75, 0x01);
         i.setWidth(true);
+        i.heap(0x74).write(0xff);
+        i.heap(0x75).write(0x01);
         i.start(0, 0);
 
-        i.setWidth(false);
-        assertEquals(0x00, i.heap().read(0x74, 1));
-        assertEquals(0x02, i.heap().read(0x75, 1));
+        assertEquals(0x00, i.heap(0x74).read());
+        assertEquals(0x02, i.heap(0x75).read());
         assertEquals(2, i.instructionsExecuted());
         assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }
@@ -33,12 +32,13 @@ class IncHeapTest {
     @Test
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
-        i.writeHeap(0x74, 0xff);
-        i.writeHeap(0x75, 0x01);
+        i.setWidth(false);
+        i.heap(0x74).write(0xff);
+        i.heap(0x75).write(0x01);
         i.start(0, 0);
 
-        assertEquals(0x00, i.heap().read(0x74, 1));
-        assertEquals(0x01, i.heap().read(0x75, 1));
+        assertEquals(0x00, i.heap(0x74).read());
+        assertEquals(0x01, i.heap(0x75).read());
         assertEquals(2, i.instructionsExecuted());
         assertEquals(PROGRAM.getSize() - 1, i.getIP().offset());
     }

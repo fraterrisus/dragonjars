@@ -8,6 +8,7 @@ import javafx.scene.input.KeyCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
@@ -49,7 +50,7 @@ public class Instructions {
     };
 
     public static final Instruction COPY_HEAP_3E_3F = (i) -> {
-        i.heap().write(0x3e, 1, i.heap().read(0x3f, 1));
+        i.heap(0x3e).write(i.heap(0x3f).read());
         return i.getIP().incr(OPCODE);
     };
 
@@ -101,8 +102,8 @@ public class Instructions {
         final List<Integer> chars = decoder.getDecodedChars();
         if (chars.getFirst() == 0x00) return addr;
 
-        if ((i.heap().read(0x08, 1) & 0x80) == 0) {
-            i.heap().write(0x08, 1, chars.getFirst() | 0x80);
+        if ((i.heap(0x08).read() & 0x80) == 0) {
+            i.heap(0x08).write(chars.getFirst() | 0x80);
         }
 
         boolean writeSingular = true;
@@ -126,7 +127,7 @@ public class Instructions {
             }
         }
 
-        if (i.heap().read(0x09, 1) == 0x00) {
+        if (i.heap(0x09).read() == 0x00) {
             i.drawString(singular);
         } else {
             i.drawString(plural);

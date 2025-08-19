@@ -18,8 +18,8 @@ public class DivAXImm implements Instruction {
         final int modResult = op1 % op2;
         i.setMulResult(divResult);
         i.setDivResult(modResult);
-        i.heap().write(0x37, 4, divResult);
-        i.heap().write(0x3b, 2, modResult);
+        i.heap(0x37).write(divResult, 4);
+        i.heap(0x3b).write(modResult, 2);
         return ip.incr(OPCODE + wordSize(i));
     }
 }

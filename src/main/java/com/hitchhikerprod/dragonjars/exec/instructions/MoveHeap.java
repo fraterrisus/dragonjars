@@ -11,8 +11,8 @@ public class MoveHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapReadIndex = i.memory().read(ip.incr(1), 1);
         final int heapWriteIndex = i.memory().read(ip.incr(2), 1);
-        final int value = i.readHeap(heapReadIndex);
-        i.writeHeap(heapWriteIndex, value);
+        final int value = i.heap(heapReadIndex).read(i.isWide() ? 2 : 1);
+        i.heap(heapWriteIndex).write(value, i.isWide() ? 2 : 1);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
     }
 }

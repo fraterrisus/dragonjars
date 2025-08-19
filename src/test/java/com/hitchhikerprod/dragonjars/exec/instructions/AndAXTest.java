@@ -19,8 +19,8 @@ class AndAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.writeHeap(0x1a, 0x7c);
-        i.writeHeap(0x1b, 0x81);
+        i.heap(0x1a).write(0x7c);
+        i.heap(0x1b).write(0x81);
         i.setAL(0xff);
         i.setAH(0xff);
         i.start(0, 0);

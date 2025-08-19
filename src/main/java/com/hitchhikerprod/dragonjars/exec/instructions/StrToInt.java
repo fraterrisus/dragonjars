@@ -22,7 +22,7 @@ public class StrToInt implements Instruction {
             pointer++;
         }
         final int value = Integer.parseInt(digits.toString());
-        i.heap().write(0x37, 4, value);
+        i.heap(0x37).write(value, 4);
         return i.getIP().incr();
     }
 }

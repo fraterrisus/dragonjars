@@ -9,11 +9,12 @@ public class TestHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final int value = i.readHeap(heapIndex);
         if (i.isWide()) {
+            final int value = i.heap(heapIndex).read(2);
             i.setZeroFlag(value == 0x0000);
             i.setSignFlag((value & 0x8000) > 0);
         } else {
+            final int value = i.heap(heapIndex).read(1);
             i.setZeroFlag(value == 0x00);
             i.setSignFlag((value & 0x80) > 0);
         }

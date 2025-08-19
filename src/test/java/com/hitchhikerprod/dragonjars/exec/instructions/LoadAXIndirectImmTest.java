@@ -28,7 +28,7 @@ public class LoadAXIndirectImmTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setAX(0xffff);
-        i.writeHeap(0x31, 0x0005);
+        i.heap(0x31).write(0x0005, 2);
         i.setDS(i.getSegmentForChunk(0x01, Frob.CLEAN));
         i.start(0, 1);
 
@@ -41,7 +41,7 @@ public class LoadAXIndirectImmTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
         i.setWidth(true);
         i.setAX(0xffff);
-        i.writeHeap(0x31, 0x0005);
+        i.heap(0x31).write(0x0005, 2);
         i.setDS(i.getSegmentForChunk(0x1, Frob.CLEAN));
         i.setWidth(false);
         i.start(0, 1);

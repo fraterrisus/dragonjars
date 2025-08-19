@@ -45,8 +45,8 @@ class IsPartyInBoxTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap().write(0x00, 1, party.y());
-        i.heap().write(0x01, 1, party.x());
+        i.heap(0x00).write(party.y());
+        i.heap(0x01).write(party.x());
         i.start(0, 0);
 
         assertEquals(expected, i.getZeroFlag());

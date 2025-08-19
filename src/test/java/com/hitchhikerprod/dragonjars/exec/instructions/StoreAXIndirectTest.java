@@ -31,7 +31,7 @@ class StoreAXIndirectTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.writeHeap(0x5b, 0x0001);
+        i.heap(0x5b).write(0x0001, 2);
         i.setBL(0x04);
         i.start(0, 0);
 
@@ -53,7 +53,7 @@ class StoreAXIndirectTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.writeHeap(0x5b, 0x0001);
+        i.heap(0x5b).write(0x0001, 2);
         i.setBL(0x04);
         i.setWidth(false);
         i.start(0, 0);

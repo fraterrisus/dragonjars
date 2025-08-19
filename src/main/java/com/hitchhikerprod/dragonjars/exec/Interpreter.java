@@ -124,12 +124,12 @@ public class Interpreter {
         // which sets ax to 0x2a..
         // cs:0166  al <- 0xff
         // cs:0168  frob.4d32 <- 0xff
-        heap().write(0x56, 2, 0xffff);
-        heap().write(0x5a, 2, 0xffff);
+        heap(0x56).write(0xffff, 2);
+        heap(0x5a).write(0xffff, 2);
         // cs:0177  struct_idx.4d33 <- 0xff
-        heap().write(0x08, 1, 0xff);
+        heap(0x08).write(0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
-        heap().write(0xdc, 1, 0x00);
+        heap(0xdc).write(0x00);
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
@@ -190,6 +190,10 @@ public class Interpreter {
         return this.memory;
     }
 
+    public Heap.Access heap(int index) {
+        return heap.get(index);
+    }
+
     public Heap heap() {
         return this.heap;
     }
@@ -227,14 +231,6 @@ public class Interpreter {
         if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
             memory().setSegmentFrob(segmentId, Frob.EMPTY);
         }
-    }
-
-    public void writeHeap(int index, int val) {
-        heap().write(index, isWide() ? 2 : 1, val);
-    }
-
-    public int readHeap(int index) {
-        return heap().read(index, isWide() ? 2 : 1);
     }
 
     public record Rectangle(int x0, int x1, int y0, int y1) {}
@@ -550,7 +546,7 @@ public class Interpreter {
                         //   (and maybe reblast the 'corners' afterwards)
                     }
                     case 0x0b -> {
-                        heap().write(0x18, 7, 0x00); // heap[18:1e] <- 0x00
+                        heap(0x18).write(0x00, 7); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
                     }
                     case 0x0c -> drawMapTitle();
@@ -573,7 +569,7 @@ public class Interpreter {
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
-        final int save_heap_06 = heap().read(0x06, 1);
+        final int save_heap_06 = heap(0x06).read();
 
         // set the indirect function to draw_char()
 
@@ -587,7 +583,7 @@ public class Interpreter {
             heap().write(0x18 + charId, 1, 0xff);
         }
 
-        heap().write(0x06, 1, save_heap_06);
+        heap(0x06).write(save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
     }
@@ -600,7 +596,7 @@ public class Interpreter {
         x_31ed = 0x1b;
         y_31ef = (charId << 4) + 0x20;
 
-        final int charsInParty = heap().read(0x1f, 1);
+        final int charsInParty = heap(0x1f).read();
         if (charId >= charsInParty) {
             getImageWriter(writer -> {
                 final int black = Images.convertColorIndex(0);
