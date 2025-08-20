@@ -7,7 +7,7 @@ public class Heap {
     private final int[] storage = new int[256];
 
     private void write(int index, int count, int val) {
-        if (count > 4) throw new IllegalArgumentException();
+        if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
             storage[(index + i) & 0xff] = val & 0xff;
             val = val >> 8;

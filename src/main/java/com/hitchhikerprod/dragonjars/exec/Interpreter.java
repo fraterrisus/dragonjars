@@ -2,10 +2,13 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
+import com.hitchhikerprod.dragonjars.data.TextureDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -32,13 +36,17 @@ public class Interpreter {
 
     private final DragonWarsApp app;
 
+    /* Utility classes */
+
+    private final RomImageDecoder romImageDecoder;
+    private final StringDecoder stringDecoder;
+    private final TextureDecoder textureDecoder;
+    private final MapData mapDecoder;
+
     /* Memory space */
 
     private final Memory memory;
     private final Heap heap;
-
-    private final RomImageDecoder romImageDecoder;
-    private final StringDecoder stringDecoder;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
@@ -64,6 +72,9 @@ public class Interpreter {
     private int mem_342f = 0x00;
     private int mem_3430 = 0x00;
     private int bg_color_3431 = 0xffff;
+
+    private int struct_id_4d33 = 0xff;
+    private int struct_id_4d4e = 0xff;
 
     /* Architectural registers */
 
@@ -101,6 +112,8 @@ public class Interpreter {
 
         this.romImageDecoder = new RomImageDecoder(this.memory().getCodeChunk());
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
+        this.textureDecoder = new TextureDecoder(this.memory().getCodeChunk());
+        this.mapDecoder = new MapData(stringDecoder);
     }
 
     public Interpreter init() {
@@ -683,6 +696,85 @@ public class Interpreter {
         });
     }
 
+    private void markSegment4d33Dirty() { // 0x4bc2
+        final int segmentId = struct_id_4d33;
+        if (segmentId != 0xff) {
+            memory().setSegmentFrob(segmentId, Frob.DIRTY);
+            struct_id_4d4e = 0x00;
+            struct_id_4d33 = 0xff;
+        }
+    }
+
+    // FIXME, need map chunk decoder and texture decoder
+    public void drawCurrentViewport() {
+        markSegment4d33Dirty();
+        final int mapId = heap(0x02).read();
+        // N.B. these are Huffman encoded, so the map decoder will decompress them. Don't try to read them directly
+        final ModifiableChunk primaryData = memory().copyDataChunk(mapId + 0x46);
+        // final ModifiableChunk primaryData = memory().copyDataChunk(0x10);
+        final ModifiableChunk secondaryData = memory().copyDataChunk(mapId + 0x1e);
+        mapDecoder.parse(mapId, primaryData, false, secondaryData);
+
+        heap(0x21).write(mapDecoder.getMaxX());
+        heap(0x22).write(mapDecoder.getMaxY());
+        heap(0x23).write(mapDecoder.getFlags());
+        setTitleString(mapDecoder.getTitleChars());
+
+        drawRoofTexture();
+    }
+
+    private void drawRoofTexture() {
+        final int partyX = heap(0x01).read();
+        final int partyY = heap(0x00).read();
+        final int squareData = mapDecoder.getSquare(partyX, partyY);
+        // we want .... .... .**. .... .... ....
+        final int index = (squareData >> 13) & 0x03;
+        final int roofTextureFakeId = mapDecoder.getRoofTexture(index);
+        if (roofTextureFakeId == 1) {
+            // [1011/seg] <- segment for chunk 0x6f, which was stored in [57c4] somehow
+            final Chunk compressedChunk = memory().copyDataChunk(0x6f);
+            final HuffmanDecoder huffman = new HuffmanDecoder(compressedChunk);
+            final ModifiableChunk textureChunk = new ModifiableChunk(huffman.decode());
+            // [100f/adr] <- 0x0000
+            // [352e/x0] <- 0x0000
+            // [3532/y0] <- 0x0000
+            // [100e] <- 0x00
+            // bx <- 0x0004
+            final int[] buffer = new int[0x3e80];
+            for (int i = 0; i < 0x3e80; i++) buffer[i] = 0x11;
+            textureDecoder.setBuffer(buffer);
+
+            textureDecoder.entrypoint0ca7(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
+
+            getImageWriter(writer -> {
+                int pointer = 0;
+                for (int y = 0x08; y < 0x88; y++) {
+                    for (int x = 0x02; x < 0x16; x++) {
+                        Images.convertEgaData(writer, (z) -> buffer[z] & 0xff, pointer, 8 * x, y);
+                        pointer += 4;
+                    }
+                }
+            });
+
+            // pick_gfx_page()
+            //decodeRoofTexture(0x6f);
+        } else {
+            // Draw a pre-programmed checkerboard; I don't bother reading data from the executable
+            getImageWriter(writer -> {
+                for (int y = 0x08; y < 0x88; y++) {
+                    Function<Integer, Integer> getter;
+                    if (y < 0x38)
+                        getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
+                    else
+                        getter = (z) -> 0x00;
+                    for (int x = 0x02; x < 0x16; x++) {
+                        Images.convertEgaData(writer, getter, 0, 8 * x, y);
+                    }
+                }
+            });
+        }
+    }
+
     public void setTitleString(List<Integer> chars) {
         if (chars.size() > 16) {
             this.titleString = List.copyOf(chars.subList(0, 16));
@@ -905,7 +997,7 @@ public class Interpreter {
             // case 0x6e -> new DrawCompass();
             // case 0x6f -> new RotateMapView();
             // case 0x70 -> new UnrotateMapView();
-            // case 0x71 -> new RunSpecialEvent();
+            // case 0x71 -> new RunSpecialEvent(); // TODO
             // case 0x72 -> new UseItem();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
@@ -931,7 +1023,7 @@ public class Interpreter {
             // case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
-            // case 0x8b -> new DrawCurrentViewport(); // FIXME, need map chunk decoder and texture decoder
+            case 0x8b -> (i) -> { i.drawCurrentViewport(); return i.getIP().incr(); };
             // case 0x8c -> new ShowYesNoModal();
             // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instructions.NOOP;

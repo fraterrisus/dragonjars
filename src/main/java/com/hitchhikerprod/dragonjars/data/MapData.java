@@ -9,8 +9,8 @@ public class MapData {
     private final StringDecoder stringDecoder;
 
     private int mapId = -1;
-    private Chunk primaryData;
-    private Chunk secondaryData;
+    private ModifiableChunk primaryData;
+    private ModifiableChunk secondaryData;
 
     private int chunkPointer;
 
@@ -31,7 +31,7 @@ public class MapData {
     private int encountersPtr;
     private int tagLinesPtr;
 
-    private String titleString;
+    private List<Integer> titleChars;
 
     private final List<Byte> wallTextures54a7 = new ArrayList<>();
     // 54b5: translates map square bits [0:3]
@@ -55,11 +55,11 @@ public class MapData {
         this.stringDecoder = stringDecoder;
     }
 
-    public void parse(int mapId, Chunk primary, Chunk secondary) {
+    public void parse(int mapId, ModifiableChunk primary, boolean isDirty, Chunk secondary) {
         if (mapId == this.mapId) return;
 
         this.mapId = mapId;
-        this.primaryData = decompressChunk(primary); // primary = mapId + 0x46
+        this.primaryData = (isDirty) ? primary : decompressChunk(primary); // primary = mapId + 0x46
         this.secondaryData = decompressChunk(secondary); // secondary = mapId + 0x1e
 
         chunkPointer = 0;
@@ -85,7 +85,7 @@ public class MapData {
         byteReader((b) -> floorTextures54c9.add((byte)(b & 0x7f)));
         byteReader((b) -> otherTextures54cd.add((byte)(b & 0x7f)));
 
-        // decodeTitleString();
+        decodeTitleString();
 
         int ptr = chunkPointer;
         int xInc = xMax * 3;
@@ -110,6 +110,38 @@ public class MapData {
         // parseActions();
     }
 
+    public List<Integer> getTitleChars() {
+        return titleChars;
+    }
+
+    public int getMaxX() {
+        return xMax;
+    }
+
+    public int getMaxY() {
+        return yMax;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public int getSquare(int x, int y) {
+        if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
+
+        // The list of row pointers has one-too-many, and the "extra" is at the START
+        // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
+        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        return (primaryData.getUnsignedByte(offset) << 16) |
+                (primaryData.getUnsignedByte(offset+1) << 8) |
+                (primaryData.getUnsignedByte(offset+2));
+    }
+
+    public int getRoofTexture(int index) {
+        final int textureIndex = roofTextures54c5.get(index);
+        return textureChunks5677.get(textureIndex);
+    }
+
     private void byteReader(Consumer<Byte> consumer) {
         byte f = 0;
         while ((f & 0x80) == 0) {
@@ -124,14 +156,13 @@ public class MapData {
         chunkPointer += 2;
 
         stringDecoder.decodeString(primaryData, titleStringPtr);
-        titleString = stringDecoder.getDecodedString();
-        // System.out.printf("Title string: %04x - %04x\n", titleStringAdr, sd.getPointer());
+        titleChars = stringDecoder.getDecodedChars();
     }
 
-    private Chunk decompressChunk(Chunk chunk) {
+    private ModifiableChunk decompressChunk(Chunk chunk) {
         final HuffmanDecoder mapDecoder = new HuffmanDecoder(chunk);
         final List<Byte> decodedMapData = mapDecoder.decode();
-        return new Chunk(decodedMapData);
+        return new ModifiableChunk(decodedMapData);
     }
 
     private List<Integer> discoverPointers(Chunk chunk, int basePtr) {
