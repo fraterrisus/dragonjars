@@ -6,9 +6,8 @@ import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
-import com.hitchhikerprod.dragonjars.data.RomImageDecoder;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
-import com.hitchhikerprod.dragonjars.data.TextureDecoder;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
@@ -38,9 +37,8 @@ public class Interpreter {
 
     /* Utility classes */
 
-    private final RomImageDecoder romImageDecoder;
     private final StringDecoder stringDecoder;
-    private final TextureDecoder textureDecoder;
+    private final ImageDecoder imageDecoder;
     private final MapData mapDecoder;
 
     /* Memory space */
@@ -50,6 +48,7 @@ public class Interpreter {
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
+    private final int[] videoMemory = new int[0x3e80];
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -110,9 +109,8 @@ public class Interpreter {
         this.flagZero = false;
         this.flagSign = false;
 
-        this.romImageDecoder = new RomImageDecoder(this.memory().getCodeChunk());
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
-        this.textureDecoder = new TextureDecoder(this.memory().getCodeChunk());
+        this.imageDecoder = new ImageDecoder(this.memory().getCodeChunk(), videoMemory);
         this.mapDecoder = new MapData(stringDecoder);
     }
 
@@ -146,12 +144,12 @@ public class Interpreter {
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
-        // erase_video_buffer():
+        eraseVideoBuffer();
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
         //   but it also includes:
-        if (!testMode) drawGameplayCorners();
+        if (!testMode) drawViewportCorners();
 
         setBBox(0x01, 0x27, 0x08, 0xb8);
         if (!testMode) draw_borders = 0xff;
@@ -502,15 +500,24 @@ public class Interpreter {
         }
     }
 
-    public void drawGameplayCorners() {
-        // TODO: refactor this
-        // we only need to build this buffer once and make it static, really.
+    private void eraseVideoBuffer() {
+        for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
+    }
+
+    private void drawViewportCorners() {
+        for (int i = 0; i < 4; i++) imageDecoder.decodeCorner(i);
+        bitBlastViewport(); // see 0x1020
+    }
+
+    private void bitBlastViewport() {
         getImageWriter(writer -> {
-            final int[] buffer = new int[0x3e80];
-            for (int i = 3; i >= 0; i--) {
-                romImageDecoder.decodeCorner(buffer, i);
+            int ptr = 0;
+            for (int y = 0x08; y < 0x90; y++) {
+                for (int x = 0x02; x < 0x16; x++) {
+                    Images.convertEgaData(writer, (z) -> videoMemory[z] & 0xff, ptr, 8 * x, y);
+                    ptr += 4;
+                }
             }
-            romImageDecoder.reorg(buffer, writer, 0x08, 0x88, 0x50);
         });
     }
 
@@ -539,21 +546,13 @@ public class Interpreter {
             if (boundsCheck(regionId)) {
                 switch (regionId) {
                     case 0x09 -> { // the vertical column with spell icons
-                        final int finalRegionId = regionId;
-                        getImageWriter(writer -> romImageDecoder.decodeRomImage(finalRegionId, writer));
+                        getImageWriter(writer -> imageDecoder.decodeRomImage(0x09, writer));
                         // ax <- 0x0000
                         // [4a71] <- ax
                         // [4a73] <- ax
                         // CF <- 1
                     }
-                    case 0x0a -> { // viewport
-                        // if bounds_check(0xa)
-                        //   ... we already did that
-                        // check_and_push_video_data(0xa)
-                        //   which seems to bitblast the most recent buffer data to the video card
-                        // TODO: keep a separate 'video' buffer for the viewport
-                        //   (and maybe reblast the 'corners' afterwards)
-                    }
+                    case 0x0a -> bitBlastViewport();
                     case 0x0b -> {
                         heap(0x18).write(0x00, 7); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
@@ -565,7 +564,7 @@ public class Interpreter {
                     }
                     default -> {
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> romImageDecoder.decodeRomImage(finalRegionId, writer));
+                        getImageWriter(writer -> imageDecoder.decodeRomImage(finalRegionId, writer));
                         // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
                     }
                 }
@@ -705,7 +704,6 @@ public class Interpreter {
         }
     }
 
-    // FIXME, need map chunk decoder and texture decoder
     public void drawCurrentViewport() {
         markSegment4d33Dirty();
         final int mapId = heap(0x02).read();
@@ -721,6 +719,7 @@ public class Interpreter {
         setTitleString(mapDecoder.getTitleChars());
 
         drawRoofTexture();
+        drawViewportCorners(); // for testing
     }
 
     private void drawRoofTexture() {
@@ -729,50 +728,36 @@ public class Interpreter {
         final int squareData = mapDecoder.getSquare(partyX, partyY);
         // we want .... .... .**. .... .... ....
         final int index = (squareData >> 13) & 0x03;
-        final int roofTextureFakeId = mapDecoder.getRoofTexture(index);
-        if (roofTextureFakeId == 1) {
-            // [1011/seg] <- segment for chunk 0x6f, which was stored in [57c4] somehow
-            final Chunk compressedChunk = memory().copyDataChunk(0x6f);
-            final HuffmanDecoder huffman = new HuffmanDecoder(compressedChunk);
-            final ModifiableChunk textureChunk = new ModifiableChunk(huffman.decode());
-            // [100f/adr] <- 0x0000
-            // [352e/x0] <- 0x0000
-            // [3532/y0] <- 0x0000
-            // [100e] <- 0x00
-            // bx <- 0x0004
-            final int[] buffer = new int[0x3e80];
-            for (int i = 0; i < 0x3e80; i++) buffer[i] = 0x11;
-            textureDecoder.setBuffer(buffer);
-
-            textureDecoder.entrypoint0ca7(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
-
-            getImageWriter(writer -> {
-                int pointer = 0;
-                for (int y = 0x08; y < 0x88; y++) {
-                    for (int x = 0x02; x < 0x16; x++) {
-                        Images.convertEgaData(writer, (z) -> buffer[z] & 0xff, pointer, 8 * x, y);
-                        pointer += 4;
-                    }
-                }
-            });
-
-            // pick_gfx_page()
-            //decodeRoofTexture(0x6f);
+        final int roofTextureId = mapDecoder.getRoofTexture(index);
+        if (roofTextureId == 1) {
+            drawSkyTexture();
         } else {
-            // Draw a pre-programmed checkerboard; I don't bother reading data from the executable
-            getImageWriter(writer -> {
-                for (int y = 0x08; y < 0x88; y++) {
-                    Function<Integer, Integer> getter;
-                    if (y < 0x38)
-                        getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
-                    else
-                        getter = (z) -> 0x00;
-                    for (int x = 0x02; x < 0x16; x++) {
-                        Images.convertEgaData(writer, getter, 0, 8 * x, y);
-                    }
-                }
-            });
+            drawCheckerboardRoof();
         }
+    }
+
+    private void drawCheckerboardRoof() { // 0x5515
+        // I don't bother reading the silly array of bytes from the executable (0x55ec)
+        getImageWriter(writer -> {
+            for (int y = 0x08; y < 0x88; y++) {
+                final Function<Integer, Integer> getter;
+                if (y < 0x38)
+                    getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
+                else
+                    getter = (z) -> 0x00;
+                for (int x = 0x02; x < 0x16; x++) {
+                    Images.convertEgaData(writer, getter, 0, 8 * x, y);
+                }
+            }
+        });
+    }
+
+    private void drawSkyTexture() { // 0x54f8
+        final Chunk compressedChunk = memory().copyDataChunk(0x6f);
+        final HuffmanDecoder huffman = new HuffmanDecoder(compressedChunk);
+        final ModifiableChunk textureChunk = new ModifiableChunk(huffman.decode());
+        imageDecoder.decodeTexture(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
+        // bitBlastGameplayArea(); // we'll probably call this later?
     }
 
     public void setTitleString(List<Integer> chars) {
@@ -790,7 +775,7 @@ public class Interpreter {
         // image bytes for spaces where they aren't writing characters.
         for (int x = 0; x < 16; x++) {
             final int pictureId = 0x1b + x;
-            getImageWriter(writer -> romImageDecoder.decodeRomImage(pictureId, writer));
+            getImageWriter(writer -> imageDecoder.decodeRomImage(pictureId, writer));
         }
 
         setBackground(0x10);

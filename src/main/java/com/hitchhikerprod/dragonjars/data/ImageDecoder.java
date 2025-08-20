@@ -1,19 +1,88 @@
 package com.hitchhikerprod.dragonjars.data;
 
-public class TextureDecoder {
-    private Chunk codeChunk;
-    private int[] buffer;
+import javafx.scene.image.PixelWriter;
 
-    public TextureDecoder(Chunk codeChunk) {
+import java.util.List;
+
+public class ImageDecoder {
+    private record Corner(List<Byte> data, int x0, int y0) {}
+
+    private final Chunk codeChunk;
+    private final int[] buffer;
+
+    public ImageDecoder(Chunk codeChunk, int[] buffer) {
         this.codeChunk = codeChunk;
-        this.buffer = new int[1];
-    }
-
-    public void setBuffer(int[] buffer) {
         this.buffer = buffer;
     }
 
-    public void entrypoint0ca7(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int unk_100e) { // 0x0ca7
+    public void decodeCorner(int index) {
+        final Corner c = getCorner(index);
+
+        final int width = 0x7f & c.data.get(0);
+        final int height = 0xff & c.data.get(1);
+        final int dx = c.data.get(2);
+        final int dy = c.data.get(3);
+
+        final int x0 = c.x0 + dx;
+        final int y0 = c.y0 + dy;
+
+        int callIndex = 0;
+        if ((x0 & 0x0001) > 0) callIndex |= 0x2;
+        if ((x0 & 0x8000) > 0) callIndex |= 0x4;
+
+        final Chunk cornerChunk = new Chunk(c.data);
+
+        switch (callIndex) {
+            case 0x0 -> decode_0d48(cornerChunk, 4, width, height, x0, y0, 0x50, 0x50);
+            case 0x2 -> throw new UnsupportedOperationException("0x0dab");
+            case 0x4 -> throw new UnsupportedOperationException("0x0e2d");
+            case 0x6 -> throw new UnsupportedOperationException("0x0e85");
+            case 0x8 -> throw new UnsupportedOperationException("0x0efd");
+            case 0xa -> throw new UnsupportedOperationException("0x0f72");
+        }
+    }
+
+    // 0x68c0 is the lookup table for most ROM image data
+    public void decodeRomImage(int index, PixelWriter writer) {
+        // address LUT: 0x68c0:2 - 0x6914:2
+        final List<Byte> lut = codeChunk.getBytes(0x67c0, 0x56);
+        final int baseAddress = (lut.get((2 * index) + 1) & 0xff) << 8 |
+                (lut.get(2 * index) & 0xff);
+
+        int pointer = baseAddress - 0x0100;
+
+        final int innerCounter = codeChunk.getUnsignedByte(pointer);
+        final int outerCounter = codeChunk.getUnsignedByte(pointer + 1);
+        int x0 = codeChunk.getUnsignedByte(pointer + 2);
+        int baseBit = (x0 % 2 == 1) ? 2 : 6;
+        x0 = x0 / 2;
+        final int y0 = codeChunk.getUnsignedByte(pointer + 3);
+
+        pointer += 4;
+
+        for (int i = 0; i < outerCounter; i++) {
+            final int y = y0 + i;
+            int innerBit = baseBit;
+            int x = x0 * 8;
+            for (int j = 0; j < innerCounter; j++) {
+                final int colorIndex = codeChunk.getUnsignedByte(pointer);
+                pointer++;
+                writer.setArgb(x + (7 - innerBit), y, Images.convertColorIndex(colorIndex));
+
+                innerBit++;
+                writer.setArgb(x + (7 - innerBit), y, Images.convertColorIndex(colorIndex >> 4));
+
+                innerBit -= 2;
+                if (innerBit < 0) {
+                    innerBit = 7;
+                    x += 8;
+                }
+                innerBit--;
+            }
+        }
+    }
+    
+    public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int unk_100e) { // 0x0ca7
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
         // offset: stand-in for bx
@@ -59,6 +128,20 @@ public class TextureDecoder {
             case 0xc, 0xe -> {}
             default -> throw new RuntimeException("Unrecognized call index " + callIndex + "; this shouldn't be possible");
         }
+    }
+
+    // 0x652e is the lookup table for the little viewport corner decorations
+    private Corner getCorner(int index) {
+        final int lutAddress = 0x6428 + (index * 4);
+        final List<Byte> metadata = codeChunk.getBytes(lutAddress, 4);
+
+        final int baseAddress = (((metadata.get(1) & 0xff) << 8) | (metadata.get(0) & 0xff)) - 0x0100;
+        final int x0 = metadata.get(2) & 0xff;
+        final int y0 = metadata.get(3) & 0xff;
+        final int width = codeChunk.getUnsignedByte(baseAddress);
+        final int height = codeChunk.getUnsignedByte(baseAddress + 1);
+        final List<Byte> imageData = codeChunk.getBytes(baseAddress, 4 + (width * height));
+        return new Corner(imageData, x0, y0);
     }
 
     private void decode_0d48(Chunk chunk, final int pointer, int width, int height, int x0t2, int y0,
