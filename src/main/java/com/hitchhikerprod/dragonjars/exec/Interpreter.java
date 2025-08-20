@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
@@ -723,17 +724,40 @@ public class Interpreter {
         heap(0x21).write(mapDecoder.getMaxX());
         heap(0x22).write(mapDecoder.getMaxY());
         heap(0x23).write(mapDecoder.getFlags());
+        heap(0x26).write(getWallMetadata());
         setTitleString(mapDecoder.getTitleChars());
 
-        final MapData.Square[][] squares = mapDecoder.getView(partyX, partyY, partyFacing);
+        // final MapData.Square[][] squares = mapDecoder.getView(partyX, partyY, partyFacing);
 
-        drawRoofTexture(squares[3][1]);
-        drawFloorTexture(squares);
-        drawViewportCorners(); // for testing
+        mapDecoder.setStepped(partyX, partyY);
+
+        if (((mapDecoder.getFlags() & 0x08) > 0) || (heap(0xc1).read() > 0)) {
+            drawRoofTexture(mapDecoder.getSquare(partyX, partyY).roofTexture());
+            drawFloorTexture();
+            drawViewportCorners(); // for testing
+        } else {
+            eraseVideoBuffer(); // this is pretty aggressive
+            drawViewportCorners();
+            // drawHud?
+        }
     }
 
-    private void drawRoofTexture(MapData.Square square) {
-        if (square.roofTexture() == 1) { // 0x54f8
+    private int getWallMetadata() {
+        final PartyLocation loc = getPartyLocation();
+        return switch (loc.facing()) {
+            case NORTH -> mapDecoder.getSquare(loc.pos().x(), loc.pos().y())
+                    .northWallTextureMetadata().orElse(0);
+            case EAST -> mapDecoder.getSquare(loc.pos().x() + 1, loc.pos().y())
+                    .westWallTextureMetadata().orElse(0);
+            case SOUTH -> mapDecoder.getSquare(loc.pos().x(), loc.pos().y() - 1)
+                    .northWallTextureMetadata().orElse(0);
+            case WEST -> mapDecoder.getSquare(loc.pos().x(), loc.pos().y())
+                    .westWallTextureMetadata().orElse(0);
+        };
+    }
+
+    private void drawRoofTexture(int textureId) {
+        if (textureId == 1) { // 0x54f8
             final int segmentId = getSegmentForChunk(0x6f, Frob.DIRTY);
             final Chunk textureChunk = memory().getSegment(segmentId);
             imageDecoder.decodeTexture(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
@@ -772,13 +796,49 @@ public class Interpreter {
             0xa, 0x9, 0xb, 0x7, 0x6, 0x8, 0x4, 0x3, 0x5
     );
 
-    private void drawFloorTexture(final MapData.Square[][] squares) {
+    record GridCoordinate(int x, int y) {}
+
+    record PartyLocation(GridCoordinate pos, Facing facing) {}
+
+    private GridCoordinate adjustForFacing(GridCoordinate party, Facing facing, int squareId) {
+        return switch (facing) {
+            case NORTH -> {
+                final int dx = (squareId % 3) - 1;
+                final int dy = 3 - (squareId / 3);
+                yield new GridCoordinate(party.x() + dx, party.y() + dy);
+            }
+            case SOUTH -> {
+                final int dx = 1 - (squareId % 3);
+                final int dy = (squareId / 3) - 3;
+                yield new GridCoordinate(party.x() + dx, party.y() + dy);
+            }
+            case EAST -> {
+                final int dx = 3 - (squareId / 3);
+                final int dy = 1 - (squareId % 3);
+                yield new GridCoordinate(party.x() + dx, party.y() + dy);
+            }
+            case WEST -> {
+                final int dx = (squareId / 3) - 3;
+                final int dy = (squareId % 3) - 1;
+                yield new GridCoordinate(party.x() + dx, party.y() + dy);
+            }
+        };
+    }
+
+    private PartyLocation getPartyLocation() {
+        return new PartyLocation(
+            new GridCoordinate(heap(0x01).read(), heap(0x00).read()),
+            Facing.valueOf(heap(0x03).read())
+        );
+    }
+
+    private void drawFloorTexture() {
+        final PartyLocation loc = getPartyLocation();
         int offset = 8;
         while (offset >= 0) {
             final int squareId = SQUARE_ORDER.get(offset);
-            final int y = squareId / 3;
-            final int x = squareId % 3;
-            final MapData.Square s = squares[y][x];
+            final GridCoordinate rotated = adjustForFacing(loc.pos(), loc.facing(), squareId);
+            final MapData.Square s = mapDecoder.getSquare(rotated.x(), rotated.y());
             final int segmentId = getSegmentForChunk(s.floorTextureChunk(), Frob.DIRTY);
             final Chunk textureChunk = memory().getSegment(segmentId);
             final int x0 = FLOOR_X_OFFSET.get(offset);

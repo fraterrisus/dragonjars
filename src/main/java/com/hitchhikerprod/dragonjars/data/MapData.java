@@ -127,6 +127,12 @@ public class MapData {
         return flags;
     }
 
+    public void setStepped(int x, int y) {
+        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        final int rawData = primaryData.getUnsignedByte(offset+1);
+        primaryData.write(offset+1, 1, rawData | 0x08);
+    }
+
     public record Square(
             int rawData,
             Optional<Integer> northWallTextureChunk,
