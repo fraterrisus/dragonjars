@@ -1,7 +1,16 @@
 package com.hitchhikerprod.dragonjars.data;
 
+import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 
+import javax.imageio.ImageIO;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.List;
 
 public class ImageDecoder {
@@ -81,13 +90,18 @@ public class ImageDecoder {
             }
         }
     }
-    
+
+    public static class NoImageException extends RuntimeException {
+        public NoImageException(String message) { super(message); }
+    }
+
     public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int unk_100e) { // 0x0ca7
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
         // offset: stand-in for bx
-        final int value = chunk.getUnsignedByte(pointer + offset);
-        if (value == 0) return;
+        final int value = chunk.getWord(pointer + offset);
+        if (value == 0) throw new NoImageException("Null pointer");
+        if (pointer + value > chunk.getSize()) throw new IllegalArgumentException("Offset too large");
         entrypoint0cb8(chunk, pointer + value, x0_352e, y0_3532, unk_100e);
     }
 
@@ -125,7 +139,7 @@ public class ImageDecoder {
             case 0x6 -> decode_0e85();
             case 0x8 -> decode_0efd();
             case 0xa -> decode_0f72();
-            case 0xc, 0xe -> {}
+            case 0xc, 0xe -> throw new NoImageException("Call index " + callIndex);
             default -> throw new RuntimeException("Unrecognized call index " + callIndex + "; this shouldn't be possible");
         }
     }
@@ -153,7 +167,7 @@ public class ImageDecoder {
         int temp = width + x0 - factor;
         if (temp > 0) {
             width_100a -= temp;
-            if (width_100a <= 0) return;
+            if (width_100a <= 0) throw new NoImageException("Image width less than 0");
         }
 
         int y = height;
@@ -182,22 +196,98 @@ public class ImageDecoder {
     }
 
     private void decode_0dab() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("0x0dab");
     }
 
     private void decode_0e2d() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("0x0e2d");
     }
 
     private void decode_0e85() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("0x0e85");
     }
 
     private void decode_0efd() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("0x0efd");
     }
 
     private void decode_0f72() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("0x0f72");
+    }
+
+    public static void main(String[] args) {
+        try (
+                final RandomAccessFile exec = new RandomAccessFile("DRAGON.COM", "r");
+                final RandomAccessFile data1 = new RandomAccessFile("DATA1", "r");
+                final RandomAccessFile data2 = new RandomAccessFile("DATA2", "r");
+        ) {
+            final int chunkId = Integer.parseInt(args[0].substring(2), 16);
+
+            final int codeSize = (int) (exec.length());
+            if ((long) codeSize != exec.length()) {
+                throw new RuntimeException("Executable is too big for one byte array");
+            }
+            final byte[] codeSegment = new byte[codeSize];
+            exec.readFully(codeSegment);
+            final Chunk codeChunk = new Chunk(codeSegment);
+
+            final ChunkTable chunkTable = new ChunkTable(data1, data2);
+            final Chunk rawChunk = chunkTable.getChunk(chunkId);
+            final HuffmanDecoder huffman = new HuffmanDecoder(rawChunk);
+            final Chunk decodedChunk = huffman.decodeChunk();
+            decodedChunk.display();
+
+            final int[] videoMemory = new int[0x3e80];
+            for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
+            final ImageDecoder decoder = new ImageDecoder(codeChunk, videoMemory);
+
+            for (int offset = 0; offset < 0x20; offset += 2) {
+                try {
+                    decoder.decodeTexture(decodedChunk, 0, offset, 0, 0, 0);
+                    System.out.println("Decoded image at offset " + offset);
+                    final WritableImage buf = Images.blankImage(320, 200);
+                    final PixelWriter pixelWriter = buf.getPixelWriter();
+                    int ptr = 0;
+                    for (int y = 0x08; y < 0x90; y++) {
+                        for (int x = 0x02; x < 0x16; x++) {
+                            Images.convertEgaData(pixelWriter, (z) -> videoMemory[z] & 0xff, ptr, x * 8, y);
+                            ptr += 4;
+                        }
+                    }
+
+                    final String filename = String.format("texture-%02x-%02x.png", chunkId, offset);
+                    final BufferedImage image = new BufferedImage(320, 200, BufferedImage.TYPE_INT_RGB);
+                    final PixelReader pixelReader = buf.getPixelReader();
+                    for (int y = 0x08; y < 0x90; y++) {
+                        for (int x = 0x02 * 8; x < 0x16 * 8; x++) {
+                            image.setRGB(x, y, pixelReader.getArgb(x, y));
+                        }
+                    }
+                    ImageIO.write(scale(image, 4.0, AffineTransformOp.TYPE_NEAREST_NEIGHBOR), "png", new File(filename));
+                    for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("No image found at offset " + offset + ":" + e.getMessage());
+                    offset = 0x100;
+                } catch (NoImageException e) {
+                    System.out.println("No image found at offset " + offset + ":" + e.getMessage());
+                } catch (UnsupportedOperationException e) {
+                    System.out.println("Unsupported decode operation at offset " + offset + ":" + e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static BufferedImage scale(final BufferedImage before, final double scale, final int type) {
+        int w = before.getWidth();
+        int h = before.getHeight();
+        int w2 = (int) (w * scale);
+        int h2 = (int) (h * scale);
+        BufferedImage after = new BufferedImage(w2, h2, before.getType());
+        AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
+        AffineTransformOp scaleOp = new AffineTransformOp(scaleInstance, type);
+        scaleOp.filter(before, after);
+        return after;
     }
 }

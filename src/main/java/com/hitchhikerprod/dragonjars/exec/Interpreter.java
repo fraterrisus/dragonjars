@@ -706,17 +706,22 @@ public class Interpreter {
 
     public void drawCurrentViewport() {
         markSegment4d33Dirty();
+        final int partyX = heap(0x01).read();
+        final int partyY = heap(0x00).read();
+        final int partyFacing = heap(0x03).read();
         final int mapId = heap(0x02).read();
         // N.B. these are Huffman encoded, so the map decoder will decompress them. Don't try to read them directly
-        final ModifiableChunk primaryData = memory().copyDataChunk(mapId + 0x46);
-        // final ModifiableChunk primaryData = memory().copyDataChunk(0x10);
+        // final ModifiableChunk primaryData = memory().copyDataChunk(mapId + 0x46);
+        final ModifiableChunk primaryData = memory().copyDataChunk(0x10);
         final ModifiableChunk secondaryData = memory().copyDataChunk(mapId + 0x1e);
-        mapDecoder.parse(mapId, primaryData, false, secondaryData);
+        mapDecoder.parse(mapId, primaryData, true, secondaryData);
 
         heap(0x21).write(mapDecoder.getMaxX());
         heap(0x22).write(mapDecoder.getMaxY());
         heap(0x23).write(mapDecoder.getFlags());
         setTitleString(mapDecoder.getTitleChars());
+
+        int[][] squares = mapDecoder.getView(partyX, partyY, partyFacing);
 
         drawRoofTexture();
         drawViewportCorners(); // for testing

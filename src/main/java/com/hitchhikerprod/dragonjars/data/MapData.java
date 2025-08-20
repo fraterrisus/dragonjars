@@ -131,10 +131,47 @@ public class MapData {
 
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
+        // FIXME: wrapping?
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
         return (primaryData.getUnsignedByte(offset) << 16) |
                 (primaryData.getUnsignedByte(offset+1) << 8) |
                 (primaryData.getUnsignedByte(offset+2));
+    }
+
+    public int[][] getView(int x, int y, int facing) {
+        final int[][] view = new int[4][3];
+        switch (facing) {
+            case 0: // North
+                for (int d = 0; d < 4; d++) {
+                    view[3 - d][0] = getSquare(x - 1, y + d);
+                    view[3 - d][1] = getSquare(x, y + d);
+                    view[3 - d][2] = getSquare(x + 1, y + d);
+                }
+                return view;
+            case 1: // East
+                for (int d = 0; d < 4; d++) {
+                    view[3 - d][0] = getSquare(x + d, y + 1);
+                    view[3 - d][1] = getSquare(x + d, y);
+                    view[3 - d][2] = getSquare(x + d, y - 1);
+                }
+                return view;
+            case 2: // South
+                for (int d = 0; d < 4; d++) {
+                    view[3 - d][0] = getSquare(x + 1, y - d);
+                    view[3 - d][1] = getSquare(x, y - d);
+                    view[3 - d][2] = getSquare(x - 1, y - d);
+                }
+                return view;
+            case 3: // West
+                for (int d = 0; d < 4; d++) {
+                    view[3 - d][0] = getSquare(x - d, y - 1);
+                    view[3 - d][1] = getSquare(x - d, y);
+                    view[3 - d][2] = getSquare(x - d, y + 1);
+                }
+                return view;
+            default:
+                throw new IllegalArgumentException("Unexpected facing: " + facing);
+        }
     }
 
     public int getRoofTexture(int index) {
