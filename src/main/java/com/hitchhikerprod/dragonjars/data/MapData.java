@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class MapData {
@@ -126,20 +127,91 @@ public class MapData {
         return flags;
     }
 
-    public int getSquare(int x, int y) {
+    public record Square(
+            int rawData,
+            Optional<Integer> northWallTextureChunk,
+            Optional<Integer> northWallTextureMetadata,
+            Optional<Integer> westWallTextureChunk,
+            Optional<Integer> westWallTextureMetadata,
+            int roofTexture,
+            int floorTextureChunk,
+            Optional<Integer> otherTextureChunk,
+            boolean touched,
+            int eventId
+    ) {}
+
+    public Square getSquare(int x, int y) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
         // FIXME: wrapping?
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
-        return (primaryData.getUnsignedByte(offset) << 16) |
+        final int rawData = (primaryData.getUnsignedByte(offset) << 16) |
                 (primaryData.getUnsignedByte(offset+1) << 8) |
                 (primaryData.getUnsignedByte(offset+2));
+
+        final int northWallTextureIndex = (rawData >> 20) & 0xf;
+        final Optional<Integer> northWallTextureId;
+        final Optional<Integer> northWallTextureMetadata;
+        if (northWallTextureIndex == 0) {
+            northWallTextureId = Optional.empty();
+            northWallTextureMetadata = Optional.empty();
+        } else {
+            northWallTextureId = Optional.of(textureHelper(wallTextures54a7, northWallTextureIndex));
+            northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex));
+        }
+
+        final int westWallTextureIndex = (rawData >> 16) & 0xf;
+        final Optional<Integer> westWallTextureId;
+        final Optional<Integer> westWallTextureMetadata;
+        if (westWallTextureIndex == 0) {
+            westWallTextureId = Optional.empty();
+            westWallTextureMetadata = Optional.empty();
+        } else {
+            westWallTextureId = Optional.of(textureHelper(wallTextures54a7, westWallTextureIndex));
+            westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex));
+        }
+
+        final int roofTextureIndex = (rawData >> 14) & 0x3;
+        final int roofTextureId = 0xff & roofTextures54c5.get(roofTextureIndex);
+
+        final int floorTextureIndex = (rawData >> 12) & 0x3;
+        final int floorTextureId = textureHelper(floorTextures54c9, floorTextureIndex);
+
+        final boolean touched = (rawData & 0x000800) > 0;
+
+        final int otherTextureIndex = (rawData >> 8) & 0x7;
+        final Optional<Integer> otherTextureId;
+        if (otherTextureIndex == 0) {
+            otherTextureId = Optional.empty();
+        } else {
+            otherTextureId = Optional.of(0xff & textureChunks5677.get(otherTextureIndex));
+        }
+
+        final int eventId = (rawData) & 0xff;
+
+        return new Square(
+                rawData,
+                northWallTextureId,
+                northWallTextureMetadata,
+                westWallTextureId,
+                westWallTextureMetadata,
+                roofTextureId,
+                floorTextureId,
+                otherTextureId,
+                touched,
+                eventId
+        );
     }
 
-    public int[][] getView(int x, int y, int facing) {
-        final int[][] view = new int[4][3];
+    private int textureHelper(List<Byte> sectionTextures, int index) {
+        final int textureIndex = 0xff & sectionTextures.get(index);
+        return 0x6e + (0xff & textureChunks5677.get(textureIndex));
+    }
+
+    public Square[][] getView(int x, int y, int facing) {
+        final Square[][] view = new Square[4][3];
         switch (facing) {
             case 0: // North
                 for (int d = 0; d < 4; d++) {

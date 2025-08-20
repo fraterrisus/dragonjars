@@ -219,8 +219,12 @@ public class Interpreter {
     public int getSegmentForChunk(int chunkId, Frob frob) {
         int segmentId = memory().lookupChunkId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
-            final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             segmentId = memory().getFreeSegmentId();
+            ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
+            if (chunkId >= 0x1e) {
+                final Chunk decompressedChunk = new HuffmanDecoder(newChunk).decodeChunk();
+                newChunk = new ModifiableChunk(decompressedChunk);
+            }
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
         }
         // should there be a "don't overwrite frob 0xff" guard here?
@@ -721,48 +725,70 @@ public class Interpreter {
         heap(0x23).write(mapDecoder.getFlags());
         setTitleString(mapDecoder.getTitleChars());
 
-        int[][] squares = mapDecoder.getView(partyX, partyY, partyFacing);
+        final MapData.Square[][] squares = mapDecoder.getView(partyX, partyY, partyFacing);
 
-        drawRoofTexture();
+        drawRoofTexture(squares[3][1]);
+        drawFloorTexture(squares);
         drawViewportCorners(); // for testing
     }
 
-    private void drawRoofTexture() {
-        final int partyX = heap(0x01).read();
-        final int partyY = heap(0x00).read();
-        final int squareData = mapDecoder.getSquare(partyX, partyY);
-        // we want .... .... .**. .... .... ....
-        final int index = (squareData >> 13) & 0x03;
-        final int roofTextureId = mapDecoder.getRoofTexture(index);
-        if (roofTextureId == 1) {
-            drawSkyTexture();
-        } else {
-            drawCheckerboardRoof();
+    private void drawRoofTexture(MapData.Square square) {
+        if (square.roofTexture() == 1) { // 0x54f8
+            final int segmentId = getSegmentForChunk(0x6f, Frob.DIRTY);
+            final Chunk textureChunk = memory().getSegment(segmentId);
+            imageDecoder.decodeTexture(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
+            // bitBlastGameplayArea(); // we'll probably call this later?
+        } else { // 0x5515
+            // Draw a generic checkerboard roof
+            // I don't bother reading the silly array of bytes from the executable (0x55ec)
+            getImageWriter(writer -> {
+                for (int y = 0x08; y < 0x88; y++) {
+                    final Function<Integer, Integer> getter;
+                    if (y < 0x38)
+                        getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
+                    else
+                        getter = (z) -> 0x00;
+                    for (int x = 0x02; x < 0x16; x++) {
+                        Images.convertEgaData(writer, getter, 0, 8 * x, y);
+                    }
+                }
+            });
         }
     }
 
-    private void drawCheckerboardRoof() { // 0x5515
-        // I don't bother reading the silly array of bytes from the executable (0x55ec)
-        getImageWriter(writer -> {
-            for (int y = 0x08; y < 0x88; y++) {
-                final Function<Integer, Integer> getter;
-                if (y < 0x38)
-                    getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
-                else
-                    getter = (z) -> 0x00;
-                for (int x = 0x02; x < 0x16; x++) {
-                    Images.convertEgaData(writer, getter, 0, 8 * x, y);
-                }
-            }
-        });
-    }
+    private static final List<Integer> FLOOR_X_OFFSET = List.of(
+            0x10, 0x00, 0x80, 0x20, 0x00, 0x70, 0x30, 0x00, 0x60
+    );
 
-    private void drawSkyTexture() { // 0x54f8
-        final Chunk compressedChunk = memory().copyDataChunk(0x6f);
-        final HuffmanDecoder huffman = new HuffmanDecoder(compressedChunk);
-        final ModifiableChunk textureChunk = new ModifiableChunk(huffman.decode());
-        imageDecoder.decodeTexture(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
-        // bitBlastGameplayArea(); // we'll probably call this later?
+    private static final List<Integer> FLOOR_Y_OFFSET = List.of(
+            0x78, 0x78, 0x78, 0x68, 0x68, 0x68, 0x58, 0x58, 0x58
+    );
+
+    private static final List<Integer> FLOOR_TEXTURE_OFFSET = List.of(
+            0x12, 0x10, 0x14, 0x0c, 0x0a, 0x0e, 0x06, 0x04, 0x08
+    );
+
+    private static final List<Integer> SQUARE_ORDER = List.of(
+            0xa, 0x9, 0xb, 0x7, 0x6, 0x8, 0x4, 0x3, 0x5
+    );
+
+    private void drawFloorTexture(final MapData.Square[][] squares) {
+        int offset = 8;
+        while (offset >= 0) {
+            final int squareId = SQUARE_ORDER.get(offset);
+            final int y = squareId / 3;
+            final int x = squareId % 3;
+            final MapData.Square s = squares[y][x];
+            final int segmentId = getSegmentForChunk(s.floorTextureChunk(), Frob.DIRTY);
+            final Chunk textureChunk = memory().getSegment(segmentId);
+            final int x0 = FLOOR_X_OFFSET.get(offset);
+            final int y0 = FLOOR_Y_OFFSET.get(offset);
+            final int textureOffset = FLOOR_TEXTURE_OFFSET.get(offset);
+//            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
+//                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
+            imageDecoder.decodeTexture(textureChunk, 0, textureOffset, x0, y0, 0x0);
+            offset--;
+        }
     }
 
     public void setTitleString(List<Integer> chars) {
