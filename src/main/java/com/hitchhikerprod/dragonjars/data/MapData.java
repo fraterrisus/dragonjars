@@ -47,10 +47,10 @@ public class MapData {
     // 5734: list of pointers to square data rows
     private final List<Integer> rowPointers57e4 = new ArrayList<>();
 
-    // private final List<Action> actions = new ArrayList<>();
-    // private final List<Item> items = new ArrayList<>();
-    // private final List<Encounter> encounters = new ArrayList<>();
-    // private final List<Monster> monsters = new ArrayList<>();
+    private final List<Action> actions = new ArrayList<>();
+    private final List<Item> items = new ArrayList<>();
+    private final List<Encounter> encounters = new ArrayList<>();
+    private final List<Monster> monsters = new ArrayList<>();
 
     public MapData(StringDecoder stringDecoder) {
         this.stringDecoder = stringDecoder;
@@ -106,9 +106,9 @@ public class MapData {
         tagLinesPtr = secondaryData.getWord(4);
         itemListPtr = secondaryData.getWord(6);
 
-        // parseEncounters();
-        // parseItems();
-        // parseActions();
+        parseEncounters();
+        parseItems();
+        parseActions();
     }
 
     public List<Integer> getTitleChars() {
@@ -294,5 +294,84 @@ public class MapData {
             thisPtr += 2;
         }
         return pointers;
+    }
+
+    // See mfn.72()
+    private void parseActions() {
+        if (actionsPtr == 0) return;
+
+        int pointer = actionsPtr;
+        while (true) {
+            final int header = primaryData.getUnsignedByte(pointer);
+            if (header == 0xff) {
+                // 0xff indicates the end of the list of actions
+                return;
+            } else if (header == 0x80) {
+                // 0x80 indicates an action triggered by using an item
+                // The item byte refers to the map data item list -- the item in your inventory
+                // must match that item perfectly to trigger the action.
+                actions.add(new ItemAction(
+                        primaryData.getUnsignedByte(pointer + 1),
+                        primaryData.getUnsignedByte(pointer + 2),
+                        primaryData.getUnsignedByte(pointer + 3)));
+                pointer += 4;
+            } else if (header <= 0x3c) {
+                // 0x00-0x3c indicates an action triggered by casting a spell
+                actions.add(new SpellAction(header,
+                        primaryData.getUnsignedByte(pointer + 1),
+                        primaryData.getUnsignedByte(pointer + 2)));
+                pointer += 3;
+            } else if (header >= 0x8c && header <= 0xba) {
+                // 0x8c-0xba indicates an action triggered by using a skill
+                actions.add(new SkillAction(header,
+                        primaryData.getUnsignedByte(pointer + 1),
+                        primaryData.getUnsignedByte(pointer + 2)));
+                pointer += 3;
+            } else if (header == 0xfd || header == 0xfe) {
+                // Miscellaneous "catch-all" actions; they trigger whenever you use something that
+                // wasn't caught by a previous Action.
+                // 0xfd triggers if the special ID matches the current square
+                // 0xfe always triggers
+                actions.add(new MatchAction(header,
+                        primaryData.getUnsignedByte(pointer + 1),
+                        primaryData.getUnsignedByte(pointer + 2)));
+                pointer += 3;
+            } else {
+                actions.add(new Action(header,
+                        primaryData.getUnsignedByte(pointer + 1),
+                        primaryData.getUnsignedByte(pointer + 2)));
+                pointer += 3;
+            }
+        }
+    }
+
+    private void parseItems() {
+        if (itemListPtr == 0) return;
+
+        for (int offset : discoverPointers(secondaryData, itemListPtr)) {
+            this.items.add(new Item(secondaryData).decode(offset));
+        }
+    }
+
+    private void parseEncounters() {
+        if ((monsterDataPtr == 0) ||
+                (monsterDataPtr == tagLinesPtr) ||
+                (monsterDataPtr == encountersPtr)) { return; }
+
+        for (int offset : discoverPointers(secondaryData, monsterDataPtr + 1)) {
+            monsters.add(new Monster(secondaryData, stringDecoder).decode(offset));
+        }
+
+        final List<String> taglines = new ArrayList<>();
+        for (int offset : discoverPointers(secondaryData, tagLinesPtr)) {
+            stringDecoder.decodeString(secondaryData, offset);
+            taglines.add(stringDecoder.getDecodedString());
+        }
+
+        for (int offset : discoverPointers(secondaryData, encountersPtr + 1)) {
+            final Encounter enc = new Encounter(secondaryData).decode(offset);
+            enc.setTagline(taglines.get(enc.getTaglineIndex()));
+            this.encounters.add(enc);
+        }
     }
 }
