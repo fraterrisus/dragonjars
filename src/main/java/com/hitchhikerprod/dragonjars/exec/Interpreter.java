@@ -176,7 +176,7 @@ public class Interpreter {
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
     public void start(Address startPoint) {
-        System.out.println("** restart");
+        // System.out.println("** restart");
         mainLoop(startPoint);
     }
 
@@ -187,7 +187,7 @@ public class Interpreter {
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
-            System.out.format("%02x %08x %02x\n", cs, ip, opcode);
+            // System.out.format("%02x %08x %02x\n", cs, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -734,6 +734,7 @@ public class Interpreter {
         if (((mapDecoder.getFlags() & 0x08) > 0) || (heap(0xc1).read() > 0)) {
             drawRoofTexture(mapDecoder.getSquare(partyX, partyY).roofTexture());
             drawFloorTexture();
+            drawWallTextures();
             drawViewportCorners(); // for testing
         } else {
             eraseVideoBuffer(); // this is pretty aggressive
@@ -792,7 +793,7 @@ public class Interpreter {
             0x12, 0x10, 0x14, 0x0c, 0x0a, 0x0e, 0x06, 0x04, 0x08
     );
 
-    private static final List<Integer> SQUARE_ORDER = List.of(
+    private static final List<Integer> FLOOR_SQUARE_ORDER = List.of(
             0xa, 0x9, 0xb, 0x7, 0x6, 0x8, 0x4, 0x3, 0x5
     );
 
@@ -834,21 +835,122 @@ public class Interpreter {
 
     private void drawFloorTexture() {
         final PartyLocation loc = getPartyLocation();
-        int offset = 8;
-        while (offset >= 0) {
-            final int squareId = SQUARE_ORDER.get(offset);
+        for (int index = 8; index >= 0; index--) {
+            final int squareId = FLOOR_SQUARE_ORDER.get(index);
             final GridCoordinate rotated = adjustForFacing(loc.pos(), loc.facing(), squareId);
             final MapData.Square s = mapDecoder.getSquare(rotated.x(), rotated.y());
             final int segmentId = getSegmentForChunk(s.floorTextureChunk(), Frob.DIRTY);
             final Chunk textureChunk = memory().getSegment(segmentId);
-            final int x0 = FLOOR_X_OFFSET.get(offset);
-            final int y0 = FLOOR_Y_OFFSET.get(offset);
-            final int textureOffset = FLOOR_TEXTURE_OFFSET.get(offset);
+            final int x0 = FLOOR_X_OFFSET.get(index);
+            final int y0 = FLOOR_Y_OFFSET.get(index);
+            final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
 //            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
 //                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
             imageDecoder.decodeTexture(textureChunk, 0, textureOffset, x0, y0, 0x0);
-            offset--;
         }
+    }
+
+    private static final List<Integer> WALL_X_OFFSET = List.of( // 0x536f
+            0x0020, 0x0000, 0x0080, 0xffc0, 0x0080, 0x0020, 0xffc0, 0x0080,
+            0x0030, 0x0020, 0x0070, 0xfff0, 0x0070, 0x0030, 0xfff0, 0x0070,
+            0x0040, 0x0030, 0x0060, 0x0020, 0x0060, 0x0040, 0x0020, 0x0060
+    );
+
+    private static final List<Integer> WALL_Y_OFFSET = List.of( // 0x539f
+            0x10, 0x00, 0x00, 0x10, 0x10, 0x10, 0x10, 0x10,
+            0x20, 0x10, 0x10, 0x20, 0x20, 0x20, 0x20, 0x20,
+            0x30, 0x20, 0x20, 0x30, 0x30, 0x30, 0x30, 0x30
+    );
+
+    // Wall texture sub-images:
+    //   0x00: minimap north
+    //   0x02: minimap west
+    //   0x04: large front
+    //   0x06: medium front
+    //   0x08: small front
+    //   0x0c: large side
+    //   0x0e: medium side
+    //   0x10: small side
+    private static final List<Integer> WALL_TEXTURE_OFFSET = List.of( // 0x53ff
+            0x04, 0x0c, 0x0c, 0x04, 0x04, 0x04, 0x04, 0x04,
+            0x06, 0x0e, 0x0e, 0x06, 0x06, 0x06, 0x06, 0x06,
+            0x08, 0x10, 0x10, 0x08, 0x08, 0x08, 0x08, 0x08
+    );
+
+    private static final List<Integer> WALL_INVERT = List.of( // 0x542f
+            0x01, 0x00, 0x80, 0x01, 0x01, 0x00, 0x00, 0x00,
+            0x01, 0x00, 0x80, 0x01, 0x01, 0x00, 0x00, 0x00,
+            0x01, 0x00, 0x80, 0x01, 0x01, 0x00, 0x00, 0x00
+    );
+
+    private static final List<Integer> WALL_SQUARE_ORDER = List.of( // 0x53cf
+            0x16, 0x0a, 0x0b, 0x15, 0x17, 0x8a, 0x89, 0x8b,
+            0x13, 0x07, 0x08, 0x12, 0x14, 0x87, 0x86, 0x88,
+            0x10, 0x04, 0x05, 0x0f, 0x11, 0x84, 0x83, 0x85
+    );
+
+    /* Order:
+     * 0x85 -> square 0x05 + 0x80 west  -> x 0x20 y 0x10 off 0x04
+     * 0x83
+     * 0x84
+     * 0x11 -> square 0x11 + 0x00 north -> x 0x30 y 0x20 off 0x10
+     */
+
+
+    private void drawWallTextures() {
+        final PartyLocation loc = getPartyLocation();
+/*
+        for (int index = 0x17; index >= 0; index--) {
+            final int squareId = WALL_SQUARE_ORDER.get(index) & 0x7f;
+            final boolean useWest = (WALL_SQUARE_ORDER.get(index) & 0x80) > 0;
+            final int x0 = WALL_X_OFFSET.get(index);
+            final int y0 = WALL_Y_OFFSET.get(index);
+            final int textureOffset = WALL_TEXTURE_OFFSET.get(index);
+        }
+*/
+        // 0: large horiz front
+        // 1: large vert left
+        // 2: large vert right, set invert to 0x80
+        // 3: needs 0xe2d decoder
+        // 4: large horiz right
+        // 5: large horiz front again?
+        // 6: needs 0xe2d decoder
+        // 7: large horiz right again? we're not handling negatives correctly
+        // 8: medium horiz front
+        // 9: medium vert left
+        // a: medium vert right, set invert to 0x80
+        // b: needs 0xe2d decoder
+        // c: medium horiz right
+        // d: medium horiz front again?
+        // e: needs 0xe2d decoder
+        // f: medium horiz right again?
+        // 10: small horiz front
+        // etc.
+
+        final int index = 0x05;
+        final int segmentId = getSegmentForChunk(0x73, Frob.DIRTY);
+        final Chunk textureChunk = memory().getSegment(segmentId);
+        final int x0 = WALL_X_OFFSET.get(index);
+        final int y0 = WALL_Y_OFFSET.get(index);
+        final int textureOffset = WALL_TEXTURE_OFFSET.get(index);
+        final int invert = WALL_INVERT.get(index);
+            System.out.format("decodeTexture(0x%02x, 0x%04x, 0x%02x, 0x%02x, 0x%02x, 0x%02x)\n",
+                    0x73, 0, textureOffset, x0, y0, invert);
+        imageDecoder.decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
+
+        // 1. Draw the three facing walls between 2-3 steps away
+        //   NORTH:(x-1,y+2).north
+        //         (x  ,y+2).north
+        //         (x+1,y+2).north
+        //   EAST: (x+3,y+1).west
+        //         (x+3,y  ).west
+        //         (x+3,y-1).west
+        //   SOUTH:(x+1,y-3).north
+        //         (x  ,y-3).north
+        //         (x-1,y-3).north
+        //   WEST: (x-2,y-1).west
+        //         (x-2,y  ).west
+        //         (x-2,y+1).west
     }
 
     public void setTitleString(List<Integer> chars) {

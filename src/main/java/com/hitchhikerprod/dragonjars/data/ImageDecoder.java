@@ -95,17 +95,17 @@ public class ImageDecoder {
         public NoImageException(String message) { super(message); }
     }
 
-    public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int unk_100e) { // 0x0ca7
+    public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int invert_100e) { // 0x0ca7
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
         // offset: stand-in for bx
         final int value = chunk.getWord(pointer + offset);
         if (value == 0) throw new NoImageException("Null pointer");
         if (pointer + value > chunk.getSize()) throw new IllegalArgumentException("Offset too large");
-        entrypoint0cb8(chunk, pointer + value, x0_352e, y0_3532, unk_100e);
+        entrypoint0cb8(chunk, pointer + value, x0_352e, y0_3532, invert_100e);
     }
 
-    public void entrypoint0cb8(Chunk chunk, int pointer, int x0_352e, int y0_3532, int unk_100e) { // 0cb8
+    public void entrypoint0cb8(Chunk chunk, int pointer, int x0_352e, int y0_3532, int invert_100e) { // 0cb8
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
         int width_1008 = chunk.getUnsignedByte(pointer++);
@@ -113,31 +113,31 @@ public class ImageDecoder {
 
         // 0x0ccb
         int offsetX = chunk.getByte(pointer++); // sign extended
-        if ((unk_100e & 0x80) > 0) offsetX = offsetX * -1;
+        if ((invert_100e & 0x80) > 0) offsetX = offsetX * -1;
         int x0 = x0_352e + (offsetX & 0xffff); // enough of this four-byte int nonsense
-        if ((width_1008 & 0x80) > 0 && (unk_100e & 0x80) > 0) x0--;
+        if ((width_1008 & 0x80) > 0 && (invert_100e & 0x80) > 0) x0--;
 
         // 0x0cea
         width_1008 = width_1008 & 0x7f;
         int offsetY = chunk.getByte(pointer++); // sign extended
-        if ((unk_100e & 0x40) > 0) offsetY = offsetY * -1;
+        if ((invert_100e & 0x40) > 0) offsetY = offsetY * -1;
         final int y0 = y0_3532 + offsetY;
 
-        // 0x0cfe; index divided by two because we aren't using a word-based lookup table
+        // 0x0cfe
         int callIndex = 0;
         if ((x0 & 0x0001) > 0) callIndex = callIndex | 0x02;
         if ((x0 & 0x8000) > 0) callIndex = callIndex | 0x04;
-        if ((unk_100e & 0x0080) > 0) callIndex = callIndex | 0x08;
+        if ((invert_100e & 0x0080) > 0) callIndex = callIndex | 0x08;
 
         final int factor_1013 = 0x50; // the automap uses 0x90 but everything else uses 0x50
-        final int factorCopy_1015 = ((unk_100e & 0x40) > 0) ? -1 * factor_1013 : factor_1013;
+        final int factorCopy_1015 = ((invert_100e & 0x40) > 0) ? -1 * factor_1013 : factor_1013;
 
         switch (callIndex) {
             case 0x0 -> decode_0d48(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x2 -> decode_0dab();
             case 0x4 -> decode_0e2d();
             case 0x6 -> decode_0e85();
-            case 0x8 -> decode_0efd();
+            case 0x8 -> decode_0efd(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0xa -> decode_0f72();
             case 0xc, 0xe -> throw new NoImageException("Call index " + callIndex);
             default -> throw new RuntimeException("Unrecognized call index " + callIndex + "; this shouldn't be possible");
@@ -158,22 +158,22 @@ public class ImageDecoder {
         return new Corner(imageData, x0, y0);
     }
 
-    private void decode_0d48(Chunk chunk, final int pointer, int width, int height, int x0t2, int y0,
-                             int factor, int factorCopy) {
+    private void decode_0d48(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
+                             int factor_1013, int factorCopy_1015) {
         final boolean x0Sign = (x0t2 & 0x8000) > 0;
         final int x0 = (x0t2 >> 1) | (x0Sign ? 0x8000 : 0x0000);
 
-        int width_100a = width; // was 1008
-        int temp = width + x0 - factor;
+        int width_100a = width_1008; // was 1008
+        int temp = width_1008 + x0 - factor_1013;
         if (temp > 0) {
             width_100a -= temp;
             if (width_100a <= 0) throw new NoImageException("Image width less than 0");
         }
 
-        int y = height;
+        int y = height_100d;
 
         // 0x0d68
-        int dx = x0 + (y0 * factor); // via 0xac92 multiplication table
+        int dx = x0 + (y0 * factor_1013); // via 0xac92 multiplication table
         int si = pointer;
         while (y > 0) {
             int x = width_100a;
@@ -189,8 +189,8 @@ public class ImageDecoder {
                 buffer[di++] = pixel;
                 x--;
             }
-            si = save_si + width;
-            dx += factorCopy;
+            si = save_si + width_1008;
+            dx += factorCopy_1015;
             y--;
         }
     }
@@ -207,8 +207,48 @@ public class ImageDecoder {
         throw new UnsupportedOperationException("0x0e85");
     }
 
-    private void decode_0efd() {
-        throw new UnsupportedOperationException("0x0efd");
+    // should basically be 0d48 but flipped X
+    private void decode_0efd(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
+                             int factor_1013, int factorCopy_1015) {
+        final boolean x0Sign = (x0t2 & 0x8000) > 0;
+        final int x0 = (x0t2 >> 1) | (x0Sign ? 0x8000 : 0x0000);
+
+        int width_100a = width_1008; // was 1008
+        int temp = width_1008 + x0 - factor_1013;
+        if (temp > 0) {
+            width_100a -= temp;
+            if (width_100a <= 0) throw new NoImageException("Image width less than 0");
+        }
+
+        int y = height_100d;
+
+        int dx = x0 + (y0 * factor_1013); // via 0xac92 multiplication table
+        int si = pointer + width_1008 - 1; // see 0x0f35
+        while (y > 0) {
+            int x = width_100a;
+            int di = dx;
+            int save_si = si;
+            while (x > 0) {
+                // System.out.format("(%03d,%03d) [ds:%04x]", x, y, si);
+                final int bx = chunk.getUnsignedByte(si--);
+                // reverse the nibbles; assembly does this with a LUT at 0xada2, see 0x0fa9
+                final int xb = ((bx & 0xf0) >> 4) | ((bx & 0x0f) << 4);
+                // System.out.format("=%02x", xb);
+                int pixel = buffer[di] & 0xff;
+                // System.out.format(" [vb:%04x]=%02x", di, pixel);
+                final int byteAnd = codeChunk.getUnsignedByte(0xada2 + xb);
+                final int byteOr = codeChunk.getUnsignedByte(0xaea2 + xb);
+                pixel = pixel & byteAnd;
+                pixel = pixel | byteOr;
+                // System.out.format(" & %02x | %02x -> %02x", byteAnd, byteOr, pixel);
+                buffer[di++] = pixel & 0xff;
+                x--;
+                // System.out.println();
+            }
+            si = save_si + width_1008;
+            dx += factorCopy_1015;
+            y--;
+        }
     }
 
     private void decode_0f72() {
