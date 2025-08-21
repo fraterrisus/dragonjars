@@ -146,6 +146,10 @@ public class MapData {
             int eventId
     ) {}
 
+    public Square getSquare(GridCoordinate position) {
+        return getSquare(position.x(), position.y());
+    }
+
     public Square getSquare(int x, int y) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
@@ -164,8 +168,9 @@ public class MapData {
             northWallTextureId = Optional.empty();
             northWallTextureMetadata = Optional.empty();
         } else {
-            northWallTextureId = Optional.of(textureHelper(wallTextures54a7, northWallTextureIndex));
-            northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex));
+            final int textureIndex = 0xff & wallTextures54a7.get(northWallTextureIndex - 1);
+            northWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex - 1));
         }
 
         final int westWallTextureIndex = (rawData >> 16) & 0xf;
@@ -175,15 +180,17 @@ public class MapData {
             westWallTextureId = Optional.empty();
             westWallTextureMetadata = Optional.empty();
         } else {
-            westWallTextureId = Optional.of(textureHelper(wallTextures54a7, westWallTextureIndex));
-            westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex));
+            final int textureIndex = 0xff & wallTextures54a7.get(westWallTextureIndex - 1);
+            westWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex - 1));
         }
 
         final int roofTextureIndex = (rawData >> 14) & 0x3;
         final int roofTextureId = 0xff & roofTextures54c5.get(roofTextureIndex);
 
         final int floorTextureIndex = (rawData >> 12) & 0x3;
-        final int floorTextureId = textureHelper(floorTextures54c9, floorTextureIndex);
+        final int textureIndex = 0xff & floorTextures54c9.get(floorTextureIndex);
+        final int floorTextureId = 0x6e + (0xff & textureChunks5677.get(textureIndex));
 
         final boolean touched = (rawData & 0x000800) > 0;
 
@@ -209,11 +216,6 @@ public class MapData {
                 touched,
                 eventId
         );
-    }
-
-    private int textureHelper(List<Byte> sectionTextures, int index) {
-        final int textureIndex = 0xff & sectionTextures.get(index);
-        return 0x6e + (0xff & textureChunks5677.get(textureIndex));
     }
 
     public Square[][] getView(int x, int y, int facing) {

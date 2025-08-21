@@ -47,4 +47,11 @@ public class ALU {
     public static int decByte(int val) {
         return (val - 1) & 0xff;
     }
+
+    public static int signExtend(int val, int bytes) {
+        final int signBit = 0x80 << (8 * (bytes - 1));
+        final int bitMask = -1 << (8 * bytes);
+        if ((val & signBit) > 0) return val | bitMask;
+        return val;
+    }
 }
