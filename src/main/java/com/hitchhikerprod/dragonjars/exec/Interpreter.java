@@ -189,7 +189,7 @@ public class Interpreter {
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
-            // System.out.format("%02x %08x %02x\n", cs, ip, opcode);
+            System.out.format("%02x %08x %02x\n", cs, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -389,7 +389,6 @@ public class Interpreter {
     }
 
     public void setDS(int val) {
-        System.out.format("  ds <- 0x%02x\n", val);
         this.ds = val;
     }
 
@@ -885,7 +884,6 @@ public class Interpreter {
             0x10, 0x04, 0x05, 0x0f, 0x11, 0x84, 0x83, 0x85
     );
 */
-
     record WallTexture(int listIndex, int squareId, Facing.Delta facingDelta) { }
     
     // This ordering is my own invention: far to near, sides first then middle.
@@ -922,13 +920,9 @@ public class Interpreter {
             final int y0 = WALL_Y_OFFSET.get(data.listIndex());
             final int textureOffset = WALL_TEXTURE_OFFSET.get(data.listIndex());
             final int invert = WALL_INVERT.get(data.listIndex());
-            System.out.format("decodeTexture(0x%02x, 0x%04x, 0x%02x, 0x%04x, 0x%02x, 0x%02x)\n",
-                    0x73, 0, textureOffset, x0, y0, invert);
-            try {
-                imageDecoder.decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
-            } catch (UnsupportedOperationException e) {
-                System.out.println("  requires decoder " + e.getMessage());
-            }
+//            System.out.format("decodeTexture(0x%02x, 0x%04x, 0x%02x, 0x%04x, 0x%02x, 0x%02x)\n",
+//                    0x73, 0, textureOffset, x0, y0, invert);
+            imageDecoder.decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
         }
     }
 
