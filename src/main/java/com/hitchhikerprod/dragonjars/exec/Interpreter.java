@@ -586,8 +586,9 @@ public class Interpreter {
         }
     }
 
-    private void drawPartyInfoArea() { // 0x1a08
-        if (! boundsCheck(0x0b)) return;
+    private void drawPartyInfoArea() { // 0x1a12
+        // FIXME, probably the bounds check?
+        // if (! boundsCheck(0x0b)) return;
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
@@ -804,6 +805,7 @@ public class Interpreter {
     }
 
     public void setPrompt(Map<KeyCode, Address> prompts) {
+        // TODO: support modifiers (i.e. shift, ctrl)
         final EventHandler<KeyEvent> keyHandler = event -> {
             for (KeyCode code : prompts.keySet()) {
                 if (event.getCode() == code) {
@@ -980,6 +982,7 @@ public class Interpreter {
             case 0x8f -> new StrToInt();
             // case 0x90 -> new PlaySoundEffect();
             // case 0x91 -> new PauseUntilKey();
+            case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
             // case 0x92 -> new PauseUntilKeyOrTime();
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();

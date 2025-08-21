@@ -28,6 +28,7 @@ public class ReadKeySwitch implements Instruction {
             final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
             final int target = i.memory().read(ip.segment(), pointer + 1, 2);
+            // TODO: support modifiers / key combos
             prompts.put(Instructions.keyCodeOf(ch), new Address(ip.segment(), target));
             pointer += 3;
         }

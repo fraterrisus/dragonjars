@@ -138,7 +138,22 @@ public class Instructions {
 
     public static KeyCode keyCodeOf(int code) {
         return switch(code) {
-            default -> KeyCode.valueOf(String.valueOf((char)(code & 0x7f)));
+            // 0x01: any digit
+            case 0x00 -> KeyCode.ESCAPE;
+            case 0x88 -> KeyCode.RIGHT;
+            case 0x8a -> KeyCode.UP;
+            case 0x8b -> KeyCode.DOWN;
+            case 0x8d -> KeyCode.ENTER;
+            case 0x95 -> KeyCode.LEFT;
+            case 0xbf -> KeyCode.SLASH; // actually question mark, i.e. shift-slash
+            default -> {
+                try {
+                    yield KeyCode.valueOf(String.valueOf((char)(code & 0x7f)));
+                } catch (IllegalArgumentException e) {
+                    System.out.format("Invalid key code: %02x\n", code);
+                    yield KeyCode.PAGE_UP;
+                }
+            }
         };
     }
 
