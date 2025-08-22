@@ -61,6 +61,10 @@ public class Memory {
         }
     }
 
+    public int getSegmentChunk(int segmentId) {
+        return segments.get(segmentId).chunkId();
+    }
+
     public Frob getSegmentFrob(int segmentId) {
         return segments.get(segmentId).frob();
     }

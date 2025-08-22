@@ -43,7 +43,7 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        i.eraseVideoBuffer();
+        // i.eraseVideoBuffer(); // black the viewport in case there's no light
         if (((i.mapDecoder().getFlags() & 0x08) > 0) || (i.heap(0xc1).read() > 0)) {
             // either the map provides light or the party has a light source
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());

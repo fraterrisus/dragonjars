@@ -5,19 +5,18 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -189,7 +187,10 @@ public class Interpreter {
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
-            System.out.format("%02x %08x %02x\n", cs, ip, opcode);
+
+            final int csChunk = memory().getSegmentChunk(cs);
+            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -262,6 +263,7 @@ public class Interpreter {
     }
 
     public void setBBox(int x0, int x1, int y0, int y1) {
+        System.out.format("setBBox(0x%02x,0x%02x,0x%02x,0x%02x)\n", x0, x1, y0, y1);
         bbox_x0 = x0;
         bbox_y0 = y0;
         bbox_x1 = x1;
@@ -519,15 +521,23 @@ public class Interpreter {
     }
 
     public void drawViewportCorners() {
-        for (int i = 0; i < 4; i++) imageDecoder.decodeCorner(i);
+        for (int i = 0; i < 4; i++) imageDecoder().decodeCorner(i);
         bitBlastViewport(); // see 0x1020
     }
 
     private void bitBlastViewport() {
+        bitBlast(0x02, 0x16, 0x08, 0x90);
+    }
+
+    private void bitBlast() {
+        bitBlast(0x00, 0x28, 0x00, 0x98);
+    }
+
+    private void bitBlast(int x0, int x1, int y0, int y1) {
         getImageWriter(writer -> {
             int ptr = 0;
-            for (int y = 0x08; y < 0x90; y++) {
-                for (int x = 0x02; x < 0x16; x++) {
+            for (int y = y0; y < y1; y++) {
+                for (int x = x0; x < x1; x++) {
                     Images.convertEgaData(writer, (z) -> videoMemory[z] & 0xff, ptr, 8 * x, y);
                     ptr += 4;
                 }
@@ -535,7 +545,9 @@ public class Interpreter {
         });
     }
 
-    private boolean boundsCheck(int regionId) {
+    private boolean boundsCheck(int regionId, boolean force) {
+        if (!force && draw_borders == 0x00) return false;
+
         expandBBox();
 
         final byte[] rec = new byte[4]; // x0, y0, x1, y1
@@ -557,10 +569,10 @@ public class Interpreter {
     public void drawHud() {
         draw_borders = 0x00;
         for (int regionId = 0; regionId < 14; regionId++) {
-            if (boundsCheck(regionId)) {
+            if (boundsCheck(regionId, true)) {
                 switch (regionId) {
                     case 0x09 -> { // the vertical column with spell icons
-                        getImageWriter(writer -> imageDecoder.decodeRomImage(0x09, writer));
+                        getImageWriter(writer -> imageDecoder().decodeRomImage(0x09, writer));
                         // ax <- 0x0000
                         // [4a71] <- ax
                         // [4a73] <- ax
@@ -578,7 +590,7 @@ public class Interpreter {
                     }
                     default -> {
                         final int finalRegionId = regionId;
-                        getImageWriter(writer -> imageDecoder.decodeRomImage(finalRegionId, writer));
+                        getImageWriter(writer -> imageDecoder().decodeRomImage(finalRegionId, writer));
                         // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
                     }
                 }
@@ -588,7 +600,7 @@ public class Interpreter {
 
     private void drawPartyInfoArea() { // 0x1a12
         // FIXME, probably the bounds check?
-        // if (! boundsCheck(0x0b)) return;
+        // if (! boundsCheck(0x0b, false)) return;
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
@@ -602,6 +614,7 @@ public class Interpreter {
             final int heapIndex = 0x18 + charId;
             int ax = heap(heapIndex).read();
             if ((ax & 0x80) > 0) continue;
+            heap(0x06).write(charId);
             ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, ax);
             heap(heapIndex).write(0xff);
@@ -622,6 +635,7 @@ public class Interpreter {
 
         final int charsInParty = heap(0x1f).read();
         if (charId >= charsInParty) {
+            // System.out.format("charId %d >= %d\n", charId, charsInParty);
             getImageWriter(writer -> {
                 final int black = Images.convertColorIndex(0);
                 for (int dy = 0; dy < 0x10; dy++) {
@@ -741,7 +755,7 @@ public class Interpreter {
         // image bytes for spaces where they aren't writing characters.
         for (int x = 0; x < 16; x++) {
             final int pictureId = 0x1b + x;
-            getImageWriter(writer -> imageDecoder.decodeRomImage(pictureId, writer));
+            getImageWriter(writer -> imageDecoder().decodeRomImage(pictureId, writer));
         }
 
         setBackground(0x10);
@@ -766,12 +780,12 @@ public class Interpreter {
         // four immediates: 16 00 28 98 (combat window)
         // written as words to 0x253f/tmp
         // draw_string_313e (to empty buffer??)
-        // if 0x253e/draw_borders > 0 {           <- come back to this
+        if (draw_borders != 0) { //           <- come back to this
         //   expand bounding box()
         //   do some bounds checking?...   ???
         //   shrink bounding box()
-        //   draw_hud_borders()
-        // }
+            drawHud();
+        }
         // copy 0x253f/tmp to 0x2547/bbox
         setBBox(x0, x1, y0, y1);
         // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
@@ -801,15 +815,19 @@ public class Interpreter {
         lowLevelDrawChar(0x07, (x1 - 1) * 8, y, invert);
 
         shrinkBBox();
+        draw_borders = 0xff;
         fillRectangle();
     }
 
-    public void setPrompt(Map<KeyCode, Address> prompts) {
-        // TODO: support modifiers (i.e. shift, ctrl)
+    public void setPrompt(Map<ReadKeySwitch.KeyDetector, Address> prompts) {
         final EventHandler<KeyEvent> keyHandler = event -> {
-            for (KeyCode code : prompts.keySet()) {
-                if (event.getCode() == code) {
-                    this.start(prompts.get(code));
+            for (ReadKeySwitch.KeyDetector fn : prompts.keySet()) {
+                if (fn.match(event)) {
+                    if (event.getCode().isDigitKey()) {
+                        heap(0x06).write(event.getCode().getCode() - (int)'0');
+                    }
+                    start(prompts.get(fn));
+                    break;
                 }
             }
         };
@@ -997,7 +1015,7 @@ public class Interpreter {
             case 0x9d -> new FlagTestImm();
             case 0x9e -> new GetSegmentSize();
             // case 0x9f -> new YouWin();
-            default -> throw new IllegalArgumentException("Unimplemented opcode " + opcode);
+            default -> throw new IllegalArgumentException(String.format("Unimplemented opcode %02x", opcode));
         };
     }
 }
