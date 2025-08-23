@@ -22,7 +22,7 @@ public class Heap {
     private void write(int index, int count, int val) {
         if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
-            System.out.format("  heap[%02x] = %02x\n", (index + i) & 0xff, val & 0xff);
+//            System.out.format("  heap[%02x] = %02x\n", (index + i) & 0xff, val & 0xff);
             storage[(index + i) & 0xff] = val & 0xff;
             val = val >> 8;
         }

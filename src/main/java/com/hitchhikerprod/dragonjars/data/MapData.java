@@ -169,7 +169,11 @@ public class MapData {
             northWallTextureMetadata = Optional.empty();
         } else {
             final int textureIndex = 0xff & wallTextures54a7.get(northWallTextureIndex - 1);
-            northWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            if (textureIndex > 0x6e) {
+                northWallTextureId = Optional.of(textureIndex);
+            } else {
+                northWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            }
             northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex - 1));
         }
 
@@ -181,7 +185,11 @@ public class MapData {
             westWallTextureMetadata = Optional.empty();
         } else {
             final int textureIndex = 0xff & wallTextures54a7.get(westWallTextureIndex - 1);
-            westWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            if (textureIndex > 0x6e) {
+                westWallTextureId = Optional.of(textureIndex);
+            } else {
+                westWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+            }
             westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex - 1));
         }
 
@@ -199,7 +207,8 @@ public class MapData {
         if (otherTextureIndex == 0) {
             otherTextureId = Optional.empty();
         } else {
-            otherTextureId = Optional.of(0xff & textureChunks5677.get(otherTextureIndex));
+            final int overallTextureIndex = 0xff & otherTextures54cd.get(otherTextureIndex - 1);
+            otherTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(overallTextureIndex)));
         }
 
         final int eventId = (rawData) & 0xff;

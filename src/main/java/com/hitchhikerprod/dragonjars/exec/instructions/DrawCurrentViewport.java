@@ -49,8 +49,7 @@ public class DrawCurrentViewport implements Instruction {
             // either the map provides light or the party has a light source
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
-            drawWallTextures();
-            // TODO: drawOtherTextures();
+            drawWallTextures(); // also handles decor
         }
         i.drawViewportCorners();
         
@@ -98,6 +97,39 @@ public class DrawCurrentViewport implements Instruction {
         }
     }
 
+    public void drawWallTextures() {
+        final PartyLocation loc = i.getPartyLocation();
+        for (WallTexture data : WALL_SQUARE_ORDER) {
+            final GridCoordinate farSquare = loc.translate(data.squareId());
+            final Facing newFacing = data.facingDelta().apply(loc.facing());
+            final int wallChunk = getWallTextureChunk(farSquare, newFacing);
+
+            // make sure we're passing negative numbers correctly
+            final int x0 = ALU.signExtend(WALL_X_OFFSET.get(data.listIndex()), 2);
+            final int y0 = WALL_Y_OFFSET.get(data.listIndex());
+            final int textureOffset = WALL_TEXTURE_OFFSET.get(data.listIndex());
+            final int invert = WALL_INVERT.get(data.listIndex());
+
+            // Wall texture
+            if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
+                final int segmentId = i.getSegmentForChunk(wallChunk, Frob.DIRTY);
+                final Chunk textureChunk = i.memory().getSegment(segmentId);
+                i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
+            }
+
+            // 'Other' decor texture; try to only run each square once
+            if (data.facingDelta() == Facing.Delta.NONE) {
+                final MapData.Square sq = i.mapDecoder().getSquare(farSquare);
+                if (sq.otherTextureChunk().isPresent()) {
+                    final Integer otherChunkId = sq.otherTextureChunk().get();
+                    final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.DIRTY);
+                    final Chunk textureChunk = i.memory().getSegment(segmentId);
+                    i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, 0);
+                }
+            }
+        }
+    }
+
     private int getWallTextureChunk(GridCoordinate position, Facing facing) {
         return switch (facing) {
             case NORTH -> i.mapDecoder().getSquare(position)
@@ -109,27 +141,6 @@ public class DrawCurrentViewport implements Instruction {
             case WEST -> i.mapDecoder().getSquare(position)
                     .westWallTextureChunk().orElse(0);
         };
-    }
-
-    public void drawWallTextures() {
-        final PartyLocation loc = i.getPartyLocation();
-        for (WallTexture data : WALL_SQUARE_ORDER) {
-            final GridCoordinate farSquare = loc.translate(data.squareId());
-            final Facing newFacing = data.facingDelta().apply(loc.facing());
-            final int chunkId = getWallTextureChunk(farSquare, newFacing);
-            if ((chunkId < 0x6e) || (chunkId > 0x7f)) continue;
-
-            final int segmentId = i.getSegmentForChunk(chunkId, Frob.DIRTY);
-            final Chunk textureChunk = i.memory().getSegment(segmentId);
-            // make sure we're passing negative numbers correctly
-            final int x0 = ALU.signExtend(WALL_X_OFFSET.get(data.listIndex()), 2);
-            final int y0 = WALL_Y_OFFSET.get(data.listIndex());
-            final int textureOffset = WALL_TEXTURE_OFFSET.get(data.listIndex());
-            final int invert = WALL_INVERT.get(data.listIndex());
-//            System.out.format("decodeTexture(0x%02x, 0x%04x, 0x%02x, 0x%04x, 0x%02x, 0x%02x)\n",
-//                    0x73, 0, textureOffset, x0, y0, invert);
-            i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
-        }
     }
 
     private int getWallMetadata(GridCoordinate position, Facing facing) {
