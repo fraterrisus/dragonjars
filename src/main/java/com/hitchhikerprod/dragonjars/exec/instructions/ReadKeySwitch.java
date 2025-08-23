@@ -45,11 +45,11 @@ public class ReadKeySwitch implements Instruction {
         return switch(code) {
             case 0x01 -> (ev) -> ev.getCode().isDigitKey();
             case 0x00 -> (ev) -> ev.getCode() == KeyCode.ESCAPE;
-            case 0x88 -> (ev) -> ev.getCode() == KeyCode.RIGHT;
+            case 0x88 -> (ev) -> ev.getCode() == KeyCode.LEFT;
             case 0x8a -> (ev) -> ev.getCode() == KeyCode.DOWN;
             case 0x8b -> (ev) -> ev.getCode() == KeyCode.UP;
             case 0x8d -> (ev) -> ev.getCode() == KeyCode.ENTER;
-            case 0x95 -> (ev) -> ev.getCode() == KeyCode.LEFT;
+            case 0x95 -> (ev) -> ev.getCode() == KeyCode.RIGHT;
             case 0xbf -> (ev) -> (ev.getCode() == KeyCode.SLASH) && ev.isShiftDown();
             default -> {
                 try {

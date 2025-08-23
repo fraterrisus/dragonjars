@@ -114,7 +114,7 @@ public class ImageDecoder {
         // 0x0ccb
         int offsetX = chunk.getByte(pointer++); // sign extended
         if ((invert_100e & 0x80) > 0) offsetX = offsetX * -1;
-        int x0 = x0_352e + (offsetX & 0xffff); // enough of this four-byte int nonsense
+        int x0 = x0_352e + offsetX; // enough of this four-byte int nonsense
         if ((width_1008 & 0x80) > 0 && (invert_100e & 0x80) > 0) x0--;
 
         // 0x0cea
@@ -133,7 +133,7 @@ public class ImageDecoder {
 
         switch (callIndex) {
             case 0x0 -> decode_0d48(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
-            case 0x2 -> decode_0dab();
+            case 0x2 -> decode_0dab(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x4 -> decode_0e2d(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x6 -> decode_0e85();
             case 0x8 -> decode_0efd(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
@@ -194,8 +194,51 @@ public class ImageDecoder {
         }
     }
 
-    private void decode_0dab() {
-        throw new UnsupportedOperationException("0x0dab");
+    private void decode_0dab(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
+                             int factor_1013, int factorCopy_1015) {
+        final boolean x0Sign = (x0t2 & 0x8000) > 0;
+        final int x0 = (x0t2 >> 1) | (x0Sign ? 0x8000 : 0x0000);
+        int tmp_100c = 0x00;
+
+        int width_100a = width_1008; // was 1008
+        int temp = width_1008 + x0 - factor_1013;
+        if ((temp & 0x8000) == 0) { // temp >= 0
+            width_100a = (width_100a - temp) & 0xffff;
+            if (width_100a <= 0) throw new NoImageException("Image width less than 0");
+            tmp_100c = 0xff;
+        }
+
+        int y = height_100d;
+
+        // 0x0dd4
+        int dx = x0 + (y0 * factor_1013); // via 0xac92 multiplication table
+        int si = pointer;
+        while (y > 0) {
+            int x = width_100a;
+            int di = dx;
+            int save_si = si;
+            int pixel;
+            while (true) {
+                final int bx = chunk.getUnsignedByte(si++); // 0df5-f6
+                pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0dfa
+                final int wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
+                final int wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+                pixel = pixel & wordAnd;
+                pixel = pixel | wordOr;
+                x--;
+                if (x <= 0) break;
+                buffer[di++] = pixel & 0xff; // 0df1
+                buffer[di] = (pixel & 0xff00) >> 8;
+            }
+            buffer[di] = pixel & 0xff;
+            if ((tmp_100c & 0x80) == 0) {
+                di++;
+                buffer[di] = (pixel & 0xff00) >> 8;
+            }
+            si = save_si + width_1008;
+            dx += factorCopy_1015;
+            y--;
+        }
     }
 
     private void decode_0e2d(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,

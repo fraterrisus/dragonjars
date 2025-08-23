@@ -50,6 +50,7 @@ public class DrawCurrentViewport implements Instruction {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
             drawWallTextures();
+            // TODO: drawOtherTextures();
         }
         i.drawViewportCorners();
         

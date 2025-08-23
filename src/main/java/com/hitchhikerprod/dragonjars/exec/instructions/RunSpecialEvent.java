@@ -11,7 +11,8 @@ public class RunSpecialEvent implements Instruction {
         final PartyLocation location = i.getPartyLocation();
         final MapData.Square square = i.mapDecoder().getSquare(location.pos());
         if (square.eventId() != 0) {
-            throw new UnsupportedOperationException("Can't run events yet");
+            // TODO
+            System.out.println("Can't run events yet");
         }
         return i.getIP().incr();
     }
