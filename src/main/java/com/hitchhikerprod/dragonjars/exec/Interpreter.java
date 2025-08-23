@@ -93,6 +93,7 @@ public class Interpreter {
 
     // debugging information
     private int instructionsExecuted = 0;
+    private int mainLoopDepth = 0;
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
@@ -181,20 +182,24 @@ public class Interpreter {
     }
 
     private void mainLoop(Address startPoint) {
+        mainLoopDepth++; // helps us track when to actually quit the app
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
-
-            final int csChunk = memory().getSegmentChunk(cs);
-            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
-
+//            final int csChunk = memory().getSegmentChunk(cs);
+//            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
         }
+        mainLoopDepth--;
+    }
+
+    public int getRecursiveDepth() {
+        return mainLoopDepth;
     }
 
     public int instructionsExecuted() {
@@ -497,16 +502,35 @@ public class Interpreter {
     }
 
     public void drawString(List<Integer> s) {
-        System.out.format("drawString(); (0x%02x,0x%02x) bbox=(0x%02x,0x%02x,0x%02x,0x%02x)\n",
-                x_31ed, y_31ef, bbox_x0, bbox_y0, bbox_x1, bbox_y1);
         int x = x_31ed;
         int y = y_31ef;
-        for (int ch : s) {
-            if (ch == 0x8d) { x = x_31ed; y += 8; continue; }
-            if (x >= bbox_x1) { x = x_31ed; y += 8; }
-            lowLevelDrawChar(ch, x * 8, y, bg_color_3431 == 0);
-            x += 1;
+
+        int p0 = 0;
+        int p1;
+        while (p0 < s.size()) {
+            p1 = p0;
+            int ch = s.get(p1);
+            while (ch != 0xa0 && ch != 0x8d) {
+                p1++;
+                if (p1 == s.size()) {
+                    ch = -1;
+                    break;
+                }
+                ch = s.get(p1);
+            }
+            if ((x + p1 - p0) > bbox_x1) {
+                x = x_31ed;
+                y += 8;
+            }
+            for (int i = p0; i < p1; i++) {
+                lowLevelDrawChar(s.get(i), x * 8, y, bg_color_3431 == 0);
+                x++;
+            }
+            p0 = p1;
+            if (ch == 0x8d) { x = x_31ed; y += 8; p0++; }
+            if (ch == 0xa0) { x++; p0++; }
         }
+
         x_31ed = x;
         y_31ef = y;
     }
@@ -888,7 +912,7 @@ public class Interpreter {
             case 0x1b -> new MoveData();
             case 0x1c -> new StoreImm();
             case 0x1d -> new BufferCopy();
-            case 0x1e -> Instructions.EXIT; // "kill executable" aka "you lost"
+            case 0x1e -> Instructions.HARD_EXIT; // "kill executable" aka "you lost"
             case 0x1f -> Instructions.NOOP; // "read segment table"
             //   0x20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
@@ -950,7 +974,7 @@ public class Interpreter {
             case 0x57 -> new LongJump();
             case 0x58 -> new LongCall();
             case 0x59 -> new LongReturn();
-            case 0x5a -> Instructions.EXIT; // "stop executing instruction stream"
+            case 0x5a -> Instructions.SOFT_EXIT; // "stop executing instruction stream"
             // case 0x5b -> new EraseSquareSpecial();
             case 0x5c -> new RecurseOverParty();
             case 0x5d -> new LoadAXPartyAttribute();

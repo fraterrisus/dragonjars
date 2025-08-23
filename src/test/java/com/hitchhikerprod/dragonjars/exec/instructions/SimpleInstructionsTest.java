@@ -28,7 +28,7 @@ public class SimpleInstructionsTest {
     public void exitInstruction() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
 
-        final Address newIP = Instructions.EXIT.exec(i);
+        final Address newIP = Instructions.SOFT_EXIT.exec(i);
 
         assertNull(newIP);
     }

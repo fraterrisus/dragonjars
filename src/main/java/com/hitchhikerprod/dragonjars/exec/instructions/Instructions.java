@@ -4,11 +4,10 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import javafx.scene.input.KeyCode;
+import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
@@ -61,8 +60,13 @@ public class Instructions {
 
     public static final Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
-    public static final Instruction EXIT = (i) -> {
-        // System.out.println("** exit");
+    public static final Instruction SOFT_EXIT = (i) -> {
+        if (i.getRecursiveDepth() == 1) Platform.exit();
+        return null;
+    };
+
+    public static final Instruction HARD_EXIT = (i) -> {
+        Platform.exit();
         return null;
     };
 
