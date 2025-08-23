@@ -189,8 +189,8 @@ public class Interpreter {
             if (this.ds == -1) this.ds = this.cs;
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
-//            final int csChunk = memory().getSegmentChunk(cs);
-//            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+            final int csChunk = memory().getSegmentChunk(cs);
+            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -632,7 +632,7 @@ public class Interpreter {
 
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
-        final int save_heap_06 = heap(0x06).read();
+        final int save_heap_06 = heap(Heap.SELECTED_PC).read();
 
         // set the indirect function to draw_char()
 
@@ -642,13 +642,13 @@ public class Interpreter {
             final int heapIndex = 0x18 + charId;
             int ax = heap(heapIndex).read();
             if ((ax & 0x80) > 0) continue;
-            heap(0x06).write(charId);
+            heap(Heap.SELECTED_PC).write(charId);
             ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, ax);
             heap(heapIndex).write(0xff);
         }
 
-        heap(0x06).write(save_heap_06);
+        heap(Heap.SELECTED_PC).write(save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
     }
@@ -661,7 +661,7 @@ public class Interpreter {
         x_31ed = 0x1b;
         y_31ef = (charId << 4) + 0x20;
 
-        final int charsInParty = heap(0x1f).read();
+        final int charsInParty = heap(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
             // System.out.format("charId %d >= %d\n", charId, charsInParty);
             getImageWriter(writer -> {
@@ -676,9 +676,9 @@ public class Interpreter {
             return;
         }
 
-        final int charBaseAddress = heap(0x0a + charId).read() << 8;
+        final int charBaseAddress = heap(Heap.MARCHING_ORDER + charId).read() << 8;
 
-        final List<Integer> nameCh = getCharacterName(charBaseAddress);
+        final List<Integer> nameCh = Instructions.getStringFromMemory(this, new Address(PARTY_SEGMENT, charBaseAddress));
         indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));
         for (int ch : nameCh) drawChar(ch);
         indentTo(0x27);
@@ -709,18 +709,6 @@ public class Interpreter {
     private void indentTo(int limit) {
         // drawChar skips the line-wrap check
         while (x_31ed < limit) drawChar(0xa0);
-    }
-
-    private List<Integer> getCharacterName(int charBaseAddress) {
-        final List<Integer> nameCh = new ArrayList<>();
-        int pointer = charBaseAddress;
-        int ch = 0x80;
-        while ((ch & 0x80) > 0) {
-            ch = memory().read(PARTY_SEGMENT, pointer, 1);
-            nameCh.add(ch);
-            pointer++;
-        }
-        return nameCh;
     }
 
     private void drawStatusHelper(int i) {
@@ -853,7 +841,7 @@ public class Interpreter {
             for (ReadKeySwitch.KeyAction prompt : prompts) {
                 if (prompt.function().match(event)) {
                     if (event.getCode().isDigitKey()) {
-                        heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'0');
+                        heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
                     }
                     setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
                     start(prompt.destination());
@@ -1009,9 +997,9 @@ public class Interpreter {
             case 0x7a -> new DecodeStringDS();
             case 0x7b -> new DecodeTitleStringCS();
             case 0x7c -> new DecodeTitleStringDS();
-            // case 0x7d -> new IndirectCharName();
-            // case 0x7e -> new IndirectCharItem();
-            // case 0x7f -> new IndirectString();
+            case 0x7d -> new IndirectCharName();
+            case 0x7e -> new IndirectCharItem();
+            case 0x7f -> new IndirectString();
             case 0x80 -> new IndentAX();
             case 0x81 -> (i) -> Instructions.printNumber(i, i.getAX(true)); // print 4d number
             case 0x82 -> (i) -> Instructions.printNumber(i, i.getMulResult()); // print 9d number

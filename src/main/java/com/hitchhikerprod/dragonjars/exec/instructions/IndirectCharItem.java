@@ -1,0 +1,20 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+
+import static com.hitchhikerprod.dragonjars.exec.Interpreter.PARTY_SEGMENT;
+
+public class IndirectCharItem implements Instruction {
+    @Override
+    public Address exec(Interpreter i) {
+        final int selectedItem = i.heap(Heap.SELECTED_ITEM).read();
+        final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
+        final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * selectedItem);
+        final Address itemPointer = new Address(PARTY_SEGMENT, itemBaseAddress + 0x0b);
+        Instructions.indirectFunction(i, itemPointer);
+        return i.getIP().incr();
+    }
+}

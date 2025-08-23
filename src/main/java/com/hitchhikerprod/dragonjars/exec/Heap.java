@@ -9,6 +9,9 @@ public class Heap {
     public static final int BOARD_ID = 0x02;
     public static final int PARTY_FACING = 0x03;
     public static final int SELECTED_PC = 0x06;
+    public static final int SELECTED_ITEM = 0x07;
+    public static final int MARCHING_ORDER = 0x0a; // through 0x10
+    public static final int PARTY_SIZE = 0x1f;
     public static final int BOARD_MAX_X = 0x21;
     public static final int BOARD_MAX_Y = 0x22;
     public static final int BOARD_FLAGS = 0x23;

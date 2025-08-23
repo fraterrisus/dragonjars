@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hitchhikerprod.dragonjars.exec.Interpreter.PARTY_SEGMENT;
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
 public class Instructions {
@@ -138,6 +139,23 @@ public class Instructions {
         }
 
         return new Address(addr.segment(), decoder.getPointer());
+    }
+
+    public static List<Integer> getStringFromMemory(Interpreter i, Address addr) {
+        final List<Integer> nameCh = new ArrayList<>();
+        int pointer = addr.offset();
+        int ch = 0x80;
+        while ((ch & 0x80) > 0) {
+            ch = i.memory().read(addr.segment(), pointer, 1);
+            nameCh.add(ch);
+            pointer++;
+        }
+        return nameCh;
+    }
+
+    public static void indirectFunction(Interpreter i, Address pointer) {
+        final List<Integer> str = getStringFromMemory(i, pointer);
+        i.drawString(str);
     }
 
     public static Address printNumber(Interpreter i, int val) {
