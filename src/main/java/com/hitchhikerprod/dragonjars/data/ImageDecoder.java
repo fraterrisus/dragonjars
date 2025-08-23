@@ -105,6 +105,7 @@ public class ImageDecoder {
         entrypoint0cb8(chunk, pointer + value, x0_352e, y0_3532, invert_100e);
     }
 
+    // this gets used by the automapper (see 0x19b3)
     public void entrypoint0cb8(Chunk chunk, int pointer, int x0_352e, int y0_3532, int invert_100e) { // 0cb8
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
@@ -135,7 +136,7 @@ public class ImageDecoder {
             case 0x0 -> decode_0d48(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x2 -> decode_0dab(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x4 -> decode_0e2d(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
-            case 0x6 -> decode_0e85();
+            case 0x6 -> decode_0e85(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0x8 -> decode_0efd(chunk, pointer, width_1008, height_100d, x0, y0, factor_1013, factorCopy_1015);
             case 0xa -> decode_0f72();
             case 0xc, 0xe -> throw new NoImageException("Call index " + callIndex);
@@ -276,8 +277,51 @@ public class ImageDecoder {
         }
     }
 
-    private void decode_0e85() {
-        throw new UnsupportedOperationException("0x0e85");
+    private void decode_0e85(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
+                             int factor_1013, int factorCopy_1015) {
+        final int x0t2n = -1 * x0t2;
+        final boolean x0Sign = (x0t2n & 0x8000) > 0;
+        final int x0 = (x0t2n >> 1) | (x0Sign ? 0x8000 : 0x0000);
+
+        // 0x0e8d
+        final int width_100a = width_1008 - x0;
+        if (width_100a <= 0) throw new NoImageException("Image width less than 0");
+
+        int y = height_100d;
+
+        // 0x0e9b
+        int si = pointer + (x0 & 0xff);
+        int dx = (y0 * factor_1013) - 1; // via 0xac92 multiplication table
+        while (y > 0) {
+            int x = width_100a;
+            int di = dx;
+            int save_si = si;
+
+            // do this once
+            int bx = chunk.getUnsignedByte(si++); // 0eb6
+            int pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0ebb
+            int wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
+            int wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+            pixel = pixel & wordAnd;
+            pixel = pixel | wordOr;
+            di++; // 0ec8
+            buffer[di] = (pixel >> 8) & 0xff; // 0ec9 stores just dh
+            x--;
+            while (x > 0) { // loop point at 0ed0
+                bx = chunk.getUnsignedByte(si++); // 0ed0
+                pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0ed5
+                wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
+                wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+                pixel = pixel & wordAnd;
+                pixel = pixel | wordOr;
+                buffer[di++] = pixel & 0xff; // 0ee2 stores 1 word
+                buffer[di] = (pixel >> 8) & 0xff;
+                x--;
+            }
+            si = save_si + width_1008;
+            dx += factorCopy_1015;
+            y--;
+        }
     }
 
     // should basically be 0d48 but flipped X
