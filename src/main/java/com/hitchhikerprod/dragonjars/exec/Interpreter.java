@@ -23,7 +23,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -34,7 +33,7 @@ public class Interpreter {
 
     public static final int PARTY_SEGMENT = 1;
 
-    private final DragonWarsApp app;
+    public final DragonWarsApp app;
 
     /* Utility classes */
 
@@ -167,6 +166,7 @@ public class Interpreter {
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
      */
     public void start(int chunk, int addr) {
+        app.setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
@@ -176,7 +176,7 @@ public class Interpreter {
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
     public void start(Address startPoint) {
-        // System.out.println("** restart");
+        app.setKeyHandler(null);
         mainLoop(startPoint);
     }
 
@@ -491,17 +491,21 @@ public class Interpreter {
         this.mem_3430 = al & 0xff;
     }
 
+    public void drawChar(int ch) {
+        lowLevelDrawChar(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+        x_31ed += 1;
+    }
+
     public void drawString(List<Integer> s) {
+        System.out.format("drawString(); (0x%02x,0x%02x) bbox=(0x%02x,0x%02x,0x%02x,0x%02x)\n",
+                x_31ed, y_31ef, bbox_x0, bbox_y0, bbox_x1, bbox_y1);
         int x = x_31ed;
         int y = y_31ef;
         for (int ch : s) {
-            if (ch == 0x8d) {
-                x = x_31ed;
-                y += 8;
-            } else {
-                lowLevelDrawChar(ch, x * 8, y, bg_color_3431 == 0);
-                x += 1;
-            }
+            if (ch == 0x8d) { x = x_31ed; y += 8; continue; }
+            if (x >= bbox_x1) { x = x_31ed; y += 8; }
+            lowLevelDrawChar(ch, x * 8, y, bg_color_3431 == 0);
+            x += 1;
         }
         x_31ed = x;
         y_31ef = y;
@@ -599,7 +603,7 @@ public class Interpreter {
     }
 
     private void drawPartyInfoArea() { // 0x1a12
-        // FIXME, probably the bounds check?
+        // FIXME enabling the bounds check prevents ever drawing this
         // if (! boundsCheck(0x0b, false)) return;
 
         final int save_31ed = x_31ed;
@@ -652,7 +656,7 @@ public class Interpreter {
 
         final List<Integer> nameCh = getCharacterName(charBaseAddress);
         indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));
-        drawString(nameCh);
+        for (int ch : nameCh) drawChar(ch);
         indentTo(0x27);
 
         x_31ed = 0x1b;
@@ -679,7 +683,8 @@ public class Interpreter {
     }
 
     private void indentTo(int limit) {
-        while (x_31ed < limit) drawString(List.of(0xa0));
+        // drawChar skips the line-wrap check
+        while (x_31ed < limit) drawChar(0xa0);
     }
 
     private List<Integer> getCharacterName(int charBaseAddress) {
@@ -819,14 +824,15 @@ public class Interpreter {
         fillRectangle();
     }
 
-    public void setPrompt(Map<ReadKeySwitch.KeyDetector, Address> prompts) {
+    public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
         final EventHandler<KeyEvent> keyHandler = event -> {
-            for (ReadKeySwitch.KeyDetector fn : prompts.keySet()) {
-                if (fn.match(event)) {
+            for (ReadKeySwitch.KeyAction prompt : prompts) {
+                if (prompt.function().match(event)) {
                     if (event.getCode().isDigitKey()) {
-                        heap(0x06).write(event.getCode().getCode() - (int)'0');
+                        heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'0');
                     }
-                    start(prompts.get(fn));
+                    setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
+                    start(prompt.destination());
                     break;
                 }
             }
@@ -994,7 +1000,7 @@ public class Interpreter {
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
             case 0x8b -> new DrawCurrentViewport(this);
-            // case 0x8c -> new ShowYesNoModal();
+            case 0x8c -> new RunYesNoModal();
             // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();

@@ -8,6 +8,7 @@ public class Heap {
     public static final int PARTY_X = 0x01;
     public static final int BOARD_ID = 0x02;
     public static final int PARTY_FACING = 0x03;
+    public static final int SELECTED_PC = 0x06;
     public static final int BOARD_MAX_X = 0x21;
     public static final int BOARD_MAX_Y = 0x22;
     public static final int BOARD_FLAGS = 0x23;

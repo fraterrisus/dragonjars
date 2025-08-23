@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
@@ -152,7 +153,6 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setKeyHandler(null);
         RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
         this.stage.sizeToScene();
         new Interpreter(this, this.dataChunks).init().start(0, 0);
