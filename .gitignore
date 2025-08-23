@@ -1,3 +1,7 @@
+DATA?
+DRAGON.COM
+*.png
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
