@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Frob;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ public class LoadAXLongPtrTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x00, // SetWide
                 (byte)0x0f, // LoadAXLongPtr
-                (byte)0x34, // heap index
+                (byte)Heap.LONGPTR_ADR, // heap index
                 (byte)0x5a  // Exit
         ));
         final Chunk data = new Chunk(List.of(
@@ -28,8 +29,8 @@ public class LoadAXLongPtrTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(0x34).write(0x0008, 2); // segment offset lo
-        i.heap(0x36).write(dataSegment, 1); // segment ID
+        i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
+        i.heap(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
         i.start(0, 0);
 
@@ -43,7 +44,7 @@ public class LoadAXLongPtrTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x01, // SetNarrow
                 (byte)0x0f, // LoadAXLongPtr
-                (byte)0x34, // heap index
+                (byte)Heap.LONGPTR_ADR, // heap index
                 (byte)0x5a  // Exit
         ));
         final Chunk data = new Chunk(List.of(
@@ -56,8 +57,8 @@ public class LoadAXLongPtrTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(0x34).write(0x0008, 2); // segment offset lo
-        i.heap(0x36).write(dataSegment, 1); // segment ID
+        i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
+        i.heap(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
         i.start(0, 0);
 

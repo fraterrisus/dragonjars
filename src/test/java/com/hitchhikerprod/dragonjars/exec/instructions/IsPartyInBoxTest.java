@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +46,8 @@ class IsPartyInBoxTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x00).write(party.y());
-        i.heap(0x01).write(party.x());
+        i.heap(Heap.PARTY_Y).write(party.y());
+        i.heap(Heap.PARTY_X).write(party.x());
         i.start(0, 0);
 
         assertEquals(expected, i.getZeroFlag());

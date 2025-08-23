@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class IsPartyInBox implements Instruction {
@@ -8,8 +9,8 @@ public class IsPartyInBox implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int yParty = i.heap(0x00).read();
-        final int xParty = i.heap(0x01).read();
+        final int yParty = i.heap(Heap.PARTY_Y).read();
+        final int xParty = i.heap(Heap.PARTY_X).read();
         final int yMin = i.memory().read(ip.incr(1), 1);
         final int xMin = i.memory().read(ip.incr(2), 1);
         final int yMax = i.memory().read(ip.incr(3), 1);

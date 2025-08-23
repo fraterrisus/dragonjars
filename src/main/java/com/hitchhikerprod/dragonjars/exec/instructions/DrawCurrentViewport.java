@@ -10,6 +10,7 @@ import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.List;
@@ -26,17 +27,17 @@ public class DrawCurrentViewport implements Instruction {
     public Address exec(Interpreter ignored) {
         i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
-        final int mapId = i.heap(0x02).read();
+        final int mapId = i.heap(Heap.BOARD_ID).read();
         // N.B. these are Huffman encoded, so the map decoder will decompress them. Don't try to read them directly
         // final ModifiableChunk primaryData = memory().copyDataChunk(mapId + 0x46);
         final ModifiableChunk primaryData = i.memory().copyDataChunk(0x10);
         final ModifiableChunk secondaryData = i.memory().copyDataChunk(mapId + 0x1e);
         i.mapDecoder().parse(mapId, primaryData, true, secondaryData);
 
-        i.heap(0x21).write(i.mapDecoder().getMaxX());
-        i.heap(0x22).write(i.mapDecoder().getMaxY());
-        i.heap(0x23).write(i.mapDecoder().getFlags());
-        i.heap(0x26).write(getWallMetadata(loc.pos(), loc.facing()));
+        i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
+        i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
+        i.heap(Heap.BOARD_FLAGS).write(i.mapDecoder().getFlags());
+        i.heap(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
         // final MapData.Square[][] squares = i.mapDecoder().getView(partyX, partyY, partyFacing);

@@ -4,6 +4,19 @@ import java.util.function.Function;
 
 /** This isn't really a heap, but it is a chunk of the memory space that a lot of active data gets written to. */
 public class Heap {
+    public static final int PARTY_Y = 0x00;
+    public static final int PARTY_X = 0x01;
+    public static final int BOARD_ID = 0x02;
+    public static final int PARTY_FACING = 0x03;
+    public static final int BOARD_MAX_X = 0x21;
+    public static final int BOARD_MAX_Y = 0x22;
+    public static final int BOARD_FLAGS = 0x23;
+    public static final int WALL_METADATA = 0x26;
+    public static final int LONGPTR_ADR = 0x34;
+    public static final int LONGPTR_SEG = 0x36;
+    public static final int BOARD_1_SEGIDX = 0x56;
+    public static final int BOARD_2_SEGIDX = 0x5a;
+
     private final int[] storage = new int[256];
 
     private void write(int index, int count, int val) {

@@ -136,8 +136,8 @@ public class Interpreter {
         // which sets ax to 0x2a..
         // cs:0166  al <- 0xff
         // cs:0168  frob.4d32 <- 0xff
-        heap(0x56).write(0xffff, 2);
-        heap(0x5a).write(0xffff, 2);
+        heap(Heap.BOARD_1_SEGIDX).write(0xffff, 2);
+        heap(Heap.BOARD_2_SEGIDX).write(0xffff, 2);
         // cs:0177  struct_idx.4d33 <- 0xff
         heap(0x08).write(0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
@@ -735,8 +735,8 @@ public class Interpreter {
 
     public PartyLocation getPartyLocation() {
         return new PartyLocation(
-            new GridCoordinate(heap(0x01).read(), heap(0x00).read()),
-            Facing.valueOf(heap(0x03).read())
+            new GridCoordinate(heap(Heap.PARTY_X).read(), heap(Heap.PARTY_Y).read()),
+            Facing.valueOf(heap(Heap.PARTY_FACING).read())
         );
     }
 
@@ -962,7 +962,7 @@ public class Interpreter {
             // case 0x69 -> new WriteInventory();
             case 0x6a -> new IsPartyInBox();
             // case 0x6b -> new RunAway();
-            // case 0x6c -> new StepForward();
+            case 0x6c -> new StepForward();
             // case 0x6d -> new DrawAutomap();
             // case 0x6e -> new DrawCompass();
             // case 0x6f -> new RotateMapView();
@@ -998,7 +998,7 @@ public class Interpreter {
             // case 0x8d -> new PromptAndReadInput();
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
-            // case 0x90 -> new PlaySoundEffect();
+            case 0x90 -> new PlaySoundEffect();
             // case 0x91 -> new PauseUntilKey();
             case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
             // case 0x92 -> new PauseUntilKeyOrTime();
