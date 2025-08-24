@@ -648,6 +648,8 @@ public class Interpreter {
             heap(heapIndex).write(0xff);
         }
 
+        // set the indirect function back to 0x30c1
+
         heap(Heap.SELECTED_PC).write(save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
@@ -1003,12 +1005,12 @@ public class Interpreter {
             case 0x80 -> new IndentAX();
             case 0x81 -> (i) -> Instructions.printNumber(i, i.getAX(true)); // print 4d number
             case 0x82 -> (i) -> Instructions.printNumber(i, i.getMulResult()); // print 9d number
-            // case 0x83 -> new IndirectChar();
-            // case 0x84 -> new AllocateSegment(); // should just be getSegmentForChunk() but the call pattern is weird
+            case 0x83 -> new IndirectChar();
+            case 0x84 -> new AllocateTempSegment();
             case 0x85 -> new FreeSegmentAL();
             case 0x86 -> new LoadChunkAX();
             // case 0x87 -> new PersistChunk();
-            // case 0x88 -> new WaitForEscapeKey();
+            case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();
             case 0x8b -> new DrawCurrentViewport(this);
@@ -1017,13 +1019,12 @@ public class Interpreter {
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
             case 0x90 -> new PlaySoundEffect();
-            // case 0x91 -> new PauseUntilKey();
             case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
-            // case 0x92 -> new PauseUntilKeyOrTime();
+            case 0x92 -> new PauseUntilKeyOrTime(this);
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();
             case 0x95 -> new SetCursor();
-            // case 0x96 -> new EraseLine();
+            case 0x96 -> (i) -> { i.indentTo(bbox_x1); return i.getIP().incr(); };
             // case 0x97 -> new LoadAXPartyField();
             // case 0x98 -> new StoreAXPartyField();
             case 0x99 -> new TestAX();

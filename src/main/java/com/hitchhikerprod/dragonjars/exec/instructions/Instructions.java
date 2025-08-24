@@ -154,6 +154,9 @@ public class Instructions {
     }
 
     public static void indirectFunction(Interpreter i, Address pointer) {
+        // In theory we should be tracking what the indirect function currently is.
+        // In practice it's basically always 0x30c1, and we've kind of rolled 30c1, draw_string_3031 (0x30a7),
+        // and draw_char (0x3167) together because I don't really understand the differences between them.
         final List<Integer> str = getStringFromMemory(i, pointer);
         i.drawString(str);
     }
