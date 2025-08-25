@@ -1006,7 +1006,7 @@ public class Interpreter {
             case 0x58 -> new LongCall();
             case 0x59 -> new LongReturn();
             case 0x5a -> Instructions.SOFT_EXIT; // "stop executing instruction stream"
-            // case 0x5b -> new EraseSquareSpecial();
+            case 0x5b -> new EraseSquareSpecial();
             case 0x5c -> new RecurseOverParty();
             case 0x5d -> new LoadAXPartyAttribute();
             case 0x5e -> new StoreAXPartyAttribute();
