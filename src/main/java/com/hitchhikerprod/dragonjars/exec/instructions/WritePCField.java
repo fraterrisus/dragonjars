@@ -14,7 +14,7 @@ public class WritePCField implements Instruction {
         final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int pcOffset = wordOffset + i.getBL(); // 0x0c to skip PC name
         i.memory().write(
-                ip.segment(),
+                Interpreter.PARTY_SEGMENT,
                 pcBaseAddress + pcOffset,
                 i.isWide() ? 2 : 1,
                 newValue

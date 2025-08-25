@@ -4,7 +4,11 @@ public class ALU {
     public record Result(int value, boolean carry, boolean sign, boolean zero) {}
 
     public static Result addWord(int op1, int op2) {
-        final int value = (op1 & 0xffff) + (op2 & 0xffff);
+        return addWord(op1, op2, false);
+    }
+
+    public static Result addWord(int op1, int op2, boolean carry) {
+        final int value = (op1 & 0xffff) + (op2 & 0xffff) + (carry ? 1 : 0);
         return new Result(
                 value & 0xffff,
                 (value & 0x10000) > 0,
@@ -14,7 +18,11 @@ public class ALU {
     }
 
     public static Result addByte(int op1, int op2) {
-        final int value = (op1 & 0xff) + (op2 & 0xff);
+        return addByte(op1, op2, false);
+    }
+
+    public static Result addByte(int op1, int op2, boolean carry) {
+        final int value = (op1 & 0xff) + (op2 & 0xff) + (carry ? 1 : 0);
         return new Result(
                 value & 0xff,
                 (value & 0x100) > 0,

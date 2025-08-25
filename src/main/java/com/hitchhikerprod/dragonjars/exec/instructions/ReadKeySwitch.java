@@ -73,9 +73,22 @@ public class ReadKeySwitch implements Instruction {
         while (true) {
             final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
-            final int target = i.memory().read(ip.segment(), pointer + 1, 2);
-            prompts.add(new KeyAction(detector(ch), new Address(ip.segment(), target)));
-            pointer += 3;
+            if ((ch & 0xc0) == 0x40) {
+                // this is a range; read two characters
+                final int min = ch;
+                final int max = i.memory().read(ip.segment(), pointer + 1, 1);
+                final int target = i.memory().read(ip.segment(), pointer + 2, 2);
+                pointer += 4;
+                final KeyDetector det = (ev) -> {
+                    final int scancode = ev.getCode().getCode();
+                    return (min <= scancode && scancode <= max);
+                };
+                prompts.add(new KeyAction(det, new Address(ip.segment(), target)));
+            } else {
+                final int target = i.memory().read(ip.segment(), pointer + 1, 2);
+                pointer += 3;
+                prompts.add(new KeyAction(detector(ch), new Address(ip.segment(), target)));
+            }
         }
         i.setPrompt(prompts);
         return null;

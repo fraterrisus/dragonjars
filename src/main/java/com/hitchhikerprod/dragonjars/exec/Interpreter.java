@@ -181,6 +181,9 @@ public class Interpreter {
         mainLoop(startPoint);
     }
 
+    private static final int BREAKPOINT_CHUNK = 0x0d;
+    private static final int BREAKPOINT_ADR = 0x017e;
+
     private void mainLoop(Address startPoint) {
         mainLoopDepth++; // helps us track when to actually quit the app
         Address nextIP = startPoint;
@@ -191,6 +194,9 @@ public class Interpreter {
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
             System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+            if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
+                System.out.println("breakpoint");
+            }
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
@@ -504,6 +510,17 @@ public class Interpreter {
     public void drawString(List<Integer> s) {
         int x = x_31ed;
         int y = y_31ef;
+
+        System.out.format("drawString(%03x,%03x):", x, y);
+        for (int ch : s) {
+            int c = ch & 0x7f;
+            if (0x20 < c && c < 0x7e) {
+                System.out.format(" %c", c);
+            } else {
+                System.out.format(" 0x%02x", ch);
+            }
+        }
+        System.out.println();
 
         int p0 = 0;
         int p1;
@@ -869,7 +886,7 @@ public class Interpreter {
         x_3166 = 0; // not sure why we do this
         final int x0 = Integer.max(0, bbox_x1 - bbox_x0 - FOOTER_OFFSETS.get(index)) >> 1;
         x_31ed = bbox_x0 + x0;
-        final List<Integer> ch = FOOTERS.get(index).chars().boxed().toList();
+        final List<Integer> ch = FOOTERS.get(index).chars().map(c -> c | 0x80).boxed().toList();
         drawString(ch);
 
         // 0x28c6
@@ -1027,7 +1044,7 @@ public class Interpreter {
             case 0x7e -> new IndirectCharItem();
             case 0x7f -> new IndirectString();
             case 0x80 -> new IndentAX();
-            case 0x81 -> (i) -> Instructions.printNumber(i, i.getAX(true)); // print 4d number
+            case 0x81 -> new Print4DigitNumber();
             case 0x82 -> new Print9DigitNumber();
             case 0x83 -> new IndirectChar();
             case 0x84 -> new AllocateTempSegment();
