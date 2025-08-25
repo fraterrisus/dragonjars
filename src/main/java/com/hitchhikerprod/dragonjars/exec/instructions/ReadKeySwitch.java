@@ -15,32 +15,66 @@ public class ReadKeySwitch implements Instruction {
     }
 
     public record KeyAction(
-            int scanCode,
             KeyDetector function,
             Address destination
     ) {}
+
+    // 89 44a2
+    //      ^^ hi byte & 0x80 = print footer, index = hi byte & 0x03
+    //      ^  hi byte & 0x10 = read a third byte
+    //    ^^   lo byte & 0x80: call 0x1eb0 ???
+
+    // "argument" values seen:
+    //   0000  everywhere
+    //   0080  lots of places;      0x80 = print footer
+    //   0083  00/012e
+    //   009081  0c/0021, 0c/00c0;  0x80 + 0x10 = read a third byte
+    //   00a0  0d/lots;             0x80 + 0x20 = sets [4a7c] <- 0x20?
+    //   00c3  12/01ea              0x80 + 0x40
+    //   0180  14/00a5              this implements some sort of range operation
+    //   1080  0f/02d6              is looking for digits
+    //   3840  01/0051              this is the main gameplay loop (also looking for digits)
+    //   44a2  0f/0115              we don't care about the output, and any keypress advances
 
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         i.drawString313e(); //?
-        final int imm1 = i.memory().read(ip.incr(1), 1);
-        int imm2 = i.memory().read(ip.incr(2), 1);
-        // [2a44] <- imm1
-        // [2a45] <- imm2
-        int pointer = ip.offset() + 3;
-        // [4a7c] <- imm2 & 0x20;
-        if ((imm2 & 0x10) != 0) {
-            // imm2 = i.memory().read(ip.incr(3), 1);
+        final int imm_2a44 = i.memory().read(ip.incr(1), 1);
+        final int imm_2a45 = i.memory().read(ip.incr(2), 1);
+        int pointer = ip.offset() + 3; // stored at [3a41/seg,3a3f/adr]
+        final int flag_4a7c = imm_2a45 & 0x20;
+
+        // 0x2864
+        final int imm_2a46;
+        if ((imm_2a45 & 0x10) != 0) {
+            imm_2a46 = i.memory().read(ip.incr(3), 1);
             pointer++;
+        } else {
+            imm_2a46 = 0x0; // maybe??
         }
-        // [2a46] <- imm2
+
+        // 0x287a
+        // if ((imm_2a44 & 0x80) > 0) pushVideoData();
+
+        // 0x2884
+        if ((imm_2a45 & 0x80) > 0) { // print footer
+            i.printFooter(imm_2a45 & 0x3);
+        }
+
+        // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115
+        if ((imm_2a44 & 0x40) != 0) {
+            final Address nextIP = new Address(ip.segment(), pointer);
+            i.setPrompt(List.of(new KeyAction((ev) -> true, nextIP)));
+            return null;
+        }
+
         final List<KeyAction> prompts = new ArrayList<>();
         while (true) {
             final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
             final int target = i.memory().read(ip.segment(), pointer + 1, 2);
-            prompts.add(new KeyAction(ch, detector(ch), new Address(ip.segment(), target)));
+            prompts.add(new KeyAction(detector(ch), new Address(ip.segment(), target)));
             pointer += 3;
         }
         i.setPrompt(prompts);

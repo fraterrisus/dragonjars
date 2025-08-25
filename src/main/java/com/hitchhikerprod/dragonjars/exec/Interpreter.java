@@ -519,7 +519,7 @@ public class Interpreter {
                 ch = s.get(p1);
             }
             if ((x + p1 - p0) > bbox_x1) {
-                x = x_31ed;
+                x = bbox_x0;
                 y += 8;
             }
             for (int i = p0; i < p1; i++) {
@@ -527,7 +527,7 @@ public class Interpreter {
                 x++;
             }
             p0 = p1;
-            if (ch == 0x8d) { x = x_31ed; y += 8; p0++; }
+            if (ch == 0x8d) { x = bbox_x0; y += 8; p0++; }
             if (ch == 0xa0) { x++; p0++; }
         }
 
@@ -852,6 +852,30 @@ public class Interpreter {
             }
         };
         app.setKeyHandler(keyHandler);
+    }
+
+    private static final List<Integer> FOOTER_OFFSETS = List.of(0x0c, 0x0f, 0x09, 0x0e);
+
+    private static final List<String> FOOTERS = List.of(
+            "ESC to exit",     // len=0x0b  ARGH
+            "ESC to continue", // len=0x0f
+            "Press ESC",       // len=0x09
+            "ESC to go back"   // len=0x0e
+    );
+
+    public void printFooter(int index) { // 0x288b
+        if (index > 3) throw new IllegalArgumentException("index can't be greater than 3");
+        y_31ef = bbox_y1 - 8;
+        x_3166 = 0; // not sure why we do this
+        final int x0 = Integer.max(0, bbox_x1 - bbox_x0 - FOOTER_OFFSETS.get(index)) >> 1;
+        x_31ed = bbox_x0 + x0;
+        final List<Integer> ch = FOOTERS.get(index).chars().boxed().toList();
+        drawString(ch);
+
+        // 0x28c6
+//        final int bufferOffset = (y_31ef - bbox_y0) >> 3;
+//        buf_2a47[bufferOffset] = 0xff;
+//        buf_2a60[bufferOffset] = 0x9b;
     }
 
     private int byteToInt(byte b) {
