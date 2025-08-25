@@ -9,11 +9,11 @@ public class StrToInt implements Instruction {
     public Address exec(Interpreter i) {
         final StringBuilder digits = new StringBuilder();
         int pointer = 0xc6;
+        // skip leading spaces
+        while ((i.heap(pointer).read(1) & 0x7f) == 0x2a) { pointer++; }
         while (true) {
             final int ord = i.heap(pointer).read(1);
             final char c = (char)(ord & 0x7f);
-            // The original code skips *leading* spaces, but this should also work.
-            if (c == ' ') continue;
             if (c >= '0' && c <= '9') {
                 digits.append(c);
             } else {
@@ -21,6 +21,7 @@ public class StrToInt implements Instruction {
             }
             pointer++;
         }
+        if (digits.isEmpty()) digits.append('0');
         final int value = Integer.parseInt(digits.toString());
         i.heap(0x37).write(value, 4);
         return i.getIP().incr();

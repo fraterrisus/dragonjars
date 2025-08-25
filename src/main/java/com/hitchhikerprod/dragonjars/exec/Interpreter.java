@@ -502,6 +502,15 @@ public class Interpreter {
         this.mem_3430 = al & 0xff;
     }
 
+    public void backSpace() {
+        x_31ed -= 1;
+        lowLevelDrawChar(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+    }
+
+    public boolean roomToDrawChar() {
+        return x_31ed < bbox_x1 - 1;
+    }
+
     public void drawChar(int ch) {
         lowLevelDrawChar(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0);
         x_31ed += 1;
@@ -1056,7 +1065,7 @@ public class Interpreter {
             // case 0x8a -> new ShowMonsterImage();
             case 0x8b -> new DrawCurrentViewport(this);
             case 0x8c -> new RunYesNoModal();
-            // case 0x8d -> new PromptAndReadInput();
+            case 0x8d -> new ReadInputString();
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
             case 0x90 -> new PlaySoundEffect();
