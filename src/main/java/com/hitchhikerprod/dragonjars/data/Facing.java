@@ -41,6 +41,15 @@ public enum Facing {
         };
     }
 
+    public Facing reverse() {
+        return switch (this) {
+            case NORTH -> SOUTH;
+            case EAST -> WEST;
+            case SOUTH -> NORTH;
+            case WEST -> EAST;
+        };
+    }
+
     public enum Delta {
         LEFT(Facing::turnLeft),
         RIGHT(Facing::turnRight),

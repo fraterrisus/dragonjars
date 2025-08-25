@@ -7,7 +7,13 @@ public class Print4DigitNumber implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int value = i.getAX(true);
-        Instructions.printNumber(i, value);
+        printNumber(i, value);
         return i.getIP().incr(OPCODE);
+    }
+
+    public static void printNumber(Interpreter i, int val) {
+        i.drawString(String.valueOf(val).chars()
+                .map(ch -> ch | 0x80)
+                .boxed().toList());
     }
 }

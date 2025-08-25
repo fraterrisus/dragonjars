@@ -9,7 +9,7 @@ public class Print9DigitNumber implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int value = i.heap(heapIndex).read(4);
-        Instructions.printNumber(i, value);
+        Print4DigitNumber.printNumber(i, value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

@@ -1,0 +1,67 @@
+package com.hitchhikerprod.dragonjars.exec.instructions;
+
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.data.StringDecoder;
+import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+public class DecodeStringFrom implements Instruction {
+    // See chunk 0x0f adr 0x0102 pauseGame():
+    // @0x107 ins 78 decodeString seems to write "The game is paused" to the 313e string
+    // @0x115 inx 89 readKeySwitch starts by running printString313e
+    private final Function<Interpreter, Address> getPointer;
+    private final boolean withFill;
+
+    public DecodeStringFrom(Function<Interpreter, Address> getPointer, boolean withFill) {
+        this.getPointer = getPointer;
+        this.withFill = withFill;
+    }
+
+    @Override
+    public Address exec(Interpreter i) {
+        if (withFill) i.fillRectangle();
+        final Address addr = getPointer.apply(i);
+        final StringDecoder decoder = i.stringDecoder();
+        final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
+        decoder.decodeString(chunk, addr.offset());
+        final List<Integer> chars = decoder.getDecodedChars();
+        if (chars.getFirst() == 0x00) return addr;
+
+        if ((i.heap(0x08).read() & 0x80) == 0) {
+            i.heap(0x08).write(chars.getFirst() | 0x80);
+        }
+
+        boolean writeSingular = true;
+        final List<Integer> singular = new ArrayList<>();
+        boolean writePlural = true;
+        final List<Integer> plural = new ArrayList<>();
+        for (int ch : chars) {
+            switch (ch) {
+                case 0xaf -> {
+                    writeSingular = true;
+                    writePlural = false;
+                }
+                case 0xdc -> {
+                    writePlural = true;
+                    writeSingular = false;
+                }
+                default -> {
+                    if (writeSingular) singular.add(ch);
+                    if (writePlural) plural.add(ch);
+                }
+            }
+        }
+
+        if (i.heap(0x09).read() == 0x00) {
+            i.drawString(singular);
+        } else {
+            i.drawString(plural);
+        }
+
+        return new Address(addr.segment(), decoder.getPointer());
+    }
+}
