@@ -997,13 +997,13 @@ public class Interpreter {
             case 0x60 -> new ClearPartyFlag();
             case 0x61 -> new TestPartyFlag();
             // case 0x62 -> new SearchPartyFlag();
-            // case 0x63 -> new RecurseOverInventory();
+            case 0x63 -> new RecurseOverInventory();
             // case 0x64 -> new PickUpItem();
             // case 0x65 -> new SearchItem();
             case 0x66 -> new TestHeap();
             // case 0x67 -> new DropItem();
-            // case 0x68 -> new ReadInventory();
-            // case 0x69 -> new WriteInventory();
+            case 0x68 -> new ReadInventoryWord();
+            case 0x69 -> new WriteInventoryWord();
             case 0x6a -> new IsPartyInBox();
             // case 0x6b -> new RunAway();
             case 0x6c -> new StepForward();
@@ -1028,7 +1028,7 @@ public class Interpreter {
             case 0x7f -> new IndirectString();
             case 0x80 -> new IndentAX();
             case 0x81 -> (i) -> Instructions.printNumber(i, i.getAX(true)); // print 4d number
-            case 0x82 -> (i) -> Instructions.printNumber(i, i.getMulResult()); // print 9d number
+            case 0x82 -> new Print9DigitNumber();
             case 0x83 -> new IndirectChar();
             case 0x84 -> new AllocateTempSegment();
             case 0x85 -> new FreeSegmentAL();
@@ -1049,8 +1049,8 @@ public class Interpreter {
             case 0x94 -> new PopBL();
             case 0x95 -> new SetCursor();
             case 0x96 -> (i) -> { i.indentTo(bbox_x1); return i.getIP().incr(); };
-            // case 0x97 -> new LoadAXPartyField();
-            // case 0x98 -> new StoreAXPartyField();
+            case 0x97 -> new ReadPCField();
+            case 0x98 -> new WritePCField();
             case 0x99 -> new TestAX();
             case 0x9a -> new LoadHeapOnes();
             case 0x9b -> new FlagSetImm();
