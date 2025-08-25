@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -18,11 +19,11 @@ class TestAndSetHeapSignTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x06).write(0xff);
+        i.heap(Heap.SELECTED_PC).write(0xff);
         i.start(0, 0);
 
         assertFalse(i.getZeroFlag());
-        assertEquals(0x80, i.heap(0x06).read() & 0x80);
+        assertEquals(0x80, i.heap(Heap.SELECTED_PC).read() & 0x80);
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -35,12 +36,12 @@ class TestAndSetHeapSignTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x06).write(0x7f);
+        i.heap(Heap.SELECTED_PC).write(0x7f);
         i.start(0, 0);
 
         assertTrue(i.getZeroFlag());
         // bit gets set if not already set
-        assertEquals(0x80, i.heap(0x06).read() & 0x80);
+        assertEquals(0x80, i.heap(Heap.SELECTED_PC).read() & 0x80);
         assertEquals(2, i.instructionsExecuted());
     }
 }

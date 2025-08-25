@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x04);
-        i.heap(0x06).write(0x03);
+        i.heap(Heap.SELECTED_PC).write(0x03);
         i.heap(0x0d).write(0x02);
         i.start(0, 0);
 
@@ -36,7 +37,7 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x04);
-        i.heap(0x06).write(0x03);
+        i.heap(Heap.SELECTED_PC).write(0x03);
         i.heap(0x0d).write(0x02);
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);
@@ -54,7 +55,7 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x00);
-        i.heap(0x06).write(0x03);
+        i.heap(Heap.SELECTED_PC).write(0x03);
         i.heap(0x0d).write(0x02);
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);

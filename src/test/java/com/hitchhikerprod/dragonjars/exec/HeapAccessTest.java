@@ -21,7 +21,17 @@ public class HeapAccessTest {
     public void writeTooManyBytes() {
         final Heap heap = new Heap();
         final Heap.Access access = heap.get(0x10);
-        assertThrows(IllegalArgumentException.class, () -> access.write(0x0, 8));
+        assertThrows(IllegalArgumentException.class, () -> access.write(0xf, 8));
+
+    }
+
+    @Test
+    public void writeTooManyZeroes() {
+        final Heap heap = new Heap();
+        heap.get(0x17).write(0xff, 1);
+        final Heap.Access access = heap.get(0x10);
+        access.write(0x00, 8);
+        assertEquals(0x00, heap.get(0x17).read());
     }
 
     @Test

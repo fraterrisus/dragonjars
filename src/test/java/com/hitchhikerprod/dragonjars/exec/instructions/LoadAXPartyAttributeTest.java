@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +23,9 @@ class LoadAXPartyAttributeTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
         i.setWidth(true);
         // value to retrieve
-        i.memory().write(Interpreter.PARTY_SEGMENT, 0x21e, 2, 0xf1c3);
-        i.heap(0x06).write(0x02); // character ID
+        i.memory().write(Interpreter.PARTY_SEGMENT, 0x41e, 2, 0xf1c3);
+        i.heap(Heap.SELECTED_PC).write(0x02); // character ID
+        i.heap(Heap.MARCHING_ORDER + 0x02).write(0x04); // marching order
         i.start(0, 0);
 
         assertEquals(0xf1c3, i.getAX(true));
@@ -33,8 +35,9 @@ class LoadAXPartyAttributeTest {
     @Test
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
-        i.memory().write(Interpreter.PARTY_SEGMENT, 0x21e, 2, 0xf1c3);
-        i.heap(0x06).write(0x02); // character ID
+        i.memory().write(Interpreter.PARTY_SEGMENT, 0x41e, 2, 0xf1c3);
+        i.heap(Heap.SELECTED_PC).write(0x02); // character ID
+        i.heap(Heap.MARCHING_ORDER + 0x02).write(0x04); // marching order
         i.start(0, 0);
 
         assertEquals(0x00c3, i.getAX(true));

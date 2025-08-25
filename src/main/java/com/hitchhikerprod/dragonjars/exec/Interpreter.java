@@ -1013,7 +1013,7 @@ public class Interpreter {
             case 0x5f -> new SetPartyFlag();
             case 0x60 -> new ClearPartyFlag();
             case 0x61 -> new TestPartyFlag();
-            // case 0x62 -> new SearchPartyFlag();
+            case 0x62 -> new SearchPartySkill();
             case 0x63 -> new RecurseOverInventory();
             // case 0x64 -> new PickUpItem();
             // case 0x65 -> new SearchItem();
@@ -1028,7 +1028,7 @@ public class Interpreter {
             // case 0x6e -> new DrawCompass();
             case 0x6f -> new RotateMapView();
             case 0x70 -> new UnrotateMapView();
-            case 0x71 -> new RunSpecialEvent();
+            case 0x71 -> new RunSpecialEvent(); // TODO
             // case 0x72 -> new UseItem();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
