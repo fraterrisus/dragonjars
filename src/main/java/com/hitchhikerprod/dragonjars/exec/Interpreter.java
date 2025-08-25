@@ -167,7 +167,7 @@ public class Interpreter {
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
      */
     public void start(int chunk, int addr) {
-        app.setKeyHandler(null);
+        if (Objects.nonNull(app)) app.setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
@@ -177,7 +177,7 @@ public class Interpreter {
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
     public void start(Address startPoint) {
-        app.setKeyHandler(null);
+        if (Objects.nonNull(app)) app.setKeyHandler(null);
         mainLoop(startPoint);
     }
 
@@ -1026,8 +1026,8 @@ public class Interpreter {
             case 0x6c -> new StepForward();
             // case 0x6d -> new DrawAutomap();
             // case 0x6e -> new DrawCompass();
-            // case 0x6f -> new RotateMapView();
-            // case 0x70 -> new UnrotateMapView();
+            case 0x6f -> new RotateMapView();
+            case 0x70 -> new UnrotateMapView();
             case 0x71 -> new RunSpecialEvent();
             // case 0x72 -> new UseItem();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;

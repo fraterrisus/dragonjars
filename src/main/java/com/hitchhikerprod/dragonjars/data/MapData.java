@@ -227,6 +227,12 @@ public class MapData {
         );
     }
 
+    public void setSquare(int x, int y, int newData) {
+        // note that newData should be three bytes long
+        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        primaryData.write(offset, 3, newData);
+    }
+
     public Square[][] getView(int x, int y, int facing) {
         final Square[][] view = new Square[4][3];
         switch (facing) {

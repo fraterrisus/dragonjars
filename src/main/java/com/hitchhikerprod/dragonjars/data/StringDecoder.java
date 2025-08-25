@@ -6,15 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class StringDecoder {
-    private final List<Byte> lut;
+    private final Chunk executable;
 
+    private List<Byte> lut;
     private Chunk chunk;
     private int pointer;
     private Deque<Boolean> bitQueue;
     private List<Integer> decodedChars;
 
     public StringDecoder(Chunk executable) {
-        lut = executable.getBytes(0x1bca, 92);
+        this.executable = executable;
     }
 
     public int getPointer() {
@@ -41,6 +42,7 @@ public class StringDecoder {
     public void decodeString(Chunk chunk, int pointer) {
         this.chunk = chunk;
         this.pointer = pointer;
+        this.lut = executable.getBytes(0x1bca, 92);
         bitQueue = new LinkedList<>();
         decodedChars = new ArrayList<>();
 
