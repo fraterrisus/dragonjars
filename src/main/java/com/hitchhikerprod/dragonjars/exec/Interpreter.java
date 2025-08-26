@@ -1039,7 +1039,7 @@ public class Interpreter {
             case 0x6b -> new TakeOneStep(true);
             case 0x6c -> new TakeOneStep(false);
             // case 0x6d -> new DrawAutomap();
-            // case 0x6e -> new DrawCompass();
+            case 0x6e -> new DrawCompass();
             case 0x6f -> new RotateMapView();
             case 0x70 -> new UnrotateMapView();
             case 0x71 -> new RunSpecialEvent(); // TODO
@@ -1073,7 +1073,7 @@ public class Interpreter {
             case 0x8d -> new ReadInputString();
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
-            case 0x90 -> new PlaySoundEffect();
+            case 0x90 -> new PlaySoundEffect(); // TODO
             case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
             case 0x92 -> new PauseUntilKeyOrTime(this);
             case 0x93 -> new PushBL();

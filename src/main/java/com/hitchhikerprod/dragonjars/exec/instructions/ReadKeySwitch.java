@@ -35,6 +35,7 @@ public class ReadKeySwitch implements Instruction {
     //   1080  0f/02d6              is looking for digits
     //   3840  01/0051              this is the main gameplay loop (also looking for digits)
     //   44a2  0f/0115              we don't care about the output, and any keypress advances
+    //   8080  CS/1717              inside runAutomap()
 
     @Override
     public Address exec(Interpreter i) {

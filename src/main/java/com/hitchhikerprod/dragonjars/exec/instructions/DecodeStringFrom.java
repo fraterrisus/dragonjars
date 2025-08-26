@@ -9,6 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/*       0 1 2 3 4 5 6 7 8 9 A B C D E F
+ *   Ax    ! " # $ % & ' ( ) * + , - . /   0xa0: space
+ *   Bx  0 1 2 3 4 5 6 7 8 9 : ; < = > ?
+ *   Cx  @ A B C D E F G H I J K L M N O
+ *   Dx  P Q R S T U V W X Y Z [ \ ] ^ _
+ *   Ex  ` a b c d e f g h i j k l m n o
+ *   Fx  p q r s t u v w x y z { | }       0xfe: black box  0xff: white box
+ */
+
 public class DecodeStringFrom implements Instruction {
     // See chunk 0x0f adr 0x0102 pauseGame():
     // @0x107 ins 78 decodeString seems to write "The game is paused" to the 313e string
