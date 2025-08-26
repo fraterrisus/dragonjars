@@ -57,6 +57,7 @@ public class Chunk {
     }
 
     public int read(int offset, int num) {
+        if (num > 4) throw new IllegalArgumentException("Can't read more bytes than fit in an int (4)");
         int value = 0;
         for (int i = num - 1; i >= 0; i--) {
             value = value << 8;

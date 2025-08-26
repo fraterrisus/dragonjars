@@ -22,4 +22,11 @@ public class ModifiableChunk extends Chunk {
             v = v >> 8;
         }
     }
+
+    public void setBytes(int index, List<Byte> values) {
+        for (byte b : values) {
+            this.raw.set(index, (byte) (b & 0xff));
+            index++;
+        }
+    }
 }

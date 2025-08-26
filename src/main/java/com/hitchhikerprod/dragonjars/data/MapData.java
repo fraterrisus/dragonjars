@@ -146,6 +146,10 @@ public class MapData {
             int eventId
     ) {}
 
+    public Item getItem(int index) {
+        return items.get(index);
+    }
+
     public Square getSquare(GridCoordinate position) {
         return getSquare(position.x(), position.y());
     }
@@ -267,11 +271,6 @@ public class MapData {
             default:
                 throw new IllegalArgumentException("Unexpected facing: " + facing);
         }
-    }
-
-    public int getRoofTexture(int index) {
-        final int textureIndex = roofTextures54c5.get(index);
-        return textureChunks5677.get(textureIndex);
     }
 
     private void byteReader(Consumer<Byte> consumer) {

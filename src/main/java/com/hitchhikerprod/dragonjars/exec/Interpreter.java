@@ -25,6 +25,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -920,6 +921,10 @@ public class Interpreter {
         }
     }
 
+    private Function<Interpreter, Boolean> invert(Function<Interpreter, Boolean> fn) {
+        return (i) -> ! fn.apply(i);
+    }
+
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instructions.SET_WIDE;
@@ -989,13 +994,13 @@ public class Interpreter {
             case 0x40 -> new CmpBLImm();
             // The SUB and CMP instructions flip the carry bit before writing, which makes
             // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
-            case 0x41 -> new JumpIf((i) -> ! i.getCarryFlag());
-            case 0x42 -> new JumpIf((i) -> i.getCarryFlag());
-            case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag()); // "above"
-            case 0x44 -> new JumpIf((i) -> i.getZeroFlag()); // "equal"
-            case 0x45 -> new JumpIf((i) -> ! i.getZeroFlag()); // "not equal"
-            case 0x46 -> new JumpIf((i) -> i.getSignFlag());
-            case 0x47 -> new JumpIf((i) -> ! i.getSignFlag());
+            case 0x41 -> new JumpIf(invert(Interpreter::getCarryFlag));
+            case 0x42 -> new JumpIf(Interpreter::getCarryFlag);
+            case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag());  // "above"
+            case 0x44 -> new JumpIf(Interpreter::getZeroFlag);                     // "equal"
+            case 0x45 -> new JumpIf(invert(Interpreter::getZeroFlag));             // "not equal"
+            case 0x46 -> new JumpIf(Interpreter::getSignFlag);
+            case 0x47 -> new JumpIf(invert(Interpreter::getSignFlag));
             case 0x48 -> new TestAndSetHeapSign();
             case 0x49 -> new LoopBX();
             case 0x4a -> new LoopBXLimit();
@@ -1024,10 +1029,10 @@ public class Interpreter {
             case 0x61 -> new TestPartyFlag();
             case 0x62 -> new SearchPartySkill();
             case 0x63 -> new RecurseOverInventory();
-            // case 0x64 -> new PickUpItem();
-            // case 0x65 -> new SearchItem();
+            case 0x64 -> new PickUpItem();
+            case 0x65 -> new SearchSpecialItem();
             case 0x66 -> new TestHeap();
-            // case 0x67 -> new DropItem();
+            case 0x67 -> new DropItem();
             case 0x68 -> new ReadInventoryWord();
             case 0x69 -> new WriteInventoryWord();
             case 0x6a -> new IsPartyInBox();

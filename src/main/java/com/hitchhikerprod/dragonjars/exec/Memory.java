@@ -92,11 +92,19 @@ public class Memory {
         return read(address.segment(), address.offset(), length);
     }
 
+    public List<Byte> readList(Address address, int length) {
+        return getSegment(address.segment()).getBytes(address.offset(), length);
+    }
+
     public void write(int segmentId, int offset, int length, int data) {
         getSegment(segmentId).write(offset, length, data);
     }
 
     public void write(Address address, int length, int data) {
         write(address.segment(), address.offset(), length, data);
+    }
+
+    public void writeList(Address address, List<Byte> data) {
+        getSegment(address.segment()).setBytes(address.offset(), data);
     }
 }
