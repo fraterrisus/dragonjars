@@ -28,11 +28,13 @@ public class DrawCurrentViewport implements Instruction {
         i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
         final int mapId = i.heap(Heap.BOARD_ID).read();
-        // N.B. these are Huffman encoded, so the map decoder will decompress them. Don't try to read them directly
-        // final ModifiableChunk primaryData = memory().copyDataChunk(mapId + 0x46);
-        final ModifiableChunk primaryData = i.memory().copyDataChunk(0x10);
-        final ModifiableChunk secondaryData = i.memory().copyDataChunk(mapId + 0x1e);
-        i.mapDecoder().parse(mapId, primaryData, true, secondaryData);
+        // See [00/0384] load_dirty_map_state()
+        // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
+        // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
+        // formerly-clean primary map data instead of 0x10.
+        final ModifiableChunk primaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x46, Frob.DIRTY));
+        final ModifiableChunk secondaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x1e, Frob.CLEAN));
+        i.mapDecoder().parse(mapId, primaryData, secondaryData);
 
         i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
         i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
@@ -44,8 +46,8 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        // i.eraseVideoBuffer(); // black the viewport in case there's no light
-        if (((i.mapDecoder().getFlags() & 0x08) > 0) || (i.heap(0xc1).read() > 0)) {
+        i.eraseVideoBuffer(); // black the viewport in case there's no light
+        if (((i.mapDecoder().getFlags() & 0x08) > 0) || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
             // either the map provides light or the party has a light source
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();

@@ -69,9 +69,6 @@ public class Instructions {
         return null;
     };
 
-    public static final Function<Interpreter, Address> GET_POINTER_CS = i -> i.getIP().incr(OPCODE);
-    public static final Function<Interpreter, Address> GET_POINTER_DS_AX = i -> new Address(i.getDS(), i.getAX(true));
-
     public static List<Integer> getStringFromMemory(Interpreter i, Address addr) {
         final List<Integer> nameCh = new ArrayList<>();
         int pointer = addr.offset();

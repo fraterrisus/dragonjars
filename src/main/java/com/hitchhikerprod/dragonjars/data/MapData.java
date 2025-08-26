@@ -11,7 +11,7 @@ public class MapData {
 
     private int mapId = -1;
     private ModifiableChunk primaryData;
-    private ModifiableChunk secondaryData;
+    private Chunk secondaryData;
 
     private int chunkPointer;
 
@@ -56,12 +56,12 @@ public class MapData {
         this.stringDecoder = stringDecoder;
     }
 
-    public void parse(int mapId, ModifiableChunk primary, boolean isDirty, Chunk secondary) {
+    public void parse(int mapId, ModifiableChunk primary, Chunk secondary) {
         if (mapId == this.mapId) return;
 
         this.mapId = mapId;
-        this.primaryData = (isDirty) ? primary : decompressChunk(primary); // primary = mapId + 0x46
-        this.secondaryData = decompressChunk(secondary); // secondary = mapId + 0x1e
+        this.primaryData = primary;      // primary = mapId + 0x46
+        this.secondaryData = secondary;  // secondary = mapId + 0x1e
 
         chunkPointer = 0;
 
@@ -133,6 +133,10 @@ public class MapData {
         primaryData.write(offset+1, 1, rawData | 0x08);
     }
 
+    public Item getItem(int index) {
+        return items.get(index);
+    }
+
     public record Square(
             int rawData,
             Optional<Integer> northWallTextureChunk,
@@ -145,10 +149,6 @@ public class MapData {
             boolean touched,
             int eventId
     ) {}
-
-    public Item getItem(int index) {
-        return items.get(index);
-    }
 
     public Square getSquare(GridCoordinate position) {
         return getSquare(position.x(), position.y());

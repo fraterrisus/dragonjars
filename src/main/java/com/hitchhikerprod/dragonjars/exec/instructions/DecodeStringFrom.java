@@ -23,11 +23,33 @@ public class DecodeStringFrom implements Instruction {
     // @0x107 ins 78 decodeString seems to write "The game is paused" to the 313e string
     // @0x115 inx 89 readKeySwitch starts by running printString313e
     private final Function<Interpreter, Address> getPointer;
+    private final Function<Interpreter, Address> getNextIp;
     private final boolean withFill;
 
-    public DecodeStringFrom(Function<Interpreter, Address> getPointer, boolean withFill) {
+    private DecodeStringFrom(
+            Function<Interpreter, Address> getPointer,
+            Function<Interpreter, Address> getNextIp,
+            boolean withFill
+    ) {
         this.getPointer = getPointer;
+        this.getNextIp = getNextIp;
         this.withFill = withFill;
+    }
+
+    public static DecodeStringFrom cs(boolean withFill) {
+        return new DecodeStringFrom(
+                i -> i.getIP().incr(OPCODE),
+                i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
+                withFill
+        );
+    }
+
+    public static DecodeStringFrom ds(boolean withFill) {
+        return new DecodeStringFrom(
+                i -> new Address(i.getDS(), i.getAX(true)),
+                i -> i.getIP().incr(OPCODE),
+                withFill
+        );
     }
 
     @Override
@@ -71,6 +93,6 @@ public class DecodeStringFrom implements Instruction {
             i.drawString(plural);
         }
 
-        return new Address(addr.segment(), decoder.getPointer());
+        return getNextIp.apply(i);
     }
 }

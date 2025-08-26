@@ -20,6 +20,7 @@ public class Heap {
     public static final int LONGPTR_SEG = 0x36;
     public static final int BOARD_1_SEGIDX = 0x56;
     public static final int BOARD_2_SEGIDX = 0x5a;
+    public static final int LIGHT_SOURCE = 0xc1;
 
     private final int[] storage = new int[256];
 

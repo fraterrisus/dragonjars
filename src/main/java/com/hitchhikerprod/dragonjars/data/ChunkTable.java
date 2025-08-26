@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
 public class ChunkTable {
@@ -28,11 +27,15 @@ public class ChunkTable {
     }
 
     public Chunk getModifiableChunk(int chunkId){
-        return new ModifiableChunk(getChunkHelper(chunkId, this::readBytes));
+        return new ModifiableChunk(readChunkHelper(chunkId, this::readBytes));
     }
 
-    public Chunk getChunk(int chunkId) {
-        return new Chunk(getChunkHelper(chunkId, this::readBytes));
+    public Chunk readChunk(int chunkId) {
+        return new Chunk(readChunkHelper(chunkId, this::readBytes));
+    }
+
+    public boolean writeChunk(int chunkId, Chunk chunkData) {
+        return writeChunkHelper(chunkId, chunkData, this::writeBytes);
     }
 
     public int getChunkCount() {
@@ -62,7 +65,12 @@ public class ChunkTable {
         }
     }
 
-    private List<Byte> getChunkHelper(int chunkId, BiFunction<RandomAccessFile, FilePointer, List<Byte>> reader) {
+    @FunctionalInterface
+    private interface ChunkReader {
+        List<Byte> apply(RandomAccessFile file, FilePointer ptr);
+    }
+
+    private List<Byte> readChunkHelper(int chunkId, ChunkReader reader) {
         final RandomAccessFile dataFile;
         final Optional<FilePointer> filePointer = getPointer(chunkId);
         if (filePointer.isPresent()) {
@@ -91,6 +99,46 @@ public class ChunkTable {
         return IntStream.range(0, rawBytes.length)
                 .mapToObj(i -> rawBytes[i])
                 .toList();
+    }
+
+    @FunctionalInterface
+    private interface ChunkWriter {
+        void apply(RandomAccessFile file, FilePointer ptr, Chunk data) throws IOException;
+    }
+
+    private boolean writeChunkHelper(int chunkId, Chunk chunkData, ChunkWriter writer) {
+        final RandomAccessFile dataFile;
+        final Optional<FilePointer> filePointer = getPointer(chunkId);
+        if (filePointer.isPresent()) {
+            final int n = filePointer.get().fileNum();
+            switch (n) {
+                case 1 -> dataFile = data1;
+                case 2 -> dataFile = data2;
+                default -> throw new RuntimeException("Unrecognized data file number " + n);
+            }
+            if (filePointer.get().size() < chunkData.getSize()) {
+                System.err.println("Chunk (" + chunkData.getSize() + "b) is larger than file space (" + filePointer.get().size() + "b)");
+            }
+            try {
+                writer.apply(dataFile, filePointer.get(), chunkData);
+                return true;
+            } catch (IOException e) {
+                System.err.println("Exception writing data: " + e.getMessage());
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private void writeBytes(RandomAccessFile file, FilePointer ptr, Chunk data) throws IOException {
+        file.seek(ptr.start());
+        final int bufSize = Integer.min(ptr.size(), data.getSize());
+        final byte[] buf = new byte[bufSize];
+        for (int i = 0 ; i < bufSize; i++) {
+            buf[i] = data.getByte(i);
+        }
+        file.write(buf);
     }
 
     private static List<FilePointer> readFile(RandomAccessFile dataFile, int fileNum) {

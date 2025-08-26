@@ -182,8 +182,8 @@ public class Interpreter {
         mainLoop(startPoint);
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0d;
-    private static final int BREAKPOINT_ADR = 0x017e;
+    private static final int BREAKPOINT_CHUNK = 0x0f;
+    private static final int BREAKPOINT_ADR = 0x00d3;
 
     private void mainLoop(Address startPoint) {
         mainLoopDepth++; // helps us track when to actually quit the app
@@ -194,7 +194,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+//            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -506,6 +506,10 @@ public class Interpreter {
     public void backSpace() {
         x_31ed -= 1;
         lowLevelDrawChar(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+    }
+
+    public int readXPointer() {
+        return x_31ed;
     }
 
     public boolean roomToDrawChar() {
@@ -1048,12 +1052,12 @@ public class Interpreter {
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
             case 0x76 -> Instructions.FILL_BBOX;
-            case 0x77 -> new DecodeStringFrom(Instructions.GET_POINTER_CS, true);
-            case 0x78 -> new DecodeStringFrom(Instructions.GET_POINTER_CS, false);
-            case 0x79 -> new DecodeStringFrom(Instructions.GET_POINTER_DS_AX, true);
-            case 0x7a -> new DecodeStringFrom(Instructions.GET_POINTER_DS_AX, false);
-            case 0x7b -> new DecodeTitleStringFrom(Instructions.GET_POINTER_CS);
-            case 0x7c -> new DecodeTitleStringFrom(Instructions.GET_POINTER_DS_AX);
+            case 0x77 -> DecodeStringFrom.cs(true);
+            case 0x78 -> DecodeStringFrom.cs(false);
+            case 0x79 -> DecodeStringFrom.ds(true);
+            case 0x7a -> DecodeStringFrom.ds(false);
+            case 0x7b -> DecodeTitleStringFrom.CS;
+            case 0x7c -> DecodeTitleStringFrom.DS;
             case 0x7d -> new IndirectCharName();
             case 0x7e -> new IndirectCharItem();
             case 0x7f -> new IndirectString();
@@ -1064,7 +1068,7 @@ public class Interpreter {
             case 0x84 -> new AllocateTempSegment();
             case 0x85 -> new FreeSegmentAL();
             case 0x86 -> new LoadChunkAX();
-            // case 0x87 -> new PersistChunk();
+            case 0x87 -> new PersistChunk();
             case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
             // case 0x8a -> new ShowMonsterImage();

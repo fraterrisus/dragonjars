@@ -22,7 +22,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             for (int i = 0; i < count; i++) {
                 if (isCancelled()) return null;
                 updateMessage("Loading segment " + (i+1) + " of " + count+1);
-                chunks.add(table.getChunk(i));
+                chunks.add(table.readChunk(i));
                 updateProgress(i+1, count+1);
             }
             updateMessage("Loading code segment " + count+1 + " of " + count+1);

@@ -389,7 +389,7 @@ public class ImageDecoder {
             final Chunk codeChunk = new Chunk(codeSegment);
 
             final ChunkTable chunkTable = new ChunkTable(data1, data2);
-            final Chunk rawChunk = chunkTable.getChunk(chunkId);
+            final Chunk rawChunk = chunkTable.readChunk(chunkId);
             final HuffmanDecoder huffman = new HuffmanDecoder(rawChunk);
             final Chunk decodedChunk = huffman.decodeChunk();
             decodedChunk.display();

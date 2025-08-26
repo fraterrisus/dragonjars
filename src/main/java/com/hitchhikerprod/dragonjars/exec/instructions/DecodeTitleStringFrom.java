@@ -16,9 +16,12 @@ public class DecodeTitleStringFrom implements Instruction {
 
     private final Function<Interpreter, Address> getPointer;
 
-    public DecodeTitleStringFrom(Function<Interpreter, Address> getPointer) {
+    private DecodeTitleStringFrom(Function<Interpreter, Address> getPointer) {
         this.getPointer = getPointer;
     }
+
+    public static DecodeTitleStringFrom CS = new DecodeTitleStringFrom(i -> i.getIP().incr(OPCODE));
+    public static DecodeTitleStringFrom DS = new DecodeTitleStringFrom(i -> new Address(i.getDS(), i.getAX(true)));
 
     @Override
     public Address exec(Interpreter i) {

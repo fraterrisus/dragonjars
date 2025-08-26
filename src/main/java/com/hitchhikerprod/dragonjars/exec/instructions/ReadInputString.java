@@ -10,6 +10,8 @@ import java.util.List;
 public class ReadInputString implements Instruction {
     // write 0x00 at end of string
     // use x_31ed vs bbox_x1 (0x28)
+    private static final int PROMPT_BOX = 0x0fe;
+
     final List<Integer> chars = new ArrayList<>();
 
     @Override
@@ -17,7 +19,8 @@ public class ReadInputString implements Instruction {
         final Address nextIP = i.getIP().incr();
         chars.clear();
         i.drawChar(0xba); // ':' unclear if this gets written for us
-        i.drawChar(0xe7); // prompt box
+        i.drawChar(PROMPT_BOX); // prompt box
+        final int x0 = i.readXPointer();
         i.app.setKeyHandler(event -> {
             final KeyCode keycode = event.getCode();
             final int scancode = keycode.getCode();
@@ -31,23 +34,26 @@ public class ReadInputString implements Instruction {
                 i.heap(ptr).write(0x00);
                 i.start(nextIP);
             } else if (keycode == KeyCode.BACK_SPACE || keycode == KeyCode.DELETE) {
-                i.backSpace();
-                i.backSpace();
-                i.drawChar(0xe7);
+                if (i.readXPointer() > x0) {
+                    chars.removeLast();
+                    i.backSpace();
+                    i.backSpace();
+                    i.drawChar(PROMPT_BOX);
+                }
             } else if ((0x41 <= scancode && scancode <= 0x5a) || (0x61 <= scancode && scancode <= 0x7a)) {
                 if (i.roomToDrawChar()) {
-                    final int cap = (scancode & 0xdf) | 0x80;
+                    final int cap = (event.isShiftDown()) ? (scancode) | 0x80 : scancode | 0xe0;
                     chars.add(cap);
                     i.backSpace();
                     i.drawChar(cap);
-                    i.drawChar(0xe7);
+                    i.drawChar(PROMPT_BOX);
                 }
             } else if (0x30 <= scancode && scancode <= 0x39) {
                 if (i.roomToDrawChar()) {
                     chars.add(scancode | 0x80);
                     i.backSpace();
                     i.drawChar(scancode);
-                    i.drawChar(0xe7);
+                    i.drawChar(PROMPT_BOX);
                 }
             }
         });
