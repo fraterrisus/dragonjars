@@ -137,6 +137,10 @@ public class MapData {
         return items.get(index);
     }
 
+    public int getEventPointer(int eventId) {
+        return primaryPointers.get(eventId);
+    }
+
     public record Square(
             int rawData,
             Optional<Integer> northWallTextureChunk,

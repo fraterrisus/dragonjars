@@ -195,7 +195,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-//            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -805,6 +805,7 @@ public class Interpreter {
 
     public PartyLocation getPartyLocation() {
         return new PartyLocation(
+            heap(Heap.BOARD_ID).read(),
             new GridCoordinate(heap(Heap.PARTY_X).read(), heap(Heap.PARTY_Y).read()),
             Facing.valueOf(heap(Heap.PARTY_FACING).read())
         );

@@ -19,6 +19,7 @@ public class Heap {
     public static final int LONGPTR_ADR = 0x34;
     public static final int LONGPTR_SEG = 0x36;
     public static final int BOARD_1_SEGIDX = 0x56;
+    public static final int BOARD_1_MAPID = 0x57;
     public static final int BOARD_2_SEGIDX = 0x5a;
     public static final int LIGHT_SOURCE = 0xc1;
 

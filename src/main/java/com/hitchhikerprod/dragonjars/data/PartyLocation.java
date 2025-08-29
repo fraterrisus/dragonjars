@@ -1,6 +1,6 @@
 package com.hitchhikerprod.dragonjars.data;
 
-public record PartyLocation(GridCoordinate pos, Facing facing) {
+public record PartyLocation(int mapId, GridCoordinate pos, Facing facing) {
     public GridCoordinate translate(int squareId) {
         return switch (facing) {
             case NORTH -> {

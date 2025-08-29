@@ -35,6 +35,7 @@ public class DrawCurrentViewport implements Instruction {
         final ModifiableChunk primaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x46, Frob.DIRTY));
         final ModifiableChunk secondaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x1e, Frob.CLEAN));
         i.mapDecoder().parse(mapId, primaryData, secondaryData);
+        i.heap(Heap.BOARD_1_MAPID).write(mapId);
 
         i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
         i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());

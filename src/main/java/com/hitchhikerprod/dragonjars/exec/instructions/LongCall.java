@@ -14,6 +14,7 @@ public class LongCall implements Instruction {
         i.push(returnAddress.offset());
         i.push(returnAddress.offset() >> 8);
         i.push(returnAddress.segment());
+        i.push(0x00);
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
         i.setDS(segmentId);
         return new Address(segmentId, address);
