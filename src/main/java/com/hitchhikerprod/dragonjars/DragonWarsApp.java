@@ -6,6 +6,7 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
+import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
@@ -144,12 +145,19 @@ public class DragonWarsApp extends Application {
         thread.start();
     }
 
+    private PlayTitleMusic musicTask;
+
     private void showTitleScreen() {
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
         RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
         this.stage.sizeToScene();
         setKeyHandler(this::titleScreenHandler);
+
+        musicTask = new PlayTitleMusic(dataChunks.getLast(), true);
+        final Thread musicThread = new Thread(musicTask);
+        musicThread.setDaemon(true);
+        musicThread.start();
     }
 
     private void startInterpreter() {
@@ -213,11 +221,11 @@ public class DragonWarsApp extends Application {
     }
 
     private void titleScreenHandler(KeyEvent event) {
-        System.out.println(event.getCode().name());
+        musicTask.cancel();
         switch (event.getCode()) {
             case Q -> Platform.exit();
             case T -> testPattern();
-            case ENTER, ESCAPE, SPACE -> startInterpreter();
+            default -> startInterpreter();
         }
     }
 
