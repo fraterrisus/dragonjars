@@ -6,6 +6,7 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
+import com.hitchhikerprod.dragonjars.tasks.PlaySound;
 import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
@@ -154,10 +155,12 @@ public class DragonWarsApp extends Application {
         this.stage.sizeToScene();
         setKeyHandler(this::titleScreenHandler);
 
+/*
         musicTask = new PlayTitleMusic(dataChunks.getLast(), true);
         final Thread musicThread = new Thread(musicTask);
         musicThread.setDaemon(true);
         musicThread.start();
+*/
     }
 
     private void startInterpreter() {
@@ -221,8 +224,15 @@ public class DragonWarsApp extends Application {
     }
 
     private void titleScreenHandler(KeyEvent event) {
-        musicTask.cancel();
+        if (Objects.nonNull(musicTask)) musicTask.cancel();
         switch (event.getCode()) {
+            case DIGIT1, DIGIT2, DIGIT3 -> {
+                int digit = event.getCode().getCode() - (int)'0';
+                PlaySound soundTask = new PlaySound(digit);
+                final Thread soundThread = new Thread(soundTask);
+                soundThread.setDaemon(true);
+                soundThread.start();
+            }
             case Q -> Platform.exit();
             case T -> testPattern();
             default -> startInterpreter();
