@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.instructions.YouWin;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
@@ -157,26 +158,28 @@ public class DragonWarsApp extends Application {
         thread.start();
     }
 
+    public void setImage(Image image) {
+        RootWindow.getInstance().setImage(image, SCALE_FACTOR);
+        this.stage.sizeToScene();
+    }
+
     private void showTitleScreen() {
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
-        RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
-        this.stage.sizeToScene();
+        setImage(titleScreenImage);
         setKeyHandler(this::titleScreenHandler);
         musicService.enable();
         musicService.playTitleMusic(dataChunks.getLast());
     }
 
     private void startInterpreter() {
-        RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
-        this.stage.sizeToScene();
+        setImage(Images.blankImage(320, 200));
         new Interpreter(this, this.dataChunks).init().start(0, 0);
     }
 
     private void testPattern() {
         setKeyHandler(null);
-        RootWindow.getInstance().setImage(Images.blankImage(320, 200), SCALE_FACTOR);
-        this.stage.sizeToScene();
+        setImage(Images.blankImage(320, 200));
         final Interpreter interp = new Interpreter(this, this.dataChunks);
         //interp.init().start(0, 0);
 

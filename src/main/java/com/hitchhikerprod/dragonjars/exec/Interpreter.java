@@ -1121,7 +1121,7 @@ public class Interpreter {
             case 0x9c -> new FlagClearImm();
             case 0x9d -> new FlagTestImm();
             case 0x9e -> new GetSegmentSize();
-            // case 0x9f -> new YouWin();
+            case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException(String.format("Unimplemented opcode %02x", opcode));
         };
     }
