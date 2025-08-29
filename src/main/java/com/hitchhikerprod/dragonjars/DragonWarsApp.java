@@ -6,7 +6,7 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
-import com.hitchhikerprod.dragonjars.tasks.PlaySound;
+import com.hitchhikerprod.dragonjars.tasks.PlaySimpleSound;
 import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
@@ -228,7 +228,7 @@ public class DragonWarsApp extends Application {
         switch (event.getCode()) {
             case DIGIT1, DIGIT2, DIGIT3 -> {
                 int digit = event.getCode().getCode() - (int)'0';
-                PlaySound soundTask = new PlaySound(digit);
+                PlaySimpleSound soundTask = new PlaySimpleSound(digit);
                 final Thread soundThread = new Thread(soundTask);
                 soundThread.setDaemon(true);
                 soundThread.start();

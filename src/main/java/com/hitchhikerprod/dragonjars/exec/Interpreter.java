@@ -12,11 +12,13 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
+import com.hitchhikerprod.dragonjars.tasks.PlayChunkSound;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
@@ -249,11 +251,26 @@ public class Interpreter {
                 final Chunk decompressedChunk = new HuffmanDecoder(newChunk).decodeChunk();
                 newChunk = new ModifiableChunk(decompressedChunk);
             }
+            if (chunkId >= 0x100) {
+                if (chunkId % 2 != 0) applyRollingAddition(newChunk, 0x0000);
+                applyRollingAddition(newChunk, 0x0004);
+            }
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
         }
         // should there be a "don't overwrite frob 0xff" guard here?
         memory().setSegmentFrob(segmentId, frob);
         return segmentId;
+    }
+
+    // This ought to be a decoder class, maybe?
+    private void applyRollingAddition(ModifiableChunk chunk, int baseIndex) {
+        int pointer = baseIndex;
+        int running = 0;
+        while (pointer < chunk.getSize()) {
+            running = running + chunk.getUnsignedByte(pointer);
+            chunk.write(pointer, 1, running);
+            pointer++;
+        }
     }
 
     /**
@@ -525,16 +542,16 @@ public class Interpreter {
         int x = x_31ed;
         int y = y_31ef;
 
-        System.out.format("drawString(%03x,%03x):", x, y);
+//        System.out.format("drawString(%03x,%03x):", x, y);
         for (int ch : s) {
             int c = ch & 0x7f;
-            if (0x20 < c && c < 0x7e) {
-                System.out.format(" %c", c);
-            } else {
-                System.out.format(" 0x%02x", ch);
-            }
+//            if (0x20 < c && c < 0x7e) {
+//                System.out.format(" %c", c);
+//            } else {
+//                System.out.format(" 0x%02x", ch);
+//            }
         }
-        System.out.println();
+//        System.out.println();
 
         int p0 = 0;
         int p1;

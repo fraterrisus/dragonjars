@@ -8,8 +8,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
 // TODO: change this into a Service with a long-running SourceDataLine
-public class PlaySound extends Task<Void> {
-    private static final float FREQUENCY = 44100;
+public class PlaySimpleSound extends Task<Void> {
+    private static final float FREQUENCY = 44100 * 4;
 
     private final byte[] buf = new byte[1];
     private final AudioFormat af = new AudioFormat(FREQUENCY,8,1,true,false);
@@ -17,7 +17,7 @@ public class PlaySound extends Task<Void> {
 
     private SourceDataLine sdl;
 
-    public PlaySound(int effectId) {
+    public PlaySimpleSound(int effectId) {
         this.effectId = effectId;
     }
 
@@ -28,9 +28,9 @@ public class PlaySound extends Task<Void> {
         sdl.start();
 
         final Pair<Integer, Integer> timing = switch (effectId) {
-            case 1 -> new Pair<>(0x0c, 0x28); // (0xf0, 0x200);
-            case 2 -> new Pair<>(0x03, 0x30); // (0x28, 0x400);
-            case 3 -> new Pair<>(0x09, 0x60); // (0xc8, 0x800);
+            case 1 -> new Pair<>(0x30, 0x0a0); // (0xf0, 0x200);
+            case 2 -> new Pair<>(0x0c, 0x0c0); // (0x28, 0x400);
+            case 3 -> new Pair<>(0x24, 0x180); // (0xc8, 0x800);
             default -> null;
         };
         if (timing == null) return null;

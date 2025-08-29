@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class PlayTitleMusic extends Task<Void> {
-    private static final float FREQUENCY = 44100;
+    private static final float FREQUENCY = 44100 * 4;
 
     // 274.1687 Hz = 3.6473 ms per interrupt cycle
     private static final float DURATION_ADJUST = 3.6473f;
