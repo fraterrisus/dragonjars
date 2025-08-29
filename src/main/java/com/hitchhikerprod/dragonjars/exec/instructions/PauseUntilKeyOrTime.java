@@ -27,7 +27,7 @@ public class PauseUntilKeyOrTime implements Instruction {
 
         nextIP = i.getIP().incr(OPCODE);
 
-        i.app.setKeyHandler(event -> moveAlong());
+        i.app().setKeyHandler(event -> moveAlong());
 
         sleepTask.setOnSucceeded(event -> moveAlong());
         final Thread thread = new Thread(sleepTask);
@@ -40,7 +40,7 @@ public class PauseUntilKeyOrTime implements Instruction {
     private void moveAlong() {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
-            i.app.setKeyHandler(null);
+            i.app().setKeyHandler(null);
             i.start(nextIP);
         }
     }

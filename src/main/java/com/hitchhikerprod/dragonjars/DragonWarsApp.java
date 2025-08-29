@@ -6,9 +6,8 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
-import com.hitchhikerprod.dragonjars.tasks.PlaySimpleSound;
-import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
+import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -26,7 +25,6 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
@@ -34,6 +32,8 @@ public class DragonWarsApp extends Application {
 
     private Stage stage;
     private Scene scene;
+
+    private MusicService musicService;
 
     private List<Chunk> dataChunks;
 
@@ -57,6 +57,8 @@ public class DragonWarsApp extends Application {
         this.stage.setResizable(false);
         this.stage.show();
 
+        this.musicService = new MusicService();
+
         loadDataFiles();
     }
 
@@ -66,6 +68,15 @@ public class DragonWarsApp extends Application {
 
     public void setKeyHandler(EventHandler<KeyEvent> handler) {
         this.scene.setOnKeyReleased(handler);
+    }
+
+    public void close() {
+        musicService.close();
+        Platform.exit();
+    }
+
+    public MusicService musicService() {
+        return musicService;
     }
 
     /**
@@ -138,7 +149,7 @@ public class DragonWarsApp extends Application {
             progress.setValue(0.0);
             final Alert alert = new Alert(Alert.AlertType.ERROR, task.getException().getMessage());
             alert.showAndWait();
-            Platform.exit();
+            close();
         });
 
         final Thread thread = new Thread(task);
@@ -146,21 +157,14 @@ public class DragonWarsApp extends Application {
         thread.start();
     }
 
-    private PlayTitleMusic musicTask;
-
     private void showTitleScreen() {
         final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
         RootWindow.getInstance().setImage(titleScreenImage, SCALE_FACTOR);
         this.stage.sizeToScene();
         setKeyHandler(this::titleScreenHandler);
-
-/*
-        musicTask = new PlayTitleMusic(dataChunks.getLast(), true);
-        final Thread musicThread = new Thread(musicTask);
-        musicThread.setDaemon(true);
-        musicThread.start();
-*/
+        musicService.enable();
+        musicService.playTitleMusic(dataChunks.getLast());
     }
 
     private void startInterpreter() {
@@ -218,24 +222,36 @@ public class DragonWarsApp extends Application {
 
         setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Q || event.getCode() == KeyCode.ESCAPE) {
-                Platform.exit();
+                close();
             }
         });
     }
 
     private void titleScreenHandler(KeyEvent event) {
-        if (Objects.nonNull(musicTask)) musicTask.cancel();
+        if (event.getCode().isModifierKey()) return;
         switch (event.getCode()) {
-            case DIGIT1, DIGIT2, DIGIT3 -> {
-                int digit = event.getCode().getCode() - (int)'0';
-                PlaySimpleSound soundTask = new PlaySimpleSound(digit);
-                final Thread soundThread = new Thread(soundTask);
-                soundThread.setDaemon(true);
-                soundThread.start();
+            case S -> {
+                if (event.isControlDown()) {
+                    if (musicService.isEnabled()) {
+                        musicService.disable();
+                    } else {
+                        musicService.enable();
+                        musicService.playTitleMusic(dataChunks.getLast());
+                    }
+                } else {
+                    musicService.stop();
+                    startInterpreter();
+                }
             }
-            case Q -> Platform.exit();
-            case T -> testPattern();
-            default -> startInterpreter();
+            case Q -> close();
+            case T -> {
+                musicService.stop();
+                testPattern();
+            }
+            default -> {
+                musicService.stop();
+                startInterpreter();
+            }
         }
     }
 

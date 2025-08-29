@@ -60,12 +60,12 @@ public class Instructions {
     public static final Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
     public static final Instruction SOFT_EXIT = (i) -> {
-        if (i.getRecursiveDepth() == 1) Platform.exit();
+        if (i.getRecursiveDepth() == 1) i.app().close();
         return null;
     };
 
     public static final Instruction HARD_EXIT = (i) -> {
-        Platform.exit();
+        i.app().close();
         return null;
     };
 

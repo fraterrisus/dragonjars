@@ -12,7 +12,6 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
-import com.hitchhikerprod.dragonjars.tasks.PlayChunkSound;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
@@ -36,7 +35,7 @@ public class Interpreter {
 
     public static final int PARTY_SEGMENT = 1;
 
-    public final DragonWarsApp app;
+    private final DragonWarsApp app;
 
     /* Utility classes */
 
@@ -119,7 +118,7 @@ public class Interpreter {
     }
 
     public Interpreter init() {
-        final boolean testMode = Objects.isNull(app);
+        final boolean testMode = Objects.isNull(app());
 
         if (!testMode) loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
 
@@ -170,7 +169,7 @@ public class Interpreter {
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
      */
     public void start(int chunk, int addr) {
-        if (Objects.nonNull(app)) app.setKeyHandler(null);
+        if (Objects.nonNull(app())) app().setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
@@ -180,7 +179,7 @@ public class Interpreter {
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
     public void start(Address startPoint) {
-        if (Objects.nonNull(app)) app.setKeyHandler(null);
+        if (Objects.nonNull(app())) app().setKeyHandler(null);
         mainLoop(startPoint);
     }
 
@@ -283,6 +282,10 @@ public class Interpreter {
         if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
             memory().setSegmentFrob(segmentId, Frob.EMPTY);
         }
+    }
+
+    public DragonWarsApp app() {
+        return app;
     }
 
     public record Rectangle(int x0, int x1, int y0, int y1) {}
@@ -466,7 +469,7 @@ public class Interpreter {
     public void lowLevelDrawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
         loadFromCodeSegment(0xb9a2, (index & 0x7f) * 8, bitmask, 8);
-        app.drawBitmask(bitmask, x, y, invert);
+        app().drawBitmask(bitmask, x, y, invert);
     }
 
     private void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
@@ -498,7 +501,7 @@ public class Interpreter {
     }
 
     public void fillRectangle() {
-        app.drawRectangle(bg_color_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
+        app().drawRectangle(bg_color_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
         x_31ed = bbox_x0; // 0x32a8
         x_3166 = bbox_x0;
         y_31ef = bbox_y0;
@@ -888,6 +891,15 @@ public class Interpreter {
 
     public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
         final EventHandler<KeyEvent> keyHandler = event -> {
+            if (event.getCode().isModifierKey()) return;
+            if (event.getCode() == KeyCode.S && event.isControlDown()) {
+                if (app.musicService().isEnabled()) {
+                    app.musicService().disable();
+                } else {
+                    app.musicService().enable();
+                }
+                return;
+            }
             for (ReadKeySwitch.KeyAction prompt : prompts) {
                 if (prompt.function().match(event)) {
                     if (event.getCode().isDigitKey()) {
@@ -899,7 +911,7 @@ public class Interpreter {
                 }
             }
         };
-        app.setKeyHandler(keyHandler);
+        app().setKeyHandler(keyHandler);
     }
 
     private static final List<Integer> FOOTER_OFFSETS = List.of(0x0c, 0x0f, 0x09, 0x0e);
@@ -1094,7 +1106,7 @@ public class Interpreter {
             case 0x8d -> new ReadInputString();
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
-            case 0x90 -> new PlaySoundEffect(); // TODO
+            case 0x90 -> new PlaySoundEffect();
             case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
             case 0x92 -> new PauseUntilKeyOrTime(this);
             case 0x93 -> new PushBL();
