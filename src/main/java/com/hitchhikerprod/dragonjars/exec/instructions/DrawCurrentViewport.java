@@ -27,15 +27,14 @@ public class DrawCurrentViewport implements Instruction {
     public Address exec(Interpreter ignored) {
         i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
-        final int mapId = i.heap(Heap.BOARD_ID).read();
         // See [00/0384] load_dirty_map_state()
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
-        final ModifiableChunk primaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x46, Frob.DIRTY));
-        final ModifiableChunk secondaryData = i.memory().getSegment(i.getSegmentForChunk(mapId + 0x1e, Frob.CLEAN));
-        i.mapDecoder().parse(mapId, primaryData, secondaryData);
-        i.heap(Heap.BOARD_1_MAPID).write(mapId);
+        final ModifiableChunk primaryData = i.memory().getSegment(i.getSegmentForChunk(loc.mapId() + 0x46, Frob.DIRTY));
+        final ModifiableChunk secondaryData = i.memory().getSegment(i.getSegmentForChunk(loc.mapId() + 0x1e, Frob.CLEAN));
+        i.mapDecoder().parse(loc.mapId(), primaryData, secondaryData);
+        i.heap(Heap.BOARD_1_MAPID).write(loc.mapId());
 
         i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
         i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
