@@ -7,8 +7,9 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class LongReturn implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int segmentId = i.pop();
-        final int address = (i.pop() << 8) | (i.pop());
+        i.popByte(); // frob, unused here but needed for mirroring
+        final int segmentId = i.popByte();
+        final int address = i.popWord();
         i.freeSegment(i.getIP().segment());
         i.memory().setSegmentFrob(segmentId, Frob.DIRTY);
         i.setDS(segmentId);

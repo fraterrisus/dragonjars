@@ -8,14 +8,14 @@ public class LongCall implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int chunkId = i.memory().read(ip.incr(1), 1);
-        final int address = i.memory().read(ip.incr(2), 2);
+        final int chunkId = i.memory().read(ip.incr(1), 1); // store in [3062]
+        final int address = i.memory().read(ip.incr(2), 2); // store in [391b]
         final Address returnAddress = ip.incr(OPCODE + IMMEDIATE + ADDRESS);
-        i.push(returnAddress.offset());
-        i.push(returnAddress.offset() >> 8);
-        i.push(returnAddress.segment());
-        i.push(0x00);
+        i.pushWord(returnAddress.offset());
+        i.pushByte(returnAddress.segment());
+        // if segment.frob is DIRTY, re-unpack it and set it to CLEAN?
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
+        i.pushByte(0x00); // 0xff if we had to load the segment, 0x00 if it was already there
         i.setDS(segmentId);
         return new Address(segmentId, address);
     }

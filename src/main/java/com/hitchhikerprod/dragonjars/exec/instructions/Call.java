@@ -9,8 +9,7 @@ public class Call implements Instruction {
         final Address ip = i.getIP();
         final int targetAddress = i.memory().read(ip.incr(1), 2);
         final Address returnAddress = ip.incr(OPCODE + ADDRESS);
-        i.push(returnAddress.offset());
-        i.push(returnAddress.offset() >> 8);
+        i.pushWord(returnAddress.offset());
         return new Address(ip.segment(), targetAddress);
     }
 }

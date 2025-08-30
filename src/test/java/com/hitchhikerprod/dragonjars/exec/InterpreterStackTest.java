@@ -13,8 +13,8 @@ public class InterpreterStackTest {
     @Test
     public void roundTrip() {
         final Interpreter i = new Interpreter(null, List.of(EMPTY));
-        i.push(0xffff);
-        final int value = i.pop();
+        i.pushByte(0xffff);
+        final int value = i.popByte();
         assertEquals(0xff, value);
     }
 }

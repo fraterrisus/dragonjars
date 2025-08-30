@@ -23,8 +23,8 @@ class PushAXTest {
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0x81, i.pop());
-        assertEquals(0xdd, i.pop());
+        assertEquals(0x81, i.popByte());
+        assertEquals(0xdd, i.popByte());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -36,8 +36,8 @@ class PushAXTest {
         i.setWidth(false);
         i.start(0, 0);
 
-        assertEquals(0xdd, i.pop());
-        assertThrows(NoSuchElementException.class, i::pop);
+        assertEquals(0xdd, i.popByte());
+        assertThrows(NoSuchElementException.class, i::popByte);
         assertEquals(2, i.instructionsExecuted());
     }
 }

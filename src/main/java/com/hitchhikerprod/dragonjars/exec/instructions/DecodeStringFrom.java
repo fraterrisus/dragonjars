@@ -25,22 +25,26 @@ public class DecodeStringFrom implements Instruction {
     private final Function<Interpreter, Address> getPointer;
     private final Function<Interpreter, Address> getNextIp;
     private final boolean withFill;
+    private final boolean saveAX;
 
     private DecodeStringFrom(
             Function<Interpreter, Address> getPointer,
             Function<Interpreter, Address> getNextIp,
-            boolean withFill
+            boolean withFill,
+            boolean saveAX
     ) {
         this.getPointer = getPointer;
         this.getNextIp = getNextIp;
         this.withFill = withFill;
+        this.saveAX = saveAX;
     }
 
     public static DecodeStringFrom cs(boolean withFill) {
         return new DecodeStringFrom(
                 i -> i.getIP().incr(OPCODE),
                 i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-                withFill
+                withFill,
+                false
         );
     }
 
@@ -48,7 +52,8 @@ public class DecodeStringFrom implements Instruction {
         return new DecodeStringFrom(
                 i -> new Address(i.getDS(), i.getAX(true)),
                 i -> i.getIP().incr(OPCODE),
-                withFill
+                withFill,
+                true
         );
     }
 
@@ -60,6 +65,10 @@ public class DecodeStringFrom implements Instruction {
         final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
         decoder.decodeString(chunk, addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
+        if (saveAX) {
+            final int postStringPointer = decoder.getPointer();
+            i.setAX(postStringPointer, true);
+        }
         if (chars.getFirst() == 0x00) return addr;
 
         if ((i.heap(0x08).read() & 0x80) == 0) {

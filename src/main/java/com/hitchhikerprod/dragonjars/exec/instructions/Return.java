@@ -6,7 +6,7 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class Return implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final int address = (i.pop() << 8) | (i.pop());
+        final int address = i.popWord();
         return new Address(i.getIP().segment(), address);
     }
 }

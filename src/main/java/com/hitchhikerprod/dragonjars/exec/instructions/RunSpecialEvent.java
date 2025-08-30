@@ -6,6 +6,8 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
+import java.util.function.Supplier;
+
 public class RunSpecialEvent implements Instruction {
     @Override
     public Address exec(Interpreter i) {
@@ -21,14 +23,37 @@ public class RunSpecialEvent implements Instruction {
                 i.heap(0x3f).write(square.eventId(), 1);
 
                 final int address = i.mapDecoder().getEventPointer(square.eventId() + 1);
-                i.start(0x46 + location.mapId(), address);
-
-                if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.BOARD_1_MAPID).read(1)) return nextIP;
+                final After after = new After(i, location, nextIP);
+                i.start(0x46 + location.mapId(), address, after);
+                return null;
             }
         }
 
         final int address = i.mapDecoder().getEventPointer(0);
-        i.start(0x46 + location.mapId(), address);
-        return nextIP;
+        i.start(0x46 + location.mapId(), address, () -> nextIP);
+        return null;
+    }
+
+    private static class After implements Supplier<Address> {
+        private final Interpreter i;
+        private final PartyLocation oldLoc;
+        private final Address nextIP;
+
+        private After(Interpreter i, PartyLocation oldLoc, Address nextIP) {
+            this.i = i;
+            this.oldLoc = oldLoc;
+            this.nextIP = nextIP;
+        }
+
+        @Override
+        public Address get() {
+            // maybe should be oldLoc.mapId()?
+            // we're trying to catch when the event program moved us to a new board and exit quickly
+            if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.BOARD_1_MAPID).read(1)) return nextIP;
+
+            final int address = i.mapDecoder().getEventPointer(0);
+            i.start(0x46 + oldLoc.mapId(), address, () -> nextIP);
+            return null;
+        }
     }
 }

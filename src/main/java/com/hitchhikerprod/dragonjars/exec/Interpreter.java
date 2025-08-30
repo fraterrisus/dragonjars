@@ -23,10 +23,12 @@ import javafx.scene.input.KeyEvent;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -96,6 +98,7 @@ public class Interpreter {
     // debugging information
     private int instructionsExecuted = 0;
     private int mainLoopDepth = 0;
+    private final Deque<Supplier<Address>> executionStack = new LinkedList<>();
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
@@ -169,6 +172,12 @@ public class Interpreter {
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
      */
     public void start(int chunk, int addr) {
+        start(chunk, addr, () -> null);
+    }
+
+    public void start(int chunk, int addr, Supplier<Address> after) {
+        this.executionStack.push(after);
+
         if (Objects.nonNull(app())) app().setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
@@ -179,12 +188,26 @@ public class Interpreter {
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
     public void start(Address startPoint) {
+        start(startPoint, () -> null);
+    }
+
+    public void start(Address startPoint, Supplier<Address> after) {
+        this.executionStack.push(after);
+
         if (Objects.nonNull(app())) app().setKeyHandler(null);
         mainLoop(startPoint);
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0f;
-    private static final int BREAKPOINT_ADR = 0x00d3;
+    public Address finish() {
+        final Address oldIP = this.executionStack.pop().get();
+        if (oldIP == null && this.executionStack.isEmpty()) {
+            if (Objects.nonNull(app())) app.close();
+        }
+        return oldIP;
+    }
+
+    private static final int BREAKPOINT_CHUNK = 0x08;
+    private static final int BREAKPOINT_ADR = 0x0199;
 
     private void mainLoop(Address startPoint) {
         mainLoopDepth++; // helps us track when to actually quit the app
@@ -434,12 +457,23 @@ public class Interpreter {
         this.ds = val;
     }
 
-    public void push(int val) {
+    public void pushByte(int val) {
         this.stack.push(intToByte(val));
     }
 
-    public int pop() {
+    public void pushWord(int val) {
+        this.stack.push(intToByte(val >> 8));
+        this.stack.push(intToByte(val));
+    }
+
+    public int popByte() {
         return byteToInt(this.stack.pop());
+    }
+
+    public int popWord() {
+        final int lo = byteToInt(this.stack.pop());
+        final int hi = byteToInt(this.stack.pop());
+        return hi << 8 | lo;
     }
 
     public boolean isWide() {

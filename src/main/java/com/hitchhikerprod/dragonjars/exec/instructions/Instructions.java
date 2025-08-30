@@ -2,11 +2,10 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
 
 import static com.hitchhikerprod.dragonjars.exec.instructions.Instruction.OPCODE;
 
@@ -18,22 +17,22 @@ public class Instructions {
 
     public static final Instruction SET_NARROW = (i) -> {
         i.setWidth(false);
-        i.setAL(0x00); // ???????
+        i.setAH(0x00);
         return i.getIP().incr(OPCODE);
     };
 
     public static final Instruction PUSH_CS = (i) -> {
-        i.push(i.getCS());
+        i.pushByte(i.getCS());
         return i.getIP().incr(OPCODE);
     };
 
     public static final Instruction PUSH_DS = (i) -> {
-        i.push(i.getDS());
+        i.pushByte(i.getDS());
         return i.getIP().incr(OPCODE);
     };
 
     public static final Instruction POP_DS = (i) -> {
-        i.setDS(i.pop());
+        i.setDS(i.popByte());
         return i.getIP().incr(OPCODE);
     };
 
@@ -59,13 +58,10 @@ public class Instructions {
 
     public static final Instruction NOOP = (i) -> i.getIP().incr(OPCODE);
 
-    public static final Instruction SOFT_EXIT = (i) -> {
-        if (i.getRecursiveDepth() == 1) i.app().close();
-        return null;
-    };
+    public static final Instruction SOFT_EXIT = Interpreter::finish;
 
     public static final Instruction HARD_EXIT = (i) -> {
-        i.app().close();
+        if (Objects.nonNull(i.app())) i.app().close();
         return null;
     };
 

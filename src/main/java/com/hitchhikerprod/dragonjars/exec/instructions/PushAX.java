@@ -7,8 +7,11 @@ public class PushAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int value = i.getAX();
-        i.push(value);
-        if (i.isWide()) i.push(value >> 8);
+        if (i.isWide()) {
+            i.pushWord(value);
+        } else {
+            i.pushByte(value);
+        }
         return i.getIP().incr(OPCODE);
     }
 }

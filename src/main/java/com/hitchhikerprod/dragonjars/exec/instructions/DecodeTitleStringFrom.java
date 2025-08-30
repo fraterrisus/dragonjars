@@ -15,13 +15,15 @@ public class DecodeTitleStringFrom implements Instruction {
     // roll that call into i.setTitleString, below.
 
     private final Function<Interpreter, Address> getPointer;
+    private final boolean saveAX;
 
-    private DecodeTitleStringFrom(Function<Interpreter, Address> getPointer) {
+    private DecodeTitleStringFrom(Function<Interpreter, Address> getPointer, boolean saveAX) {
         this.getPointer = getPointer;
+        this.saveAX = saveAX;
     }
 
-    public static DecodeTitleStringFrom CS = new DecodeTitleStringFrom(i -> i.getIP().incr(OPCODE));
-    public static DecodeTitleStringFrom DS = new DecodeTitleStringFrom(i -> new Address(i.getDS(), i.getAX(true)));
+    public static DecodeTitleStringFrom CS = new DecodeTitleStringFrom(i -> i.getIP().incr(OPCODE), false);
+    public static DecodeTitleStringFrom DS = new DecodeTitleStringFrom(i -> new Address(i.getDS(), i.getAX(true)), true);
 
     @Override
     public Address exec(Interpreter i) {
@@ -29,6 +31,10 @@ public class DecodeTitleStringFrom implements Instruction {
         final StringDecoder decoder = i.stringDecoder();
         final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
         decoder.decodeString(chunk, addr.offset());
+        if (saveAX) {
+            final int postStringPointer = decoder.getPointer();
+            i.setAX(postStringPointer, true);
+        }
         final List<Integer> chars = decoder.getDecodedChars();
         i.setTitleString(chars);
         return new Address(addr.segment(), decoder.getPointer());
