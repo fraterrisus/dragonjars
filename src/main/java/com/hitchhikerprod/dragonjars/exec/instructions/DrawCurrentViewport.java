@@ -27,18 +27,12 @@ public class DrawCurrentViewport implements Instruction {
     public Address exec(Interpreter ignored) {
         i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
-        // See [00/0384] load_dirty_map_state()
-        // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
-        // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
-        // formerly-clean primary map data instead of 0x10.
-        final ModifiableChunk primaryData = i.memory().getSegment(i.getSegmentForChunk(loc.mapId() + 0x46, Frob.DIRTY));
-        final ModifiableChunk secondaryData = i.memory().getSegment(i.getSegmentForChunk(loc.mapId() + 0x1e, Frob.CLEAN));
-        i.mapDecoder().parse(loc.mapId(), primaryData, secondaryData);
-        i.heap(Heap.BOARD_1_MAPID).write(loc.mapId());
+
+        i.decodeMap(loc.mapId());
 
         i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
         i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
-        i.heap(Heap.BOARD_FLAGS).write(i.mapDecoder().getFlags());
+        i.heap(Heap.BOARD_FLAGS).write(i.mapDecoder().flags());
         i.heap(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
@@ -47,8 +41,7 @@ public class DrawCurrentViewport implements Instruction {
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
         i.eraseVideoBuffer(); // black the viewport in case there's no light
-        if (((i.mapDecoder().getFlags() & 0x08) > 0) || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
-            // either the map provides light or the party has a light source
+        if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
             drawWallTextures(); // also handles decor

@@ -7,6 +7,13 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class MapData {
+    private static final int FLAG_UNK_5 = 0x20;
+    private static final int FLAG_CREATE_WALL = 0x10;
+    private static final int FLAG_LIGHT = 0x08;
+    private static final int FLAG_COMPASS = 0x04;
+    private static final int FLAG_WRAPPING = 0x02;
+    private static final int FLAG_UNK_1 = 0x01;
+
     private final StringDecoder stringDecoder;
 
     private int mapId = -1;
@@ -17,7 +24,7 @@ public class MapData {
 
     private int xMax;
     private int yMax;
-    private int flags;
+    // private int flags; we're reading this live now
     private int randomEncounters;
 
     private List<Integer> primaryPointers;
@@ -57,8 +64,6 @@ public class MapData {
     }
 
     public void parse(int mapId, ModifiableChunk primary, Chunk secondary) {
-        if (mapId == this.mapId) return;
-
         this.mapId = mapId;
         this.primaryData = primary;      // primary = mapId + 0x46
         this.secondaryData = secondary;  // secondary = mapId + 0x1e
@@ -68,7 +73,6 @@ public class MapData {
         this.xMax = primaryData.getByte(chunkPointer);
         // for some reason this is one larger than it should be; see below
         this.yMax = primaryData.getByte(chunkPointer + 1);
-        this.flags = primaryData.getUnsignedByte(chunkPointer + 2);
         this.randomEncounters = primaryData.getUnsignedByte(chunkPointer + 3);
         chunkPointer += 4;
 
@@ -123,11 +127,28 @@ public class MapData {
         return yMax;
     }
 
-    public int getFlags() {
-        return flags;
+    public int flags() {
+        return primaryData.getUnsignedByte(2);
+    }
+
+    public boolean allowsCreateWall() {
+        return (flags() & FLAG_CREATE_WALL) != 0;
+    }
+
+    public boolean isLit() {
+        return (flags() & FLAG_LIGHT) != 0;
+    }
+
+    public boolean hasCompass() {
+        return (flags() & FLAG_COMPASS) != 0;
+    }
+
+    public boolean isWrapping() {
+        return (flags() & FLAG_WRAPPING) != 0;
     }
 
     public void setStepped(int x, int y) {
+        if (x < 0 || y < 0 || x >= xMax || y >= yMax) return;
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
         final int rawData = primaryData.getUnsignedByte(offset+1);
         primaryData.write(offset+1, 1, rawData | 0x08);
@@ -158,12 +179,42 @@ public class MapData {
         return getSquare(position.x(), position.y());
     }
 
+    private Square stripSquare(int x, int y) {
+        final Square sq = getSquare(x, y);
+        return new Square(
+                sq.rawData & 0x00f000, // remove everything but roof and floor
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                sq.roofTexture,
+                sq.floorTextureChunk,
+                Optional.empty(),
+                false,
+                0
+        );
+    }
+
     public Square getSquare(int x, int y) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
+        // Wrapping logic. I bet this breaks in the Dwarf Clan Hall.
+        if (x < 0) {
+            if (isWrapping()) x = xMax - 1;
+            else return stripSquare(0, y);
+        } else if (x >= xMax) {
+            if (isWrapping()) x = 0;
+            else return stripSquare(xMax - 1, y);
+        } else if (y < 0) {
+            if (isWrapping()) y = yMax - 1;
+            else return stripSquare(x, yMax - 1);
+        } else if (y >= yMax) {
+            if (isWrapping()) y = 0;
+            else return stripSquare(x, 0);
+        }
+
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
-        // FIXME: wrapping?
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
         final int rawData = (primaryData.getUnsignedByte(offset) << 16) |
                 (primaryData.getUnsignedByte(offset+1) << 8) |

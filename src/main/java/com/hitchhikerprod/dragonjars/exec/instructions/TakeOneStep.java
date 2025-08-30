@@ -31,10 +31,9 @@ public class TakeOneStep implements Instruction {
             case SOUTH -> y--;
             case WEST -> x--;
         }
-        final int flags = i.mapDecoder().getFlags(); // heap(0x23).get();
         // TODO: make sure we get the weird wrapping behavior on some maps right
         // (it's probably just incrementing past 0xff)
-        if ((flags & 0x02) > 0) { // map wraps
+        if (i.mapDecoder().isWrapping()) {
             x = x % i.heap(0x21).read();
             y = y % i.heap(0x22).read();
         }

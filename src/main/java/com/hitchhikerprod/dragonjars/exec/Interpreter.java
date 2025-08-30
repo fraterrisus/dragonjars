@@ -43,7 +43,7 @@ public class Interpreter {
 
     private final StringDecoder stringDecoder;
     private final ImageDecoder imageDecoder;
-    private final MapData mapDecoder;
+    private MapData mapDecoder;
 
     /* Memory space */
 
@@ -117,7 +117,6 @@ public class Interpreter {
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
         this.imageDecoder = new ImageDecoder(this.memory().getCodeChunk(), videoMemory);
-        this.mapDecoder = new MapData(stringDecoder);
     }
 
     public Interpreter init() {
@@ -245,6 +244,20 @@ public class Interpreter {
 
     public StringDecoder stringDecoder() {
         return this.stringDecoder;
+    }
+
+    public void decodeMap(int mapId) {
+        // See [00/0384] load_dirty_map_state()
+        // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
+        // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
+        // formerly-clean primary map data instead of 0x10.
+        if (heap(Heap.BOARD_1_MAPID).read() != mapId) {
+            this.mapDecoder = new MapData(stringDecoder());
+            final ModifiableChunk primaryData = memory().getSegment(getSegmentForChunk(mapId + 0x46, Frob.DIRTY));
+            final ModifiableChunk secondaryData = memory().getSegment(getSegmentForChunk(mapId + 0x1e, Frob.CLEAN));
+            mapDecoder().parse(mapId, primaryData, secondaryData);
+            heap(Heap.BOARD_1_MAPID).write(mapId);
+        }
     }
 
     public MapData mapDecoder() {
