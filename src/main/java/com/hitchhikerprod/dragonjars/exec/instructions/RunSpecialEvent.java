@@ -17,10 +17,10 @@ public class RunSpecialEvent implements Instruction {
         if (location.mapId() != (i.heap(Heap.BOARD_1_MAPID).read() & 0x7f)) return nextIP;
 
         final MapData.Square square = i.mapDecoder().getSquare(location.pos());
-        if (square.eventId() != i.heap(0x3e).read()) {
-            i.heap(0x3e).write(0);
+        if (square.eventId() != i.heap(Heap.RECENT_EVENT).read()) {
+            i.heap(Heap.RECENT_EVENT).write(0);
             if (square.eventId() != 0) {
-                i.heap(0x3f).write(square.eventId(), 1);
+                i.heap(Heap.NEXT_EVENT).write(square.eventId(), 1);
 
                 final int address = i.mapDecoder().getEventPointer(square.eventId() + 1);
                 final After after = new After(i, location, nextIP);

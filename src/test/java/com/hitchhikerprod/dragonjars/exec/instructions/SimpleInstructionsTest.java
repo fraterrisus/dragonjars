@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +18,12 @@ public class SimpleInstructionsTest {
     @Test
     public void copyHeap3E3F() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-        i.heap(0x3e).write(0xff00, 2);
+        i.heap(Heap.RECENT_EVENT).write(0x00);
+        i.heap(Heap.NEXT_EVENT).write(0xff);
 
-        final Address newIP = Instructions.COPY_HEAP_3E_3F.exec(i);
+        Instructions.COPY_HEAP_3E_3F.exec(i);
 
-        assertEquals(0xff, i.heap(0x3e).read());
+        assertEquals(0xff, i.heap(Heap.RECENT_EVENT).read());
     }
     
     @Test

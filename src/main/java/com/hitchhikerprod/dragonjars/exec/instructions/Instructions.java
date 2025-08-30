@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class Instructions {
     };
 
     public static final Instruction COPY_HEAP_3E_3F = (i) -> {
-        i.heap(0x3e).write(i.heap(0x3f).read());
+        i.heap(Heap.RECENT_EVENT).write(i.heap(Heap.NEXT_EVENT).read());
         return i.getIP().incr(OPCODE);
     };
 

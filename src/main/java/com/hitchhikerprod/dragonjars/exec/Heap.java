@@ -10,6 +10,7 @@ public class Heap {
     public static final int PARTY_FACING = 0x03;
     public static final int SELECTED_PC = 0x06;
     public static final int SELECTED_ITEM = 0x07;
+    // note that marching order is *2 so that the offset into party data is just <<8 (0x000, 0x200, 0x400 etc.)
     public static final int MARCHING_ORDER = 0x0a; // through 0x10
     public static final int PARTY_SIZE = 0x1f;
     public static final int BOARD_MAX_X = 0x21;
@@ -18,6 +19,8 @@ public class Heap {
     public static final int WALL_METADATA = 0x26;
     public static final int LONGPTR_ADR = 0x34;
     public static final int LONGPTR_SEG = 0x36;
+    public static final int RECENT_EVENT = 0x3e;
+    public static final int NEXT_EVENT = 0x3f;
     public static final int BOARD_1_SEGIDX = 0x56;
     public static final int BOARD_1_MAPID = 0x57;
     public static final int BOARD_2_SEGIDX = 0x5a;

@@ -7,6 +7,7 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /*       0 1 2 3 4 5 6 7 8 9 A B C D E F
@@ -24,38 +25,72 @@ public class DecodeStringFrom implements Instruction {
     // @0x115 inx 89 readKeySwitch starts by running printString313e
     private final Function<Interpreter, Address> getPointer;
     private final Function<Interpreter, Address> getNextIp;
+    private final BiConsumer<Interpreter, List<Integer>> outputFn;
     private final boolean withFill;
     private final boolean saveAX;
 
     private DecodeStringFrom(
             Function<Interpreter, Address> getPointer,
             Function<Interpreter, Address> getNextIp,
+            BiConsumer<Interpreter, List<Integer>> outputFn,
             boolean withFill,
             boolean saveAX
     ) {
         this.getPointer = getPointer;
         this.getNextIp = getNextIp;
+        this.outputFn = outputFn;
         this.withFill = withFill;
         this.saveAX = saveAX;
     }
 
-    public static DecodeStringFrom cs(boolean withFill) {
-        return new DecodeStringFrom(
-                i -> i.getIP().incr(OPCODE),
-                i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-                withFill,
-                false
-        );
-    }
+    public static DecodeStringFrom CS = new DecodeStringFrom(
+            i -> i.getIP().incr(OPCODE),
+            i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
+            Interpreter::drawString,
+            false,
+            false
+    );
 
-    public static DecodeStringFrom ds(boolean withFill) {
-        return new DecodeStringFrom(
-                i -> new Address(i.getDS(), i.getAX(true)),
-                i -> i.getIP().incr(OPCODE),
-                withFill,
-                true
-        );
-    }
+    public static DecodeStringFrom CS_WITH_FILL = new DecodeStringFrom(
+            i -> i.getIP().incr(OPCODE),
+            i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
+            Interpreter::drawString,
+            true,
+            false
+    );
+
+    public static DecodeStringFrom DS = new DecodeStringFrom(
+            i -> new Address(i.getDS(), i.getAX(true)),
+            i -> i.getIP().incr(OPCODE),
+            Interpreter::drawString,
+            false,
+            true
+    );
+
+    public static DecodeStringFrom DS_WITH_FILL = new DecodeStringFrom(
+            i -> new Address(i.getDS(), i.getAX(true)),
+            i -> i.getIP().incr(OPCODE),
+            Interpreter::drawString,
+            true,
+            true
+    );
+
+    public static DecodeStringFrom CS_TO_TITLE = new DecodeStringFrom(
+            i -> i.getIP().incr(OPCODE),
+            i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
+            Interpreter::setTitleString,
+            false,
+            false
+    );
+
+    public static DecodeStringFrom DS_TO_TITLE = new DecodeStringFrom(
+            i -> new Address(i.getDS(), i.getAX(true)),
+            i -> i.getIP().incr(OPCODE),
+            Interpreter::setTitleString,
+            false,
+            true
+    );
+
 
     @Override
     public Address exec(Interpreter i) {
@@ -96,12 +131,7 @@ public class DecodeStringFrom implements Instruction {
             }
         }
 
-        if (i.heap(0x09).read() == 0x00) {
-            i.drawString(singular);
-        } else {
-            i.drawString(plural);
-        }
-
+        outputFn.accept(i, (i.heap(0x09).read() == 0x00) ? singular : plural);
         return getNextIp.apply(i);
     }
 }

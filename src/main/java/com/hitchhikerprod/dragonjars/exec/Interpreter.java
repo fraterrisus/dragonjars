@@ -211,7 +211,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-            System.out.format("%02x %08x %02x\n", csChunk, ip, opcode);
+            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -252,11 +252,19 @@ public class Interpreter {
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
         if (heap(Heap.BOARD_1_MAPID).read() != mapId) {
-            this.mapDecoder = new MapData(stringDecoder());
-            final ModifiableChunk primaryData = memory().getSegment(getSegmentForChunk(mapId + 0x46, Frob.DIRTY));
-            final ModifiableChunk secondaryData = memory().getSegment(getSegmentForChunk(mapId + 0x1e, Frob.CLEAN));
-            mapDecoder().parse(mapId, primaryData, secondaryData);
             heap(Heap.BOARD_1_MAPID).write(mapId);
+
+            this.mapDecoder = new MapData(stringDecoder());
+
+            final int primarySegment = getSegmentForChunk(mapId + 0x46, Frob.DIRTY);
+            heap(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
+            final ModifiableChunk primaryData = memory().getSegment(primarySegment);
+
+            final int secondarySegment = getSegmentForChunk(mapId + 0x1e, Frob.CLEAN);
+            heap(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
+            final ModifiableChunk secondaryData = memory().getSegment(secondarySegment);
+
+            mapDecoder().parse(mapId, primaryData, secondaryData);
         }
     }
 
@@ -1123,12 +1131,12 @@ public class Interpreter {
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
             case 0x76 -> Instructions.FILL_BBOX;
-            case 0x77 -> DecodeStringFrom.cs(true);
-            case 0x78 -> DecodeStringFrom.cs(false);
-            case 0x79 -> DecodeStringFrom.ds(true);
-            case 0x7a -> DecodeStringFrom.ds(false);
-            case 0x7b -> DecodeTitleStringFrom.CS;
-            case 0x7c -> DecodeTitleStringFrom.DS;
+            case 0x77 -> DecodeStringFrom.CS_WITH_FILL;
+            case 0x78 -> DecodeStringFrom.CS;
+            case 0x79 -> DecodeStringFrom.DS_WITH_FILL;
+            case 0x7a -> DecodeStringFrom.DS;
+            case 0x7b -> DecodeStringFrom.CS_TO_TITLE; // DecodeTitleStringFrom.CS;
+            case 0x7c -> DecodeStringFrom.DS_TO_TITLE; // DecodeTitleStringFrom.DS;
             case 0x7d -> new IndirectCharName();
             case 0x7e -> new IndirectCharItem();
             case 0x7f -> new IndirectString();
@@ -1142,7 +1150,7 @@ public class Interpreter {
             case 0x87 -> new PersistChunk();
             case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
-            // case 0x8a -> new ShowMonsterImage();
+            case 0x8a -> new ShowMonsterImage(); // TODO
             case 0x8b -> new DrawCurrentViewport(this);
             case 0x8c -> new RunYesNoModal();
             case 0x8d -> new ReadInputString();
