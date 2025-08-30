@@ -18,7 +18,7 @@ public class RecurseOverParty implements Instruction {
             final int oldSelectedPC = selectedPC.read();
             for (int charId = 0; charId < partySize; charId++) {
                 selectedPC.write(charId);
-                i.start(new Address(ip.segment(), funcPtr));
+                i.reenter(new Address(ip.segment(), funcPtr), () -> null);
             }
             selectedPC.write(oldSelectedPC);
         }

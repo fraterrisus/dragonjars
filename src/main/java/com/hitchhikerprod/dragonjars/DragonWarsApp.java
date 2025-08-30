@@ -174,7 +174,7 @@ public class DragonWarsApp extends Application {
 
     private void startInterpreter() {
         setImage(Images.blankImage(320, 200));
-        new Interpreter(this, this.dataChunks).init().start(0, 0);
+        new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
     }
 
     private void testPattern() {

@@ -24,13 +24,13 @@ public class RunSpecialEvent implements Instruction {
 
                 final int address = i.mapDecoder().getEventPointer(square.eventId() + 1);
                 final After after = new After(i, location, nextIP);
-                i.start(0x46 + location.mapId(), address, after);
+                i.reenter(0x46 + location.mapId(), address, after);
                 return null;
             }
         }
 
         final int address = i.mapDecoder().getEventPointer(0);
-        i.start(0x46 + location.mapId(), address, () -> nextIP);
+        i.reenter(0x46 + location.mapId(), address, () -> nextIP);
         return null;
     }
 
@@ -52,7 +52,7 @@ public class RunSpecialEvent implements Instruction {
             if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.BOARD_1_MAPID).read(1)) return nextIP;
 
             final int address = i.mapDecoder().getEventPointer(0);
-            i.start(0x46 + oldLoc.mapId(), address, () -> nextIP);
+            i.reenter(0x46 + oldLoc.mapId(), address, () -> nextIP);
             return null;
         }
     }

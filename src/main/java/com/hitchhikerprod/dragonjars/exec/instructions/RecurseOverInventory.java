@@ -18,7 +18,7 @@ public class RecurseOverInventory implements Instruction {
             i.heap(Heap.SELECTED_ITEM).write(slotId);
             final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
             if (i.memory().read(Interpreter.PARTY_SEGMENT, itemBaseAddress + 0x0b, 1) == 0) continue;
-            i.start(new Address(ip.segment(), functionPointer));
+            i.reenter(new Address(ip.segment(), functionPointer), () -> null);
             if (i.getCarryFlag()) return nextIP;
         }
         i.setCarryFlag(false);

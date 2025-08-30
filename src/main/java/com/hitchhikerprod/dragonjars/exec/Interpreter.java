@@ -171,13 +171,12 @@ public class Interpreter {
     /**
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
      */
-    public void start(int chunk, int addr) {
-        start(chunk, addr, () -> null);
+    public void reenter(int chunk, int addr, Supplier<Address> after) {
+        this.executionStack.push(after);
+        start(chunk, addr);
     }
 
-    public void start(int chunk, int addr, Supplier<Address> after) {
-        this.executionStack.push(after);
-
+    public void start(int chunk, int addr) {
         if (Objects.nonNull(app())) app().setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
         Address nextIP = new Address(startingSegment, addr);
@@ -187,27 +186,22 @@ public class Interpreter {
     /**
      * Start the interpreter from the provided Address, which contains a segment/address pair.
      */
-    public void start(Address startPoint) {
-        start(startPoint, () -> null);
+    public void reenter(Address startPoint, Supplier<Address> after) {
+        this.executionStack.push(after);
+        start(startPoint);
     }
 
-    public void start(Address startPoint, Supplier<Address> after) {
-        this.executionStack.push(after);
-
+    public void start(Address startPoint) {
         if (Objects.nonNull(app())) app().setKeyHandler(null);
         mainLoop(startPoint);
     }
 
     public Address finish() {
-        final Address oldIP = this.executionStack.pop().get();
-        if (oldIP == null && this.executionStack.isEmpty()) {
-            if (Objects.nonNull(app())) app.close();
-        }
-        return oldIP;
+        return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x08;
-    private static final int BREAKPOINT_ADR = 0x0199;
+    private static final int BREAKPOINT_CHUNK = 0x46;
+    private static final int BREAKPOINT_ADR = 0x13ab;
 
     private void mainLoop(Address startPoint) {
         mainLoopDepth++; // helps us track when to actually quit the app
