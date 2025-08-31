@@ -118,11 +118,11 @@ public class DecodeStringFrom implements Instruction {
             switch (ch) {
                 case 0xaf -> {
                     writeSingular = true;
-                    writePlural = false;
+                    writePlural = !writePlural;
                 }
                 case 0xdc -> {
                     writePlural = true;
-                    writeSingular = false;
+                    writeSingular = !writeSingular;
                 }
                 default -> {
                     if (writeSingular) singular.add(ch);

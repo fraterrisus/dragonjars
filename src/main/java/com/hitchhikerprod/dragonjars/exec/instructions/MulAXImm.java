@@ -13,6 +13,7 @@ public class MulAXImm implements Instruction {
         final int result = op1 * op2;
         i.setMulResult(result);
         i.heap(0x37).write(result, 4);
+        i.setAX(result);
         return ip.incr(OPCODE + wordSize(i));
     }
 }

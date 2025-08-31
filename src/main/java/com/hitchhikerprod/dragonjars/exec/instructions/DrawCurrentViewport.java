@@ -5,7 +5,6 @@ import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
-import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
@@ -36,8 +35,6 @@ public class DrawCurrentViewport implements Instruction {
         i.heap(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
-        // final MapData.Square[][] squares = i.mapDecoder().getView(partyX, partyY, partyFacing);
-
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
         i.eraseVideoBuffer(); // black the viewport in case there's no light
@@ -46,8 +43,12 @@ public class DrawCurrentViewport implements Instruction {
             drawFloorTexture();
             drawWallTextures(); // also handles decor
         }
+
+        // TODO: because this is on the main thread, if we run this Instruction multiple times
+        //   without reason for the thread to sleep, we don't actually see multiple updates.
+        //   But fixing that might require moving the Interpreter to its own thread, yikes.
         i.drawViewportCorners();
-        
+
         return i.getIP().incr();
     }
 

@@ -18,6 +18,7 @@ public class Heap {
     public static final int BOARD_FLAGS = 0x23;
     public static final int WALL_METADATA = 0x26;
     public static final int LONGPTR_ADR = 0x34;
+    public static final int COMBAT_RUNNING = 0x35;
     public static final int LONGPTR_SEG = 0x36;
     public static final int RECENT_EVENT = 0x3e;
     public static final int NEXT_EVENT = 0x3f;

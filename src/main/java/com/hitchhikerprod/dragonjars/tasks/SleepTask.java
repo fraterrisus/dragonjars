@@ -11,11 +11,7 @@ public class SleepTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        try {
-            Thread.sleep(sleepTimeMs);
-        } catch (InterruptedException e) {
-            System.err.println(e);
-        }
+        try { Thread.sleep(sleepTimeMs); } catch (InterruptedException e) {}
         return null;
     }
 }

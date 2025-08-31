@@ -7,7 +7,8 @@ import com.hitchhikerprod.dragonjars.tasks.SleepTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PauseUntilKeyOrTime implements Instruction {
-    private static final long SLEEP_TIME_MS = 1500;
+    // TODO: make this configurable
+    private static final long SLEEP_TIME_MS = 5000;
 
     private final AtomicBoolean handled;
     private final SleepTask sleepTask;

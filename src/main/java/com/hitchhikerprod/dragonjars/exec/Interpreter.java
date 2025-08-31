@@ -14,7 +14,6 @@ import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
@@ -198,11 +197,12 @@ public class Interpreter {
     }
 
     public Address finish() {
+        this.width = false;
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x46;
-    private static final int BREAKPOINT_ADR = 0x13ab;
+    private static final int BREAKPOINT_CHUNK = 0x03;
+    private static final int BREAKPOINT_ADR = 0x09ec;
 
     private void mainLoop(Address startPoint) {
         mainLoopDepth++; // helps us track when to actually quit the app
@@ -791,17 +791,18 @@ public class Interpreter {
         x_31ed = 0x1b;
         y_31ef = (charId << 4) + 0x20;
 
+        // System.out.format("charId %d >= %d\n", charId, charsInParty);
+        getImageWriter(writer -> {
+            final int black = Images.convertColorIndex(0);
+            for (int dy = 0; dy < 0x10; dy++) {
+                for (int x = x_31ed * 8; x < 0x27 * 8; x++) {
+                    writer.setArgb(x, y_31ef + dy, black);
+                }
+            }
+        });
+
         final int charsInParty = heap(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
-            // System.out.format("charId %d >= %d\n", charId, charsInParty);
-            getImageWriter(writer -> {
-                final int black = Images.convertColorIndex(0);
-                for (int dy = 0; dy < 0x10; dy++) {
-                    for (int x = x_31ed * 8; x < 0x27 * 8; x++) {
-                        writer.setArgb(x, y_31ef + dy, black);
-                    }
-                }
-            });
             setBackground();
             return;
         }

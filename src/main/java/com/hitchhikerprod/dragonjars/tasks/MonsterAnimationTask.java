@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ImageDecoder;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -33,6 +34,10 @@ public class MonsterAnimationTask extends Task<Void> {
         for (int i = 0; i < 0x3e80; i++) foreground[i] = 0x66;
     }
 
+    private boolean weShouldStop() {
+        return isCancelled() || interpreter.heap(Heap.COMBAT_RUNNING).read() == 0;
+    }
+
     @Override
     protected Void call() throws Exception {
         decodePrimary();
@@ -47,11 +52,11 @@ public class MonsterAnimationTask extends Task<Void> {
 
         while (true) {
             sleepHelper(250);
-            if (isCancelled()) break;
+            if (weShouldStop()) break;
             decodeSecondary();
-            if (isCancelled()) break;
+            if (weShouldStop()) break;
             applyChromaKey();
-            if (isCancelled()) break;
+            if (weShouldStop()) break;
         }
         return null;
     }
@@ -149,7 +154,7 @@ public class MonsterAnimationTask extends Task<Void> {
             buffer[i] = (byte) (newValue & 0xff);
         }
 
-        if (isCancelled()) return;
+        if (weShouldStop()) return;
         Platform.runLater(() -> interpreter.copyToVideoMemory(buffer));
     }
 }
