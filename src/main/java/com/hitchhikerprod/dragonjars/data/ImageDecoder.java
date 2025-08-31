@@ -19,6 +19,10 @@ public class ImageDecoder {
     private final Chunk codeChunk;
     private final int[] buffer;
 
+    public static class NoImageException extends RuntimeException {
+        public NoImageException(String message) { super(message); }
+    }
+
     public ImageDecoder(Chunk codeChunk, int[] buffer) {
         this.codeChunk = codeChunk;
         this.buffer = buffer;
@@ -89,10 +93,6 @@ public class ImageDecoder {
                 innerBit--;
             }
         }
-    }
-
-    public static class NoImageException extends RuntimeException {
-        public NoImageException(String message) { super(message); }
     }
 
     public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int invert_100e) { // 0x0ca7
@@ -449,7 +449,7 @@ public class ImageDecoder {
     }
 
     /** Emulates the lookup table at 0xaea2 in the binary. */
-    private static int getAEA2(int index) {
+    public static int getAEA2(int index) {
         int val = 0x00;
         if ((index & 0x0f) == 0x06) val |= 0x0f;
         if ((index & 0xf0) == 0x60) val |= 0xf0;
@@ -457,21 +457,21 @@ public class ImageDecoder {
     }
 
     /** Emulates the lookup table at 0xafa2 in the binary. */
-    private static int getAFA2(int index) {
+    public static int getAFA2(int index) {
         int val = index;
         if ((index & 0x0f) == 0x06) val = val - 0x06;
         if ((index & 0xf0) == 0x60) val = val - 0x60;
         return val;
     }
 
-    private static int getB0A2(int index) {
+    public static int getB0A2(int index) {
         int val = 0x0ff0;
         if ((index & 0x0f) == 0x06) val = val | 0xf000;
         if ((index & 0xf0) == 0x60) val = val | 0x000f;
         return val;
     }
 
-    private static int getB2A2(int index) {
+    public static int getB2A2(int index) {
         int lo = index & 0x0f;
         int hi = index & 0xf0;
         int val = 0;

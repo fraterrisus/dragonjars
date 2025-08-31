@@ -12,7 +12,9 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
+import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
@@ -297,6 +299,12 @@ public class Interpreter {
         // should there be a "don't overwrite frob 0xff" guard here?
         memory().setSegmentFrob(segmentId, frob);
         return segmentId;
+    }
+
+    public void unloadSegmentForChunk(int chunkId) {
+        final int segmentId = memory().lookupChunkId(chunkId);
+        if (segmentId != -1)
+            memory().setSegmentFrob(segmentId, Frob.EMPTY);
     }
 
     // This ought to be a decoder class, maybe?
@@ -653,12 +661,8 @@ public class Interpreter {
         bitBlastViewport(); // see 0x1020
     }
 
-    private void bitBlastViewport() {
+    public void bitBlastViewport() {
         bitBlast(0x02, 0x16, 0x08, 0x90);
-    }
-
-    private void bitBlast() {
-        bitBlast(0x00, 0x28, 0x00, 0x98);
     }
 
     private void bitBlast(int x0, int x1, int y0, int y1) {
@@ -671,6 +675,30 @@ public class Interpreter {
                 }
             }
         });
+    }
+
+    private MonsterAnimationTask monsterAnimationTask;
+
+    public int[] videoMemory() {
+        return videoMemory;
+    }
+
+    public void startMonsterAnimation(MonsterAnimationTask task) {
+        if (monsterAnimationTask != null) monsterAnimationTask.cancel();
+        monsterAnimationTask = task;
+
+        final Thread taskThread = new Thread(monsterAnimationTask);
+        taskThread.setDaemon(true);
+        taskThread.start();
+    }
+
+    public void copyToVideoMemory(int[] buffer) {
+        System.arraycopy(buffer, 0, videoMemory, 0, buffer.length);
+        bitBlastViewport();
+    }
+
+    public void stopMonsterAnimation() {
+        monsterAnimationTask.cancel();
     }
 
     private boolean boundsCheck(int regionId, boolean force) {
