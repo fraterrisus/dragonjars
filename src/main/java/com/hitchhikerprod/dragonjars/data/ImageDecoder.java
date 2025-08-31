@@ -182,8 +182,8 @@ public class ImageDecoder {
             while (x > 0) {
                 final int bx = chunk.getUnsignedByte(si++);
                 int pixel = buffer[di] & 0xff;
-                final int byteAnd = codeChunk.getUnsignedByte(0xada2 + bx);
-                final int byteOr = codeChunk.getUnsignedByte(0xaea2 + bx);
+                final int byteAnd = getAEA2(bx); // codeChunk.getUnsignedByte(0xada2 + bx);
+                final int byteOr = getAFA2(bx); // codeChunk.getUnsignedByte(0xaea2 + bx);
                 pixel = pixel & byteAnd;
                 pixel = pixel | byteOr;
                 buffer[di++] = pixel & 0xff;
@@ -222,8 +222,8 @@ public class ImageDecoder {
             while (true) {
                 final int bx = chunk.getUnsignedByte(si++); // 0df5-f6
                 pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0dfa
-                final int wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
-                final int wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+                final int wordAnd = getB0A2(bx); // codeChunk.getWord(0xafa2 + (bx * 2));
+                final int wordOr = getB2A2(bx); // codeChunk.getWord(0xb1a2 + (bx * 2));
                 pixel = pixel & wordAnd;
                 pixel = pixel | wordOr;
                 x--;
@@ -264,8 +264,8 @@ public class ImageDecoder {
             while (x > 0) {
                 final int bx = chunk.getUnsignedByte(si++);
                 int pixel = buffer[di] & 0xff;
-                final int byteAnd = codeChunk.getUnsignedByte(0xada2 + bx);
-                final int byteOr = codeChunk.getUnsignedByte(0xaea2 + bx);
+                final int byteAnd = getAEA2(bx); // codeChunk.getUnsignedByte(0xada2 + bx);
+                final int byteOr = getAFA2(bx); // codeChunk.getUnsignedByte(0xaea2 + bx);
                 pixel = pixel & byteAnd;
                 pixel = pixel | byteOr;
                 buffer[di++] = pixel & 0xff;
@@ -300,8 +300,8 @@ public class ImageDecoder {
             // do this once
             int bx = chunk.getUnsignedByte(si++); // 0eb6
             int pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0ebb
-            int wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
-            int wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+            int wordAnd = getB0A2(bx); // codeChunk.getWord(0xafa2 + (bx * 2));
+            int wordOr = getB2A2(bx); // codeChunk.getWord(0xb1a2 + (bx * 2));
             pixel = pixel & wordAnd;
             pixel = pixel | wordOr;
             di++; // 0ec8
@@ -310,8 +310,8 @@ public class ImageDecoder {
             while (x > 0) { // loop point at 0ed0
                 bx = chunk.getUnsignedByte(si++); // 0ed0
                 pixel = (buffer[di+1] & 0xff) << 8 | (buffer[di] & 0xff); // 0ed5
-                wordAnd = codeChunk.getWord(0xafa2 + (bx * 2));
-                wordOr = codeChunk.getWord(0xb1a2 + (bx * 2));
+                wordAnd = getB0A2(bx); // codeChunk.getWord(0xafa2 + (bx * 2));
+                wordOr = getB2A2(bx); // codeChunk.getWord(0xb1a2 + (bx * 2));
                 pixel = pixel & wordAnd;
                 pixel = pixel | wordOr;
                 buffer[di++] = pixel & 0xff; // 0ee2 stores 1 word
@@ -353,8 +353,8 @@ public class ImageDecoder {
                 // System.out.format("=%02x", xb);
                 int pixel = buffer[di] & 0xff;
                 // System.out.format(" [vb:%04x]=%02x", di, pixel);
-                final int byteAnd = codeChunk.getUnsignedByte(0xada2 + xb);
-                final int byteOr = codeChunk.getUnsignedByte(0xaea2 + xb);
+                final int byteAnd = getAEA2(xb); // codeChunk.getUnsignedByte(0xada2 + xb);
+                final int byteOr = getAFA2(xb); // codeChunk.getUnsignedByte(0xaea2 + xb);
                 pixel = pixel & byteAnd;
                 pixel = pixel | byteOr;
                 // System.out.format(" & %02x | %02x -> %02x", byteAnd, byteOr, pixel);
@@ -374,9 +374,9 @@ public class ImageDecoder {
 
     public static void main(String[] args) {
         try (
-                final RandomAccessFile exec = new RandomAccessFile("DRAGON.COM", "r");
-                final RandomAccessFile data1 = new RandomAccessFile("DATA1", "r");
-                final RandomAccessFile data2 = new RandomAccessFile("DATA2", "r");
+            final RandomAccessFile exec = new RandomAccessFile("DRAGON.COM", "r");
+            final RandomAccessFile data1 = new RandomAccessFile("DATA1", "r");
+            final RandomAccessFile data2 = new RandomAccessFile("DATA2", "r");
         ) {
             final int chunkId = Integer.parseInt(args[0].substring(2), 16);
 
@@ -446,5 +446,37 @@ public class ImageDecoder {
         AffineTransformOp scaleOp = new AffineTransformOp(scaleInstance, type);
         scaleOp.filter(before, after);
         return after;
+    }
+
+    /** Emulates the lookup table at 0xaea2 in the binary. */
+    private static int getAEA2(int index) {
+        int val = 0x00;
+        if ((index & 0x0f) == 0x06) val |= 0x0f;
+        if ((index & 0xf0) == 0x60) val |= 0xf0;
+        return val;
+    }
+
+    /** Emulates the lookup table at 0xafa2 in the binary. */
+    private static int getAFA2(int index) {
+        int val = index;
+        if ((index & 0x0f) == 0x06) val = val - 0x06;
+        if ((index & 0xf0) == 0x60) val = val - 0x60;
+        return val;
+    }
+
+    private static int getB0A2(int index) {
+        int val = 0x0ff0;
+        if ((index & 0x0f) == 0x06) val = val | 0xf000;
+        if ((index & 0xf0) == 0x60) val = val | 0x000f;
+        return val;
+    }
+
+    private static int getB2A2(int index) {
+        int lo = index & 0x0f;
+        int hi = index & 0xf0;
+        int val = 0;
+        if (lo != 0x06) val |= lo << 12;
+        if (hi != 0x60) val |= hi >> 4;
+        return val;
     }
 }
