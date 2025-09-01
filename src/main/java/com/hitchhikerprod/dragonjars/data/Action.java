@@ -14,15 +14,15 @@ public class Action {
         this.eventId = eventId;
     }
 
-    public int getHeader() {
+    public int header() {
         return header;
     }
 
-    public int getSpecialId() {
+    public int special() {
         return specialId;
     }
 
-    public int getEventId() {
+    public int event() {
         return eventId;
     }
 

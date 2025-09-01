@@ -255,8 +255,8 @@ public class Interpreter {
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
-        if (heap(Heap.BOARD_1_MAPID).read() != mapId) {
-            heap(Heap.BOARD_1_MAPID).write(mapId);
+        if (heap(Heap.DECODED_BOARD_ID).read() != mapId) {
+            heap(Heap.DECODED_BOARD_ID).write(mapId);
 
             this.mapDecoder = new MapData(stringDecoder());
 
@@ -539,7 +539,7 @@ public class Interpreter {
         app().drawBitmask(bitmask, x, y, invert);
     }
 
-    private void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
+    public void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
         final int addr = base - 0x0100 + offset;
         final List<Byte> bytes = memory().getCodeChunk().getBytes(addr, length);
         for (int i = 0; i < length; i++) {
@@ -964,13 +964,9 @@ public class Interpreter {
     /**
      * Draws an empty box on the screen.
      */
-    public void drawModal(Address addr) {
+    public void drawModal(int x0, int y0, int x1, int y1) {
         pause();
 
-        final int x0 = memory().read(addr, 1);         // ch adr
-        final int y0 = memory().read(addr.incr(1), 1); // pix adr
-        final int x1 = memory().read(addr.incr(2), 1);
-        final int y1 = memory().read(addr.incr(3), 1);
         boolean invert = bg_color_3431 == 0;
 
         // four immediates: 16 00 28 98 (combat window)
@@ -1197,12 +1193,12 @@ public class Interpreter {
             case 0x6a -> new IsPartyInBox();
             case 0x6b -> new TakeOneStep(true);
             case 0x6c -> new TakeOneStep(false);
-            // case 0x6d -> new DrawAutomap();
+            case 0x6d -> new DrawAutomap(); // TODO
             case 0x6e -> new DrawCompass();
             case 0x6f -> new RotateMapView();
             case 0x70 -> new UnrotateMapView();
-            case 0x71 -> new RunSpecialEvent(); // TODO
-            // case 0x72 -> new UseItem();
+            case 0x71 -> new RunBoardEvent();
+            case 0x72 -> new FindBoardAction(); // TODO
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
@@ -1226,7 +1222,7 @@ public class Interpreter {
             case 0x87 -> new PersistChunk();
             case 0x88 -> new WaitForEscapeKey();
             case 0x89 -> new ReadKeySwitch();
-            case 0x8a -> new ShowMonsterImage(); // TODO
+            case 0x8a -> new ShowMonsterImage();
             case 0x8b -> new DrawCurrentViewport(this);
             case 0x8c -> new RunYesNoModal();
             case 0x8d -> new ReadInputString();

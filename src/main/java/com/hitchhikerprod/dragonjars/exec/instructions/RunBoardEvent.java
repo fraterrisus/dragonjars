@@ -8,13 +8,13 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.function.Supplier;
 
-public class RunSpecialEvent implements Instruction {
+public class RunBoardEvent implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final PartyLocation location = i.getPartyLocation();
         final Address nextIP = i.getIP().incr();
 
-        if (location.mapId() != (i.heap(Heap.BOARD_1_MAPID).read() & 0x7f)) return nextIP;
+        if (location.mapId() != (i.heap(Heap.DECODED_BOARD_ID).read() & 0x7f)) return nextIP;
 
         final MapData.Square square = i.mapDecoder().getSquare(location.pos());
         if (square.eventId() != i.heap(Heap.RECENT_EVENT).read()) {
@@ -49,7 +49,7 @@ public class RunSpecialEvent implements Instruction {
         public Address get() {
             // maybe should be oldLoc.mapId()?
             // we're trying to catch when the event program moved us to a new board and exit quickly
-            if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.BOARD_1_MAPID).read(1)) return nextIP;
+            if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.DECODED_BOARD_ID).read(1)) return nextIP;
 
             final int address = i.mapDecoder().getEventPointer(0);
             i.reenter(0x46 + oldLoc.mapId(), address, () -> nextIP);

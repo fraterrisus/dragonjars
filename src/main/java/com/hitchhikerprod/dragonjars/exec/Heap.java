@@ -18,12 +18,12 @@ public class Heap {
     public static final int BOARD_FLAGS = 0x23;
     public static final int WALL_METADATA = 0x26;
     public static final int LONGPTR_ADR = 0x34;
-    public static final int COMBAT_RUNNING = 0x35;
+    public static final int COMBAT_MODE = 0x35; // 0xff combat, 0x00 travel
     public static final int LONGPTR_SEG = 0x36;
     public static final int RECENT_EVENT = 0x3e;
     public static final int NEXT_EVENT = 0x3f;
     public static final int BOARD_1_SEGIDX = 0x56;
-    public static final int BOARD_1_MAPID = 0x57;
+    public static final int DECODED_BOARD_ID = 0x57;
     public static final int BOARD_2_SEGIDX = 0x5a;
     public static final int LIGHT_SOURCE = 0xc1;
 

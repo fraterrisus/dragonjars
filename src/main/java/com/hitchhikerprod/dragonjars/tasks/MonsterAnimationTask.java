@@ -35,7 +35,7 @@ public class MonsterAnimationTask extends Task<Void> {
     }
 
     private boolean weShouldStop() {
-        return isCancelled() || interpreter.heap(Heap.COMBAT_RUNNING).read() == 0;
+        return isCancelled() || interpreter.heap(Heap.COMBAT_MODE).read() == 0;
     }
 
     @Override

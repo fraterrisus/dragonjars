@@ -180,9 +180,10 @@ public class MapData {
     }
 
     private Square stripSquare(int x, int y) {
+        // see 0x52eb
         final Square sq = getSquare(x, y);
         return new Square(
-                sq.rawData & 0x00f000, // remove everything but roof and floor
+                sq.rawData & 0x003000, // remove everything but roof and floor
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -326,6 +327,10 @@ public class MapData {
             default:
                 throw new IllegalArgumentException("Unexpected facing: " + facing);
         }
+    }
+
+    public Optional<Action> findAction(int actionId) {
+        return actions.stream().filter(a -> a.header() == actionId).findFirst();
     }
 
     private void byteReader(Consumer<Byte> consumer) {
