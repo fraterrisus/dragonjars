@@ -14,12 +14,14 @@ public class RecurseOverInventory implements Instruction {
         final int functionPointer = i.memory().read(ip.incr(), 2);
         final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
         final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        i.heap(Heap.SELECTED_ITEM).write(0);
         for (int slotId = 0; slotId < 12; slotId++) {
-            i.heap(Heap.SELECTED_ITEM).write(slotId);
             final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
-            if (i.memory().read(Interpreter.PARTY_SEGMENT, itemBaseAddress + 0x0b, 1) == 0) continue;
+            if (i.memory().read(Interpreter.PARTY_SEGMENT, itemBaseAddress + 0x0b, 1) == 0) break;
+
             i.reenter(new Address(ip.segment(), functionPointer), () -> null);
             if (i.getCarryFlag()) return nextIP;
+            i.heap(Heap.SELECTED_ITEM).write(slotId + 1);
         }
         i.setCarryFlag(false);
         return nextIP;

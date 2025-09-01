@@ -12,6 +12,7 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
+import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
@@ -97,8 +98,9 @@ public class Interpreter {
     private boolean flagSign;  // 0x0080
 
     // debugging information
+    private boolean gameIsPaused = false;
+
     private int instructionsExecuted = 0;
-    private int mainLoopDepth = 0;
     private final Deque<Supplier<Address>> executionStack = new LinkedList<>();
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
@@ -173,13 +175,15 @@ public class Interpreter {
      */
     public void reenter(int chunk, int addr, Supplier<Address> after) {
         this.executionStack.push(after);
-        start(chunk, addr);
+        final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
+        final Address nextIP = new Address(startingSegment, addr);
+        mainLoop(nextIP);
     }
 
     public void start(int chunk, int addr) {
         if (Objects.nonNull(app())) app().setKeyHandler(null);
         final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
-        Address nextIP = new Address(startingSegment, addr);
+        final Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
     }
 
@@ -188,7 +192,7 @@ public class Interpreter {
      */
     public void reenter(Address startPoint, Supplier<Address> after) {
         this.executionStack.push(after);
-        start(startPoint);
+        mainLoop(startPoint);
     }
 
     public void start(Address startPoint) {
@@ -201,11 +205,10 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x03;
-    private static final int BREAKPOINT_ADR = 0x09ec;
+    private static final int BREAKPOINT_CHUNK = 0x0c;
+    private static final int BREAKPOINT_ADR = 0x0102;
 
     private void mainLoop(Address startPoint) {
-        mainLoopDepth++; // helps us track when to actually quit the app
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
@@ -221,11 +224,6 @@ public class Interpreter {
             nextIP = ins.exec(this);
             this.instructionsExecuted++;
         }
-        mainLoopDepth--;
-    }
-
-    public int getRecursiveDepth() {
-        return mainLoopDepth;
     }
 
     public int instructionsExecuted() {
@@ -248,6 +246,10 @@ public class Interpreter {
         return this.stringDecoder;
     }
 
+    public MapData mapDecoder() {
+        return this.mapDecoder;
+    }
+
     public void decodeMap(int mapId) {
         // See [00/0384] load_dirty_map_state()
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
@@ -268,10 +270,6 @@ public class Interpreter {
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
         }
-    }
-
-    public MapData mapDecoder() {
-        return this.mapDecoder;
     }
 
     /**
@@ -332,6 +330,18 @@ public class Interpreter {
 
     public DragonWarsApp app() {
         return app;
+    }
+
+    public boolean isPaused() {
+        return gameIsPaused;
+    }
+
+    public void pause() {
+        gameIsPaused = true;
+    }
+
+    public void unpause() {
+        gameIsPaused = false;
     }
 
     public record Rectangle(int x0, int x1, int y0, int y1) {}
@@ -603,14 +613,14 @@ public class Interpreter {
         int y = y_31ef;
 
 //        System.out.format("drawString(%03x,%03x):", x, y);
-        for (int ch : s) {
-            int c = ch & 0x7f;
+//        for (int ch : s) {
+//            int c = ch & 0x7f;
 //            if (0x20 < c && c < 0x7e) {
 //                System.out.format(" %c", c);
 //            } else {
 //                System.out.format(" 0x%02x", ch);
 //            }
-        }
+//        }
 //        System.out.println();
 
         int p0 = 0;
@@ -677,10 +687,31 @@ public class Interpreter {
         });
     }
 
-    private MonsterAnimationTask monsterAnimationTask;
-
     public int[] videoMemory() {
         return videoMemory;
+    }
+
+    public void copyToVideoMemory(int[] buffer) {
+        System.arraycopy(buffer, 0, videoMemory, 0, buffer.length);
+        bitBlastViewport();
+    }
+
+    private MonsterAnimationTask monsterAnimationTask;
+    private EyeAnimationTask eyeAnimationTask;
+
+    public void startEyeAnimation() {
+        eyeAnimationTask = new EyeAnimationTask(this);
+
+        final Thread taskThread = new Thread(eyeAnimationTask);
+        taskThread.setDaemon(true);
+        taskThread.start();
+    }
+
+    public void stopEyeAnimation() {
+        if (Objects.isNull(eyeAnimationTask)) return;
+
+        eyeAnimationTask.cancel();
+        eyeAnimationTask = null;
     }
 
     public void startMonsterAnimation(MonsterAnimationTask task) {
@@ -690,11 +721,6 @@ public class Interpreter {
         final Thread taskThread = new Thread(monsterAnimationTask);
         taskThread.setDaemon(true);
         taskThread.start();
-    }
-
-    public void copyToVideoMemory(int[] buffer) {
-        System.arraycopy(buffer, 0, videoMemory, 0, buffer.length);
-        bitBlastViewport();
     }
 
     public void stopMonsterAnimation() {
@@ -722,18 +748,37 @@ public class Interpreter {
         }
     }
 
+    public void drawHudPillar() {
+        getImageWriter(writer -> imageDecoder().decodeRomImage(0x09, writer));
+
+        final int compass = heap(0xbe).read();
+        if (compass > 0) {
+            getImageWriter(writer -> imageDecoder().decodeRomImage(0x09 + compass, writer));
+        }
+
+        final int trap = heap(0xbf).read();
+        if (trap > 0 && Objects.isNull(eyeAnimationTask)) startEyeAnimation();
+
+        final int shield = heap(0xc0).read();
+        if (shield > 0) {
+            getImageWriter(writer -> imageDecoder().decodeRomImage(0x14, writer));
+        }
+
+        // torch: 0x15 unlit, 0x16-0x1a lit
+        // uses heap(0xc1)
+
+        // ax <- 0x0000
+        // [4a71] <- ax
+        // [4a73] <- ax
+        // CF <- 1
+    }
+
     public void drawHud() {
         draw_borders = 0x00;
         for (int regionId = 0; regionId < 14; regionId++) {
             if (boundsCheck(regionId, true)) {
                 switch (regionId) {
-                    case 0x09 -> { // the vertical column with spell icons
-                        getImageWriter(writer -> imageDecoder().decodeRomImage(0x09, writer));
-                        // ax <- 0x0000
-                        // [4a71] <- ax
-                        // [4a73] <- ax
-                        // CF <- 1
-                    }
+                    case 0x09 -> drawHudPillar();
                     case 0x0a -> bitBlastViewport();
                     case 0x0b -> {
                         heap(0x18).write(0x00, 7); // heap[18:1e] <- 0x00
@@ -754,7 +799,7 @@ public class Interpreter {
         }
     }
 
-    private void drawPartyInfoArea() { // 0x1a12
+    public void drawPartyInfoArea() { // 0x1a12
         // FIXME enabling the bounds check prevents ever drawing this
         // if (! boundsCheck(0x0b, false)) return;
 
@@ -920,6 +965,8 @@ public class Interpreter {
      * Draws an empty box on the screen.
      */
     public void drawModal(Address addr) {
+        pause();
+
         final int x0 = memory().read(addr, 1);         // ch adr
         final int y0 = memory().read(addr.incr(1), 1); // pix adr
         final int x1 = memory().read(addr.incr(2), 1);

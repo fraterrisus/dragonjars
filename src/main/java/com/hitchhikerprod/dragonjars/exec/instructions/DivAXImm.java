@@ -20,6 +20,7 @@ public class DivAXImm implements Instruction {
         i.setDivResult(modResult);
         i.heap(0x37).write(divResult, 4);
         i.heap(0x3b).write(modResult, 2);
+        i.setAX(divResult);
         return ip.incr(OPCODE + wordSize(i));
     }
 }

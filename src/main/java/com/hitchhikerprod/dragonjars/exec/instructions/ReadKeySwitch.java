@@ -39,6 +39,12 @@ public class ReadKeySwitch implements Instruction {
 
     @Override
     public Address exec(Interpreter i) {
+        // I know, this is weird, but it's how the game manages the spell icons.
+        if (! i.isPaused()) {
+            i.drawHudPillar();
+            i.drawPartyInfoArea();
+        }
+
         final Address ip = i.getIP();
         i.drawString313e(); //?
         final int imm_2a44 = i.memory().read(ip.incr(1), 1);
@@ -74,6 +80,7 @@ public class ReadKeySwitch implements Instruction {
         while (true) {
             final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
+            if (ch == 0x80) { pointer += 3; continue; }
             if ((ch & 0xc0) == 0x40) {
                 // this is a range; read two characters
                 final int min = ch;

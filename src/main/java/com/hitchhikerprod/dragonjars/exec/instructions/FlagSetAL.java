@@ -17,8 +17,7 @@ public class FlagSetAL implements Instruction {
         final int op = i.getAL();
         final int mask = 0x80 >> (op & 0x7);
         final int heapIndex = (op >> 3) + i.memory().read(ip.incr(1), 1);
-        final int value = i.heap(heapIndex).read(1) | mask;
-        i.heap(heapIndex).write(value);
+        i.heap(heapIndex).modify(1, x -> x | mask);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

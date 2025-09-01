@@ -104,7 +104,7 @@ public class DecodeStringFrom implements Instruction {
             final int postStringPointer = decoder.getPointer();
             i.setAX(postStringPointer, true);
         }
-        if (chars.getFirst() == 0x00) return addr;
+        if (chars.getFirst() == 0x00) return getNextIp.apply(i);
 
         if ((i.heap(0x08).read() & 0x80) == 0) {
             i.heap(0x08).write(chars.getFirst() | 0x80);

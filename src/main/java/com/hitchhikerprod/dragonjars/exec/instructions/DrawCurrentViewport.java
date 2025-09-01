@@ -24,6 +24,8 @@ public class DrawCurrentViewport implements Instruction {
 
     @Override
     public Address exec(Interpreter ignored) {
+        i.unpause();
+
         i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
 
