@@ -1103,10 +1103,6 @@ public class Interpreter {
         }
     }
 
-    private Function<Interpreter, Boolean> invert(Function<Interpreter, Boolean> fn) {
-        return (i) -> ! fn.apply(i);
-    }
-
     private Instruction decodeOpcode(int opcode) {
         return switch (opcode) {
             case 0x00 -> Instructions.SET_WIDE;
@@ -1140,7 +1136,7 @@ public class Interpreter {
             case 0x1c -> new StoreImm();
             case 0x1d -> new BufferCopy();
             case 0x1e -> Instructions.HARD_EXIT; // "kill executable" aka "you lost"
-            case 0x1f -> Instructions.NOOP; // "read segment table"
+            case 0x1f -> Instructions.NOOP; // "read chunk table", which we don't need to do
             //   0x20 sends the (real) IP to 0x0000, which is probably a segfault
             case 0x21 -> new MoveALBL();
             case 0x22 -> new MoveBXAX();
@@ -1176,13 +1172,13 @@ public class Interpreter {
             case 0x40 -> new CmpBLImm();
             // The SUB and CMP instructions flip the carry bit before writing, which makes
             // JC and JNC behave in the opposite manner. But ADD doesn't flip carry.
-            case 0x41 -> new JumpIf(invert(Interpreter::getCarryFlag));
-            case 0x42 -> new JumpIf(Interpreter::getCarryFlag);
-            case 0x43 -> new JumpIf((i) -> i.getCarryFlag() & ! i.getZeroFlag());  // "above"
-            case 0x44 -> new JumpIf(Interpreter::getZeroFlag);                     // "equal"
-            case 0x45 -> new JumpIf(invert(Interpreter::getZeroFlag));             // "not equal"
-            case 0x46 -> new JumpIf(Interpreter::getSignFlag);
-            case 0x47 -> new JumpIf(invert(Interpreter::getSignFlag));
+            case 0x41 -> JumpIf.NOT_CARRY;
+            case 0x42 -> JumpIf.CARRY;
+            case 0x43 -> JumpIf.ABOVE;
+            case 0x44 -> JumpIf.EQUAL;
+            case 0x45 -> JumpIf.NOT_EQUAL;
+            case 0x46 -> JumpIf.SIGN;
+            case 0x47 -> JumpIf.NOT_SIGN;
             case 0x48 -> new TestAndSetHeapSign();
             case 0x49 -> new LoopBX();
             case 0x4a -> new LoopBXLimit();
@@ -1193,7 +1189,7 @@ public class Interpreter {
             case 0x4f -> new FlagClearAL();
             case 0x50 -> new FlagTestAL();
             case 0x51 -> new ArrayMax();
-            case 0x52 -> new JumpIf((i) -> true);
+            case 0x52 -> JumpIf.ALWAYS;
             case 0x53 -> new Call();
             case 0x54 -> new Return();
             case 0x55 -> new PopAX();
@@ -1234,8 +1230,8 @@ public class Interpreter {
             case 0x78 -> DecodeStringFrom.CS;
             case 0x79 -> DecodeStringFrom.DS_WITH_FILL;
             case 0x7a -> DecodeStringFrom.DS;
-            case 0x7b -> DecodeStringFrom.CS_TO_TITLE; // DecodeTitleStringFrom.CS;
-            case 0x7c -> DecodeStringFrom.DS_TO_TITLE; // DecodeTitleStringFrom.DS;
+            case 0x7b -> DecodeStringFrom.CS_TO_TITLE;
+            case 0x7c -> DecodeStringFrom.DS_TO_TITLE;
             case 0x7d -> new IndirectCharName();
             case 0x7e -> new IndirectCharItem();
             case 0x7f -> new IndirectString();

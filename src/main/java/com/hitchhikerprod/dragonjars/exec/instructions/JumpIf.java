@@ -8,7 +8,16 @@ import java.util.function.Function;
 public class JumpIf implements Instruction {
     private final Function<Interpreter, Boolean> takeJump;
 
-    public JumpIf(Function<Interpreter, Boolean> condition) {
+    public static final JumpIf ALWAYS = new JumpIf(i -> true);
+    public static final JumpIf NOT_CARRY = new JumpIf(i -> !i.getCarryFlag());
+    public static final JumpIf CARRY = new JumpIf(Interpreter::getCarryFlag);
+    public static final JumpIf ABOVE = new JumpIf(i -> i.getCarryFlag() & ! i.getZeroFlag());
+    public static final JumpIf EQUAL = new JumpIf(Interpreter::getZeroFlag);
+    public static final JumpIf NOT_EQUAL = new JumpIf(i -> !i.getZeroFlag());
+    public static final JumpIf SIGN = new JumpIf(Interpreter::getSignFlag);
+    public static final JumpIf NOT_SIGN = new JumpIf(i -> !i.getSignFlag());
+
+    private JumpIf(Function<Interpreter, Boolean> condition) {
         this.takeJump = condition;
     }
 
