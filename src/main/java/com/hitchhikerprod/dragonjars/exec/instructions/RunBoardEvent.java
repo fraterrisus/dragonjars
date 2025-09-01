@@ -21,10 +21,12 @@ public class RunBoardEvent implements Instruction {
             i.heap(Heap.RECENT_EVENT).write(0);
             if (square.eventId() != 0) {
                 i.heap(Heap.NEXT_EVENT).write(square.eventId(), 1);
-
-                final int address = i.mapDecoder().getEventPointer(square.eventId() + 1);
+                final Address target = new Address(
+                        i.heap(Heap.BOARD_1_SEGIDX).read(),
+                        i.mapDecoder().getEventPointer(square.eventId() + 1)
+                );
                 final After after = new After(i, location, nextIP);
-                i.reenter(0x46 + location.mapId(), address, after);
+                i.reenter(target, after);
                 return null;
             }
         }

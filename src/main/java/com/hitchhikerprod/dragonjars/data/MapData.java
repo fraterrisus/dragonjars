@@ -329,8 +329,11 @@ public class MapData {
         }
     }
 
-    public Optional<Action> findAction(int actionId) {
-        return actions.stream().filter(a -> a.header() == actionId).findFirst();
+    public Optional<Action> findAction(int header, int eventId) {
+        return actions.stream()
+                .filter(a -> a.event() == 0 || a.event() == eventId)
+                .filter(a -> a.header() == header)
+                .findFirst();
     }
 
     private void byteReader(Consumer<Byte> consumer) {

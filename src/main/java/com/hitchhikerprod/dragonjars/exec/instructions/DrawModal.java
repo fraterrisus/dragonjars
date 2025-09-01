@@ -12,7 +12,7 @@ public class DrawModal implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final List<Byte> bytes = i.memory().readList(ip.incr(), 4);
-        i.drawModal(bytes.get(0), bytes.get(1), bytes.get(2), bytes.get(3));
+        i.drawModal(bytes.stream().map(Interpreter::byteToInt).toList());
         return ip.incr(OPCODE + RECTANGLE);
     }
 }

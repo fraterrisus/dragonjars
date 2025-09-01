@@ -539,9 +539,13 @@ public class Interpreter {
         app().drawBitmask(bitmask, x, y, invert);
     }
 
-    public void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
+    public List<Byte> loadFromCodeSegment(int base, int offset, int length) {
         final int addr = base - 0x0100 + offset;
-        final List<Byte> bytes = memory().getCodeChunk().getBytes(addr, length);
+        return memory().getCodeChunk().getBytes(addr, length);
+    }
+    
+    public void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
+        final List<Byte> bytes = loadFromCodeSegment(base, offset, length);
         for (int i = 0; i < length; i++) {
             dest[i] = bytes.get(i);
         }
@@ -701,6 +705,9 @@ public class Interpreter {
 
     public void startEyeAnimation() {
         eyeAnimationTask = new EyeAnimationTask(this);
+        eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
+        eyeAnimationTask.setOnFailed(ev -> eyeAnimationTask = null);
+        eyeAnimationTask.setOnCancelled(ev -> eyeAnimationTask = null);
 
         final Thread taskThread = new Thread(eyeAnimationTask);
         taskThread.setDaemon(true);
@@ -709,9 +716,7 @@ public class Interpreter {
 
     public void stopEyeAnimation() {
         if (Objects.isNull(eyeAnimationTask)) return;
-
         eyeAnimationTask.cancel();
-        eyeAnimationTask = null;
     }
 
     public void startMonsterAnimation(MonsterAnimationTask task) {
@@ -732,12 +737,12 @@ public class Interpreter {
 
         expandBBox();
 
-        final byte[] rec = new byte[4]; // x0, y0, x1, y1
-        loadFromCodeSegment(0x2644, 4 * regionId, rec, 4);
-        final int rec_x0 = rec[0] & 0xff;
-        final int rec_y0 = rec[1] & 0xff;
-        final int rec_x1 = rec[2] & 0xff;
-        final int rec_y1 = rec[3] & 0xff;
+        final List<Integer> rec = loadFromCodeSegment(0x2644, 4 * regionId, 4)
+                .stream().map(Interpreter::byteToInt).toList();
+        final int rec_x0 = rec.get(0);
+        final int rec_y0 = rec.get(1);
+        final int rec_x1 = rec.get(2);
+        final int rec_y1 = rec.get(3);
 
         if ((rec_x0 >= bbox_x1) || (rec_y0 >= bbox_y1) || (bbox_x0 >= rec_x1) || (bbox_y0 >= rec_y1)) {
             shrinkBBox();
@@ -746,6 +751,20 @@ public class Interpreter {
             shrinkBBox();
             return true;
         }
+    }
+
+    // FIXME
+    private int eyePhase;
+
+    public void setEyePhase(int phase) {
+        this.eyePhase = phase;
+        drawEye();
+    }
+
+    public void drawEye() {
+        if (isPaused() || eyePhase < 0) return;
+        final int imageId = 0x0e + eyePhase;
+        getImageWriter(writer -> imageDecoder().decodeRomImage(imageId, writer));
     }
 
     public void drawHudPillar() {
@@ -757,7 +776,10 @@ public class Interpreter {
         }
 
         final int trap = heap(0xbf).read();
-        if (trap > 0 && Objects.isNull(eyeAnimationTask)) startEyeAnimation();
+        if (trap > 0) {
+            if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
+            drawEye();
+        }
 
         final int shield = heap(0xc0).read();
         if (shield > 0) {
@@ -961,6 +983,11 @@ public class Interpreter {
         setBackground();
     }
 
+    public void drawModal(List<Integer> coordinates) {
+        if (coordinates.size() != 4) throw new IllegalArgumentException();
+        drawModal(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3));
+    }
+
     /**
      * Draws an empty box on the screen.
      */
@@ -1060,11 +1087,11 @@ public class Interpreter {
 //        buf_2a60[bufferOffset] = 0x9b;
     }
 
-    private int byteToInt(byte b) {
+    public static int byteToInt(byte b) {
         return MASK_LOW & ((int) b);
     }
 
-    private byte intToByte(int i) {
+    public static byte intToByte(int i) {
         return (byte)(i & MASK_LOW);
     }
 
@@ -1193,12 +1220,12 @@ public class Interpreter {
             case 0x6a -> new IsPartyInBox();
             case 0x6b -> new TakeOneStep(true);
             case 0x6c -> new TakeOneStep(false);
-            case 0x6d -> new DrawAutomap(); // TODO
+            case 0x6d -> new DrawAutomap();
             case 0x6e -> new DrawCompass();
             case 0x6f -> new RotateMapView();
             case 0x70 -> new UnrotateMapView();
             case 0x71 -> new RunBoardEvent();
-            case 0x72 -> new FindBoardAction(); // TODO
+            case 0x72 -> new FindBoardAction();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
