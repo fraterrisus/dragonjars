@@ -95,18 +95,18 @@ public class ImageDecoder {
         }
     }
 
-    public void decodeTexture(Chunk chunk, int pointer, int offset, int x0_352e, int y0_3532, int invert_100e) { // 0x0ca7
+    public void decodeTexture(Chunk chunk, int offset, int x0_352e, int y0_3532, int invert_100e, int factor_1013) { // 0x0ca7
         // chunk: stand-in for [1011/seg]
-        // pointer: stand-in for [100f/adr]
+        // pointer: stand-in for [100f/adr], but it's always zero when we use it
         // offset: stand-in for bx
-        final int value = chunk.getWord(pointer + offset);
+        final int value = chunk.getWord(offset);
         if (value == 0) throw new NoImageException("Null pointer");
-        if (pointer + value > chunk.getSize()) throw new IllegalArgumentException("Offset too large");
-        entrypoint0cb8(chunk, pointer + value, x0_352e, y0_3532, invert_100e);
+        if (value > chunk.getSize()) throw new IllegalArgumentException("Offset too large");
+        entrypoint0cb8(chunk, value, x0_352e, y0_3532, invert_100e, factor_1013);
     }
 
     // this gets used by the automapper (see 0x19b3)
-    public void entrypoint0cb8(Chunk chunk, int pointer, int x0_352e, int y0_3532, int invert_100e) { // 0cb8
+    public void entrypoint0cb8(Chunk chunk, int pointer, int x0_352e, int y0_3532, int invert_100e, int factor_1013) { // 0cb8
         // chunk: stand-in for [1011/seg]
         // pointer: stand-in for [100f/adr]
         int width_1008 = chunk.getUnsignedByte(pointer++);
@@ -129,7 +129,7 @@ public class ImageDecoder {
         if ((x0 & 0x8000) > 0) callIndex = callIndex | 0x04;
         if ((invert_100e & 0x0080) > 0) callIndex = callIndex | 0x08;
 
-        final int factor_1013 = 0x50; // the automap uses 0x90 but everything else uses 0x50
+        //final int factor_1013 = 0x50; // the automap uses 0x90 but everything else uses 0x50
         final int factorCopy_1015 = ((invert_100e & 0x40) > 0) ? -1 * factor_1013 : factor_1013;
 
         switch (callIndex) {
@@ -400,7 +400,7 @@ public class ImageDecoder {
 
             for (int offset = 0; offset < 0x20; offset += 2) {
                 try {
-                    decoder.decodeTexture(decodedChunk, 0, offset, 0, 0, 0);
+                    decoder.decodeTexture(decodedChunk, offset, 0, 0, 0, 0x50);
                     System.out.println("Decoded image at offset " + offset);
                     final WritableImage buf = Images.blankImage(320, 200);
                     final PixelWriter pixelWriter = buf.getPixelWriter();

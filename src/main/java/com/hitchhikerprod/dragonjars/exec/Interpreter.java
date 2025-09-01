@@ -650,7 +650,11 @@ public class Interpreter {
             }
             p0 = p1;
             if (ch == 0x8d) { x = bbox_x0; y += 8; p0++; }
-            if (ch == 0xa0) { x++; p0++; }
+            if (ch == 0xa0) {
+                lowLevelDrawChar(0xa0, x * 8, y, bg_color_3431 == 0);
+                x++;
+                p0++;
+            }
         }
 
         x_31ed = x;
@@ -1077,9 +1081,12 @@ public class Interpreter {
         y_31ef = bbox_y1 - 8;
         x_3166 = 0; // not sure why we do this
         final int x0 = Integer.max(0, bbox_x1 - bbox_x0 - FOOTER_OFFSETS.get(index)) >> 1;
-        x_31ed = bbox_x0 + x0;
+        x_31ed = bbox_x0;
+        indentTo(bbox_x0 + x0); // this might not be welcome always?
+        // x_31ed = bbox_x0 + x0;
         final List<Integer> ch = FOOTERS.get(index).chars().map(c -> c | 0x80).boxed().toList();
         drawString(ch);
+        indentTo(bbox_x1);
 
         // 0x28c6
 //        final int bufferOffset = (y_31ef - bbox_y0) >> 3;

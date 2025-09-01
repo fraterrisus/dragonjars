@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class DrawCurrentViewport implements Instruction {
+    public static final int GAMEPLAY_FRAME_WIDTH = 0x50;
+
     private final Interpreter i;
 
     public DrawCurrentViewport(Interpreter i) {
@@ -67,7 +69,7 @@ public class DrawCurrentViewport implements Instruction {
             final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
 //            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
 //                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
-            i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, 0x0);
+            i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0x0, GAMEPLAY_FRAME_WIDTH);
         }
     }
 
@@ -75,7 +77,7 @@ public class DrawCurrentViewport implements Instruction {
         if (textureId == 1) { // 0x54f8
             final int segmentId = i.getSegmentForChunk(0x6f, Frob.DIRTY);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
-            i.imageDecoder().decodeTexture(textureChunk, 0x0000, 0x4, 0x0, 0x0, 0x0);
+            i.imageDecoder().decodeTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, GAMEPLAY_FRAME_WIDTH);
             // bitBlastGameplayArea(); // we'll probably call this later?
         } else { // 0x5515
             // Draw a generic checkerboard roof
@@ -112,7 +114,7 @@ public class DrawCurrentViewport implements Instruction {
             if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
                 final int segmentId = i.getSegmentForChunk(wallChunk, Frob.DIRTY);
                 final Chunk textureChunk = i.memory().getSegment(segmentId);
-                i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, invert);
+                i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, invert, GAMEPLAY_FRAME_WIDTH);
             }
 
             // 'Other' decor texture; try to only run each square once
@@ -122,7 +124,7 @@ public class DrawCurrentViewport implements Instruction {
                     final Integer otherChunkId = sq.otherTextureChunk().get();
                     final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.DIRTY);
                     final Chunk textureChunk = i.memory().getSegment(segmentId);
-                    i.imageDecoder().decodeTexture(textureChunk, 0, textureOffset, x0, y0, 0);
+                    i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0, GAMEPLAY_FRAME_WIDTH);
                 }
             }
         }
