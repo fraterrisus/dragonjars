@@ -195,6 +195,7 @@ public class ImageDecoder {
         }
     }
 
+    // call index 0x02
     private void decode_0dab(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
                              int factor_1013, int factorCopy_1015) {
         final boolean x0Sign = (x0t2 & 0x8000) > 0;
@@ -242,6 +243,7 @@ public class ImageDecoder {
         }
     }
 
+    // call index 0x04
     private void decode_0e2d(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
                              int factor_1013, int factorCopy_1015) {
         final int x0t2n = -1 * x0t2;
@@ -277,6 +279,7 @@ public class ImageDecoder {
         }
     }
 
+    // call index 0x06
     private void decode_0e85(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
                              int factor_1013, int factorCopy_1015) {
         final int x0t2n = -1 * x0t2;
@@ -325,6 +328,7 @@ public class ImageDecoder {
     }
 
     // should basically be 0d48 but flipped X
+    // call index 0x08
     private void decode_0efd(Chunk chunk, final int pointer, int width_1008, int height_100d, int x0t2, int y0,
                              int factor_1013, int factorCopy_1015) {
         final boolean x0Sign = (x0t2 & 0x8000) > 0;

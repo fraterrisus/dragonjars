@@ -8,21 +8,18 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class StandaloneImageDecoder {
     public static final int IMAGE_X = 320;
     public static final int IMAGE_Y = 200;
-    public static final int GAMEPLAY_X0 = 0x10;
-    public static final int GAMEPLAY_Y0 = 0x08;
 
     private static final Rectangle GAMEPLAY = new Rectangle(0x10, 0x08, 0xb0, 0x90);
     private static final Rectangle WHOLE_IMAGE = new Rectangle(0, 0, IMAGE_X, IMAGE_Y);
 
-    public static final int CORNER_LUT_ADDRESS = 0x6428;
-    public static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
+    private static final int CORNER_LUT_ADDRESS = 0x6428;
+    private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
 
     private final Chunk codeChunk;
     private final byte[] pixels;
@@ -31,7 +28,7 @@ public class StandaloneImageDecoder {
 
     private record Rectangle(int x0, int y0, int x1, int y1) {
         public boolean contains(int x, int y) {
-            return x >= x0 && y >= y0 && x <= x1 && y <= y1;
+            return x >= x0 && y >= y0 && x < x1 && y < y1;
         }
     }
 
@@ -158,26 +155,17 @@ public class StandaloneImageDecoder {
         if (x0 < 0) callIndex |= 0x04;
         if (invertX) callIndex |= 0x08;
 
-        System.out.format("[%02x] size:(%03x,%03x) offset:(%+4d,%+4d) pos:(%+4d,:%+4d) inv:%02x call:%d\n",
+        System.out.format("[%02x] size:(%3d,%3d) offset:(%+4d,%+4d) pos:(%+4d,%+4d) inv:%02x call:%d\n",
                 index, width, height, offsetX, offsetY, x0, y0, invert, callIndex);
 
         final List<Byte> imageData = chunk.getBytes(baseAddress + 4, width * height);
-        final ImageData c = new ImageData(imageData, GAMEPLAY_X0 + x0, GAMEPLAY_Y0 + y0, 2 * width, height);
+        final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
 
         if (callIndex == 0 || callIndex == 4) drawImageData(c, 0, mask);
-        if (callIndex == 2 || callIndex == 6) drawImageData(c, 0, mask); // x0 is odd so there's only a one-byte draw?
+        if (callIndex == 2 || callIndex == 6)
+            drawImageData(c, 0, mask); // x0 is odd so there's only a one-byte draw?
         if (callIndex == 8) {
-            int pointer = 0;
-            for (int y = c.y0; y < c.y0 + c.height; y++) {
-                for (int x = c.x0 + c.width; x > c.x0; x -= 2) {
-                    final byte chunkByte = c.data().get(pointer++);
-                    final byte newPixel0 = (byte) ((chunkByte >> 4) & 0x0f);
-                    final byte newPixel1 = (byte) (chunkByte & 0x0f);
-                    final int pixelOffset = coordToIndex(x, y);
-                    if (newPixel0 != 6) pixels[pixelOffset+1] = newPixel0;
-                    if (newPixel1 != 6) pixels[pixelOffset] = newPixel1;
-                }
-            }
+            drawImageFlip(c, 0, mask);
         }
     }
 
@@ -186,16 +174,30 @@ public class StandaloneImageDecoder {
         // i.e. if the new value is 6, don't overwrite whatever's there
         int pointer = basePointer;
         for (int y = c.y0; y < c.y0 + c.height; y++) {
-            for (int x = c.x0; x < c.x0 + c.width; x += 2) {
-                if (mask.contains(x, y)) {
-                    final byte chunkByte = c.data().get(pointer);
-                    final byte newPixel0 = (byte) ((chunkByte >> 4) & 0x0f);
-                    final byte newPixel1 = (byte) (chunkByte & 0x0f);
-                    final int pixelOffset = coordToIndex(x, y);
-                    if (newPixel0 != 6) pixels[pixelOffset] = newPixel0;
-                    if (newPixel1 != 6) pixels[pixelOffset + 1] = newPixel1;
-                }
-                pointer++;
+            boolean inc = true;
+            for (int x = c.x0; x < c.x0 + c.width; x++) {
+                inc = !inc;
+                final byte chunkByte = c.data().get(pointer);
+                final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
+                final int pixelOffset = coordToIndex(x, y);
+                if (newPixel != 6 && mask.contains(x, y)) pixels[pixelOffset] = newPixel;
+                if (inc) pointer++;
+            }
+        }
+    }
+
+    private void drawImageFlip(ImageData c, int basePointer, Rectangle mask) {
+        int pointer = basePointer;
+        for (int y = c.y0; y < c.y0 + c.height; y++) {
+            boolean inc = true;
+            // X coordinate runs backwards, but Pointer fetches data in the same order
+            for (int x = (c.x0 + c.width) - 1; x >= c.x0; x--) {
+                inc = !inc;
+                final byte chunkByte = c.data().get(pointer);
+                final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
+                final int pixelOffset = coordToIndex(x, y);
+                if (newPixel != 6 && mask.contains(x, y)) pixels[pixelOffset] = newPixel;
+                if (inc) pointer++;
             }
         }
     }
@@ -232,10 +234,8 @@ public class StandaloneImageDecoder {
 
             final StandaloneImageDecoder decoder = new StandaloneImageDecoder(codeChunk);
 
-            // decoder.clearBuffer((byte)0x00);
-            // decoder.drawGrid();
-            // printChunk(decoder, chunkTable, 0x18);
-
+            printChunk(decoder, chunkTable, 0x18);
+            printPillar(decoder);
             printHUD(decoder);
 
             final List<Integer> walls = List.of(0x6e, 0x73, 0x7a, 0x7d, 0x7e);
@@ -245,9 +245,9 @@ public class StandaloneImageDecoder {
 
             for (int chunkId : walls) {
                 System.out.format("[%02x] [%02x] ", chunkId, 0);
-                printTexture(decoder, chunkTable, chunkId, 0, GAMEPLAY_X0, GAMEPLAY_Y0, 0, WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 0, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
                 System.out.format("[%02x] [%02x] ", chunkId, 2);
-                printTexture(decoder, chunkTable, chunkId, 2, GAMEPLAY_X0, GAMEPLAY_Y0, 0, WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 2, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
 
                 for (int i = 0; i < WALL_TEXTURE_OFFSET.size(); i++) {
                     final int index = WALL_TEXTURE_OFFSET.get(i);
@@ -280,9 +280,10 @@ public class StandaloneImageDecoder {
 
             for (int chunkId : decos) {
                 for (int i = 0; i < 0x0a; i += 2) {
+                    if (i == 2) continue;
                     System.out.format("[%02x] [%02x] ", chunkId, i);
                     final String filename = String.format("texture-%02x-%02x.png", chunkId, i);
-                    printTexture(decoder, chunkTable, chunkId, i, GAMEPLAY_X0, GAMEPLAY_Y0, 0, WHOLE_IMAGE, filename);
+                    printTexture(decoder, chunkTable, chunkId, i, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, filename);
                 }
             }
         } catch (IOException e) {
