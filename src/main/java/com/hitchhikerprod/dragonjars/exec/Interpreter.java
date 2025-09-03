@@ -11,6 +11,7 @@ import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.Rectangle;
+import com.hitchhikerprod.dragonjars.data.StandaloneImageDecoder;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
@@ -45,6 +46,7 @@ public class Interpreter {
 
     private final StringDecoder stringDecoder;
     private final ImageDecoder imageDecoder;
+    private final StandaloneImageDecoder newImageDecoder;
     private MapData mapDecoder;
 
     /* Memory space */
@@ -55,6 +57,13 @@ public class Interpreter {
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
     private final int[] videoMemory = new int[0x3e80];
+
+    // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
+    private final VideoBuffer videoBackground = new VideoBuffer();
+    // Write the gameport, message area, party area, and spell icons to this
+    private final VideoBuffer videoForeground = new VideoBuffer();
+    // Modals should be written to this (after clearing it each time)
+    private final VideoBuffer videoModal = new VideoBuffer();
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -120,12 +129,24 @@ public class Interpreter {
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
         this.imageDecoder = new ImageDecoder(this.memory().getCodeChunk(), videoMemory);
+        this.newImageDecoder = new StandaloneImageDecoder(this.memory().getCodeChunk());
     }
 
     public Interpreter init() {
         final boolean testMode = Objects.isNull(app());
 
-        if (!testMode) loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
+        if (!testMode) {
+            videoBackground.reset((byte)0x00);
+            videoForeground.reset(VideoBuffer.CHROMA_KEY);
+            videoModal.reset(VideoBuffer.CHROMA_KEY);
+
+            newImageDecoder.setVideoBuffer(videoBackground);
+            for (int i = 0; i < 10; i++) newImageDecoder.decodeRomImage(i); // most HUD sections
+            for (int i = 0; i < 16; i++) newImageDecoder.decodeRomImage(27 + i); // HUD title bar
+            // videoBackground.writeTo("video-background.png");
+
+            loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
+        }
 
         // cs:0150  ax <- 0x0000
         // cs:0155  heap[0x00..0x7f] <- 0x00
@@ -865,6 +886,7 @@ public class Interpreter {
             final int black = Images.convertColorIndex(0);
             for (int dy = 0; dy < 0x10; dy++) {
                 for (int x = x_31ed * 8; x < 0x27 * 8; x++) {
+                    videoForeground.set(x, y_31ef + dy, (byte)0);
                     writer.setArgb(x, y_31ef + dy, black);
                 }
             }

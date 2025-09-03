@@ -12,21 +12,30 @@ import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.CHROMA_KEY;
+
 public class StandaloneImageDecoder {
     public static final int IMAGE_X = 320;
     public static final int IMAGE_Y = 200;
 
+    private static final int FONT_ADDRESS = 0xb8a2;
     private static final int CORNER_LUT_ADDRESS = 0x6428;
     private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
 
     private final Chunk codeChunk;
     private final byte[] pixels;
+    private VideoBuffer vb;
 
     private record ImageData(List<Byte> data, int x0, int y0, int width, int height) {}
 
     public StandaloneImageDecoder(Chunk codeChunk) {
         this.codeChunk = codeChunk;
         this.pixels = new byte[IMAGE_X * IMAGE_Y];
+    }
+
+    // FIXME don't do this, pass in a videobuffer on each draw call
+    public void setVideoBuffer(VideoBuffer vb) {
+        this.vb = vb;
     }
 
     private int coordToIndex(int x, int y) {
@@ -46,6 +55,19 @@ public class StandaloneImageDecoder {
         for (int x = 0; x < IMAGE_X; x += 8) {
             for (int y = 0; y < IMAGE_Y; y++) {
                 pixels[coordToIndex(x, y)] = 0x06;
+            }
+        }
+    }
+
+    public void drawGrid(VideoBuffer vb) {
+        for (int y = 0; y < IMAGE_Y; y += 8) {
+            for (int x = 0; x < IMAGE_X; x++) {
+                vb.set(x, y, CHROMA_KEY);
+            }
+        }
+        for (int x = 0; x < IMAGE_X; x += 8) {
+            for (int y = 0; y < IMAGE_Y; y++) {
+                vb.set(x, y, CHROMA_KEY);
             }
         }
     }
@@ -74,6 +96,19 @@ public class StandaloneImageDecoder {
         }
 
         ImageIO.write(ImageDecoder.scale(image, 4.0, AffineTransformOp.TYPE_NEAREST_NEIGHBOR), "png", new File(filename));
+    }
+
+    public void decodeChar(VideoBuffer vb, int ch, int x0, int y0, boolean invert) {
+        final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
+        List<Byte> bitmask = codeChunk.getBytes(offset, 8);
+        for (int dy = 0; dy < 8; dy++) {
+            final int b = bitmask.get(dy);
+            final int mask = 0x80;
+            for (int dx = 0; dx < 8; dx++) {
+                final boolean draw = (b & (mask >> dx)) > 0;
+                vb.set(x0 + dx, y0 + dy, (byte)((draw ^ invert) ? 0x0 : 0xf));
+            }
+        }
     }
 
     public void decodeChunkImage(ModifiableChunk chunk) {
@@ -115,7 +150,7 @@ public class StandaloneImageDecoder {
         // x1 is too small by a factor of 8 (div 2 for same reason)
         final ImageData c = new ImageData(imageData, 4 * x0, y0, 2 * width, height);
 
-        drawImageData(c, 4, VideoBuffer.WHOLE_IMAGE);
+        drawImageDataWithoutChroma(c, 4, VideoBuffer.WHOLE_IMAGE);
     }
 
     // invertbyte is only ever 0x00, 0x01 (doesn't do anything???), or 0x80 (flip x)
@@ -171,8 +206,23 @@ public class StandaloneImageDecoder {
                 inc = !inc;
                 final byte chunkByte = c.data().get(pointer);
                 final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
-                final int pixelOffset = coordToIndex(x, y);
-                if (newPixel != 6 && mask.contains(x, y)) pixels[pixelOffset] = newPixel;
+                if (newPixel != CHROMA_KEY && mask.contains(x, y)) vb.set(x, y, newPixel);
+                if (inc) pointer++;
+            }
+        }
+    }
+
+    private void drawImageDataWithoutChroma(ImageData c, int basePointer, Rectangle mask) {
+        // Corner data is JUST EGA COLOR INDICES packed two to a byte with color 6 treated as a chroma key
+        // i.e. if the new value is 6, don't overwrite whatever's there
+        int pointer = basePointer;
+        for (int y = c.y0; y < c.y0 + c.height; y++) {
+            boolean inc = true;
+            for (int x = c.x0; x < c.x0 + c.width; x++) {
+                inc = !inc;
+                final byte chunkByte = c.data().get(pointer);
+                final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
+                if (mask.contains(x, y)) vb.set(x, y, newPixel);
                 if (inc) pointer++;
             }
         }
@@ -187,8 +237,7 @@ public class StandaloneImageDecoder {
                 inc = !inc;
                 final byte chunkByte = c.data().get(pointer);
                 final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
-                final int pixelOffset = coordToIndex(x, y);
-                if (newPixel != 6 && mask.contains(x, y)) pixels[pixelOffset] = newPixel;
+                if (newPixel != CHROMA_KEY && mask.contains(x, y)) vb.set(x, y, newPixel);
                 if (inc) pointer++;
             }
         }

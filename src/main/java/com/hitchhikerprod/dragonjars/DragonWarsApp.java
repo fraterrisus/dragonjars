@@ -4,7 +4,9 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.StandaloneImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
@@ -28,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
-    private static final double SCALE_FACTOR = 3.0;
+    public static final double SCALE_FACTOR = 3.0;
     public static final int IMAGE_X = 320;
     public static final int IMAGE_Y = 200;
 
@@ -180,43 +182,49 @@ public class DragonWarsApp extends Application {
 
     private void testPattern() {
         setKeyHandler(null);
-        setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
-        final Interpreter interp = new Interpreter(this, this.dataChunks);
+        final WritableImage wimage = Images.blankImage(IMAGE_X, IMAGE_Y);
+        setImage(wimage);
 
-        interp.drawString("Test Pattern", 14, 0, true);
-        interp.drawString("Press Q to exit", 13, 24, true);
+        final StandaloneImageDecoder decoder = new StandaloneImageDecoder(this.dataChunks.getLast());
+        final VideoBuffer vb = new VideoBuffer();
+        vb.reset(VideoBuffer.CHROMA_KEY);
+
+        drawString(decoder, vb, "Test Pattern", 14, 0, true);
+        drawString(decoder, vb, "Press Q to exit", 13, 24, true);
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            interp.lowLevelDrawChar(ch, fx, 18, true);
+            decoder.decodeChar(vb, ch, fx, 18, true);
         }
         for (int y = 0; y < 2; y++) {
             final int fy = (y + 2) * 16;
-            interp.lowLevelDrawChar(0x30 + y, 12, fy, true);
-            interp.lowLevelDrawChar('x', 20, fy, true);
+            decoder.decodeChar(vb, 0x30 + y, 12, fy, true);
+            decoder.decodeChar(vb, 'x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 2) * 16;
                 final int ch = (16 * y) + x;
-                interp.lowLevelDrawChar(ch, fx, fy, false);
+                decoder.decodeChar(vb, ch, fx, fy, false);
             }
         }
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 4) * 8;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            interp.lowLevelDrawChar(ch, fx, 68, true);
+            decoder.decodeChar(vb, ch, fx, 68, true);
         }
         for (int y = 2; y < 8; y++) {
             final int fy = (y + 8) * 8;
-            interp.lowLevelDrawChar(0x30 + y, 12, fy, true);
-            interp.lowLevelDrawChar('x', 20, fy, true);
+            decoder.decodeChar(vb, 0x30 + y, 12, fy, true);
+            decoder.decodeChar(vb, 'x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 4) * 8;
                 final int ch = (16 * y) + x;
-                interp.lowLevelDrawChar(ch, fx, fy, false);
+                decoder.decodeChar(vb, ch, fx, fy, false);
             }
         }
+
+        vb.writeTo(wimage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE);
 
         // Test case: drawModal(0x16,0x00,0x28,0x98) is the combat dialog
         // which is 16 characters wide plus border
@@ -228,6 +236,15 @@ public class DragonWarsApp extends Application {
                 close();
             }
         });
+    }
+
+    private void drawString(StandaloneImageDecoder decoder, VideoBuffer vb, String s, int x, int y, boolean invert) {
+        int fx = x * 8;
+        int fy = y * 8;
+        for (char ch : s.toCharArray()) {
+            decoder.decodeChar(vb, ch, fx, fy, invert);
+            fx += 8;
+        }
     }
 
     private void titleScreenHandler(KeyEvent event) {
