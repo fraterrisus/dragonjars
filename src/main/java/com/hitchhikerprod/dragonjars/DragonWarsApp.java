@@ -181,7 +181,6 @@ public class DragonWarsApp extends Application {
         setKeyHandler(null);
         setImage(Images.blankImage(320, 200));
         final Interpreter interp = new Interpreter(this, this.dataChunks);
-        //interp.init().start(0, 0);
 
         interp.drawString("Test Pattern", 14, 0, true);
         interp.drawString("Press Q to exit", 13, 24, true);

@@ -436,7 +436,7 @@ public class ImageDecoder {
         }
     }
 
-    private static BufferedImage scale(final BufferedImage before, final double scale, final int type) {
+    public static BufferedImage scale(final BufferedImage before, final double scale, final int type) {
         int w = before.getWidth();
         int h = before.getHeight();
         int w2 = (int) (w * scale);
