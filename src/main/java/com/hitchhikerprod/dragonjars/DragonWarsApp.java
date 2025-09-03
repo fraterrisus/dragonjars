@@ -5,7 +5,6 @@ import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import com.hitchhikerprod.dragonjars.exec.instructions.YouWin;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
@@ -30,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
     private static final double SCALE_FACTOR = 3.0;
+    public static final int IMAGE_X = 320;
+    public static final int IMAGE_Y = 200;
 
     private Stage stage;
     private Scene scene;
@@ -173,13 +174,13 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setImage(Images.blankImage(320, 200));
+        setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
         new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
     }
 
     private void testPattern() {
         setKeyHandler(null);
-        setImage(Images.blankImage(320, 200));
+        setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
         final Interpreter interp = new Interpreter(this, this.dataChunks);
 
         interp.drawString("Test Pattern", 14, 0, true);

@@ -10,6 +10,7 @@ import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
+import com.hitchhikerprod.dragonjars.data.Rectangle;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
@@ -151,7 +152,7 @@ public class Interpreter {
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
-        eraseVideoBuffer();
+        eraseSmallVideoBuffer();
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
@@ -342,8 +343,6 @@ public class Interpreter {
     public void unpause() {
         gameIsPaused = false;
     }
-
-    public record Rectangle(int x0, int x1, int y0, int y1) {}
 
     public Rectangle getBBox() {
         return new Rectangle(bbox_x0, bbox_y0, bbox_x1, bbox_y1);
@@ -669,7 +668,7 @@ public class Interpreter {
         }
     }
 
-    public void eraseVideoBuffer() {
+    public void eraseSmallVideoBuffer() {
         for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
     }
 

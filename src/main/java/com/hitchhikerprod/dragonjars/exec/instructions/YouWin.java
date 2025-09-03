@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.Rectangle;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.SleepTask;
@@ -45,10 +46,10 @@ public class YouWin implements Instruction {
         }
     }
 
-    private static final Interpreter.Rectangle BODY_1 = new Interpreter.Rectangle(28, 153, 12, 132);
-    private static final Interpreter.Rectangle BODY_2 = new Interpreter.Rectangle(153, 230, 68, 140);
-    private static final Interpreter.Rectangle BODY_3 = new Interpreter.Rectangle(232, 263, 117, 142);
-    private static final Interpreter.Rectangle TEXT = new Interpreter.Rectangle(0, 320, 150, 200);
+    private static final Rectangle BODY_1 = new Rectangle(28, 153, 12, 132);
+    private static final Rectangle BODY_2 = new Rectangle(153, 230, 68, 140);
+    private static final Rectangle BODY_3 = new Rectangle(232, 263, 117, 142);
+    private static final Rectangle TEXT = new Rectangle(0, 320, 150, 200);
 
     private void pageOne(Image pageImage, int box) {
         final WritableImage wImage = new WritableImage(pageImage.getPixelReader(), (int)pageImage.getWidth(), (int)pageImage.getHeight());
@@ -75,7 +76,7 @@ public class YouWin implements Instruction {
         }
     }
 
-    private void blackOut(PixelWriter writer, Interpreter.Rectangle rect) {
+    private void blackOut(PixelWriter writer, Rectangle rect) {
         final int black = Images.convertColorIndex(0);
         for (int y = rect.y0(); y < rect.y1(); y++) {
             for (int x = rect.x0(); x < rect.x1(); x++) {

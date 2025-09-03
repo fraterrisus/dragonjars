@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.data;
 
 import com.hitchhikerprod.dragonjars.exec.ALU;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.AffineTransformOp;
@@ -15,9 +16,6 @@ public class StandaloneImageDecoder {
     public static final int IMAGE_X = 320;
     public static final int IMAGE_Y = 200;
 
-    private static final Rectangle GAMEPLAY = new Rectangle(0x10, 0x08, 0xb0, 0x90);
-    private static final Rectangle WHOLE_IMAGE = new Rectangle(0, 0, IMAGE_X, IMAGE_Y);
-
     private static final int CORNER_LUT_ADDRESS = 0x6428;
     private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
 
@@ -25,12 +23,6 @@ public class StandaloneImageDecoder {
     private final byte[] pixels;
 
     private record ImageData(List<Byte> data, int x0, int y0, int width, int height) {}
-
-    private record Rectangle(int x0, int y0, int x1, int y1) {
-        public boolean contains(int x, int y) {
-            return x >= x0 && y >= y0 && x < x1 && y < y1;
-        }
-    }
 
     public StandaloneImageDecoder(Chunk codeChunk) {
         this.codeChunk = codeChunk;
@@ -87,7 +79,7 @@ public class StandaloneImageDecoder {
     public void decodeChunkImage(ModifiableChunk chunk) {
         final List<Byte> imageData = applyRollingXor(chunk);
         final ImageData c = new ImageData(imageData, 0, 0, IMAGE_X, IMAGE_Y);
-        drawImageData(c, 0, WHOLE_IMAGE);
+        drawImageData(c, 0, VideoBuffer.WHOLE_IMAGE);
     }
 
     public void decodeCorner(int index) {
@@ -104,9 +96,9 @@ public class StandaloneImageDecoder {
 
         // Corners target the gameplay area, so we need to artificially bump this out by (16,8)
         // width is half-size because of two pixels per byte
-        final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
+        final ImageData c = new ImageData(imageData, VideoBuffer.GAMEPLAY.x0() + x0, VideoBuffer.GAMEPLAY.y0() + y0, 2 * width, height);
 
-        drawImageData(c, 4, GAMEPLAY);
+        drawImageData(c, 4, VideoBuffer.GAMEPLAY);
     }
 
     public void decodeRomImage(int index) {
@@ -123,7 +115,7 @@ public class StandaloneImageDecoder {
         // x1 is too small by a factor of 8 (div 2 for same reason)
         final ImageData c = new ImageData(imageData, 4 * x0, y0, 2 * width, height);
 
-        drawImageData(c, 4, WHOLE_IMAGE);
+        drawImageData(c, 4, VideoBuffer.WHOLE_IMAGE);
     }
 
     // invertbyte is only ever 0x00, 0x01 (doesn't do anything???), or 0x80 (flip x)
@@ -159,7 +151,7 @@ public class StandaloneImageDecoder {
                 index, width, height, offsetX, offsetY, x0, y0, invert, callIndex);
 
         final List<Byte> imageData = chunk.getBytes(baseAddress + 4, width * height);
-        final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
+        final ImageData c = new ImageData(imageData, VideoBuffer.GAMEPLAY.x0() + x0, VideoBuffer.GAMEPLAY.y0() + y0, 2 * width, height);
 
         if (callIndex == 0 || callIndex == 4) drawImageData(c, 0, mask);
         if (callIndex == 2 || callIndex == 6)
@@ -245,9 +237,9 @@ public class StandaloneImageDecoder {
 
             for (int chunkId : walls) {
                 System.out.format("[%02x] [%02x] ", chunkId, 0);
-                printTexture(decoder, chunkTable, chunkId, 0, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 0, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
                 System.out.format("[%02x] [%02x] ", chunkId, 2);
-                printTexture(decoder, chunkTable, chunkId, 2, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 2, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
 
                 for (int i = 0; i < WALL_TEXTURE_OFFSET.size(); i++) {
                     final int index = WALL_TEXTURE_OFFSET.get(i);
@@ -256,7 +248,7 @@ public class StandaloneImageDecoder {
                     final int invert = WALL_INVERT.get(i);
                     final String filename = String.format("texture-%02x-sq%02x.png", chunkId, i);
                     System.out.format("[%02x] [%02x] ", chunkId, i);
-                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, invert, GAMEPLAY, filename);
+                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, invert, VideoBuffer.GAMEPLAY, filename);
                 }
             }
 
@@ -268,14 +260,14 @@ public class StandaloneImageDecoder {
                     final int squareId = FLOOR_SQUARE_ORDER.get(i);
                     final String filename = String.format("texture-%02x-sq%02x.png", chunkId, squareId);
                     System.out.format("[%02x] [%02x] ", chunkId, squareId);
-                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, 0, GAMEPLAY, filename);
+                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, 0, VideoBuffer.GAMEPLAY, filename);
                 }
             }
 
             for (int chunkId : ceilings) {
                 final String filename = String.format("texture-%02x.png", chunkId);
                 System.out.format("[%02x] [%02x] ", chunkId, 04);
-                printTexture(decoder, chunkTable, chunkId, 4, 0, 0, 0, GAMEPLAY, filename);
+                printTexture(decoder, chunkTable, chunkId, 4, 0, 0, 0, VideoBuffer.GAMEPLAY, filename);
             }
 
             for (int chunkId : decos) {
@@ -283,7 +275,7 @@ public class StandaloneImageDecoder {
                     if (i == 2) continue;
                     System.out.format("[%02x] [%02x] ", chunkId, i);
                     final String filename = String.format("texture-%02x-%02x.png", chunkId, i);
-                    printTexture(decoder, chunkTable, chunkId, i, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, filename);
+                    printTexture(decoder, chunkTable, chunkId, i, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, filename);
                 }
             }
         } catch (IOException e) {

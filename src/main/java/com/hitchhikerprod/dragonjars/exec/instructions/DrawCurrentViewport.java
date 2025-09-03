@@ -41,7 +41,7 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        i.eraseVideoBuffer(); // black the viewport in case there's no light
+        i.eraseSmallVideoBuffer(); // black the viewport in case there's no light
         if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
