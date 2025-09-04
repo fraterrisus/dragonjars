@@ -13,6 +13,7 @@ public class DrawModal implements Instruction {
         final Address ip = i.getIP();
         final List<Byte> bytes = i.memory().readList(ip.incr(), 4);
         i.drawModal(bytes.stream().map(Interpreter::byteToInt).toList());
+        i.composeVideoLayers(false, false, true);
         return ip.incr(OPCODE + RECTANGLE);
     }
 }

@@ -4,7 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
-import com.hitchhikerprod.dragonjars.data.StandaloneImageDecoder;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
@@ -138,7 +138,7 @@ public class DragonWarsApp extends Application {
         new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
     }
 
-    private void stringHelper(StandaloneImageDecoder decoder, String s, int x, int y, boolean invert) {
+    private void stringHelper(ImageDecoder decoder, String s, int x, int y, boolean invert) {
         int fx = x * 8;
         int fy = y * 8;
         for (char ch : s.toCharArray()) {
@@ -152,7 +152,7 @@ public class DragonWarsApp extends Application {
         final WritableImage wimage = Images.blankImage(IMAGE_X, IMAGE_Y);
         setImage(wimage);
 
-        final StandaloneImageDecoder decoder = new StandaloneImageDecoder(this.dataChunks.getLast());
+        final ImageDecoder decoder = new ImageDecoder(this.dataChunks.getLast());
         final VideoBuffer vb = new VideoBuffer(VideoBuffer.CHROMA_KEY);
         decoder.setVideoBuffer(vb);
 
@@ -191,7 +191,7 @@ public class DragonWarsApp extends Application {
             }
         }
 
-        vb.writeTo(wimage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE);
+        vb.writeTo(wimage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, true);
 
         setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Q || event.getCode() == KeyCode.ESCAPE) {

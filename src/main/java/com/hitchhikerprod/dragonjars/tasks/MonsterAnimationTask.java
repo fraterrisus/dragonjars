@@ -1,10 +1,9 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import javafx.application.Platform;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.concurrent.Task;
 
 import java.util.ArrayList;
@@ -30,7 +29,8 @@ public class MonsterAnimationTask extends Task<Void> {
         this.secChunk = secondaryChunk;
         this.background = new int[0x3e80];
         this.foreground = new int[0x3e80];
-        System.arraycopy(interpreter.videoMemory(), 0, background, 0, 0x3e80);
+        // FIXME
+        // System.arraycopy(interpreter.videoMemory(), 0, background, 0, 0x3e80);
         for (int i = 0; i < 0x3e80; i++) foreground[i] = 0x66;
     }
 
@@ -81,8 +81,8 @@ public class MonsterAnimationTask extends Task<Void> {
             for (int x = x0; x < x1; x++) {
                 bx = bx ^ priChunk.getUnsignedByte(pointer);
                 pointer++;
-                final int byteAnd = ImageDecoder.getAEA2(bx);
-                final int byteOr = ImageDecoder.getAFA2(bx);
+                final int byteAnd = VideoBuffer.getAEA2(bx);
+                final int byteOr = VideoBuffer.getAFA2(bx);
 
                 final int adr = 5 + x + (y * 0x50);
                 int oldValue = foreground[adr];
@@ -145,8 +145,8 @@ public class MonsterAnimationTask extends Task<Void> {
         final int[] buffer = new int[0x3e80];
         for (int i = 0; i < buffer.length; i++) {
             final int val = foreground[i];
-            final int byteAnd = ImageDecoder.getAEA2(val);
-            final int byteOr = ImageDecoder.getAFA2(val);
+            final int byteAnd = VideoBuffer.getAEA2(val);
+            final int byteOr = VideoBuffer.getAFA2(val);
 
             // final int adr = 5 + x + (y * 0x50);
             int oldValue = background[i];
@@ -155,6 +155,7 @@ public class MonsterAnimationTask extends Task<Void> {
         }
 
         if (weShouldStop()) return;
-        Platform.runLater(() -> interpreter.copyToVideoMemory(buffer));
+        // FIXME
+        // Platform.runLater(() -> interpreter.copyToVideoMemory(buffer));
     }
 }

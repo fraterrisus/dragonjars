@@ -1,17 +1,17 @@
 package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
+import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
-import com.hitchhikerprod.dragonjars.data.Rectangle;
-import com.hitchhikerprod.dragonjars.data.StandaloneImageDecoder;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
@@ -47,7 +47,6 @@ public class Interpreter {
 
     private final StringDecoder stringDecoder;
     private final ImageDecoder imageDecoder;
-    private final StandaloneImageDecoder newImageDecoder;
     private MapData mapDecoder;
 
     /* Memory space */
@@ -57,7 +56,6 @@ public class Interpreter {
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
     private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
-    private final int[] videoMemory = new int[0x3e80];
 
     // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
     private final VideoBuffer videoBackground = new VideoBuffer();
@@ -129,8 +127,7 @@ public class Interpreter {
         this.flagSign = false;
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
-        this.imageDecoder = new ImageDecoder(this.memory().getCodeChunk(), videoMemory);
-        this.newImageDecoder = new StandaloneImageDecoder(this.memory().getCodeChunk());
+        this.imageDecoder = new ImageDecoder(this.memory().getCodeChunk());
     }
 
     public Interpreter init() {
@@ -141,9 +138,9 @@ public class Interpreter {
             videoForeground.reset(VideoBuffer.CHROMA_KEY);
             videoModal.reset(VideoBuffer.CHROMA_KEY);
 
-            newImageDecoder.setVideoBuffer(videoBackground);
-            for (int i = 0; i < 10; i++) newImageDecoder.decodeRomImage(i); // most HUD sections
-            for (int i = 0; i < 16; i++) newImageDecoder.decodeRomImage(27 + i); // HUD title bar
+            imageDecoder.setVideoBuffer(videoBackground);
+            for (int i = 0; i < 10; i++) imageDecoder.decodeRomImage(i); // most HUD sections
+            for (int i = 0; i < 16; i++) imageDecoder.decodeRomImage(27 + i); // HUD title bar
             // videoBackground.writeTo("video-background.png");
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
@@ -174,14 +171,17 @@ public class Interpreter {
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
-        eraseSmallVideoBuffer();
+        // eraseSmallVideoBuffer(); // we do this above now by resetting the foreground layer
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
         //   but it also includes:
-        if (!testMode) drawViewportCorners();
+        if (!testMode) {
+            drawViewportCorners();
+            composeVideoLayers(true, true, false);
+        }
 
-        setBBox(0x01, 0x27, 0x08, 0xb8);
+        setBBox(VideoBuffer.DEFAULT_RECT);
         if (!testMode) draw_borders = 0xff;
         drawStringAndResetBBox();
 
@@ -261,7 +261,7 @@ public class Interpreter {
     }
 
     public ImageDecoder imageDecoder() {
-        return this.imageDecoder;
+        return imageDecoder;
     }
 
     public StringDecoder stringDecoder() {
@@ -366,16 +366,16 @@ public class Interpreter {
         gameIsPaused = false;
     }
 
-    public Rectangle getBBox() {
-        return new Rectangle(bbox_x0, bbox_y0, bbox_x1, bbox_y1);
+    public CharRectangle getBBox() {
+        return new CharRectangle(bbox_x0, bbox_y0, bbox_x1, bbox_y1);
     }
 
-    public void setBBox(int x0, int x1, int y0, int y1) {
-        System.out.format("setBBox(0x%02x,0x%02x,0x%02x,0x%02x)\n", x0, x1, y0, y1);
-        bbox_x0 = x0;
-        bbox_y0 = y0;
-        bbox_x1 = x1;
-        bbox_y1 = y1;
+    public void setBBox(CharRectangle bbox) {
+        bbox_x0 = bbox.x0();
+        bbox_y0 = bbox.y0();
+        bbox_x1 = bbox.x1();
+        bbox_y1 = bbox.y1();
+        System.out.println("setBBox(" + bbox + ")");
     }
 
     public void expandBBox() {
@@ -383,6 +383,7 @@ public class Interpreter {
         bbox_y0 = bbox_y0 - 8;
         bbox_x1 = bbox_x1 + 1;
         bbox_x0 = bbox_x0 - 1;
+        System.out.println("expandBBox(" + getBBox() + ")");
     }
 
     public void shrinkBBox() {
@@ -390,6 +391,7 @@ public class Interpreter {
         bbox_y0 = bbox_y0 + 8;
         bbox_x1 = bbox_x1 - 1;
         bbox_x0 = bbox_x0 + 1;
+        System.out.println("shrinkBBox(" + getBBox() + ")");
     }
 
     public int getMulResult() {
@@ -545,31 +547,6 @@ public class Interpreter {
         this.bufferD1B0[offset] = intToByte(value);
     }
 
-    /**
-     * Draws a character on the screen. Character indices are looked up on the array at 0xb9a2, which contains a set of
-     * eight bytes representing an 8x8 grid of pixels.
-     * @param index The character index; ASCII codes generally do what you think.
-     * @param x Screen coordinate in pixels.
-     * @param y Screen coordinate in pixels.
-     * @param invert If true, draws white-on-black instead of black-on-white.
-     */
-    public void lowLevelDrawChar(int index, int x, int y, boolean invert) {
-        final byte[] bitmask = new byte[8];
-        loadFromCodeSegment(CHARACTER_BITMAPS, (index & 0x7f) * 8, bitmask, 8);
-        getImageWriter(writer -> {
-            final int black = Images.convertColorIndex(0);
-            final int white = Images.convertColorIndex(15);
-            for (int dy = 0; dy < 8; dy++) {
-                final int b = bitmask[dy];
-                final int mask = 0x80;
-                for (int dx = 0; dx < 8; dx++) {
-                    final boolean draw = (b & (mask >> dx)) > 0;
-                    writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
-                }
-            }
-        });
-    }
-
     public List<Byte> loadFromCodeSegment(int base, int offset, int length) {
         final int addr = base - 0x0100 + offset;
         return memory().getCodeChunk().getBytes(addr, length);
@@ -588,29 +565,22 @@ public class Interpreter {
             drawHud();
         }
         draw_borders = 0x00;
-        setBBox(0x01, 0x27, 0x98, 0xb8);
+        setBBox(VideoBuffer.MESSAGE_PANE.toChar());
         x_31ed = 0x01;
         y_31ef = 0x98;
     }
 
     public void drawString313e() {
         for (int i = 0; i < strlen_313c; i++) {
-            lowLevelDrawChar(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
+            imageDecoder().decodeChar(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
             x_31ed += 8;
         }
         strlen_313c = 0;
         x_3166 = x_31ed;
     }
 
-    public void fillRectangle() {
-        final int colorValue = Images.convertColorIndex(bg_color_3431);
-        getImageWriter(writer -> {
-            for (int y = bbox_y0; y < bbox_y1; y++) {
-                for (int x = bbox_x0 * 8; x < bbox_x1 * 8; x++) {
-                    writer.setArgb(x, y, colorValue);
-                }
-            }
-        });
+    public void fillRectangle() { // TODO track users
+        imageDecoder().drawRectangle(getBBox().toPixel(), (byte)(bg_color_3431 & 0xf));
 
         x_31ed = bbox_x0; // 0x32a8
         x_3166 = bbox_x0;
@@ -638,7 +608,7 @@ public class Interpreter {
 
     public void backSpace() {
         x_31ed -= 1;
-        lowLevelDrawChar(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+        imageDecoder().decodeChar(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0);
     }
 
     public int readXPointer() {
@@ -650,7 +620,7 @@ public class Interpreter {
     }
 
     public void drawChar(int ch) {
-        lowLevelDrawChar(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+        imageDecoder().decodeChar(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0);
         x_31ed += 1;
     }
 
@@ -687,13 +657,13 @@ public class Interpreter {
                 y += 8;
             }
             for (int i = p0; i < p1; i++) {
-                lowLevelDrawChar(s.get(i), x * 8, y, bg_color_3431 == 0);
+                imageDecoder().decodeChar(s.get(i), x * 8, y, bg_color_3431 == 0);
                 x++;
             }
             p0 = p1;
             if (ch == 0x8d) { x = bbox_x0; y += 8; p0++; }
             if (ch == 0xa0) {
-                lowLevelDrawChar(0xa0, x * 8, y, bg_color_3431 == 0);
+                imageDecoder().decodeChar(0xa0, x * 8, y, bg_color_3431 == 0);
                 x++;
                 p0++;
             }
@@ -703,38 +673,10 @@ public class Interpreter {
         y_31ef = y;
     }
 
-    public void eraseSmallVideoBuffer() {
-        for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
-    }
-
     public void drawViewportCorners() {
-        for (int i = 0; i < 4; i++) imageDecoder().decodeCorner(i);
-        bitBlastViewport(); // see 0x1020
-    }
-
-    public void bitBlastViewport() {
-        bitBlast(0x02, 0x16, 0x08, 0x90);
-    }
-
-    private void bitBlast(int x0, int x1, int y0, int y1) {
-        getImageWriter(writer -> {
-            int ptr = 0;
-            for (int y = y0; y < y1; y++) {
-                for (int x = x0; x < x1; x++) {
-                    Images.convertEgaData(writer, (z) -> videoMemory[z] & 0xff, ptr, 8 * x, y);
-                    ptr += 4;
-                }
-            }
+        imageDecoder().withVideoBuffer(videoForeground, d -> {
+            for (int i = 0; i < 4; i++) d.decodeCorner(i);
         });
-    }
-
-    public int[] videoMemory() {
-        return videoMemory;
-    }
-
-    public void copyToVideoMemory(int[] buffer) {
-        System.arraycopy(buffer, 0, videoMemory, 0, buffer.length);
-        bitBlastViewport();
     }
 
     private MonsterAnimationTask monsterAnimationTask;
@@ -795,34 +737,44 @@ public class Interpreter {
 
     public void setEyePhase(int phase) {
         this.eyePhase = phase;
-        drawEye();
+        imageDecoder().withVideoBuffer(videoForeground, this::drawEyeHelper);
     }
 
-    public void drawEye() {
-        if (isPaused() || eyePhase < 0) return;
-        final int imageId = 0x0e + eyePhase;
-        getImageWriter(writer -> imageDecoder().decodeRomImage(imageId, writer));
+    private void drawEyeHelper(ImageDecoder decoder) {
+        if (isPaused()) return;
+        if (eyePhase < 0) {
+            decoder.eraseRomImage(ImageDecoder.EYE_CLOSED);
+        } else {
+            decoder.decodeRomImage(ImageDecoder.EYE_CLOSED + eyePhase);
+        }
     }
 
-    public void drawHudPillar() {
-        getImageWriter(writer -> imageDecoder().decodeRomImage(0x09, writer));
+    public void drawSpellIcons() {
+        // getImageWriter(writer -> imageDecoder().decodeRomImage(0x09, writer));
 
-        final int compass = heap(0xbe).read();
-        if (compass > 0) {
-            getImageWriter(writer -> imageDecoder().decodeRomImage(0x09 + compass, writer));
-        }
+        imageDecoder().withVideoBuffer(videoForeground, d -> {
+            final int compass = heap(Heap.COMPASS_DURATION).read();
+            if (compass > 0) {
+                d.decodeRomImage(ImageDecoder.COMPASS_N + compass - 1);
+            } else {
+                d.eraseRomImage(ImageDecoder.COMPASS_N);
+            }
 
-        final int trap = heap(0xbf).read();
-        if (trap > 0) {
-            if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
-            drawEye();
-        }
+            final int trap = heap(Heap.DETECT_TRAPS_DURATION).read();
+            if (trap > 0) {
+                if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
+            } else {
+                eyePhase = -1;
+            }
+            drawEyeHelper(d);
 
-        final int shield = heap(0xc0).read();
-        if (shield > 0) {
-            getImageWriter(writer -> imageDecoder().decodeRomImage(0x14, writer));
-        }
-
+            final int shield = heap(Heap.SHIELD_DURATION).read();
+            if (shield > 0) {
+                d.decodeRomImage(ImageDecoder.SHIELD);
+            } else {
+                d.eraseRomImage(ImageDecoder.SHIELD);
+            }
+        });
         // torch: 0x15 unlit, 0x16-0x1a lit
         // uses heap(0xc1)
 
@@ -834,28 +786,39 @@ public class Interpreter {
 
     public void drawHud() {
         draw_borders = 0x00;
+
+        // The background buffer is already complete (regions 0-9) and doesn't need to be rebuilt
+
+        drawSpellIcons();
+
+        heap(Heap.PC_DIRTY).write(0x00, 7); // heap[18:1e] <- 0x00
+        drawPartyInfoArea();
+
+        drawMapTitle();
+
+        setBBox(VideoBuffer.MESSAGE_PANE.toChar());
+        imageDecoder().withVideoBuffer(videoForeground, d -> fillRectangle());
+
         for (int regionId = 0; regionId < 14; regionId++) {
             if (boundsCheck(regionId, true)) {
-                switch (regionId) {
-                    case 0x09 -> drawHudPillar();
-                    case 0x0a -> bitBlastViewport();
-                    case 0x0b -> {
-                        heap(0x18).write(0x00, 7); // heap[18:1e] <- 0x00
-                        drawPartyInfoArea();
-                    }
-                    case 0x0c -> drawMapTitle();
-                    case 0x0d -> { // message pane, 0x267c
-                        setBBox(0x01, 0x27, 0x98, 0xb8);
-                        fillRectangle();
-                    }
-                    default -> {
-                        final int finalRegionId = regionId;
-                        getImageWriter(writer -> imageDecoder().decodeRomImage(finalRegionId, writer));
-                        // checkAndPushVideoData() this should just clear the video buffer, which we don't need to do
-                    }
+                final PixelRectangle mask = imageDecoder().decodeRomImageArea(regionId);
+                if (regionId < 0x0a) {
+                    getImageWriter(w -> videoBackground.writeTo(w, mask, false));
+                } else {
+                    getImageWriter(w -> videoForeground.writeTo(w, mask, true));
                 }
             }
         }
+    }
+
+    public void bitBlastPartyInfoArea() {
+        final PixelRectangle mask = imageDecoder().decodeRomImageArea(0xb);
+        getImageWriter(w -> videoForeground.writeTo(w, mask, true));
+    }
+
+    public void bitBlastViewport() {
+        final PixelRectangle mask = imageDecoder().decodeRomImageArea(0xa);
+        getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
     public void drawPartyInfoArea() { // 0x1a12
@@ -868,17 +831,19 @@ public class Interpreter {
 
         // set the indirect function to draw_char()
 
-        for (int charId = 0; charId < 7; charId++) {
-            // Assembly loops in the other direction, but our bar-drawing code needs to go this way
-            // to avoid mishaps with the black pixels between bars.
-            final int heapIndex = 0x18 + charId;
-            int ax = heap(heapIndex).read();
-            if ((ax & 0x80) > 0) continue;
-            heap(Heap.SELECTED_PC).write(charId);
-            ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
-            drawCharacterInfo(charId, ax);
-            heap(heapIndex).write(0xff);
-        }
+        imageDecoder().withVideoBuffer(videoForeground, d -> {
+            for (int charId = 0; charId < 7; charId++) {
+                // Assembly loops in the other direction, but our bar-drawing code needs to go this way
+                // to avoid mishaps with the black pixels between bars.
+                final int heapIndex = 0x18 + charId;
+                int ax = heap(heapIndex).read();
+                if ((ax & 0x80) > 0) continue;
+                heap(Heap.SELECTED_PC).write(charId);
+                ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
+                drawCharacterInfo(charId, ax);
+                heap(heapIndex).write(0xff);
+            }
+        });
 
         // set the indirect function back to 0x30c1
 
@@ -894,17 +859,6 @@ public class Interpreter {
 
         x_31ed = 0x1b;
         y_31ef = (charId << 4) + 0x20;
-
-        // System.out.format("charId %d >= %d\n", charId, charsInParty);
-        getImageWriter(writer -> {
-            final int black = Images.convertColorIndex(0);
-            for (int dy = 0; dy < 0x10; dy++) {
-                for (int x = x_31ed * 8; x < 0x27 * 8; x++) {
-                    videoForeground.set(x, y_31ef + dy, (byte)0);
-                    writer.setArgb(x, y_31ef + dy, black);
-                }
-            }
-        });
 
         final int charsInParty = heap(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
@@ -963,18 +917,16 @@ public class Interpreter {
     }
 
     private void drawBarHelper(int y, int attributeAddr, int color) {
-        getImageWriter(writer -> {
-            final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
-            final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
-            final int barWidth = 0x60 * cur / max;
-            final int black = Images.convertColorIndex(0);
-            final int colorValue = Images.convertColorIndex(color);
-            for (int dx = 0; dx < barWidth; dx++) {
-                writer.setArgb((x_31ed * 8) + dx, y_31ef + y, colorValue);
-                writer.setArgb((x_31ed * 8) + dx, y_31ef + y + 1, colorValue);
-                writer.setArgb((x_31ed * 8) + dx, y_31ef + y + 2, black);
-            }
-        });
+        final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
+        final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
+        final int barWidth = 0x60 * cur / max;
+        final byte black = (byte)0;
+        for (int dx = 0; dx < 0x60; dx++) {
+            final byte pixel = (dx <= barWidth) ? (byte)color : black;
+            imageDecoder().drawPixel((x_31ed * 8) + dx, y_31ef + y, pixel);
+            imageDecoder().drawPixel((x_31ed * 8) + dx, y_31ef + y + 1, pixel);
+            imageDecoder().drawPixel((x_31ed * 8) + dx, y_31ef + y + 2, black);
+        }
     }
 
     public void markSegment4d33Dirty() { // 0x4bc2
@@ -1005,32 +957,40 @@ public class Interpreter {
 
     private void drawMapTitle() { // 0x2cd4
         // x_31ed and y_31ef are preserved across this call, but I don't use them
-        // in this implementation. They're also more clever about only decoding the
-        // image bytes for spaces where they aren't writing characters.
-        for (int x = 0; x < 16; x++) {
-            final int pictureId = 0x1b + x;
-            getImageWriter(writer -> imageDecoder().decodeRomImage(pictureId, writer));
-        }
+        // in this implementation.
 
-        setBackground(0x10);
-        int x = 0x04 + ((16 - this.titleString.size()) / 2);
-        for (int ch : this.titleString) {
-            lowLevelDrawChar(ch, x * 8, 0, bg_color_3431 == 0);
-            x += 1;
-        }
-        setBackground();
+        imageDecoder().withVideoBuffer(videoForeground, d -> {
+            d.drawRectangle(VideoBuffer.TITLE_BAR, VideoBuffer.CHROMA_KEY);
+            setBackground(0x10);
+            int x = 0x04 + ((16 - this.titleString.size()) / 2);
+            for (int ch : this.titleString) {
+                d.decodeChar(ch, x * 8, 0, bg_color_3431 == 0);
+                x += 1;
+            }
+            setBackground();
+        });
     }
 
-    public void drawModal(List<Integer> coordinates) {
-        if (coordinates.size() != 4) throw new IllegalArgumentException();
-        drawModal(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3));
+    public void eraseModal() {
+        videoModal.reset(VideoBuffer.CHROMA_KEY);
     }
 
     /**
      * Draws an empty box on the screen.
      */
-    public void drawModal(int x0, int y0, int x1, int y1) {
+    public void drawModal(List<Integer> coordinates) {
+        if (coordinates.size() != 4) throw new IllegalArgumentException();
+
         pause();
+
+        final int x0 = coordinates.get(0);
+        final int y0 = coordinates.get(1);
+        final int x1 = coordinates.get(2);
+        final int y1 = coordinates.get(3);
+
+        final CharRectangle r = new CharRectangle(x0, y0, x1, y1);
+
+        eraseModal();
 
         boolean invert = bg_color_3431 == 0;
 
@@ -1038,13 +998,13 @@ public class Interpreter {
         // written as words to 0x253f/tmp
         // draw_string_313e (to empty buffer??)
         if (draw_borders != 0) { //           <- come back to this
-        //   expand bounding box()
-        //   do some bounds checking?...   ???
-        //   shrink bounding box()
+            //   expand bounding box()
+            //   do some bounds checking?...   ???
+            //   shrink bounding box()
             drawHud();
         }
         // copy 0x253f/tmp to 0x2547/bbox
-        setBBox(x0, x1, y0, y1);
+        setBBox(r);
         // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
         x_31ed = x0;
         y_31ef = y0;
@@ -1053,23 +1013,23 @@ public class Interpreter {
         int y = y0;
         // draw top border
         for (x = x0; x < x1; x += 1) {
-            lowLevelDrawChar(0x01, x * 8, y, invert);
+            imageDecoder().decodeChar(0x01, x * 8, y, invert);
         }
-        lowLevelDrawChar(0x00, x0 * 8, y, invert);
-        lowLevelDrawChar(0x02, (x1 - 1) * 8, y, invert);
+        imageDecoder().decodeChar(0x00, x0 * 8, y, invert);
+        imageDecoder().decodeChar(0x02, (x1 - 1) * 8, y, invert);
         // draw vertical edges
         y += 8;
         while (y < y1 - 8) {
-            lowLevelDrawChar(0x03, x0 * 8, y, invert);
-            lowLevelDrawChar(0x04, (x1 - 1) * 8, y, invert);
+            imageDecoder().decodeChar(0x03, x0 * 8, y, invert);
+            imageDecoder().decodeChar(0x04, (x1 - 1) * 8, y, invert);
             y += 8;
         }
         // draw bottom border
         for (x = x0; x < x1; x += 1) {
-            lowLevelDrawChar(0x06, x * 8, y, invert);
+            imageDecoder().decodeChar(0x06, x * 8, y, invert);
         }
-        lowLevelDrawChar(0x05, x0 * 8, y, invert);
-        lowLevelDrawChar(0x07, (x1 - 1) * 8, y, invert);
+        imageDecoder().decodeChar(0x05, x0 * 8, y, invert);
+        imageDecoder().decodeChar(0x07, (x1 - 1) * 8, y, invert);
 
         shrinkBBox();
         draw_borders = 0xff;
@@ -1142,6 +1102,14 @@ public class Interpreter {
             final PixelWriter writer = wimage.getPixelWriter();
             fn.accept(writer);
         }
+    }
+
+    public void composeVideoLayers(boolean bg, boolean fg, boolean modal) {
+        getImageWriter(w -> {
+            if (bg) videoBackground.writeTo(w, VideoBuffer.WHOLE_IMAGE, false);
+            if (fg) videoForeground.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
+            if (modal) videoModal.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
+        });
     }
 
     private Instruction decodeOpcode(int opcode) {
@@ -1293,7 +1261,7 @@ public class Interpreter {
             case 0x8e -> Instructions.NOOP;
             case 0x8f -> new StrToInt();
             case 0x90 -> new PlaySoundEffect();
-            case 0x91 -> (i) -> { i.drawPartyInfoArea(); return i.getIP().incr(); };
+            case 0x91 -> new DrawPartyInfoArea();
             case 0x92 -> new PauseUntilKeyOrTime(this);
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();

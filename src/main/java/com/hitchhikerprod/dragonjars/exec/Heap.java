@@ -12,6 +12,7 @@ public class Heap {
     public static final int SELECTED_ITEM = 0x07;
     // note that marching order is *2 so that the offset into party data is just <<8 (0x000, 0x200, 0x400 etc.)
     public static final int MARCHING_ORDER = 0x0a; // through 0x10
+    public static final int PC_DIRTY = 0x18; // used for a number of different "has been touched" loops
     public static final int PARTY_SIZE = 0x1f;
     public static final int BOARD_MAX_X = 0x21;
     public static final int BOARD_MAX_Y = 0x22;
@@ -26,6 +27,8 @@ public class Heap {
     public static final int DECODED_BOARD_ID = 0x57;
     public static final int BOARD_2_SEGIDX = 0x5a;
     public static final int DETECT_TRAPS_DURATION = 0xbf;
+    public static final int COMPASS_DURATION = 0xbe;
+    public static final int SHIELD_DURATION = 0xc0;
     public static final int LIGHT_SOURCE = 0xc1;
 
     private final int[] storage = new int[256];

@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.Images;
@@ -11,6 +12,7 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 
 import java.util.List;
 import java.util.function.Function;
@@ -41,7 +43,7 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        i.eraseSmallVideoBuffer(); // black the viewport in case there's no light
+
         if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
@@ -52,6 +54,8 @@ public class DrawCurrentViewport implements Instruction {
         //   without reason for the thread to sleep, we don't actually see multiple updates.
         //   But fixing that might require moving the Interpreter to its own thread, yikes.
         i.drawViewportCorners();
+
+        i.bitBlastViewport();
 
         return i.getIP().incr();
     }
@@ -69,19 +73,19 @@ public class DrawCurrentViewport implements Instruction {
             final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
 //            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
 //                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
-            i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0x0, GAMEPLAY_FRAME_WIDTH);
+            i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0x0, VideoBuffer.GAMEPLAY);
         }
     }
 
     private void drawRoofTexture(int textureId) {
         if (textureId == 1) { // 0x54f8
-            final int segmentId = i.getSegmentForChunk(0x6f, Frob.DIRTY);
+            final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.DIRTY);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
-            i.imageDecoder().decodeTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, GAMEPLAY_FRAME_WIDTH);
-            // bitBlastGameplayArea(); // we'll probably call this later?
+            i.imageDecoder().decodeTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, VideoBuffer.GAMEPLAY);
         } else { // 0x5515
             // Draw a generic checkerboard roof
             // I don't bother reading the silly array of bytes from the executable (0x55ec)
+            // FIXME
             i.getImageWriter(writer -> {
                 for (int y = 0x08; y < 0x88; y++) {
                     final Function<Integer, Integer> getter;
@@ -114,7 +118,7 @@ public class DrawCurrentViewport implements Instruction {
             if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
                 final int segmentId = i.getSegmentForChunk(wallChunk, Frob.DIRTY);
                 final Chunk textureChunk = i.memory().getSegment(segmentId);
-                i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, invert, GAMEPLAY_FRAME_WIDTH);
+                i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, invert, VideoBuffer.GAMEPLAY);
             }
 
             // 'Other' decor texture; try to only run each square once
@@ -124,7 +128,7 @@ public class DrawCurrentViewport implements Instruction {
                     final Integer otherChunkId = sq.otherTextureChunk().get();
                     final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.DIRTY);
                     final Chunk textureChunk = i.memory().getSegment(segmentId);
-                    i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0, GAMEPLAY_FRAME_WIDTH);
+                    i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0, VideoBuffer.GAMEPLAY);
                 }
             }
         }

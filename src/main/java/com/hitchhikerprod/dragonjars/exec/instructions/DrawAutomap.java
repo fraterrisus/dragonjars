@@ -1,12 +1,13 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.scene.input.KeyCode;
 
 import java.util.Optional;
@@ -47,8 +48,8 @@ public class DrawAutomap implements Instruction {
                     //   which is 0x50 for the gameplay and 0x90 for the automap. It doesn't
                     //   change the size of the tile, it just determines how to manage
                     //   skipping lines.
-                    decoder.decodeTexture(floorChunk, 0, 8, 8, 0, AUTOMAP_FRAME_WIDTH);
-                    i.bitBlastViewport(); // should be bitBlast() with bbox coordinates
+                    decoder.decodeTexture(floorChunk, 0, 8, 8, 0, VideoBuffer.AUTOMAP);
+                    // i.bitBlastViewport(); // should be bitBlast() with bbox coordinates
 
                     // deco texture offset 0
                     final Optional<Integer> decoChunkId = square.otherTextureChunk();

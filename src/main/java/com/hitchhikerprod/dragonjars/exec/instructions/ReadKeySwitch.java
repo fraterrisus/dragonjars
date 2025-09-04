@@ -41,8 +41,9 @@ public class ReadKeySwitch implements Instruction {
     public Address exec(Interpreter i) {
         // I know, this is weird, but it's how the game manages the spell icons.
         if (! i.isPaused()) {
-            i.drawHudPillar();
+            i.drawSpellIcons();
             i.drawPartyInfoArea();
+            i.composeVideoLayers(true, true, false);
         }
 
         final Address ip = i.getIP();

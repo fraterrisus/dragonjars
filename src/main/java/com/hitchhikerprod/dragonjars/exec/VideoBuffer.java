@@ -1,11 +1,12 @@
 package com.hitchhikerprod.dragonjars.exec;
 
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
+import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Images;
-import com.hitchhikerprod.dragonjars.data.Rectangle;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import javafx.scene.image.PixelWriter;
 
 import javax.imageio.ImageIO;
+import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,8 +27,13 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.SCALE_FACTOR;
 public class VideoBuffer {
     public static byte CHROMA_KEY = (byte) 0x06;
 
-    public static final Rectangle GAMEPLAY = new Rectangle(0x10, 0x08, 0xb0, 0x90);
-    public static final Rectangle WHOLE_IMAGE = new Rectangle(0, 0, IMAGE_X, IMAGE_Y);
+    public static final PixelRectangle AUTOMAP = new PixelRectangle(0, 0, IMAGE_X, IMAGE_Y); // FIXME
+    public static final PixelRectangle GAMEPLAY = new PixelRectangle(0x010, 0x008, 0x0b0, 0x090);
+    public static final PixelRectangle MESSAGE_PANE = new PixelRectangle(0x008, 0x098, 0x138, 0x0b8);
+    public static final PixelRectangle WHOLE_IMAGE = new PixelRectangle(0, 0, IMAGE_X, IMAGE_Y);
+    public static final PixelRectangle TITLE_BAR = new PixelRectangle(0x020, 0x000, 0x098, 0x008);
+
+    public static final CharRectangle DEFAULT_RECT = new CharRectangle(0x01, 0x08, 0x27, 0xb8);
 
     private final byte[] buffer;
 
@@ -106,10 +112,10 @@ public class VideoBuffer {
      * Writes the contents of this VideoBuffer to that VideoBuffer. Respects the chroma key, i.e. does not write if
      * the source color index is 0x06.
      * @param that The destination VideoBuffer
-     * @param mask A Rectangle describing the area that should be copied. Pixels not `Rectangle#inside()` this area
-     *             will not be copied.
+     * @param mask A PixelRectangle describing the area that should be copied. Pixels not `#inside()` this area will
+     *            not be copied.
      */
-    public void writeTo(VideoBuffer that, Rectangle mask) {
+    public void writeTo(VideoBuffer that, PixelRectangle mask) {
         byte[] src = this.buffer();
         byte[] dest = that.buffer();
         for (int y = 0; y < IMAGE_Y; y++) {
@@ -122,18 +128,19 @@ public class VideoBuffer {
     }
 
     /**
-     * Writes the contents of this VideoBuffer to an Image (via the provided PixelWriter). Respects the chroma key,
-     * i.e. does not write if the source color index is 0x06.
+     * Writes the contents of this VideoBuffer to an Image (via the provided PixelWriter).
      * @param writer A PixelWriter object for the desired target Image.
-     * @param mask A Rectangle describing the area that should be copied. Pixels not `Rectangle#inside()` this area
-     *             will not be copied.
+     * @param mask A PixelRectangle describing the area that should be copied. Pixels not `#inside()` this area will
+     *     not be copied.
+     * @param respectChroma If true, the chroma key will be respected, i.e. source color index 0x06 will result in
+     *     not writing certain pixels to the target image.
      */
-    public void writeTo(PixelWriter writer, Rectangle mask) {
+    public void writeTo(PixelWriter writer, PixelRectangle mask, boolean respectChroma) {
         for (int y = 0; y < IMAGE_Y; y++) {
             for (int x = 0; x < IMAGE_X; x++) {
                 if (!mask.contains(x, y)) continue;
                 final int colorIndex = buffer()[indexOf(x, y)];
-                if (colorIndex == CHROMA_KEY) continue;
+                if (respectChroma && colorIndex == CHROMA_KEY) continue;
                 final int colorValue = Images.convertColorIndex(colorIndex);
                 writer.setArgb(x, y, colorValue);
             }
@@ -154,14 +161,58 @@ public class VideoBuffer {
             }
         }
         try {
-            ImageIO.write(ImageDecoder.scale(image, SCALE_FACTOR, AffineTransformOp.TYPE_NEAREST_NEIGHBOR),
+            ImageIO.write(scale(image, SCALE_FACTOR, AffineTransformOp.TYPE_NEAREST_NEIGHBOR),
                     "png", new File(filename));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /** Emulates the lookup table at 0xaea2 in the binary. */
+    public static int getAEA2(int index) {
+        int val = 0x00;
+        if ((index & 0x0f) == 0x06) val |= 0x0f;
+        if ((index & 0xf0) == 0x60) val |= 0xf0;
+        return val;
+    }
+
+    /** Emulates the lookup table at 0xafa2 in the binary. */
+    public static int getAFA2(int index) {
+        int val = index;
+        if ((index & 0x0f) == 0x06) val = val - 0x06;
+        if ((index & 0xf0) == 0x60) val = val - 0x60;
+        return val;
+    }
+
+    public static int getB0A2(int index) {
+        int val = 0x0ff0;
+        if ((index & 0x0f) == 0x06) val = val | 0xf000;
+        if ((index & 0xf0) == 0x60) val = val | 0x000f;
+        return val;
+    }
+
+    public static int getB2A2(int index) {
+        int lo = index & 0x0f;
+        int hi = index & 0xf0;
+        int val = 0;
+        if (lo != 0x06) val |= lo << 12;
+        if (hi != 0x60) val |= hi >> 4;
+        return val;
+    }
+    
     private int indexOf(int x, int y) {
         return x + (IMAGE_X * y);
+    }
+
+    public static BufferedImage scale(final BufferedImage before, final double scale, final int type) {
+        int w = before.getWidth();
+        int h = before.getHeight();
+        int w2 = (int) (w * scale);
+        int h2 = (int) (h * scale);
+        BufferedImage after = new BufferedImage(w2, h2, before.getType());
+        AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
+        AffineTransformOp scaleOp = new AffineTransformOp(scaleInstance, type);
+        scaleOp.filter(before, after);
+        return after;
     }
 }

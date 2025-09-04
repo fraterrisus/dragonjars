@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 public class ChunkTable {
     public static final int TITLE_SCREEN = 0x1d;
     public static final int YOU_WIN = 0x18;
+    public static final int SKY_TEXTURE = 0x6f;
 
     private record FilePointer(int fileNum, int start, int size) { }
 
