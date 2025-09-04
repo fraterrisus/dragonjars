@@ -5,7 +5,6 @@ import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.hitchhikerprod.dragonjars.DragonWarsApp.SCALE_FACTOR;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.CHROMA_KEY;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.GAMEPLAY;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
@@ -68,6 +66,7 @@ public class ImageDecoder {
     }
 
     public void setVideoBuffer(VideoBuffer vb) {
+        System.out.println("setVideoBuffer(" + vb + ")");
         this.vb = vb;
     }
 

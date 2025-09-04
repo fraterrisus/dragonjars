@@ -43,10 +43,12 @@ public class DecodeStringFrom implements Instruction {
         this.saveAX = saveAX;
     }
 
+    private static final BiConsumer<Interpreter, List<Integer>> DRAW_STRING = (i, ch) -> { i.drawString(ch); i.composeVideoLayers(false, false, true); };
+
     public static DecodeStringFrom CS = new DecodeStringFrom(
             i -> i.getIP().incr(OPCODE),
             i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-            Interpreter::drawString,
+            DRAW_STRING,
             false,
             false
     );
@@ -54,7 +56,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom CS_WITH_FILL = new DecodeStringFrom(
             i -> i.getIP().incr(OPCODE),
             i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-            Interpreter::drawString,
+            DRAW_STRING,
             true,
             false
     );
@@ -62,7 +64,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom DS = new DecodeStringFrom(
             i -> new Address(i.getDS(), i.getAX(true)),
             i -> i.getIP().incr(OPCODE),
-            Interpreter::drawString,
+            DRAW_STRING,
             false,
             true
     );
@@ -70,7 +72,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom DS_WITH_FILL = new DecodeStringFrom(
             i -> new Address(i.getDS(), i.getAX(true)),
             i -> i.getIP().incr(OPCODE),
-            Interpreter::drawString,
+            DRAW_STRING,
             true,
             true
     );

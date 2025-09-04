@@ -9,6 +9,7 @@ public class WaitForEscapeKey implements Instruction {
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr(OPCODE);
         i.printFooter(0x02); // hardcoded at 0x2bab
+        i.composeVideoLayers(false, false, true);
         i.app().setKeyHandler(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 i.fillRectangle();

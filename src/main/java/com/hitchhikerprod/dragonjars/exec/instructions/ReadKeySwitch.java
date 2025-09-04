@@ -68,6 +68,7 @@ public class ReadKeySwitch implements Instruction {
         // 0x2884
         if ((imm_2a45 & 0x80) > 0) { // print footer
             i.printFooter(imm_2a45 & 0x3);
+            i.composeVideoLayers(false, false, true);
         }
 
         // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115

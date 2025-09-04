@@ -31,6 +31,7 @@ public class VideoBuffer {
     public static final PixelRectangle GAMEPLAY = new PixelRectangle(0x010, 0x008, 0x0b0, 0x090);
     public static final PixelRectangle MESSAGE_PANE = new PixelRectangle(0x008, 0x098, 0x138, 0x0b8);
     public static final PixelRectangle WHOLE_IMAGE = new PixelRectangle(0, 0, IMAGE_X, IMAGE_Y);
+    public static final PixelRectangle PARTY_INFO = new PixelRectangle(0x0d8, 0x008, 0x138, 0x090);
     public static final PixelRectangle TITLE_BAR = new PixelRectangle(0x020, 0x000, 0x098, 0x008);
 
     public static final CharRectangle DEFAULT_RECT = new CharRectangle(0x01, 0x08, 0x27, 0xb8);

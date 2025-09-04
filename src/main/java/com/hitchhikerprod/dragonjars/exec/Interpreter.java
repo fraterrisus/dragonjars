@@ -6,12 +6,11 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
-import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
@@ -60,9 +59,9 @@ public class Interpreter {
     // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
     private final VideoBuffer videoBackground = new VideoBuffer();
     // Write the gameport, message area, party area, and spell icons to this
-    private final VideoBuffer videoForeground = new VideoBuffer();
+    public final VideoBuffer videoForeground = new VideoBuffer();
     // Modals should be written to this (after clearing it each time)
-    private final VideoBuffer videoModal = new VideoBuffer();
+    public final VideoBuffer videoTransient = new VideoBuffer();
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -134,14 +133,19 @@ public class Interpreter {
         final boolean testMode = Objects.isNull(app());
 
         if (!testMode) {
+            System.out.println("background: " + videoBackground);
+            System.out.println("foreground: " + videoForeground);
+            System.out.println("transient : " + videoTransient);
+
             videoBackground.reset((byte)0x00);
             videoForeground.reset(VideoBuffer.CHROMA_KEY);
-            videoModal.reset(VideoBuffer.CHROMA_KEY);
+            videoTransient.reset(VideoBuffer.CHROMA_KEY);
 
             imageDecoder.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) imageDecoder.decodeRomImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) imageDecoder.decodeRomImage(27 + i); // HUD title bar
-            // videoBackground.writeTo("video-background.png");
+            videoBackground.writeTo("video-background.png");
+            imageDecoder.setVideoBuffer(videoTransient);
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
         }
@@ -178,7 +182,7 @@ public class Interpreter {
         //   but it also includes:
         if (!testMode) {
             drawViewportCorners();
-            composeVideoLayers(true, true, false);
+            composeVideoLayers(true, true, true);
         }
 
         setBBox(VideoBuffer.DEFAULT_RECT);
@@ -383,7 +387,7 @@ public class Interpreter {
         bbox_y0 = bbox_y0 - 8;
         bbox_x1 = bbox_x1 + 1;
         bbox_x0 = bbox_x0 - 1;
-        System.out.println("expandBBox(" + getBBox() + ")");
+//        System.out.println("expandBBox(" + getBBox() + ")");
     }
 
     public void shrinkBBox() {
@@ -391,7 +395,7 @@ public class Interpreter {
         bbox_y0 = bbox_y0 + 8;
         bbox_x1 = bbox_x1 - 1;
         bbox_x0 = bbox_x0 + 1;
-        System.out.println("shrinkBBox(" + getBBox() + ")");
+//        System.out.println("shrinkBBox(" + getBBox() + ")");
     }
 
     public int getMulResult() {
@@ -625,6 +629,7 @@ public class Interpreter {
     }
 
     public void drawString(List<Integer> s) {
+        System.out.println("drawString()");
         int x = x_31ed;
         int y = y_31ef;
 
@@ -796,8 +801,11 @@ public class Interpreter {
 
         drawMapTitle();
 
+        final CharRectangle oldBBox = getBBox();
+        // unclear if this is an intentional side effect; we avoid it for now
         setBBox(VideoBuffer.MESSAGE_PANE.toChar());
         imageDecoder().withVideoBuffer(videoForeground, d -> fillRectangle());
+        setBBox(oldBBox);
 
         for (int regionId = 0; regionId < 14; regionId++) {
             if (boundsCheck(regionId, true)) {
@@ -812,12 +820,12 @@ public class Interpreter {
     }
 
     public void bitBlastPartyInfoArea() {
-        final PixelRectangle mask = imageDecoder().decodeRomImageArea(0xb);
+        final PixelRectangle mask = VideoBuffer.PARTY_INFO;
         getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
     public void bitBlastViewport() {
-        final PixelRectangle mask = imageDecoder().decodeRomImageArea(0xa);
+        final PixelRectangle mask = VideoBuffer.GAMEPLAY;
         getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
@@ -971,8 +979,8 @@ public class Interpreter {
         });
     }
 
-    public void eraseModal() {
-        videoModal.reset(VideoBuffer.CHROMA_KEY);
+    public void eraseTransient() {
+        videoTransient.reset(VideoBuffer.CHROMA_KEY);
     }
 
     /**
@@ -982,6 +990,7 @@ public class Interpreter {
         if (coordinates.size() != 4) throw new IllegalArgumentException();
 
         pause();
+        eraseTransient();
 
         final int x0 = coordinates.get(0);
         final int y0 = coordinates.get(1);
@@ -989,8 +998,6 @@ public class Interpreter {
         final int y1 = coordinates.get(3);
 
         final CharRectangle r = new CharRectangle(x0, y0, x1, y1);
-
-        eraseModal();
 
         boolean invert = bg_color_3431 == 0;
 
@@ -1053,6 +1060,7 @@ public class Interpreter {
                         heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
                     }
                     setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
+                    composeVideoLayers(true, true, false);
                     start(prompt.destination());
                     break;
                 }
@@ -1105,10 +1113,11 @@ public class Interpreter {
     }
 
     public void composeVideoLayers(boolean bg, boolean fg, boolean modal) {
+        System.out.println("composeVideoLayers(" + bg + ", " + fg + ", " + modal + ")");
         getImageWriter(w -> {
             if (bg) videoBackground.writeTo(w, VideoBuffer.WHOLE_IMAGE, false);
             if (fg) videoForeground.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
-            if (modal) videoModal.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
+            if (modal) videoTransient.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
         });
     }
 
