@@ -7,23 +7,24 @@ import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
+import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 
 import java.util.List;
 import java.util.function.Function;
 
 public class DrawCurrentViewport implements Instruction {
-    public static final int GAMEPLAY_FRAME_WIDTH = 0x50;
-
     private final Interpreter i;
+    private final PixelRectangle gameplayArea;
 
     public DrawCurrentViewport(Interpreter i) {
         this.i = i;
+        this.gameplayArea = i.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 
     @Override
@@ -47,7 +48,7 @@ public class DrawCurrentViewport implements Instruction {
         //   without reason for the thread to sleep, we don't actually see multiple updates.
         //   But fixing that might require moving the Interpreter to its own thread, yikes.
 
-        i.imageDecoder().withVideoBuffer(i.videoForeground, d -> {
+        i.draw().withVideoBuffer(i.videoForeground, d -> {
             if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
                 drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
                 drawFloorTexture();
@@ -73,7 +74,7 @@ public class DrawCurrentViewport implements Instruction {
             final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
 //            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
 //                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
-            i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0x0, VideoBuffer.GAMEPLAY);
+            i.draw().texture(textureChunk, textureOffset, x0, y0, 0x0, gameplayArea);
         }
     }
 
@@ -81,7 +82,7 @@ public class DrawCurrentViewport implements Instruction {
         if (textureId == 1) { // 0x54f8
             final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.DIRTY);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
-            i.imageDecoder().decodeTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, VideoBuffer.GAMEPLAY);
+            i.draw().texture(textureChunk, 0x4, 0x0, 0x0, 0x0, gameplayArea);
         } else { // 0x5515
             // Draw a generic checkerboard roof
             // I don't bother reading the silly array of bytes from the executable (0x55ec)
@@ -118,7 +119,7 @@ public class DrawCurrentViewport implements Instruction {
             if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
                 final int segmentId = i.getSegmentForChunk(wallChunk, Frob.DIRTY);
                 final Chunk textureChunk = i.memory().getSegment(segmentId);
-                i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, invert, VideoBuffer.GAMEPLAY);
+                i.draw().texture(textureChunk, textureOffset, x0, y0, invert, gameplayArea);
             }
 
             // 'Other' decor texture; try to only run each square once
@@ -128,7 +129,7 @@ public class DrawCurrentViewport implements Instruction {
                     final Integer otherChunkId = sq.otherTextureChunk().get();
                     final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.DIRTY);
                     final Chunk textureChunk = i.memory().getSegment(segmentId);
-                    i.imageDecoder().decodeTexture(textureChunk, textureOffset, x0, y0, 0, VideoBuffer.GAMEPLAY);
+                    i.draw().texture(textureChunk, textureOffset, x0, y0, 0, gameplayArea);
                 }
             }
         }

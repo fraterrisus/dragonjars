@@ -40,8 +40,8 @@ public class ReadKeySwitch implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         // I know, this is weird, but it's how the game manages the spell icons.
+        i.drawSpellIcons();
         if (! i.isPaused()) {
-            i.drawSpellIcons();
             i.drawPartyInfoArea();
             i.composeVideoLayers(true, true, false);
         }

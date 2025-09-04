@@ -3,7 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
+import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
@@ -30,7 +30,6 @@ public class DrawAutomap implements Instruction {
 
     // TODO 0x16f0
     public static Address displayAutomapPage(Interpreter i, int x0, int y0) {
-        final ImageDecoder decoder = i.imageDecoder();
         final Address ip = i.getIP();
         final Address nextIP = ip.incr(OPCODE);
 
@@ -48,7 +47,7 @@ public class DrawAutomap implements Instruction {
                     //   which is 0x50 for the gameplay and 0x90 for the automap. It doesn't
                     //   change the size of the tile, it just determines how to manage
                     //   skipping lines.
-                    decoder.decodeTexture(floorChunk, 0, 8, 8, 0, VideoBuffer.AUTOMAP);
+                    i.draw().texture(floorChunk, 0, 8, 8, 0, VideoBuffer.AUTOMAP);
                     // i.bitBlastViewport(); // should be bitBlast() with bbox coordinates
 
                     // deco texture offset 0

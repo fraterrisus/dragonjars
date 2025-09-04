@@ -2,7 +2,7 @@ package com.hitchhikerprod.dragonjars;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
-import com.hitchhikerprod.dragonjars.data.ImageDecoder;
+import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
@@ -125,11 +125,11 @@ public class DragonWarsApp extends Application {
     }
 
     private void showTitleScreen() {
-        final ImageDecoder decoder = new ImageDecoder(dataChunks.getLast());
+        final VideoHelper draw = new VideoHelper(dataChunks.getLast());
         final VideoBuffer vb = new VideoBuffer();
-        decoder.setVideoBuffer(vb);
+        draw.setVideoBuffer(vb);
         final Chunk rawChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
-        decoder.decodeChunkImage(rawChunk);
+        draw.chunkImage(rawChunk);
         final WritableImage titleScreenImage = Images.blankImage(IMAGE_X, IMAGE_Y);
         vb.writeTo(titleScreenImage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
         setImage(titleScreenImage);
@@ -143,11 +143,11 @@ public class DragonWarsApp extends Application {
         new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
     }
 
-    private void stringHelper(ImageDecoder decoder, String s, int x, int y, boolean invert) {
+    private void stringHelper(VideoHelper draw, String s, int x, int y, boolean invert) {
         int fx = x * 8;
         int fy = y * 8;
         for (char ch : s.toCharArray()) {
-            decoder.decodeChar(ch, fx, fy, invert);
+            draw.character(ch, fx, fy, invert);
             fx += 8;
         }
     }
@@ -157,42 +157,42 @@ public class DragonWarsApp extends Application {
         final WritableImage wimage = Images.blankImage(IMAGE_X, IMAGE_Y);
         setImage(wimage);
 
-        final ImageDecoder decoder = new ImageDecoder(this.dataChunks.getLast());
+        final VideoHelper draw = new VideoHelper(this.dataChunks.getLast());
         final VideoBuffer vb = new VideoBuffer(VideoBuffer.CHROMA_KEY);
-        decoder.setVideoBuffer(vb);
+        draw.setVideoBuffer(vb);
 
-        stringHelper(decoder, "Test Pattern", 14, 0, true);
-        stringHelper(decoder, "Press Q to exit", 13, 24, true);
+        stringHelper(draw, "Test Pattern", 14, 0, true);
+        stringHelper(draw, "Press Q to exit", 13, 24, true);
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            decoder.decodeChar(ch, fx, 18, true);
+            draw.character(ch, fx, 18, true);
         }
         for (int y = 0; y < 2; y++) {
             final int fy = (y + 2) * 16;
-            decoder.decodeChar(0x30 + y, 12, fy, true);
-            decoder.decodeChar('x', 20, fy, true);
+            draw.character(0x30 + y, 12, fy, true);
+            draw.character('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 2) * 16;
                 final int ch = (16 * y) + x;
-                decoder.decodeChar(ch, fx, fy, false);
+                draw.character(ch, fx, fy, false);
             }
         }
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 4) * 8;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            decoder.decodeChar(ch, fx, 68, true);
+            draw.character(ch, fx, 68, true);
         }
         for (int y = 2; y < 8; y++) {
             final int fy = (y + 8) * 8;
-            decoder.decodeChar(0x30 + y, 12, fy, true);
-            decoder.decodeChar('x', 20, fy, true);
+            draw.character(0x30 + y, 12, fy, true);
+            draw.character('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 4) * 8;
                 final int ch = (16 * y) + x;
-                decoder.decodeChar(ch, fx, fy, false);
+                draw.character(ch, fx, fy, false);
             }
         }
 
