@@ -3,16 +3,14 @@ package com.hitchhikerprod.dragonjars.data;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 
-import javax.imageio.ImageIO;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.CHROMA_KEY;
+import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.GAMEPLAY;
+import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
 
 public class StandaloneImageDecoder {
     public static final int IMAGE_X = 320;
@@ -23,43 +21,24 @@ public class StandaloneImageDecoder {
     private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
 
     private final Chunk codeChunk;
-    private final byte[] pixels;
     private VideoBuffer vb;
 
     private record ImageData(List<Byte> data, int x0, int y0, int width, int height) {}
 
     public StandaloneImageDecoder(Chunk codeChunk) {
         this.codeChunk = codeChunk;
-        this.pixels = new byte[IMAGE_X * IMAGE_Y];
     }
 
-    // FIXME don't do this, pass in a videobuffer on each draw call
     public void setVideoBuffer(VideoBuffer vb) {
         this.vb = vb;
     }
 
-    private int coordToIndex(int x, int y) {
-        return x + (IMAGE_X * y);
-    }
-
     public void clearBuffer(byte value) {
-        Arrays.fill(pixels, value);
+        Objects.requireNonNull(vb).reset(value);
     }
 
     public void drawGrid() {
-        for (int y = 0; y < IMAGE_Y; y += 8) {
-            for (int x = 0; x < IMAGE_X; x++) {
-                pixels[coordToIndex(x, y)] = 0x06;
-            }
-        }
-        for (int x = 0; x < IMAGE_X; x += 8) {
-            for (int y = 0; y < IMAGE_Y; y++) {
-                pixels[coordToIndex(x, y)] = 0x06;
-            }
-        }
-    }
-
-    public void drawGrid(VideoBuffer vb) {
+        Objects.requireNonNull(vb);
         for (int y = 0; y < IMAGE_Y; y += 8) {
             for (int x = 0; x < IMAGE_X; x++) {
                 vb.set(x, y, CHROMA_KEY);
@@ -72,33 +51,12 @@ public class StandaloneImageDecoder {
         }
     }
 
-    public void exportToPNG(String filename) throws IOException {
-        /*
-        final WritableImage wimage = new WritableImage(IMAGE_X, IMAGE_Y);
-        final PixelWriter writer = wimage.getPixelWriter();
-        for (int y = 0; y < IMAGE_X; y++) {
-            for (int x = 0; x < IMAGE_Y; x++) {
-                final byte pixel = pixels[x + (IMAGE_X * y)];
-                final int color = Images.convertColorIndex(pixel);
-                writer.setArgb(x, y, color);
-            }
-        }
-
-        final PixelReader pixelReader = wimage.getPixelReader();
-        */
-        final BufferedImage image = new BufferedImage(IMAGE_X, IMAGE_Y, BufferedImage.TYPE_INT_RGB);
-        for (int y = 0; y < IMAGE_Y; y++) {
-            for (int x = 0; x < IMAGE_X; x++) {
-                // image.setRGB(x, y, pixelReader.getArgb(x, y));
-                final byte pixel = pixels[coordToIndex(x, y)];
-                image.setRGB(x, y, Images.convertColorIndex(pixel));
-            }
-        }
-
-        ImageIO.write(ImageDecoder.scale(image, 4.0, AffineTransformOp.TYPE_NEAREST_NEIGHBOR), "png", new File(filename));
+    public void exportToPNG(String filename) {
+        Objects.requireNonNull(vb).writeTo(filename);
     }
 
-    public void decodeChar(VideoBuffer vb, int ch, int x0, int y0, boolean invert) {
+    public void decodeChar(int ch, int x0, int y0, boolean invert) {
+        Objects.requireNonNull(vb);
         final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
         List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
@@ -114,7 +72,7 @@ public class StandaloneImageDecoder {
     public void decodeChunkImage(ModifiableChunk chunk) {
         final List<Byte> imageData = applyRollingXor(chunk);
         final ImageData c = new ImageData(imageData, 0, 0, IMAGE_X, IMAGE_Y);
-        drawImageData(c, 0, VideoBuffer.WHOLE_IMAGE);
+        drawImageData(c, 0, WHOLE_IMAGE);
     }
 
     public void decodeCorner(int index) {
@@ -131,9 +89,9 @@ public class StandaloneImageDecoder {
 
         // Corners target the gameplay area, so we need to artificially bump this out by (16,8)
         // width is half-size because of two pixels per byte
-        final ImageData c = new ImageData(imageData, VideoBuffer.GAMEPLAY.x0() + x0, VideoBuffer.GAMEPLAY.y0() + y0, 2 * width, height);
+        final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
 
-        drawImageData(c, 4, VideoBuffer.GAMEPLAY);
+        drawImageData(c, 4, GAMEPLAY);
     }
 
     public void decodeRomImage(int index) {
@@ -150,7 +108,7 @@ public class StandaloneImageDecoder {
         // x1 is too small by a factor of 8 (div 2 for same reason)
         final ImageData c = new ImageData(imageData, 4 * x0, y0, 2 * width, height);
 
-        drawImageDataWithoutChroma(c, 4, VideoBuffer.WHOLE_IMAGE);
+        drawImageDataWithoutChroma(c, 4, WHOLE_IMAGE);
     }
 
     // invertbyte is only ever 0x00, 0x01 (doesn't do anything???), or 0x80 (flip x)
@@ -186,7 +144,7 @@ public class StandaloneImageDecoder {
                 index, width, height, offsetX, offsetY, x0, y0, invert, callIndex);
 
         final List<Byte> imageData = chunk.getBytes(baseAddress + 4, width * height);
-        final ImageData c = new ImageData(imageData, VideoBuffer.GAMEPLAY.x0() + x0, VideoBuffer.GAMEPLAY.y0() + y0, 2 * width, height);
+        final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
 
         if (callIndex == 0 || callIndex == 4) drawImageData(c, 0, mask);
         if (callIndex == 2 || callIndex == 6)
@@ -199,6 +157,7 @@ public class StandaloneImageDecoder {
     private void drawImageData(ImageData c, int basePointer, Rectangle mask) {
         // Corner data is JUST EGA COLOR INDICES packed two to a byte with color 6 treated as a chroma key
         // i.e. if the new value is 6, don't overwrite whatever's there
+        Objects.requireNonNull(vb);
         int pointer = basePointer;
         for (int y = c.y0; y < c.y0 + c.height; y++) {
             boolean inc = true;
@@ -215,6 +174,7 @@ public class StandaloneImageDecoder {
     private void drawImageDataWithoutChroma(ImageData c, int basePointer, Rectangle mask) {
         // Corner data is JUST EGA COLOR INDICES packed two to a byte with color 6 treated as a chroma key
         // i.e. if the new value is 6, don't overwrite whatever's there
+        Objects.requireNonNull(vb);
         int pointer = basePointer;
         for (int y = c.y0; y < c.y0 + c.height; y++) {
             boolean inc = true;
@@ -229,6 +189,7 @@ public class StandaloneImageDecoder {
     }
 
     private void drawImageFlip(ImageData c, int basePointer, Rectangle mask) {
+        Objects.requireNonNull(vb);
         int pointer = basePointer;
         for (int y = c.y0; y < c.y0 + c.height; y++) {
             boolean inc = true;
@@ -274,6 +235,7 @@ public class StandaloneImageDecoder {
             final ChunkTable chunkTable = new ChunkTable(data1, data2);
 
             final StandaloneImageDecoder decoder = new StandaloneImageDecoder(codeChunk);
+            decoder.setVideoBuffer(new VideoBuffer());
 
             printChunk(decoder, chunkTable, 0x18);
             printPillar(decoder);
@@ -286,9 +248,9 @@ public class StandaloneImageDecoder {
 
             for (int chunkId : walls) {
                 System.out.format("[%02x] [%02x] ", chunkId, 0);
-                printTexture(decoder, chunkTable, chunkId, 0, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 0, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
                 System.out.format("[%02x] [%02x] ", chunkId, 2);
-                printTexture(decoder, chunkTable, chunkId, 2, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 2, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
 
                 for (int i = 0; i < WALL_TEXTURE_OFFSET.size(); i++) {
                     final int index = WALL_TEXTURE_OFFSET.get(i);
@@ -297,7 +259,7 @@ public class StandaloneImageDecoder {
                     final int invert = WALL_INVERT.get(i);
                     final String filename = String.format("texture-%02x-sq%02x.png", chunkId, i);
                     System.out.format("[%02x] [%02x] ", chunkId, i);
-                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, invert, VideoBuffer.GAMEPLAY, filename);
+                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, invert, GAMEPLAY, filename);
                 }
             }
 
@@ -309,14 +271,14 @@ public class StandaloneImageDecoder {
                     final int squareId = FLOOR_SQUARE_ORDER.get(i);
                     final String filename = String.format("texture-%02x-sq%02x.png", chunkId, squareId);
                     System.out.format("[%02x] [%02x] ", chunkId, squareId);
-                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, 0, VideoBuffer.GAMEPLAY, filename);
+                    printTexture(decoder, chunkTable, chunkId, index, x0, y0, 0, GAMEPLAY, filename);
                 }
             }
 
             for (int chunkId : ceilings) {
                 final String filename = String.format("texture-%02x.png", chunkId);
                 System.out.format("[%02x] [%02x] ", chunkId, 04);
-                printTexture(decoder, chunkTable, chunkId, 4, 0, 0, 0, VideoBuffer.GAMEPLAY, filename);
+                printTexture(decoder, chunkTable, chunkId, 4, 0, 0, 0, GAMEPLAY, filename);
             }
 
             for (int chunkId : decos) {
@@ -324,7 +286,7 @@ public class StandaloneImageDecoder {
                     if (i == 2) continue;
                     System.out.format("[%02x] [%02x] ", chunkId, i);
                     final String filename = String.format("texture-%02x-%02x.png", chunkId, i);
-                    printTexture(decoder, chunkTable, chunkId, i, VideoBuffer.GAMEPLAY.x0(), VideoBuffer.GAMEPLAY.y0(), 0, VideoBuffer.WHOLE_IMAGE, filename);
+                    printTexture(decoder, chunkTable, chunkId, i, GAMEPLAY.x0(), GAMEPLAY.y0(), 0, WHOLE_IMAGE, filename);
                 }
             }
         } catch (IOException e) {

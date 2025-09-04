@@ -186,50 +186,45 @@ public class DragonWarsApp extends Application {
         setImage(wimage);
 
         final StandaloneImageDecoder decoder = new StandaloneImageDecoder(this.dataChunks.getLast());
-        final VideoBuffer vb = new VideoBuffer();
-        vb.reset(VideoBuffer.CHROMA_KEY);
+        final VideoBuffer vb = new VideoBuffer(VideoBuffer.CHROMA_KEY);
+        decoder.setVideoBuffer(vb);
 
-        drawString(decoder, vb, "Test Pattern", 14, 0, true);
-        drawString(decoder, vb, "Press Q to exit", 13, 24, true);
+        drawString(decoder, "Test Pattern", 14, 0, true);
+        drawString(decoder, "Press Q to exit", 13, 24, true);
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            decoder.decodeChar(vb, ch, fx, 18, true);
+            decoder.decodeChar(ch, fx, 18, true);
         }
         for (int y = 0; y < 2; y++) {
             final int fy = (y + 2) * 16;
-            decoder.decodeChar(vb, 0x30 + y, 12, fy, true);
-            decoder.decodeChar(vb, 'x', 20, fy, true);
+            decoder.decodeChar(0x30 + y, 12, fy, true);
+            decoder.decodeChar('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 2) * 16;
                 final int ch = (16 * y) + x;
-                decoder.decodeChar(vb, ch, fx, fy, false);
+                decoder.decodeChar(ch, fx, fy, false);
             }
         }
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 4) * 8;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            decoder.decodeChar(vb, ch, fx, 68, true);
+            decoder.decodeChar(ch, fx, 68, true);
         }
         for (int y = 2; y < 8; y++) {
             final int fy = (y + 8) * 8;
-            decoder.decodeChar(vb, 0x30 + y, 12, fy, true);
-            decoder.decodeChar(vb, 'x', 20, fy, true);
+            decoder.decodeChar(0x30 + y, 12, fy, true);
+            decoder.decodeChar('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 4) * 8;
                 final int ch = (16 * y) + x;
-                decoder.decodeChar(vb, ch, fx, fy, false);
+                decoder.decodeChar(ch, fx, fy, false);
             }
         }
 
         vb.writeTo(wimage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE);
-
-        // Test case: drawModal(0x16,0x00,0x28,0x98) is the combat dialog
-        // which is 16 characters wide plus border
-        // interp.drawModal(8 * 0x16, 0x00, 8 * 0x28, 0x98);
-        // interp.drawString("You still face 4", 0x17, 0x01, false);
 
         setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Q || event.getCode() == KeyCode.ESCAPE) {
@@ -238,11 +233,11 @@ public class DragonWarsApp extends Application {
         });
     }
 
-    private void drawString(StandaloneImageDecoder decoder, VideoBuffer vb, String s, int x, int y, boolean invert) {
+    private void drawString(StandaloneImageDecoder decoder, String s, int x, int y, boolean invert) {
         int fx = x * 8;
         int fy = y * 8;
         for (char ch : s.toCharArray()) {
-            decoder.decodeChar(vb, ch, fx, fy, invert);
+            decoder.decodeChar(ch, fx, fy, invert);
             fx += 8;
         }
     }

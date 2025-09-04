@@ -680,15 +680,6 @@ public class Interpreter {
         y_31ef = y;
     }
 
-    public void drawString(String s, int x, int y, boolean invert) {
-        int fx = x * 8;
-        int fy = y * 8;
-        for (char ch : s.toCharArray()) {
-            lowLevelDrawChar(ch, fx, fy, invert);
-            fx += 8;
-        }
-    }
-
     public void eraseSmallVideoBuffer() {
         for (int i = 0; i < 0x3e80; i++) videoMemory[i] = 0x00;
     }
