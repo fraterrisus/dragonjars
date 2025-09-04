@@ -126,10 +126,10 @@ public class ImageDecoder {
         }
     }
 
-    public void decodeChunkImage(ModifiableChunk chunk) {
-        final List<Byte> imageData = applyRollingXor(chunk);
+    public void decodeChunkImage(Chunk chunk) {
+        final List<Byte> imageData = chunk.getBytes(0, chunk.getSize());
         final ImageData c = new ImageData(imageData, 0, 0, IMAGE_X, IMAGE_Y);
-        drawImageData(c, 0, WHOLE_IMAGE);
+        drawImageData(c, 0, WHOLE_IMAGE, false);
     }
 
     public void decodeCorner(int index) {
@@ -148,7 +148,7 @@ public class ImageDecoder {
         // width is half-size because of two pixels per byte
         final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
 
-        drawImageData(c, 4, GAMEPLAY);
+        drawImageData(c, 4, GAMEPLAY, true);
     }
 
     public void eraseRomImage(int index) {
@@ -221,15 +221,15 @@ public class ImageDecoder {
         final List<Byte> imageData = chunk.getBytes(baseAddress + 4, width * height);
         final ImageData c = new ImageData(imageData, GAMEPLAY.x0() + x0, GAMEPLAY.y0() + y0, 2 * width, height);
 
-        if (callIndex == 0 || callIndex == 4) drawImageData(c, 0, mask);
+        if (callIndex == 0 || callIndex == 4) drawImageData(c, 0, mask, true);
         if (callIndex == 2 || callIndex == 6)
-            drawImageData(c, 0, mask); // x0 is odd so there's only a one-byte draw?
+            drawImageData(c, 0, mask, true); // x0 is odd so there's only a one-byte draw?
         if (callIndex == 8) {
             drawImageFlip(c, 0, mask);
         }
     }
 
-    private void drawImageData(ImageData c, int basePointer, PixelRectangle mask) {
+    private void drawImageData(ImageData c, int basePointer, PixelRectangle mask, boolean respectChroma) {
         // Corner data is JUST EGA COLOR INDICES packed two to a byte with color 6 treated as a chroma key
         // i.e. if the new value is 6, don't overwrite whatever's there
         Objects.requireNonNull(vb);
@@ -240,7 +240,8 @@ public class ImageDecoder {
                 inc = !inc;
                 final byte chunkByte = c.data().get(pointer);
                 final byte newPixel = (byte) (0xf & chunkByte >> (inc ? 0 : 4));
-                if (newPixel != CHROMA_KEY && mask.contains(x, y)) vb.set(x, y, newPixel);
+                final boolean writePixel = mask.contains(x, y) && (!respectChroma || newPixel != CHROMA_KEY);
+                if (writePixel) vb.set(x, y, newPixel);
                 if (inc) pointer++;
             }
         }
@@ -277,20 +278,6 @@ public class ImageDecoder {
                 if (inc) pointer++;
             }
         }
-    }
-
-    private List<Byte> applyRollingXor(ModifiableChunk chunk) {
-        int readAddress = 0x00;
-        int writeAddress = 0xa0;
-        while (writeAddress < chunk.getSize()) {
-            final int b0 = chunk.getQuadWord(readAddress);
-            final int b1 = chunk.getQuadWord(writeAddress);
-//            System.out.format("%04x\n", writeAddress);
-            chunk.write(writeAddress, 4, b0 ^ b1);
-            readAddress += 4;
-            writeAddress += 4;
-        }
-        return chunk.getBytes(0, chunk.getSize());
     }
 
     public static void main(String[] args) {

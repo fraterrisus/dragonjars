@@ -42,7 +42,6 @@ public class PauseUntilKeyOrTime implements Instruction {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
             i.app().setKeyHandler(null);
-            i.eraseTransient();
             i.start(nextIP);
         }
     }

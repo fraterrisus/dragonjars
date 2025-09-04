@@ -58,10 +58,8 @@ public class Interpreter {
 
     // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
     private final VideoBuffer videoBackground = new VideoBuffer();
-    // Write the gameport, message area, party area, and spell icons to this
+    // Write everything else
     public final VideoBuffer videoForeground = new VideoBuffer();
-    // Modals should be written to this (after clearing it each time)
-    public final VideoBuffer videoTransient = new VideoBuffer();
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -133,19 +131,14 @@ public class Interpreter {
         final boolean testMode = Objects.isNull(app());
 
         if (!testMode) {
-            System.out.println("background: " + videoBackground);
-            System.out.println("foreground: " + videoForeground);
-            System.out.println("transient : " + videoTransient);
-
             videoBackground.reset((byte)0x00);
             videoForeground.reset(VideoBuffer.CHROMA_KEY);
-            videoTransient.reset(VideoBuffer.CHROMA_KEY);
 
             imageDecoder.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) imageDecoder.decodeRomImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) imageDecoder.decodeRomImage(27 + i); // HUD title bar
             videoBackground.writeTo("video-background.png");
-            imageDecoder.setVideoBuffer(videoTransient);
+            imageDecoder.setVideoBuffer(videoForeground);
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
         }
@@ -180,10 +173,7 @@ public class Interpreter {
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
         //   but it also includes:
-        if (!testMode) {
-            drawViewportCorners();
-            composeVideoLayers(true, true, true);
-        }
+        if (!testMode) drawViewportCorners();
 
         setBBox(VideoBuffer.DEFAULT_RECT);
         if (!testMode) draw_borders = 0xff;
@@ -309,15 +299,7 @@ public class Interpreter {
         int segmentId = memory().lookupChunkId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
             segmentId = memory().getFreeSegmentId();
-            ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
-            if (chunkId >= 0x1e) {
-                final Chunk decompressedChunk = new HuffmanDecoder(newChunk).decodeChunk();
-                newChunk = new ModifiableChunk(decompressedChunk);
-            }
-            if (chunkId >= 0x100) {
-                if (chunkId % 2 != 0) applyRollingAddition(newChunk, 0x0000);
-                applyRollingAddition(newChunk, 0x0004);
-            }
+            final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
         }
         // should there be a "don't overwrite frob 0xff" guard here?
@@ -329,17 +311,6 @@ public class Interpreter {
         final int segmentId = memory().lookupChunkId(chunkId);
         if (segmentId != -1)
             memory().setSegmentFrob(segmentId, Frob.EMPTY);
-    }
-
-    // This ought to be a decoder class, maybe?
-    private void applyRollingAddition(ModifiableChunk chunk, int baseIndex) {
-        int pointer = baseIndex;
-        int running = 0;
-        while (pointer < chunk.getSize()) {
-            running = running + chunk.getUnsignedByte(pointer);
-            chunk.write(pointer, 1, running);
-            pointer++;
-        }
     }
 
     /**
@@ -679,9 +650,8 @@ public class Interpreter {
     }
 
     public void drawViewportCorners() {
-        imageDecoder().withVideoBuffer(videoForeground, d -> {
-            for (int i = 0; i < 4; i++) d.decodeCorner(i);
-        });
+        for (int i = 0; i < 4; i++) imageDecoder().decodeCorner(i);
+        bitBlastViewport();
     }
 
     private MonsterAnimationTask monsterAnimationTask;
@@ -979,10 +949,6 @@ public class Interpreter {
         });
     }
 
-    public void eraseTransient() {
-        videoTransient.reset(VideoBuffer.CHROMA_KEY);
-    }
-
     /**
      * Draws an empty box on the screen.
      */
@@ -990,7 +956,6 @@ public class Interpreter {
         if (coordinates.size() != 4) throw new IllegalArgumentException();
 
         pause();
-        eraseTransient();
 
         final int x0 = coordinates.get(0);
         final int y0 = coordinates.get(1);
@@ -1117,7 +1082,6 @@ public class Interpreter {
         getImageWriter(w -> {
             if (bg) videoBackground.writeTo(w, VideoBuffer.WHOLE_IMAGE, false);
             if (fg) videoForeground.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
-            if (modal) videoTransient.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
         });
     }
 

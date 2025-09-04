@@ -1,10 +1,9 @@
 package com.hitchhikerprod.dragonjars;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
-import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.ImageDecoder;
+import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
@@ -101,6 +100,7 @@ public class DragonWarsApp extends Application {
             label.setValue("Failed.");
             progress.unbind();
             progress.setValue(0.0);
+            task.getException().printStackTrace();
             final Alert alert = new Alert(Alert.AlertType.ERROR, task.getException().getMessage());
             alert.showAndWait();
             close();
@@ -125,8 +125,13 @@ public class DragonWarsApp extends Application {
     }
 
     private void showTitleScreen() {
-        final Chunk titleScreenChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
-        final Image titleScreenImage = new ChunkImageDecoder(titleScreenChunk).parse();
+        final ImageDecoder decoder = new ImageDecoder(dataChunks.getLast());
+        final VideoBuffer vb = new VideoBuffer();
+        decoder.setVideoBuffer(vb);
+        final Chunk rawChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
+        decoder.decodeChunkImage(rawChunk);
+        final WritableImage titleScreenImage = Images.blankImage(IMAGE_X, IMAGE_Y);
+        vb.writeTo(titleScreenImage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
         setImage(titleScreenImage);
         setKeyHandler(this::titleScreenHandler);
         musicService.enable();

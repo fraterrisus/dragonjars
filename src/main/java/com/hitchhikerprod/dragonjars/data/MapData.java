@@ -353,12 +353,6 @@ public class MapData {
         titleChars = stringDecoder.getDecodedChars();
     }
 
-    private ModifiableChunk decompressChunk(Chunk chunk) {
-        final HuffmanDecoder mapDecoder = new HuffmanDecoder(chunk);
-        final List<Byte> decodedMapData = mapDecoder.decode();
-        return new ModifiableChunk(decodedMapData);
-    }
-
     private List<Integer> discoverPointers(Chunk chunk, int basePtr) {
         final List<Integer> pointers = new ArrayList<>();
         int thisPtr = basePtr;

@@ -1,18 +1,20 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ChunkImageDecoder;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.SleepTask;
-import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
 public class YouWin implements Instruction {
+    private final WritableImage image = Images.blankImage(DragonWarsApp.IMAGE_X, DragonWarsApp.IMAGE_Y);
+    private final VideoBuffer vb = new VideoBuffer();
     private Interpreter i;
 
     @Override
@@ -20,29 +22,27 @@ public class YouWin implements Instruction {
         this.i = i;
         i.app().musicService().enable();
         i.app().musicService().playTitleMusic(i.memory().getCodeChunk());
+        i.imageDecoder().setVideoBuffer(vb);
         handler(0);
+        i.app().setImage(image);
         return null;
     }
 
     private void handler(int page) {
         final Chunk pageChunk = i.memory().copyDataChunk(ChunkTable.YOU_WIN + page);
-        final Image pageImage = new ChunkImageDecoder(pageChunk).parse();
+        i.imageDecoder().decodeChunkImage(pageChunk);
+        vb.writeTo(image.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
+
         switch (page) {
-            case 1 -> pageOne(pageImage, 0);
-            case 4 -> {
-                i.app().setImage(pageImage);
-                i.app().setKeyHandler(event -> {
-                    if (event.getCode().isModifierKey()) return;
-                    i.app().close();
-                });
-            }
-            default -> {
-                i.app().setImage(pageImage);
-                i.app().setKeyHandler(event -> {
-                    if (event.getCode().isModifierKey()) return;
-                    handler(page + 1);
-                });
-            }
+            case 1 -> pageOne(0);
+            case 4 -> i.app().setKeyHandler(event -> {
+                if (event.getCode().isModifierKey()) return;
+                i.app().close();
+            });
+            default -> i.app().setKeyHandler(event -> {
+                if (event.getCode().isModifierKey()) return;
+                handler(page + 1);
+            });
         }
     }
 
@@ -51,20 +51,18 @@ public class YouWin implements Instruction {
     private static final PixelRectangle BODY_3 = new PixelRectangle(232, 263, 117, 142);
     private static final PixelRectangle TEXT = new PixelRectangle(0, 320, 150, 200);
 
-    private void pageOne(Image pageImage, int box) {
-        final WritableImage wImage = new WritableImage(pageImage.getPixelReader(), (int)pageImage.getWidth(), (int)pageImage.getHeight());
-        final PixelWriter writer = wImage.getPixelWriter();
+    private void pageOne(int box) {
+        final PixelWriter writer = image.getPixelWriter();
 
         if (box != 0) blackOut(writer, BODY_1);
         if (box != 1) blackOut(writer, BODY_2);
         if (box != 2) blackOut(writer, BODY_3);
         if (box != 3) blackOut(writer, TEXT);
-        i.app().setImage(wImage);
 
         if (box != 3) {
             i.app().setKeyHandler(null);
             final SleepTask sleepTask = new SleepTask(1000);
-            sleepTask.setOnSucceeded(event -> pageOne(pageImage, box+1));
+            sleepTask.setOnSucceeded(event -> pageOne(box+1));
             final Thread thread = new Thread(sleepTask);
             thread.setDaemon(true);
             thread.start();
