@@ -39,6 +39,7 @@ public class Interpreter {
     private static final int MASK_WORD = 0x0000ffff;
 
     public static final int PARTY_SEGMENT = 1;
+    public static final int CHARACTER_BITMAPS = 0xb9a2;
 
     private final DragonWarsApp app;
 
@@ -554,8 +555,19 @@ public class Interpreter {
      */
     public void lowLevelDrawChar(int index, int x, int y, boolean invert) {
         final byte[] bitmask = new byte[8];
-        loadFromCodeSegment(0xb9a2, (index & 0x7f) * 8, bitmask, 8);
-        app().drawBitmask(bitmask, x, y, invert);
+        loadFromCodeSegment(CHARACTER_BITMAPS, (index & 0x7f) * 8, bitmask, 8);
+        getImageWriter(writer -> {
+            final int black = Images.convertColorIndex(0);
+            final int white = Images.convertColorIndex(15);
+            for (int dy = 0; dy < 8; dy++) {
+                final int b = bitmask[dy];
+                final int mask = 0x80;
+                for (int dx = 0; dx < 8; dx++) {
+                    final boolean draw = (b & (mask >> dx)) > 0;
+                    writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
+                }
+            }
+        });
     }
 
     public List<Byte> loadFromCodeSegment(int base, int offset, int length) {
@@ -591,15 +603,19 @@ public class Interpreter {
     }
 
     public void fillRectangle() {
-        app().drawRectangle(bg_color_3431, bbox_x0 * 8, bbox_y0, bbox_x1 * 8, bbox_y1);
+        final int colorValue = Images.convertColorIndex(bg_color_3431);
+        getImageWriter(writer -> {
+            for (int y = bbox_y0; y < bbox_y1; y++) {
+                for (int x = bbox_x0 * 8; x < bbox_x1 * 8; x++) {
+                    writer.setArgb(x, y, colorValue);
+                }
+            }
+        });
+
         x_31ed = bbox_x0; // 0x32a8
         x_3166 = bbox_x0;
         y_31ef = bbox_y0;
         strlen_313c = 0;
-    }
-
-    public void setBackground() {
-        setBackground(mem_342f);
     }
 
     /**
@@ -611,6 +627,13 @@ public class Interpreter {
         this.bg_color_3431 = ((al & 0x10) > 0) ? 0x0000 : 0xffff;
         this.mem_342f = this.mem_3430 & 0xff;
         this.mem_3430 = al & 0xff;
+    }
+
+    /**
+     * Sets the background color to the "previous" color, as stored in 0x342f.
+     */
+    public void setBackground() {
+        setBackground(mem_342f);
     }
 
     public void backSpace() {

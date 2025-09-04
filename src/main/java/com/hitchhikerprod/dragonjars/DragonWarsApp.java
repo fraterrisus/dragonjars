@@ -19,7 +19,6 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -70,58 +69,9 @@ public class DragonWarsApp extends Application {
         launch();
     }
 
-    public void setKeyHandler(EventHandler<KeyEvent> handler) {
-        this.scene.setOnKeyReleased(handler);
-    }
-
     public void close() {
         musicService.close();
         Platform.exit();
-    }
-
-    public MusicService musicService() {
-        return musicService;
-    }
-
-    /**
-     * Draws an 8x8 bitmask on the screen. The bitmask should be an array of bytes, one byte per vertical line.
-     * @param bitmask A `byte[8]`, each byte (8 bits) corresponding to 8 pixels in the X dimension
-     * @param x Screen coordinate (in pixels) of the left-hand side
-     * @param y Screen coordinate (in pixels) of the top side
-     * @param invert Draw black-on-white if false, or white-on-black if true.
-     */
-    public void drawBitmask(byte[] bitmask, int x, int y, boolean invert) {
-        final Image image = RootWindow.getInstance().getImage();
-        final int black = Images.convertColorIndex(0);
-        final int white = Images.convertColorIndex(15);
-        if (image instanceof WritableImage wimage) {
-            final PixelWriter writer = wimage.getPixelWriter();
-            for (int dy = 0; dy < 8; dy++) {
-                final int b = bitmask[dy];
-                final int mask = 0x80;
-                for (int dx = 0; dx < 8; dx++) {
-                    final boolean draw = (b & (mask >> dx)) > 0;
-                    writer.setArgb(x + dx, y + dy, (draw ^ invert) ? black : white);
-                }
-            }
-        } else {
-            throw new RuntimeException("Can't write the image");
-        }
-    }
-
-    public void drawRectangle(int color, int x0, int y0, int x1, int y1) {
-        final Image image = RootWindow.getInstance().getImage();
-        final int colorValue = Images.convertColorIndex(color);
-        if (image instanceof WritableImage wimage) {
-            final PixelWriter writer = wimage.getPixelWriter();
-            for (int y = y0; y < y1; y++) {
-                for (int x = x0; x < x1; x++) {
-                    writer.setArgb(x, y, colorValue);
-                }
-            }
-        } else {
-            throw new RuntimeException("Can't write the image");
-        }
     }
 
     private void loadDataFiles() {
@@ -161,9 +111,17 @@ public class DragonWarsApp extends Application {
         thread.start();
     }
 
+    public MusicService musicService() {
+        return musicService;
+    }
+
     public void setImage(Image image) {
         RootWindow.getInstance().setImage(image, SCALE_FACTOR);
         this.stage.sizeToScene();
+    }
+
+    public void setKeyHandler(EventHandler<KeyEvent> handler) {
+        this.scene.setOnKeyReleased(handler);
     }
 
     private void showTitleScreen() {
@@ -180,6 +138,15 @@ public class DragonWarsApp extends Application {
         new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
     }
 
+    private void stringHelper(StandaloneImageDecoder decoder, String s, int x, int y, boolean invert) {
+        int fx = x * 8;
+        int fy = y * 8;
+        for (char ch : s.toCharArray()) {
+            decoder.decodeChar(ch, fx, fy, invert);
+            fx += 8;
+        }
+    }
+
     private void testPattern() {
         setKeyHandler(null);
         final WritableImage wimage = Images.blankImage(IMAGE_X, IMAGE_Y);
@@ -189,8 +156,8 @@ public class DragonWarsApp extends Application {
         final VideoBuffer vb = new VideoBuffer(VideoBuffer.CHROMA_KEY);
         decoder.setVideoBuffer(vb);
 
-        drawString(decoder, "Test Pattern", 14, 0, true);
-        drawString(decoder, "Press Q to exit", 13, 24, true);
+        stringHelper(decoder, "Test Pattern", 14, 0, true);
+        stringHelper(decoder, "Press Q to exit", 13, 24, true);
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
@@ -233,15 +200,6 @@ public class DragonWarsApp extends Application {
         });
     }
 
-    private void drawString(StandaloneImageDecoder decoder, String s, int x, int y, boolean invert) {
-        int fx = x * 8;
-        int fy = y * 8;
-        for (char ch : s.toCharArray()) {
-            decoder.decodeChar(ch, fx, fy, invert);
-            fx += 8;
-        }
-    }
-
     private void titleScreenHandler(KeyEvent event) {
         if (event.getCode().isModifierKey()) return;
         switch (event.getCode()) {
@@ -269,5 +227,4 @@ public class DragonWarsApp extends Application {
             }
         }
     }
-
 }
