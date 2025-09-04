@@ -152,6 +152,29 @@ public class ImageDecoder {
         drawImageData(c, 4, GAMEPLAY);
     }
 
+    public void eraseRomImage(int index) {
+        drawRectangle(decodeRomImageArea(index), CHROMA_KEY);
+    }
+
+    public void decodeRomImage(int index) {
+        final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
+        final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
+
+        final int width = 2 * codeChunk.getUnsignedByte(baseAddress);
+        final int height = codeChunk.getUnsignedByte(baseAddress + 1);
+        final int x0 = 4 * codeChunk.getUnsignedByte(baseAddress + 2);
+        final int y0 = codeChunk.getUnsignedByte(baseAddress + 3);
+
+        final int size = 4 + (codeChunk.getUnsignedByte(baseAddress) * codeChunk.getUnsignedByte(baseAddress + 1));
+        final List<Byte> imageData = codeChunk.getBytes(baseAddress, size);
+
+        // width is half-size because of two pixels per byte
+        // x1 is too small by a factor of 8 (div 2 for same reason)
+        final ImageData c = new ImageData(imageData, x0, y0, width, height);
+
+        drawImageDataWithoutChroma(c, 4, WHOLE_IMAGE);
+    }
+
     public PixelRectangle decodeRomImageArea(int index) {
         final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
@@ -162,27 +185,6 @@ public class ImageDecoder {
         final int y0 = codeChunk.getUnsignedByte(baseAddress + 3);
 
         return new PixelRectangle(x0, y0, x0 + width, y0 + height);
-    }
-
-    public void eraseRomImage(int index) {
-        drawRectangle(decodeRomImageArea(index), CHROMA_KEY);
-    }
-
-    public void decodeRomImage(int index) {
-        final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
-        final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
-
-        final int width = codeChunk.getUnsignedByte(baseAddress);
-        final int height = codeChunk.getUnsignedByte(baseAddress + 1);
-        final int x0 = codeChunk.getUnsignedByte(baseAddress + 2);
-        final int y0 = codeChunk.getUnsignedByte(baseAddress + 3);
-        final List<Byte> imageData = codeChunk.getBytes(baseAddress, 4 + (width * height));
-
-        // width is half-size because of two pixels per byte
-        // x1 is too small by a factor of 8 (div 2 for same reason)
-        final ImageData c = new ImageData(imageData, 4 * x0, y0, 2 * width, height);
-
-        drawImageDataWithoutChroma(c, 4, WHOLE_IMAGE);
     }
 
     // invertbyte is only ever 0x00, 0x01 (doesn't do anything???), or 0x80 (flip x)
