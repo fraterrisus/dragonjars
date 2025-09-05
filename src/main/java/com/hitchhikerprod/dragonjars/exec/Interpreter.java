@@ -595,10 +595,6 @@ public class Interpreter {
         getImageWriter(w -> draw().character(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0, w));
     }
 
-    public int readXPointer() {
-        return x_31ed;
-    }
-
     public boolean roomToDrawChar() {
         return x_31ed < bbox_x1 - 1;
     }
@@ -620,17 +616,6 @@ public class Interpreter {
         System.out.println("drawString()");
         int x = x_31ed;
         int y = y_31ef;
-
-//        System.out.format("drawString(%03x,%03x):", x, y);
-//        for (int ch : s) {
-//            int c = ch & 0x7f;
-//            if (0x20 < c && c < 0x7e) {
-//                System.out.format(" %c", c);
-//            } else {
-//                System.out.format(" 0x%02x", ch);
-//            }
-//        }
-//        System.out.println();
 
         int p0 = 0;
         int p1;
@@ -754,11 +739,13 @@ public class Interpreter {
 
     private void drawCompassHelper() {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.COMPASS_N);
+        final boolean naturalLight = Objects.nonNull(mapDecoder) && mapDecoder().isLit();
         final int compass = heap(Heap.COMPASS_DURATION).read();
-        if (compass <= 0) {
+        if (compass <= 0 && !naturalLight) {
             bitBlastBackground(mask);
         } else {
-            draw().romImage(VideoHelper.COMPASS_N + compass);
+            final int facing = heap(Heap.PARTY_FACING).read();
+            draw().romImage(VideoHelper.COMPASS_N + facing);
             bitBlastForeground(mask);
         }
     }
