@@ -825,6 +825,10 @@ public class Interpreter {
         getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
+    public void bitBlast(VideoBuffer buffer, PixelRectangle mask) {
+        getImageWriter(w -> buffer.writeTo(w, mask, true));
+    }
+
     public void drawPartyInfoArea() { // 0x1a12
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;

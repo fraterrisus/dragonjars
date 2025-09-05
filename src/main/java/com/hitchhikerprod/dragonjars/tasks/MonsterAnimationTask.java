@@ -1,9 +1,12 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
+import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import java.util.ArrayList;
@@ -14,8 +17,9 @@ public class MonsterAnimationTask extends Task<Void> {
     private final Interpreter interpreter;
     private final Chunk priChunk, secChunk;
     private final List<Subimage> subimages = new ArrayList<>();
-    private final int[] background;
-    private final int[] foreground;
+    private final VideoBuffer background;
+    private final VideoBuffer foreground;
+    private final PixelRectangle mask;
 
     private record Subimage(int counter, int pointer, int proceed) {
         public Subimage decrement() {
@@ -27,11 +31,9 @@ public class MonsterAnimationTask extends Task<Void> {
         this.interpreter = interpreter;
         this.priChunk = primarychunk;
         this.secChunk = secondaryChunk;
-        this.background = new int[0x3e80];
-        this.foreground = new int[0x3e80];
-        // FIXME
-        // System.arraycopy(interpreter.videoMemory(), 0, background, 0, 0x3e80);
-        for (int i = 0; i < 0x3e80; i++) foreground[i] = 0x66;
+        this.background = interpreter.draw().getSnapshot();
+        this.foreground = new VideoBuffer(VideoBuffer.CHROMA_KEY);
+        this.mask = interpreter.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 
     private boolean weShouldStop() {
@@ -41,7 +43,7 @@ public class MonsterAnimationTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         decodePrimary();
-        applyChromaKey();
+        sendToScreen();
 
         subimages.clear();
         for (int i = 0; i < 4; i++) {
@@ -55,7 +57,7 @@ public class MonsterAnimationTask extends Task<Void> {
             if (weShouldStop()) break;
             decodeSecondary();
             if (weShouldStop()) break;
-            applyChromaKey();
+            sendToScreen();
             if (weShouldStop()) break;
         }
         return null;
@@ -69,7 +71,7 @@ public class MonsterAnimationTask extends Task<Void> {
         }
     }
 
-    public void decodePrimary() {
+    private void decodePrimary() {
         int x0 = priChunk.getUnsignedByte(0);
         int y0 = priChunk.getUnsignedByte(1);
         int x1 = priChunk.getUnsignedByte(2);
@@ -79,15 +81,11 @@ public class MonsterAnimationTask extends Task<Void> {
         int bx = 0;
         for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {
-                bx = bx ^ priChunk.getUnsignedByte(pointer);
-                pointer++;
-                final int byteAnd = VideoBuffer.getAEA2(bx);
-                final int byteOr = VideoBuffer.getAFA2(bx);
-
-                final int adr = 5 + x + (y * 0x50);
-                int oldValue = foreground[adr];
-                int newValue = (oldValue & byteAnd) | byteOr;
-                foreground[adr] = (byte)(newValue & 0xff);
+                bx = bx ^ priChunk.getUnsignedByte(pointer++);
+                final byte hi = (byte)((bx >> 4) & 0xf);
+                final byte lo = (byte)(bx & 0xf);
+                if (hi != 6) foreground.set(mask.x0() + 2*x, mask.y0() + y, hi);
+                if (lo != 6) foreground.set(mask.x0() + (2*x)+1, mask.y0() + y, lo);
             }
         }
     }
@@ -100,7 +98,7 @@ public class MonsterAnimationTask extends Task<Void> {
             else {
                 final int ptr = secChunk.getWord(s.pointer() + 1);
 
-                helper_4c23(secChunk, ptr);
+                applyDiff(secChunk, ptr);
 
                 if (secChunk.getUnsignedByte(s.pointer() + 3) == 0xff) {
                     final int basePointer = secChunk.getWord(2 * i);
@@ -118,44 +116,37 @@ public class MonsterAnimationTask extends Task<Void> {
         }
     }
 
-    private void helper_4c23(Chunk chunk, int myPointer) {
+    private void applyDiff(Chunk chunk, int myPointer) {
         if (chunk.getUnsignedByte(myPointer) == 0xff) return;
 
         for (int y = 0x00; y < 0x88; y++) {
-            for (int x = 0x05; x < 0x4b; x++) {
+            for (int x = 0x00; x < 0x46; x++) {
                 int byte3 = chunk.getUnsignedByte(myPointer++); // 0x4c4c
 
                 while (byte3 == 0) {
                     x = chunk.getUnsignedByte(myPointer++); // dx, 0x4c3c
                     if (x == 0xff) return;
-                    x = x + 5;
                     y = chunk.getUnsignedByte(myPointer++); // bx, 0x4c46
                     byte3 = chunk.getUnsignedByte(myPointer++); // ax, 0x4c4c
                 }
 
-                final int adr = x + (y * 0x50);
-                int oldValue = foreground[adr] & 0xff;
-                int newValue = oldValue ^ byte3;
-                foreground[adr] = (byte)newValue;
+                int vbx = mask.x0() + (2*x);
+                final int vby = mask.y0() + y;
+                final byte hi_in = foreground.get(vbx, vby);
+                final byte hi_md = (byte)((byte3 >> 4) & 0xf);
+                foreground.set(vbx, vby, (byte)(hi_in ^ hi_md));
+                vbx++;
+                final byte lo_in = foreground.get(vbx, vby);
+                final byte lo_md = (byte)(byte3 & 0xf);
+                foreground.set(vbx, vby, (byte)(lo_in ^ lo_md));
             }
         }
     }
 
-    private void applyChromaKey() {
-        final int[] buffer = new int[0x3e80];
-        for (int i = 0; i < buffer.length; i++) {
-            final int val = foreground[i];
-            final int byteAnd = VideoBuffer.getAEA2(val);
-            final int byteOr = VideoBuffer.getAFA2(val);
-
-            // final int adr = 5 + x + (y * 0x50);
-            int oldValue = background[i];
-            int newValue = (oldValue & byteAnd) | byteOr;
-            buffer[i] = (byte) (newValue & 0xff);
-        }
-
+    private void sendToScreen() {
+        final VideoBuffer output = new VideoBuffer(background);
+        foreground.writeTo(output, mask);
         if (weShouldStop()) return;
-        // FIXME
-        // Platform.runLater(() -> interpreter.copyToVideoMemory(buffer));
+        Platform.runLater(() -> interpreter.bitBlast(output, mask));
     }
 }

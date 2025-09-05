@@ -68,6 +68,10 @@ public class VideoHelper {
         this.codeChunk = codeChunk;
     }
 
+    public VideoBuffer getSnapshot() {
+        return new VideoBuffer(this.vb);
+    }
+
     public void setVideoBuffer(VideoBuffer vb) {
         this.vb = vb;
     }
