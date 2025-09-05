@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import javafx.scene.input.KeyCode;
 
@@ -18,23 +19,22 @@ public class ReadInputString implements Instruction {
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr();
         chars.clear();
-        i.drawChar(0xba); // ':' unclear if this gets written for us
-        i.drawChar(PROMPT_BOX); // prompt box
-        final int x0 = i.readXPointer();
+        i.drawChar(0xba);
+        i.drawChar(PROMPT_BOX);
         i.app().setKeyHandler(event -> {
             final KeyCode keycode = event.getCode();
             final int scancode = keycode.getCode();
             // this probably isn't quite accurate, i made most of it up
             if (keycode == KeyCode.ESCAPE) {
-                i.heap(0xc6).write(0x00, 1);
+                i.heap(Heap.INPUT_STRING).write(0x00, 1);
                 i.start(nextIP);
             } else if (keycode == KeyCode.ENTER) {
-                int ptr = 0xc6;
+                int ptr = Heap.INPUT_STRING;
                 for (int ch : chars) i.heap(ptr++).write(ch);
                 i.heap(ptr).write(0x00);
                 i.start(nextIP);
             } else if (keycode == KeyCode.BACK_SPACE || keycode == KeyCode.DELETE) {
-                if (i.readXPointer() > x0) {
+                if (!chars.isEmpty()) {
                     chars.removeLast();
                     i.backSpace();
                     i.backSpace();

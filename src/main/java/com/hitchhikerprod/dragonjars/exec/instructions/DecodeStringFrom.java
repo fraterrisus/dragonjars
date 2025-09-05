@@ -43,7 +43,7 @@ public class DecodeStringFrom implements Instruction {
         this.saveAX = saveAX;
     }
 
-    private static final BiConsumer<Interpreter, List<Integer>> DRAW_STRING = (i, ch) -> { i.drawString(ch); i.composeVideoLayers(false, false, true); };
+    private static final BiConsumer<Interpreter, List<Integer>> DRAW_STRING = Interpreter::drawString;
 
     public static DecodeStringFrom CS = new DecodeStringFrom(
             i -> i.getIP().incr(OPCODE),

@@ -40,14 +40,13 @@ public class ReadKeySwitch implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         // I know, this is weird, but it's how the game manages the spell icons.
-        i.drawSpellIcons();
         if (! i.isPaused()) {
+            i.drawSpellIcons(false);
             i.drawPartyInfoArea();
-            i.composeVideoLayers(true, true, false);
         }
 
         final Address ip = i.getIP();
-        i.drawString313e(); //?
+        // i.drawString313e();
         final int imm_2a44 = i.memory().read(ip.incr(1), 1);
         final int imm_2a45 = i.memory().read(ip.incr(2), 1);
         int pointer = ip.offset() + 3; // stored at [3a41/seg,3a3f/adr]
@@ -68,7 +67,6 @@ public class ReadKeySwitch implements Instruction {
         // 0x2884
         if ((imm_2a45 & 0x80) > 0) { // print footer
             i.printFooter(imm_2a45 & 0x3);
-            i.composeVideoLayers(false, false, true);
         }
 
         // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115

@@ -205,7 +205,7 @@ public class SimpleInstructionsTest {
     public void strToInt() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
         final char[] chars = new char[]{'1', '5', '3', '9', '4'};
-        int pointer = 0xc6;
+        int pointer = Heap.INPUT_STRING;
         for (char ch : chars) {
             i.heap(pointer++).write(((int)ch) | 0x80);
         }

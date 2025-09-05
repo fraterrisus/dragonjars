@@ -15,10 +15,13 @@ import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
 
 public class VideoHelper {
     // these addresses have already had the -0x0100 offset applied
-    private static final int FONT_ADDRESS = 0xb8a2;
-    private static final int CORNER_LUT_ADDRESS = 0x6428;
+    public static final int PC_STATUS_BITMASKS = 0x1a61;
+    public static final int PC_STATUS_OFFSETS = 0x1a65;
+    public static final int PC_STATUS_STRINGS = 0x1a69;
     private static final int HUD_REGION_LUT_ADDRESS = 0x2544;
+    private static final int CORNER_LUT_ADDRESS = 0x6428;
     private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
+    private static final int FONT_ADDRESS = 0xb8a2;
 
     // parameters for decodeHudRegion
     public static final int HUD_BOTTOM = 0;
@@ -70,10 +73,14 @@ public class VideoHelper {
     }
 
     public void withVideoBuffer(VideoBuffer vb, Consumer<VideoHelper> callback) {
-        final VideoBuffer oldVb = this.vb;
-        setVideoBuffer(vb);
-        callback.accept(this);
-        setVideoBuffer(oldVb);
+        if (this.vb == vb) {
+            callback.accept(this);
+        } else {
+            final VideoBuffer oldVb = this.vb;
+            setVideoBuffer(vb);
+            callback.accept(this);
+            setVideoBuffer(oldVb);
+        }
     }
 
     public void clearBuffer(byte value) {
@@ -90,6 +97,20 @@ public class VideoHelper {
             for (int dx = 0; dx < 8; dx++) {
                 final boolean draw = (b & (mask >> dx)) > 0;
                 vb.set(x0 + dx, y0 + dy, (byte)((draw ^ invert) ? 0x0 : 0xf));
+            }
+        }
+    }
+
+    public void character(int ch, int x0, int y0, boolean invert, PixelWriter writer) {
+        final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
+        List<Byte> bitmask = codeChunk.getBytes(offset, 8);
+        for (int dy = 0; dy < 8; dy++) {
+            final int b = bitmask.get(dy);
+            final int mask = 0x80;
+            for (int dx = 0; dx < 8; dx++) {
+                final boolean draw = (b & (mask >> dx)) > 0;
+                final int color = Images.convertColorIndex((draw ^ invert) ? 0x0 : 0xf);
+                writer.setArgb(x0 + dx, y0 + dy, color);
             }
         }
     }

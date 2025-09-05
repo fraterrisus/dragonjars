@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class StrToInt implements Instruction {
@@ -8,7 +9,7 @@ public class StrToInt implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final StringBuilder digits = new StringBuilder();
-        int pointer = 0xc6;
+        int pointer = Heap.INPUT_STRING;
         // skip leading spaces
         while ((i.heap(pointer).read(1) & 0x7f) == 0x2a) { pointer++; }
         while (true) {

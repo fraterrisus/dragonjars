@@ -31,7 +31,7 @@ public class DrawCurrentViewport implements Instruction {
     public Address exec(Interpreter ignored) {
         i.unpause();
 
-        i.markSegment4d33Dirty();
+        // i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
 
         i.decodeMap(loc.mapId());
@@ -56,7 +56,6 @@ public class DrawCurrentViewport implements Instruction {
             }
         });
         i.drawViewportCorners();
-        i.composeVideoLayers(true, true, false);
 
         return i.getIP().incr();
     }

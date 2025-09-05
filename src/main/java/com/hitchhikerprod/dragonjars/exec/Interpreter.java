@@ -37,7 +37,6 @@ public class Interpreter {
     private static final int MASK_WORD = 0x0000ffff;
 
     public static final int PARTY_SEGMENT = 1;
-    public static final int CHARACTER_BITMAPS = 0xb9a2;
 
     private final DragonWarsApp app;
 
@@ -69,12 +68,12 @@ public class Interpreter {
     private int bbox_x1; // 0x254a (ch)
     private int bbox_y1; // 0x254c (px)
 
-    private int strlen_313c;
-    private List<Integer> string_313e = new ArrayList<>();
+//    private int strlen_313c;
+//    private List<Integer> string_313e = new ArrayList<>();
     private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
 
-    public int x_3166;
-    public int y_3168;
+//    public int x_3166;
+//    public int y_3168;
     public int x_31ed; // default for draw_char
     public int y_31ef; // default for draw_char
 
@@ -82,8 +81,9 @@ public class Interpreter {
     private int mem_3430 = 0x00;
     private int bg_color_3431 = 0xffff;
 
-    private int struct_id_4d33 = 0xff;
-    private int struct_id_4d4e = 0xff;
+    // TODO: a more thorough investigation of what this is for
+//    private int struct_id_4d33 = 0xff;
+//    private int struct_id_4d4e = 0xff;
 
     /* Architectural registers */
 
@@ -137,7 +137,10 @@ public class Interpreter {
             for (int i = 0; i < 10; i++) videoHelper.romImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) videoHelper.romImage(27 + i); // HUD title bar
             videoBackground.writeTo("video-background.png");
+
             videoHelper.setVideoBuffer(videoForeground);
+            final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+            videoHelper.rectangle(mask, (byte)0);
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
         }
@@ -167,7 +170,7 @@ public class Interpreter {
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
-        // eraseSmallVideoBuffer(); // we do this above now by resetting the foreground layer
+        // eraseSmallVideoBuffer(); // we do this above when we reset the foreground layer
         //   set the frob for segment_idx[4d33] to 0x02
         //     that was init'd to 0xffff, but now is 0xb9c0, i'm just not sure HOW
         //     also this doesn't have any effect because there's no segment loaded?
@@ -532,7 +535,7 @@ public class Interpreter {
     }
 
     public void drawStringAndResetBBox() {
-        drawString313e();
+        // drawString313e();
         if (draw_borders != 0x00) {
             drawHud();
         }
@@ -542,22 +545,31 @@ public class Interpreter {
         y_31ef = 0x98;
     }
 
+/*
     public void drawString313e() {
-        for (int i = 0; i < strlen_313c; i++) {
+        int i0 = 0;
+        // skip leading spaces
+        while (string_313e.get(i0) == 0xa0) i0++;
+        for (int i = i0; i < strlen_313c; i++) {
             draw().character(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
             x_31ed += 8;
         }
         strlen_313c = 0;
         x_3166 = x_31ed;
     }
+*/
 
     public void fillRectangle() {
-        getImageWriter(w -> draw().rectangle(getBBox().toPixel(), (byte)(bg_color_3431 & 0xf), w));
+        getImageWriter(this::fillRectangle);
+    }
+
+    private void fillRectangle(PixelWriter w) {
+        draw().rectangle(getBBox().toPixel(), (byte)(bg_color_3431 & 0xf), w);
 
         x_31ed = bbox_x0; // 0x32a8
-        x_3166 = bbox_x0;
+        // x_3166 = bbox_x0;
         y_31ef = bbox_y0;
-        strlen_313c = 0;
+        // strlen_313c = 0;
     }
 
     /**
@@ -580,7 +592,7 @@ public class Interpreter {
 
     public void backSpace() {
         x_31ed -= 1;
-        draw().character(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+        getImageWriter(w -> draw().character(0xa0, x_31ed * 8, y_31ef, bg_color_3431 == 0, w));
     }
 
     public int readXPointer() {
@@ -592,11 +604,19 @@ public class Interpreter {
     }
 
     public void drawChar(int ch) {
-        draw().character(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0);
+        getImageWriter(w -> drawChar(ch, w));
+    }
+
+    private void drawChar(int ch, PixelWriter w) {
+        draw().character(ch, x_31ed * 8, y_31ef, bg_color_3431 == 0, w);
         x_31ed += 1;
     }
 
-    public void drawString(List<Integer> s) {
+    public void drawString(List<Integer> chars) {
+        getImageWriter(w -> drawString(chars, w));
+    }
+
+    private void drawString(List<Integer> chars, PixelWriter pixelWriter) {
         System.out.println("drawString()");
         int x = x_31ed;
         int y = y_31ef;
@@ -614,29 +634,29 @@ public class Interpreter {
 
         int p0 = 0;
         int p1;
-        while (p0 < s.size()) {
+        while (p0 < chars.size()) {
             p1 = p0;
-            int ch = s.get(p1);
+            int ch = chars.get(p1);
             while (ch != 0xa0 && ch != 0x8d) {
                 p1++;
-                if (p1 == s.size()) {
+                if (p1 == chars.size()) {
                     ch = -1;
                     break;
                 }
-                ch = s.get(p1);
+                ch = chars.get(p1);
             }
             if ((x + p1 - p0) > bbox_x1) {
                 x = bbox_x0;
                 y += 8;
             }
             for (int i = p0; i < p1; i++) {
-                draw().character(s.get(i), x * 8, y, bg_color_3431 == 0);
+                draw().character(chars.get(i), x * 8, y, bg_color_3431 == 0, pixelWriter);
                 x++;
             }
             p0 = p1;
             if (ch == 0x8d) { x = bbox_x0; y += 8; p0++; }
             if (ch == 0xa0) {
-                draw().character(0xa0, x * 8, y, bg_color_3431 == 0);
+                draw().character(0xa0, x * 8, y, bg_color_3431 == 0, pixelWriter);
                 x++;
                 p0++;
             }
@@ -648,7 +668,7 @@ public class Interpreter {
 
     public void drawViewportCorners() {
         for (int i = 0; i < 4; i++) draw().corner(i);
-        bitBlastViewport();
+        bitBlastForeground(draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel());
     }
 
     private MonsterAnimationTask monsterAnimationTask;
@@ -699,46 +719,82 @@ public class Interpreter {
         }
     }
 
-    // FIXME
     private int eyePhase;
+    private int torchPhase;
+
+    public void setTorchPhase(int phase) {
+        this.torchPhase = phase;
+        if (!isPaused()) drawTorchHelper();
+    }
 
     public void setEyePhase(int phase) {
         this.eyePhase = phase;
-        draw().withVideoBuffer(videoForeground, this::drawEyeHelper);
+        if (!isPaused()) drawEyeHelper();
     }
 
-    private void drawEyeHelper(VideoHelper decoder) {
-        if (isPaused()) return;
-        if (eyePhase >= 0) decoder.romImage(VideoHelper.EYE_CLOSED + eyePhase);
+    private void drawEyeHelper() {
+        final PixelRectangle mask = draw().getRomImageArea(VideoHelper.EYE_CLOSED);
+        if (eyePhase < 0) {
+            bitBlastBackground(mask);
+        } else {
+            draw().romImage(VideoHelper.EYE_CLOSED + eyePhase);
+            bitBlastForeground(mask);
+        }
     }
 
-    public void drawSpellIcons() { drawSpellIcons(false); }
+    private void drawTorchHelper() {
+        final PixelRectangle mask = draw().getRomImageArea(VideoHelper.TORCH_1);
+        if (torchPhase < 0) {
+            bitBlastBackground(mask);
+        } else {
+            draw().romImage(VideoHelper.TORCH_UNLIT + torchPhase);
+            bitBlastForeground(mask);
+        }
+    }
+
+    private void drawCompassHelper() {
+        final PixelRectangle mask = draw().getRomImageArea(VideoHelper.COMPASS_N);
+        final int compass = heap(Heap.COMPASS_DURATION).read();
+        if (compass <= 0) {
+            bitBlastBackground(mask);
+        } else {
+            draw().romImage(VideoHelper.COMPASS_N + compass);
+            bitBlastForeground(mask);
+        }
+    }
+
+    private void drawShieldHelper() {
+        final PixelRectangle mask = draw().getRomImageArea(VideoHelper.SHIELD);
+        final int shield = heap(Heap.SHIELD_DURATION).read();
+        if (shield <= 0) {
+            bitBlastBackground(mask);
+        } else {
+            draw().romImage(VideoHelper.SHIELD);
+            bitBlastForeground(mask);
+        }
+    }
 
     public void drawSpellIcons(boolean force) {
         if (!force && isPaused()) return;
 
-        // FIXME
-        draw().withVideoBuffer(videoForeground, d -> {
-            final int compass = heap(Heap.COMPASS_DURATION).read();
-            if (compass > 0) {
-                d.romImage(VideoHelper.COMPASS_N + compass - 1);
-            }
-
-            final int trap = heap(Heap.DETECT_TRAPS_DURATION).read();
-            if (trap > 0) {
-                if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
-            } else {
-                eyePhase = -1;
-            }
-            drawEyeHelper(d);
-
-            final int shield = heap(Heap.SHIELD_DURATION).read();
-            if (shield > 0) {
-                d.romImage(VideoHelper.SHIELD);
-            }
-        });
-        // torch: 0x15 unlit, 0x16-0x1a lit
-        // uses heap(0xc1)
+        final int trap = heap(Heap.DETECT_TRAPS_DURATION).read();
+        if (trap > 0) {
+            if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
+        } else {
+            eyePhase = -1;
+        }
+/*      TODO
+        final int torch = heap(Heap.LIGHT_SOURCE).read();
+        if (torch > 0) {
+            if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
+        } else {
+            torchPhase = -1;
+        }
+*/
+        drawCompassHelper();
+        drawShieldHelper();
+        drawEyeHelper();
+        drawTorchHelper();
 
         // ax <- 0x0000
         // [4a71] <- ax
@@ -757,7 +813,7 @@ public class Interpreter {
                         bitBlastBackground(regionRect.toPixel());
                         drawSpellIcons(true);
                     }
-                    case VideoHelper.HUD_GAMEPLAY -> bitBlastViewport();
+                    case VideoHelper.HUD_GAMEPLAY -> bitBlastForeground(regionRect.toPixel());
                     case VideoHelper.HUD_PARTY_AREA -> {
                         heap(Heap.PC_DIRTY).write(0x00, 7); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
@@ -775,37 +831,35 @@ public class Interpreter {
     }
 
     public void bitBlastBackground(PixelRectangle mask) {
-        getImageWriter(w -> videoBackground.writeTo(w, mask, true));
+        getImageWriter(w -> videoBackground.writeTo(w, mask, false));
     }
 
-    public void bitBlastViewport() {
-        final PixelRectangle mask = draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+    public void bitBlastForeground(PixelRectangle mask) {
         getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
     public void drawPartyInfoArea() { // 0x1a12
-        // FIXME enabling the bounds check prevents ever drawing this
-        if (! regionOverlapsBBox(0x0b, false)) return;
-
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
         final int save_heap_06 = heap(Heap.SELECTED_PC).read();
 
         // set the indirect function to draw_char()
 
-        draw().withVideoBuffer(videoForeground, d -> {
-            for (int charId = 0; charId < 7; charId++) {
-                // Assembly loops in the other direction, but our bar-drawing code needs to go this way
-                // to avoid mishaps with the black pixels between bars.
-                final int heapIndex = 0x18 + charId;
-                int ax = heap(heapIndex).read();
-                if ((ax & 0x80) > 0) continue;
-                heap(Heap.SELECTED_PC).write(charId);
-                ax = ((ax & 0x02) > 0) ? 0x01 : 0x10;
-                drawCharacterInfo(charId, ax);
-                heap(heapIndex).write(0xff);
-            }
-        });
+        for (int charId = 0; charId < 7; charId++) {
+            // Assembly loops in the other direction, but our bar-drawing code needs to go this way
+            // to avoid mishaps with the black pixels between bars.
+            final int heapIndex = 0x18 + charId;
+            int bg = heap(heapIndex).read();
+            if ((bg & 0x80) > 0) continue; // in theory this is a "don't bother, nothing's changed" check?
+            heap(Heap.SELECTED_PC).write(charId);
+            bg = ((bg & 0x02) > 0) ? 0x01 : 0x10;
+            drawCharacterInfo(charId, bg);
+            heap(heapIndex).write(0xff);
+        }
+
+        // copy everything we just did to the screen
+        final PixelRectangle mask = draw().getHudRegionArea(VideoHelper.HUD_PARTY_AREA).toPixel();
+        bitBlastForeground(mask);
 
         // set the indirect function back to 0x30c1
 
@@ -814,83 +868,91 @@ public class Interpreter {
         y_31ef = save_31ef;
     }
 
-    private void drawCharacterInfo(int charId, int flag) {
+    private void drawCharacterInfo(int charId, int bg) {
         // input flag is either 0x10 or 0x01
-        // final int simpleFlag = flag & 0x0f; // either 0 or 1
-        setBackground(flag);
+        setBackground(bg);
 
-        x_31ed = 0x1b;
-        y_31ef = (charId << 4) + 0x20;
+        final PixelRectangle partyRegion = draw().getHudRegionArea(VideoHelper.HUD_PARTY_AREA).toPixel();
+        final int pcY = partyRegion.y0() + (charId << 4);
+        final PixelRectangle nameRegion = new PixelRectangle(partyRegion.x0(), pcY, partyRegion.x1(), pcY + 0x8);
+        final PixelRectangle statusRegion = new PixelRectangle(partyRegion.x0(), pcY + 0x8, partyRegion.x1(), pcY + 0x10);
 
         final int charsInParty = heap(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
+            // black out non-existing characters
+            draw().rectangle(nameRegion, (byte)0);
+            draw().rectangle(statusRegion, (byte)0);
             setBackground();
             return;
         }
 
         final int charBaseAddress = heap(Heap.MARCHING_ORDER + charId).read() << 8;
 
-        final List<Integer> nameCh = Instructions.getStringFromMemory(this, new Address(PARTY_SEGMENT, charBaseAddress));
-        indentTo(0x1b + ((0x0d - nameCh.size()) >> 1));
-        for (int ch : nameCh) drawChar(ch);
-        indentTo(0x27);
+        final Address namePointer = new Address(PARTY_SEGMENT, charBaseAddress);
+        final List<Integer> nameCh = Instructions.getStringFromMemory(this, namePointer);
 
-        x_31ed = 0x1b;
+        int x = 0x1b + ((0x0d - nameCh.size()) >> 1); // character address
+        if (bg_color_3431 != 0) draw().rectangle(nameRegion, (byte) 0xf);
+        for (int ch : nameCh) {
+            draw().character(ch, x * 8, nameRegion.y0(), bg_color_3431 == 0);
+            x++;
+        }
 
         final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
         for (int i = 3; i >= 0; i--) {
-            final int mask = memory().getCodeChunk().getUnsignedByte(0x1a61 + i);
+            final int mask = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_BITMASKS + i);
             if ((statuses & mask) > 0) {
-                drawStatusHelper(i);
+                drawStatusHelper(i, statusRegion);
                 setBackground();
                 return;
             }
         }
 
-        drawBarHelper(0x08, charBaseAddress + 0x14, 12);
-        drawBarHelper(0x0b, charBaseAddress + 0x18, 10);
-        drawBarHelper(0x0e, charBaseAddress + 0x1c, 9);
+        drawBarHelper(statusRegion, 0x00, charBaseAddress + 0x14, 12);
+        drawBarHelper(statusRegion, 0x03, charBaseAddress + 0x18, 10);
+        drawBarHelper(statusRegion, 0x06, charBaseAddress + 0x1c, 9);
 
         setBackground();
     }
 
     public void indentFromBbox(int dx) {
-        indentTo(bbox_x0 + dx);
+        getImageWriter(w -> indentTo(bbox_x0 + dx, w));
     }
 
-    private void indentTo(int limit) {
+    private void indentTo(int limit, PixelWriter w) {
         // drawChar skips the line-wrap check
-        while (x_31ed < limit) drawChar(0xa0);
+        while (x_31ed < limit) drawChar(0xa0, w);
     }
 
-    private void drawStatusHelper(int i) {
-        final int wordAddress = memory().getCodeChunk().read(0x1a69 + (2 * i), 2) - 0x100;
-        final int xOffset = memory().getCodeChunk().getUnsignedByte(0x1a65 + i);
+    private void drawStatusHelper(int i, PixelRectangle statusRegion) {
+        final int wordAddress = memory().getCodeChunk().read(VideoHelper.PC_STATUS_STRINGS + (2 * i), 2) - 0x100;
         this.stringDecoder.decodeString(memory().getCodeChunk(), wordAddress);
+
         final List<Integer> chars = new ArrayList<>();
         chars.add(0xe9); // 'i'
         chars.add(0xf3); // 's'
         chars.add(0xa0); // ' '
         chars.addAll(stringDecoder.getDecodedChars());
-        y_31ef += 8;
-        indentTo(xOffset);
-        drawString(chars);
-        indentTo(0x27);
-    }
 
-    private void drawBarHelper(int y, int attributeAddr, int color) {
-        final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
-        final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
-        final int barWidth = 0x60 * cur / max;
-        final byte black = (byte)0;
-        for (int dx = 0; dx < 0x60; dx++) {
-            final byte pixel = (dx <= barWidth) ? (byte)color : black;
-            draw().pixel((x_31ed * 8) + dx, y_31ef + y, pixel);
-            draw().pixel((x_31ed * 8) + dx, y_31ef + y + 1, pixel);
-            draw().pixel((x_31ed * 8) + dx, y_31ef + y + 2, black);
+        int x = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_OFFSETS + i);
+        if (bg_color_3431 != 0) draw().rectangle(statusRegion, (byte) 0xf);
+        for (int ch : chars) {
+            draw().character(ch, x * 8, statusRegion.y0(), bg_color_3431 == 0);
+            x++;
         }
     }
 
+    private void drawBarHelper(PixelRectangle region, int y, int attributeAddr, int color) {
+        final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
+        final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
+        final int barWidth = 0x60 * cur / max;
+        for (int dx = 0; dx < barWidth; dx++) {
+            draw().pixel(region.x0() + dx, region.y0() + y, (byte)color);
+            draw().pixel(region.x0() + dx, region.y0() + y + 1, (byte)color);
+        }
+    }
+
+/*
     public void markSegment4d33Dirty() { // 0x4bc2
         final int segmentId = struct_id_4d33;
         if (segmentId != 0xff) {
@@ -899,6 +961,7 @@ public class Interpreter {
             struct_id_4d33 = 0xff;
         }
     }
+*/
 
     public PartyLocation getPartyLocation() {
         return new PartyLocation(
@@ -963,35 +1026,38 @@ public class Interpreter {
         }
         // copy 0x253f/tmp to 0x2547/bbox
         setBBox(r);
+
         // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
         x_31ed = x0;
         y_31ef = y0;
 
-        int x;
-        int y = y0;
-        // draw top border
-        for (x = x0; x < x1; x += 1) {
-            draw().character(0x01, x * 8, y, invert);
-        }
-        draw().character(0x00, x0 * 8, y, invert);
-        draw().character(0x02, (x1 - 1) * 8, y, invert);
-        // draw vertical edges
-        y += 8;
-        while (y < y1 - 8) {
-            draw().character(0x03, x0 * 8, y, invert);
-            draw().character(0x04, (x1 - 1) * 8, y, invert);
+        getImageWriter(w -> {
+            int x;
+            int y = y0;
+            // draw top border
+            for (x = x0; x < x1; x += 1) {
+                draw().character(0x01, x * 8, y, invert, w);
+            }
+            draw().character(0x00, x0 * 8, y, invert, w);
+            draw().character(0x02, (x1 - 1) * 8, y, invert, w);
+            // draw vertical edges
             y += 8;
-        }
-        // draw bottom border
-        for (x = x0; x < x1; x += 1) {
-            draw().character(0x06, x * 8, y, invert);
-        }
-        draw().character(0x05, x0 * 8, y, invert);
-        draw().character(0x07, (x1 - 1) * 8, y, invert);
+            while (y < y1 - 8) {
+                draw().character(0x03, x0 * 8, y, invert, w);
+                draw().character(0x04, (x1 - 1) * 8, y, invert, w);
+                y += 8;
+            }
+            // draw bottom border
+            for (x = x0; x < x1; x += 1) {
+                draw().character(0x06, x * 8, y, invert, w);
+            }
+            draw().character(0x05, x0 * 8, y, invert, w);
+            draw().character(0x07, (x1 - 1) * 8, y, invert, w);
 
-        shrinkBBox();
+            shrinkBBox();
+            fillRectangle(w);
+        });
         draw_borders = 0xff;
-        fillRectangle();
     }
 
     public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
@@ -1011,7 +1077,6 @@ public class Interpreter {
                         heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
                     }
                     setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
-                    composeVideoLayers(true, true, false);
                     start(prompt.destination());
                     break;
                 }
@@ -1032,14 +1097,16 @@ public class Interpreter {
     public void printFooter(int index) { // 0x288b
         if (index > 3) throw new IllegalArgumentException("index can't be greater than 3");
         y_31ef = bbox_y1 - 8;
-        x_3166 = 0; // not sure why we do this
+        // x_3166 = 0; // not sure why we do this
         final int x0 = Integer.max(0, bbox_x1 - bbox_x0 - FOOTER_OFFSETS.get(index)) >> 1;
         x_31ed = bbox_x0;
-        indentTo(bbox_x0 + x0); // this might not be welcome always?
-        // x_31ed = bbox_x0 + x0;
-        final List<Integer> ch = FOOTERS.get(index).chars().map(c -> c | 0x80).boxed().toList();
-        drawString(ch);
-        indentTo(bbox_x1);
+        getImageWriter(w -> {
+            indentTo(bbox_x0 + x0, w); // this might not be welcome always?
+            // x_31ed = bbox_x0 + x0;
+            final List<Integer> ch = FOOTERS.get(index).chars().map(c -> c | 0x80).boxed().toList();
+            drawString(ch, w);
+            indentTo(bbox_x1, w);
+        });
 
         // 0x28c6
 //        final int bufferOffset = (y_31ef - bbox_y0) >> 3;
@@ -1061,14 +1128,6 @@ public class Interpreter {
             final PixelWriter writer = wimage.getPixelWriter();
             fn.accept(writer);
         }
-    }
-
-    public void composeVideoLayers(boolean bg, boolean fg, boolean modal) {
-        System.out.println("composeVideoLayers(" + bg + ", " + fg + ", " + modal + ")");
-        getImageWriter(w -> {
-            if (bg) videoBackground.writeTo(w, VideoBuffer.WHOLE_IMAGE, false);
-            if (fg) videoForeground.writeTo(w, VideoBuffer.WHOLE_IMAGE, true);
-        });
     }
 
     private Instruction decodeOpcode(int opcode) {
@@ -1225,7 +1284,7 @@ public class Interpreter {
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();
             case 0x95 -> new SetCursor();
-            case 0x96 -> (i) -> { i.indentTo(bbox_x1); return i.getIP().incr(); };
+            case 0x96 -> (i) -> { getImageWriter(w -> i.indentTo(bbox_x1, w)); return i.getIP().incr(); };
             case 0x97 -> new ReadPCField();
             case 0x98 -> new WritePCField();
             case 0x99 -> new TestAX();

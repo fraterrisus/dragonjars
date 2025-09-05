@@ -30,6 +30,7 @@ public class Heap {
     public static final int COMPASS_DURATION = 0xbe;
     public static final int SHIELD_DURATION = 0xc0;
     public static final int LIGHT_SOURCE = 0xc1;
+    public static final int INPUT_STRING = 0xc6;
 
     private final int[] storage = new int[256];
 
