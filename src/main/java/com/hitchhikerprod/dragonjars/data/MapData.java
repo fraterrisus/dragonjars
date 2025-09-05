@@ -253,12 +253,14 @@ public class MapData {
             westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex - 1));
         }
 
-        final int roofTextureIndex = (rawData >> 14) & 0x3;
-        final int roofTextureId = 0xff & roofTextures54c5.get(roofTextureIndex);
+        // Note that we look up the texture index on the master texture list but DO NOT add 0x6e for chunk id
+        final int roofTextureIndex0 = (rawData >> 14) & 0x3;
+        final int roofTextureIndex1 = 0xff & roofTextures54c5.get(roofTextureIndex0);
+        final int roofTextureId = 0xff & textureChunks5677.get(roofTextureIndex1);
 
-        final int floorTextureIndex = (rawData >> 12) & 0x3;
-        final int textureIndex = 0xff & floorTextures54c9.get(floorTextureIndex);
-        final int floorTextureId = 0x6e + (0xff & textureChunks5677.get(textureIndex));
+        final int floorTextureIndex0 = (rawData >> 12) & 0x3;
+        final int floorTextureIndex1 = 0xff & floorTextures54c9.get(floorTextureIndex0);
+        final int floorTextureId = 0x6e + (0xff & textureChunks5677.get(floorTextureIndex1));
 
         final boolean touched = (rawData & 0x000800) > 0;
 

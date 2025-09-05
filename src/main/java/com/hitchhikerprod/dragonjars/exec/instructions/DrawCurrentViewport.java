@@ -79,7 +79,6 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     private void drawRoofTexture(int textureId) {
-        // FIXME. I believe this logic to be correct, but the Guard Bridge has roof 0x00 and that ain't right.
         if (textureId == 1) { // 0x54f8
             final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.DIRTY);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
