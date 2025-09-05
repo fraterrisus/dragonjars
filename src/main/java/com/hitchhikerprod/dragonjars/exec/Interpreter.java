@@ -613,7 +613,6 @@ public class Interpreter {
     }
 
     private void drawString(List<Integer> chars, PixelWriter pixelWriter) {
-        System.out.println("drawString()");
         int x = x_31ed;
         int y = y_31ef;
 
@@ -641,8 +640,10 @@ public class Interpreter {
             p0 = p1;
             if (ch == 0x8d) { x = bbox_x0; y += 8; p0++; }
             if (ch == 0xa0) {
-                draw().character(0xa0, x * 8, y, bg_color_3431 == 0, pixelWriter);
-                x++;
+                if (x < bbox_x1 - 1) {
+                    draw().character(0xa0, x * 8, y, bg_color_3431 == 0, pixelWriter);
+                    x++;
+                }
                 p0++;
             }
         }
@@ -839,9 +840,11 @@ public class Interpreter {
         for (int charId = 0; charId < 7; charId++) {
             // Assembly loops in the other direction, but our bar-drawing code needs to go this way
             // to avoid mishaps with the black pixels between bars.
-            final int heapIndex = 0x18 + charId;
+            final int heapIndex = Heap.PC_DIRTY + charId;
             int bg = heap(heapIndex).read();
-            if ((bg & 0x80) > 0) continue; // in theory this is a "don't bother, nothing's changed" check?
+            // In theory this is a "don't bother, nothing's changed" check,
+            // but I'm probably missing some updates (see 0x2bb1)
+            if ((bg & 0x80) > 0) continue;
             heap(Heap.SELECTED_PC).write(charId);
             bg = ((bg & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, bg);
@@ -868,6 +871,9 @@ public class Interpreter {
         final PixelRectangle nameRegion = new PixelRectangle(partyRegion.x0(), pcY, partyRegion.x1(), pcY + 0x8);
         final PixelRectangle statusRegion = new PixelRectangle(partyRegion.x0(), pcY + 0x8, partyRegion.x1(), pcY + 0x10);
 
+        draw().rectangle(nameRegion, (byte)(bg_color_3431 == 0 ? 0x0 : 0xf));
+        draw().rectangle(statusRegion, (byte)(bg_color_3431 == 0 ? 0x0 : 0xf));
+
         final int charsInParty = heap(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
             // black out non-existing characters
@@ -883,7 +889,6 @@ public class Interpreter {
         final List<Integer> nameCh = Instructions.getStringFromMemory(this, namePointer);
 
         int x = 0x1b + ((0x0d - nameCh.size()) >> 1); // character address
-        if (bg_color_3431 != 0) draw().rectangle(nameRegion, (byte) 0xf);
         for (int ch : nameCh) {
             draw().character(ch, x * 8, nameRegion.y0(), bg_color_3431 == 0);
             x++;
@@ -899,6 +904,7 @@ public class Interpreter {
             }
         }
 
+        System.out.println();
         drawBarHelper(statusRegion, 0x00, charBaseAddress + 0x14, 12);
         drawBarHelper(statusRegion, 0x03, charBaseAddress + 0x18, 10);
         drawBarHelper(statusRegion, 0x06, charBaseAddress + 0x1c, 9);
@@ -926,20 +932,20 @@ public class Interpreter {
         chars.addAll(stringDecoder.getDecodedChars());
 
         int x = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_OFFSETS + i);
-        if (bg_color_3431 != 0) draw().rectangle(statusRegion, (byte) 0xf);
         for (int ch : chars) {
             draw().character(ch, x * 8, statusRegion.y0(), bg_color_3431 == 0);
             x++;
         }
     }
 
-    private void drawBarHelper(PixelRectangle region, int y, int attributeAddr, int color) {
+    private void drawBarHelper(PixelRectangle region, int y, int attributeAddr, int colorIndex) {
         final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
         final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
         final int barWidth = 0x60 * cur / max;
-        for (int dx = 0; dx < barWidth; dx++) {
-            draw().pixel(region.x0() + dx, region.y0() + y, (byte)color);
-            draw().pixel(region.x0() + dx, region.y0() + y + 1, (byte)color);
+        for (int dx = 0; dx < 0x60; dx++) {
+            final byte color = (byte)((dx <= barWidth) ? colorIndex : 0);
+            draw().pixel(region.x0() + dx, region.y0() + y, color);
+            draw().pixel(region.x0() + dx, region.y0() + y + 1, color);
         }
     }
 

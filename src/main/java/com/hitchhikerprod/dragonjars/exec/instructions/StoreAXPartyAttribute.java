@@ -9,6 +9,7 @@ public class StoreAXPartyAttribute implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
+        i.heap(Heap.PC_DIRTY + marchingOrder).write(0x0);
         final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int attributeOffset = i.memory().read(ip.incr(1), 1);
         final int value = i.getAX();
