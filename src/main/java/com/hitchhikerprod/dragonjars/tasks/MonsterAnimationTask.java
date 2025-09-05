@@ -3,7 +3,6 @@ package com.hitchhikerprod.dragonjars.tasks;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.VideoHelper;
-import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.application.Platform;
@@ -37,7 +36,7 @@ public class MonsterAnimationTask extends Task<Void> {
     }
 
     private boolean weShouldStop() {
-        return isCancelled() || interpreter.heap(Heap.COMBAT_MODE).read() == 0;
+        return isCancelled() || interpreter.isPaused() || !interpreter.isMonsterAnimationEnabled();
     }
 
     @Override

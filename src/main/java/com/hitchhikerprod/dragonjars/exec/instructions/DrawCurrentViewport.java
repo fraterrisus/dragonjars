@@ -30,6 +30,7 @@ public class DrawCurrentViewport implements Instruction {
     @Override
     public Address exec(Interpreter ignored) {
         i.unpause();
+        i.disableMonsterAnimation();
 
         // i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
@@ -78,6 +79,7 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     private void drawRoofTexture(int textureId) {
+        // FIXME. I believe this logic to be correct, but the Guard Bridge has roof 0x00 and that ain't right.
         if (textureId == 1) { // 0x54f8
             final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.DIRTY);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
@@ -85,19 +87,14 @@ public class DrawCurrentViewport implements Instruction {
         } else { // 0x5515
             // Draw a generic checkerboard roof
             // I don't bother reading the silly array of bytes from the executable (0x55ec)
-            // FIXME
-            i.getImageWriter(writer -> {
-                for (int y = 0x08; y < 0x88; y++) {
-                    final Function<Integer, Integer> getter;
-                    if (y < 0x38)
-                        getter = (y % 2 == 0) ? (z) -> 0x40 : (z) -> 0x04;
-                    else
-                        getter = (z) -> 0x00;
-                    for (int x = 0x02; x < 0x16; x++) {
-                        Images.convertEgaData(writer, getter, 0, 8 * x, y);
-                    }
+            i.draw().rectangle(new PixelRectangle(gameplayArea.x0(), 0x30, gameplayArea.x1(), gameplayArea.y1()), (byte)0);
+            for (int y = 0x08; y < 0x39; y++) {
+                int x = gameplayArea.x0();
+                while (x < gameplayArea.x1()) {
+                    i.draw().pixel(x++, y, (byte)(y % 2 == 0 ? 0 : 4));
+                    i.draw().pixel(x++, y, (byte)(y % 2 == 0 ? 4 : 0));
                 }
-            });
+            }
         }
     }
 

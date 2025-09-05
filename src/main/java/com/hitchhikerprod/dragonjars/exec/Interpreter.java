@@ -85,6 +85,17 @@ public class Interpreter {
 //    private int struct_id_4d33 = 0xff;
 //    private int struct_id_4d4e = 0xff;
 
+    // 0x4a80(), called from mfn8a(RunMonster) sets this to 3
+    // Any call to setFrob02For4d33 (0x4bc2) sets this to 0
+    //   erase_video_buffer (0x3608)
+    //     start
+    //     automap_key_exit
+    //     fcn.4a80
+    //     draw_current_viewport
+    //   fcn.4a80
+    //   draw_current_viewport (0x4f90)
+    private boolean runMonsterAnimation4D4E = false;
+
     /* Architectural registers */
 
     // In assembly, metaregister CS contains the address of the segment to which the current code segment
@@ -135,12 +146,13 @@ public class Interpreter {
 
             videoHelper.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) videoHelper.romImage(i); // most HUD sections
-            for (int i = 0; i < 16; i++) videoHelper.romImage(27 + i); // HUD title bar
+            for (int i = 0; i < 16; i++) videoHelper.romImage(0x1b + i); // HUD title bar
             videoBackground.writeTo("video-background.png");
 
             videoHelper.setVideoBuffer(videoForeground);
             final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             videoHelper.rectangle(mask, (byte)0);
+            videoForeground.writeTo("video-foreground.png");
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
         }
@@ -243,6 +255,8 @@ public class Interpreter {
             this.instructionsExecuted++;
         }
     }
+
+    // FIXME: the stone with a plaque on the south side of the first Guard Bridge
 
     public int instructionsExecuted() {
         return this.instructionsExecuted;
@@ -676,6 +690,22 @@ public class Interpreter {
         eyeAnimationTask.cancel();
     }
 
+    public boolean isMonsterAnimationEnabled() {
+        return runMonsterAnimation4D4E;
+    }
+
+    public void enableMonsterAnimation() {
+        runMonsterAnimation4D4E = true;
+    }
+
+    public void disableMonsterAnimation() {
+        runMonsterAnimation4D4E = false;
+    }
+
+    public void cleanUpMonsterAnimationTask() {
+        monsterAnimationTask = null;
+    }
+
     public void startMonsterAnimation(MonsterAnimationTask task) {
         if (monsterAnimationTask != null) monsterAnimationTask.cancel();
         monsterAnimationTask = task;
@@ -771,7 +801,7 @@ public class Interpreter {
         } else {
             eyePhase = -1;
         }
-/*      TODO
+/*      TODO TorchAnimation thread
         final int torch = heap(Heap.LIGHT_SOURCE).read();
         if (torch > 0) {
             if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
@@ -981,18 +1011,18 @@ public class Interpreter {
         // x_31ed and y_31ef are preserved across this call, but I don't use them
         // in this implementation.
         final PixelRectangle mask = draw().getHudRegionArea(VideoHelper.HUD_TITLE_BAR).toPixel();
-        bitBlastBackground(mask);
 
-        // FIXME
-        draw().withVideoBuffer(videoForeground, d -> {
-            setBackground(0x10);
-            int x = 0x04 + ((16 - this.titleString.size()) / 2);
-            for (int ch : this.titleString) {
-                d.character(ch, x * 8, 0, bg_color_3431 == 0);
-                x += 1;
-            }
-            setBackground();
-        });
+        setBackground(0x10);
+        draw().rectangle(mask, VideoBuffer.CHROMA_KEY);
+        int x = 0x04 + ((16 - this.titleString.size()) / 2);
+        for (int ch : this.titleString) {
+            draw().character(ch, x * 8, 0, bg_color_3431 == 0);
+            x += 1;
+        }
+        setBackground();
+
+        bitBlastBackground(mask);
+        bitBlastForeground(mask);
     }
 
     /**

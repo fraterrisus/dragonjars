@@ -47,6 +47,7 @@ public class MusicService {
         }
     }
 
+    // TODO make this configurable
     public SimpleObjectProperty<Integer> volumeProperty() {
         return volume;
     }

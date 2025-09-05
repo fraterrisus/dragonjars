@@ -11,6 +11,8 @@ import javafx.event.EventHandler;
 public class ShowMonsterImage implements Instruction {
     @Override
     public Address exec(Interpreter i) {
+        i.enableMonsterAnimation();
+
         final int priChunkId = 0x8a + (i.getAL() * 2);
         final int priSegment = i.getSegmentForChunk(priChunkId, Frob.CLEAN);
         final Chunk priChunk = i.memory().getSegment(priSegment);
@@ -24,6 +26,7 @@ public class ShowMonsterImage implements Instruction {
         final EventHandler<WorkerStateEvent> taskEnd = event -> {
             i.unloadSegmentForChunk(priChunkId);
             i.unloadSegmentForChunk(secChunkId);
+            i.cleanUpMonsterAnimationTask();
         };
         monsterAnimationTask.setOnSucceeded(taskEnd);
         monsterAnimationTask.setOnFailed(taskEnd);

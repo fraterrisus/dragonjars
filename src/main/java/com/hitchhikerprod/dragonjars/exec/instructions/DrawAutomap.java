@@ -28,7 +28,7 @@ public class DrawAutomap implements Instruction {
         return displayAutomapPage(i, loc.pos().x(), loc.pos().y());
     }
 
-    // TODO 0x16f0
+    // TODO Automap (0x16f0)
     public static Address displayAutomapPage(Interpreter i, int x0, int y0) {
         final Address ip = i.getIP();
         final Address nextIP = ip.incr(OPCODE);
@@ -41,8 +41,6 @@ public class DrawAutomap implements Instruction {
                     final int floorSegmentId = i.getSegmentForChunk(square.floorTextureChunk(), Frob.CLEAN);
                     final Chunk floorChunk = i.memory().getSegment(floorSegmentId);
 
-                    // FIXME: videoMemory is set up to _just_ hold the gameplay area.
-                    //   in order for the automap to work it's gotta be full-screen.
                     // MULT_FACTOR is really the "width of the area we're trying to fill",
                     //   which is 0x50 for the gameplay and 0x90 for the automap. It doesn't
                     //   change the size of the tile, it just determines how to manage
