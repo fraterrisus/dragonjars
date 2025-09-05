@@ -8,7 +8,7 @@ import javafx.concurrent.Task;
 import java.util.List;
 
 public class EyeAnimationTask extends Task<Void> {
-    private static final List<Integer> phases = List.of(
+    private static final List<Integer> PHASES = List.of(
             3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5, 4, 4,
             3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5, 4, 4,
             3, 3, 3, 3, 3, 3, 2, 1, 0, 0, 1, 2
@@ -16,7 +16,7 @@ public class EyeAnimationTask extends Task<Void> {
 
     private final Interpreter interpreter;
     private final Heap.Access heap;
-    private int phaseIndex = 10;
+    private int phaseIndex = 0;
 
     public EyeAnimationTask(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -27,7 +27,7 @@ public class EyeAnimationTask extends Task<Void> {
     protected Void call() throws Exception {
         while (true) {
             Platform.runLater(() -> {
-                interpreter.setEyePhase(phases.get(phaseIndex));
+                interpreter.setEyePhase(PHASES.get(phaseIndex));
             });
 
             sleepHelper(250);
@@ -43,7 +43,7 @@ public class EyeAnimationTask extends Task<Void> {
             // System.out.println("Detect Traps duration: " + heap.read() + " / 4s");
             // heap.modify(1, x -> x - 1);
 
-            phaseIndex = (phaseIndex + 1) % phases.size();
+            phaseIndex = (phaseIndex + 1) % PHASES.size();
         }
     }
 

@@ -39,7 +39,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
                             applyRollingXor(newChunk);
                         }
                         if (chunkId >= 0x100) {
-                            // monster animation chunks
+                            // sound files
                             updateMessage("Decoding segment " + (chunkId + 1) + " of " + count + 1);
                             if (chunkId % 2 != 0) applyRollingAddition(newChunk, 0x0000);
                             applyRollingAddition(newChunk, 0x0004);
@@ -66,7 +66,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
         return chunks;
     }
 
-    private void applyRollingAddition(ModifiableChunk chunk, int baseIndex) {
+    private static void applyRollingAddition(ModifiableChunk chunk, int baseIndex) {
         int pointer = baseIndex;
         int running = 0;
         while (pointer < chunk.getSize()) {
@@ -76,7 +76,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
         }
     }
 
-    private void applyRollingXor(ModifiableChunk chunk) {
+    private static void applyRollingXor(ModifiableChunk chunk) {
         int readAddress = 0x00;
         int writeAddress = 0xa0;
         while (writeAddress < chunk.getSize()) {

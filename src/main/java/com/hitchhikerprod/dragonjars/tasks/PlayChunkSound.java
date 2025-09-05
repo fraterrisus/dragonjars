@@ -26,10 +26,12 @@ public class PlayChunkSound extends Task<Void> {
 
         int numWrites = Math.round(delay / 7.5f);
 
+        double volumeFactor = 1.5 * volume.get() / 100.0;
+
         for (int b = 4; b < numPhases; b++) {
-            buf[0] = soundChunk.getByte(b);
+            buf[0] = (byte)(Math.round(soundChunk.getByte(b) * volumeFactor));
             for (int i = 0; i < numWrites; i++) {
-                sdl.write(buf, 0, volume.get());
+                sdl.write(buf, 0, 1);
             }
         }
 

@@ -704,8 +704,8 @@ public class Interpreter {
         }
     }
 
-    private int eyePhase;
-    private int torchPhase;
+    private int eyePhase = -1;
+    private int torchPhase = -1;
 
     public void setTorchPhase(int phase) {
         this.torchPhase = phase;

@@ -28,7 +28,7 @@ public class ChunkTable {
         this.data2Chunks = readFile(data2, 2);
     }
 
-    public Chunk getModifiableChunk(int chunkId){
+    public ModifiableChunk getModifiableChunk(int chunkId){
         return new ModifiableChunk(readChunkHelper(chunkId, this::readBytes));
     }
 
