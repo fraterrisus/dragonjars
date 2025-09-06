@@ -17,11 +17,12 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
 
 public class VideoHelperRunner {
+
     public static void main(String[] args) {
         try (
-                final RandomAccessFile exec = new RandomAccessFile("DRAGON.COM", "r");
-                final RandomAccessFile data1 = new RandomAccessFile("DATA1", "r");
-                final RandomAccessFile data2 = new RandomAccessFile("DATA2", "r");
+                final RandomAccessFile exec = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DRAGON.COM", "r");
+                final RandomAccessFile data1 = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DATA1", "r");
+                final RandomAccessFile data2 = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DATA2", "r");
         ) {
             final int codeSize = (int) (exec.length());
             if ((long) codeSize != exec.length()) {
@@ -48,6 +49,11 @@ public class VideoHelperRunner {
             final List<Integer> decos = List.of(0x71, 0x72, 0x74, 0x77, 0x78, 0x79, 0x7f, 0x80, 0x81);
 
             final PixelRectangle gameplayArea = decoder.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+
+            decoder.clearBuffer((byte)0x66);
+            decoder.textureData(codeChunk, VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE);
+            for (int i = 0; i < 4; i++) decoder.corner(i);
+            decoder.exportToPNG("textures-new/little-man.png", 4.0);
 
             for (int chunkId : walls) {
 //                System.out.format("[%02x] [%02x] ", chunkId, 0);
@@ -208,7 +214,8 @@ public class VideoHelperRunner {
     }
 
     private static void printTexture(VideoHelper decoder, ChunkTable table, int chunkId,
-                                     int index, int x0, int y0, int invert, PixelRectangle mask, String filename) throws IOException {
+                                     int index, int x0, int y0, int invert,
+                                     PixelRectangle mask, String filename) throws IOException {
         final Chunk chunk = table.getModifiableChunk(chunkId);
         if (chunk.getSize() == 0) return;
 

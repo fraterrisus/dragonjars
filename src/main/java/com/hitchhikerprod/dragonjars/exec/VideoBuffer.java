@@ -26,7 +26,7 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
 public class VideoBuffer {
     public static byte CHROMA_KEY = (byte) 0x06;
 
-    public static final PixelRectangle AUTOMAP = new PixelRectangle(0, 0, IMAGE_X, IMAGE_Y); // FIXME
+    public static final PixelRectangle AUTOMAP = new PixelRectangle(0x008, 0x000, 0x138, 0x0c0); // 0x1779
     public static final PixelRectangle WHOLE_IMAGE = new PixelRectangle(0, 0, IMAGE_X, IMAGE_Y);
 
     public static final CharRectangle DEFAULT_RECT = new CharRectangle(0x01, 0x08, 0x27, 0xb8);

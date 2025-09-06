@@ -18,6 +18,8 @@ public class VideoHelper {
     public static final int PC_STATUS_BITMASKS = 0x1a61;
     public static final int PC_STATUS_OFFSETS = 0x1a65;
     public static final int PC_STATUS_STRINGS = 0x1a69;
+
+    public static final int LITTLE_MAN_TEXTURE_ADDRESS = 0x6500;
     private static final int HUD_REGION_LUT_ADDRESS = 0x2544;
     private static final int CORNER_LUT_ADDRESS = 0x6428;
     private static final int ROM_IMAGE_LUT_ADDRESS = 0x67c0;
@@ -204,7 +206,11 @@ public class VideoHelper {
     public void texture(Chunk chunk, int index, int x0i, int y0i, int invert, PixelRectangle mask) {
         final int baseAddress = chunk.getWord(index);
         if (baseAddress == 0 || baseAddress > chunk.getSize()) return;
+        textureData(chunk, baseAddress, x0i, y0i, invert, mask);
+    }
 
+    // same as above, but skip the index lookup
+    public void textureData(Chunk chunk, int baseAddress, int x0i, int y0i, int invert, PixelRectangle mask) {
         final int w = chunk.getUnsignedByte(baseAddress);
         final boolean widthSign = (w & 0x80) > 0;
         final int width = w & 0x7f;
@@ -221,7 +227,7 @@ public class VideoHelper {
         }
 
         // invertY = invertbyte & 0x40, which never happens
-        final int offsetY = chunk.getUnsignedByte(baseAddress + 3);
+        final int offsetY = chunk.getByte(baseAddress + 3);
         final int y0 = y0i + offsetY;
 
         int callIndex = 0;

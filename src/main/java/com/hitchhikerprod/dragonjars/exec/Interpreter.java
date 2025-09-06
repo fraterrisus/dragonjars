@@ -1030,20 +1030,8 @@ public class Interpreter {
         bitBlastForeground(mask);
     }
 
-    /**
-     * Draws an empty box on the screen.
-     */
-    public void drawModal(List<Integer> coordinates) {
-        if (coordinates.size() != 4) throw new IllegalArgumentException();
-
+    public void drawModal(CharRectangle r) {
         pause();
-
-        final int x0 = coordinates.get(0);
-        final int y0 = coordinates.get(1);
-        final int x1 = coordinates.get(2);
-        final int y1 = coordinates.get(3);
-
-        final CharRectangle r = new CharRectangle(x0, y0, x1, y1);
 
         boolean invert = bg_color_3431 == 0;
 
@@ -1060,31 +1048,31 @@ public class Interpreter {
         setBBox(r);
 
         // copy 0x2547/bbox/x0,y0 to 0x31ed/x0,y0
-        x_31ed = x0;
-        y_31ef = y0;
+        x_31ed = r.x0();
+        y_31ef = r.y0();
 
         getImageWriter(w -> {
             int x;
-            int y = y0;
+            int y = r.y0();
             // draw top border
-            for (x = x0; x < x1; x += 1) {
+            for (x = r.x0(); x < r.x1(); x += 1) {
                 draw().character(0x01, x * 8, y, invert, w);
             }
-            draw().character(0x00, x0 * 8, y, invert, w);
-            draw().character(0x02, (x1 - 1) * 8, y, invert, w);
+            draw().character(0x00, r.x0() * 8, y, invert, w);
+            draw().character(0x02, (r.x1() - 1) * 8, y, invert, w);
             // draw vertical edges
             y += 8;
-            while (y < y1 - 8) {
-                draw().character(0x03, x0 * 8, y, invert, w);
-                draw().character(0x04, (x1 - 1) * 8, y, invert, w);
+            while (y < r.y1() - 8) {
+                draw().character(0x03, r.x0() * 8, y, invert, w);
+                draw().character(0x04, (r.x1() - 1) * 8, y, invert, w);
                 y += 8;
             }
             // draw bottom border
-            for (x = x0; x < x1; x += 1) {
+            for (x = r.x0(); x < r.x1(); x += 1) {
                 draw().character(0x06, x * 8, y, invert, w);
             }
-            draw().character(0x05, x0 * 8, y, invert, w);
-            draw().character(0x07, (x1 - 1) * 8, y, invert, w);
+            draw().character(0x05, r.x0() * 8, y, invert, w);
+            draw().character(0x07, (r.x1() - 1) * 8, y, invert, w);
 
             shrinkBBox();
             fillRectangle(w);
