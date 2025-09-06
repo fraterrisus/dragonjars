@@ -147,12 +147,12 @@ public class Interpreter {
             videoHelper.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) videoHelper.romImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) videoHelper.romImage(0x1b + i); // HUD title bar
-            videoBackground.writeTo("video-background.png");
+            videoBackground.writeTo("video-background.png", app.getScaleFactor());
 
             videoHelper.setVideoBuffer(videoForeground);
             final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             videoHelper.rectangle(mask, (byte)0);
-            videoForeground.writeTo("video-foreground.png");
+            videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
         }
@@ -550,9 +550,7 @@ public class Interpreter {
 
     public void drawStringAndResetBBox() {
         // drawString313e();
-        if (draw_borders != 0x00) {
-            drawHud();
-        }
+        if (draw_borders != 0x00) drawHud();
         draw_borders = 0x00;
         setBBox(draw().getHudRegionArea(VideoHelper.HUD_MESSAGE_AREA));
         x_31ed = 0x01;
@@ -827,6 +825,13 @@ public class Interpreter {
             if (regionOverlapsBBox(regionId, true)) {
                 final CharRectangle regionRect = draw().getHudRegionArea(regionId);
                 switch(regionId) {
+                    case VideoHelper.HUD_BOTTOM -> {
+                        // Weirdly, the ROM region contains the bottom row, but the HUD region *doesn't*.
+                        // We could probably fix this another way, because that row never gets drawn over,
+                        // but this is relatively simple.
+                        final PixelRectangle myRect = draw().getRomImageArea(regionId);
+                        bitBlastBackground(myRect);
+                    }
                     case VideoHelper.HUD_PILLAR -> {
                         bitBlastBackground(regionRect.toPixel());
                         drawSpellIcons(true);

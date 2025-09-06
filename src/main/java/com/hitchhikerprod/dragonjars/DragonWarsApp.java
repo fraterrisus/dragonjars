@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
-    public static final double SCALE_FACTOR = 3.0;
     public static final int IMAGE_X = 320;
     public static final int IMAGE_Y = 200;
 
@@ -50,7 +49,7 @@ public class DragonWarsApp extends Application {
 
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
-        root.setStyleSheets(cssUrl);
+        root.setStylesheets(cssUrl);
 
         this.scene = new Scene(root.asParent());
 
@@ -60,6 +59,7 @@ public class DragonWarsApp extends Application {
         this.stage.show();
 
         this.musicService = new MusicService();
+        this.musicService.volumeProperty().bind(root.volumeProperty());
 
         loadDataFiles();
     }
@@ -71,6 +71,10 @@ public class DragonWarsApp extends Application {
     public void close() {
         musicService.close();
         Platform.exit();
+    }
+
+    public int getScaleFactor() {
+        return RootWindow.getInstance().videoScaleProperty().get();
     }
 
     private void loadDataFiles() {
@@ -116,7 +120,12 @@ public class DragonWarsApp extends Application {
     }
 
     public void setImage(Image image) {
-        RootWindow.getInstance().setImage(image, SCALE_FACTOR);
+        // FIXME I don't get why this doesn't result in actual integer scaling.
+        RootWindow.getInstance().setImage(image, getScaleFactor());
+        resize();
+    }
+
+    public void resize() {
         this.stage.sizeToScene();
     }
 

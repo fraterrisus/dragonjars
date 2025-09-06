@@ -1,0 +1,15 @@
+.menu, .menu-bar, .menu-button, .context-menu, .menu-item {
+    -fx-background-color: #222222;
+    -fx-focus-color: #222222;
+    -fx-font-color: #dddddd;
+}
+
+.menu .label, .menu-button .label, .menu-item .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #dddddd;
+}
+
+.content-right .label {
+    -fx-content-display: right;
+}
+

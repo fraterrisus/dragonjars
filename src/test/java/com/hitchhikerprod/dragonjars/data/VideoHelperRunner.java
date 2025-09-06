@@ -101,9 +101,9 @@ public class VideoHelperRunner {
         decoder.clearBuffer((byte)0x06);
         for (int i = 0; i < 10; i++) decoder.romImage(i); // most HUD sections
         for (int i = 0; i < 16; i++) decoder.romImage(27 + i); // HUD title bar
-        decoder.exportToPNG("hud.png");
+        decoder.exportToPNG("hud.png", 4.0);
         for (int i = 0; i < 4; i++) decoder.corner(i);
-        decoder.exportToPNG("hud-with-corners.png");
+        decoder.exportToPNG("hud-with-corners.png", 4.0);
     }
 
     private static void buildHudWireframe(VideoHelper decoder) throws IOException {
@@ -178,7 +178,7 @@ public class VideoHelperRunner {
         decoder.clearBuffer((byte)0x06);
         decoder.romImage(9); // hud pillar
         decoder.romImage(10); // compass (N)
-        decoder.exportToPNG("pillar-with-compass.png");
+        decoder.exportToPNG("pillar-with-compass.png", 4.0);
     }
 
     private static void printChunk(VideoHelper decoder, ChunkTable table, int chunkId) throws IOException {
@@ -191,7 +191,7 @@ public class VideoHelperRunner {
 
         decoder.clearBuffer((byte)0x00);
         decoder.chunkImage(decoded);
-        decoder.exportToPNG(String.format("image-%02x.png", chunkId));
+        decoder.exportToPNG(String.format("image-%02x.png", chunkId), 4.0);
     }
 
     private static void applyRollingXor(ModifiableChunk chunk) {
@@ -219,7 +219,7 @@ public class VideoHelperRunner {
         decoder.clearBuffer((byte)0x66);
         decoder.texture(decodedChunk, index, x0, y0, invert, mask);
         for (int i = 0; i < 4; i++) decoder.corner(i);
-        decoder.exportToPNG("textures-new/" + filename);
+        decoder.exportToPNG("textures-new/" + filename, 4.0);
     }
 
     private static final List<Integer> WALL_X_OFFSET = List.of( // 0x536f

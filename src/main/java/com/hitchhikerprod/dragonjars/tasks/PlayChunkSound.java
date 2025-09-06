@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 
@@ -8,10 +9,10 @@ import javax.sound.sampled.SourceDataLine;
 
 public class PlayChunkSound extends Task<Void> {
     private final SourceDataLine sdl;
-    private final SimpleObjectProperty<Integer> volume;
+    private final DoubleProperty volume;
     private final Chunk soundChunk;
 
-    public PlayChunkSound(SourceDataLine sdl, SimpleObjectProperty<Integer> volume, Chunk soundChunk) {
+    public PlayChunkSound(SourceDataLine sdl, DoubleProperty volume, Chunk soundChunk) {
         this.sdl = sdl;
         this.volume = volume;
         this.soundChunk = soundChunk;
@@ -26,7 +27,8 @@ public class PlayChunkSound extends Task<Void> {
 
         int numWrites = Math.round(delay / 7.5f);
 
-        double volumeFactor = 1.5 * volume.get() / 100.0;
+        // Any higher than this starts to clip
+        double volumeFactor = 1.8 * volume.get() / 100.0;
 
         for (int b = 4; b < numPhases; b++) {
             buf[0] = (byte)(Math.round(soundChunk.getByte(b) * volumeFactor));

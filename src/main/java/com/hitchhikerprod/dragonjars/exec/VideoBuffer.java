@@ -17,7 +17,6 @@ import java.util.List;
 
 import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_X;
 import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
-import static com.hitchhikerprod.dragonjars.DragonWarsApp.SCALE_FACTOR;
 
 /**
  * A class representing an image, made up of one value (color index) per pixel.
@@ -148,7 +147,7 @@ public class VideoBuffer {
      * Writes the contents of this VideoBuffer to a PNG image file.
      * @param filename The filename to write (should end in ".png")
      */
-    public void writeTo(String filename) {
+    public void writeTo(String filename, double scaleFactor) {
         final BufferedImage image = new BufferedImage(IMAGE_X, IMAGE_Y, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < IMAGE_Y; y++) {
             for (int x = 0; x < IMAGE_X; x++) {
@@ -158,7 +157,7 @@ public class VideoBuffer {
             }
         }
         try {
-            ImageIO.write(scale(image, SCALE_FACTOR, AffineTransformOp.TYPE_NEAREST_NEIGHBOR),
+            ImageIO.write(scale(image, scaleFactor, AffineTransformOp.TYPE_NEAREST_NEIGHBOR),
                     "png", new File(filename));
         } catch (IOException e) {
             throw new RuntimeException(e);

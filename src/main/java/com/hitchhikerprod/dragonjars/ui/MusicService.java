@@ -4,7 +4,10 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.tasks.PlayChunkSound;
 import com.hitchhikerprod.dragonjars.tasks.PlaySimpleSound;
 import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -25,15 +28,14 @@ public class MusicService {
 
     private static SourceDataLine sdl;
 
-    private final SimpleBooleanProperty enabled = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Integer> volume = new SimpleObjectProperty<>(50);
+    private final BooleanProperty enabled = new SimpleBooleanProperty(false);
+    private final DoubleProperty volume = new SimpleDoubleProperty(50.0);
 
     private final List<Task<Void>> runningTasks = new ArrayList<>();
 
     public MusicService() {
         sdl = openLine();
         this.enabled.set(sdl != null);
-        this.volume.set(50);
     }
 
     private static SourceDataLine openLine() {
@@ -47,12 +49,11 @@ public class MusicService {
         }
     }
 
-    // TODO make this configurable
-    public SimpleObjectProperty<Integer> volumeProperty() {
+    public DoubleProperty volumeProperty() {
         return volume;
     }
 
-    public SimpleBooleanProperty enabledProperty() {
+    public BooleanProperty enabledProperty() {
         return enabled;
     }
 

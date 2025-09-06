@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 
@@ -25,11 +26,11 @@ public class PlayTitleMusic extends Task<Void> {
     ) {}
 
     private final SourceDataLine sdl;
-    private final SimpleObjectProperty<Integer> volumeProp; // 0-100
+    private final DoubleProperty volumeProp; // 0-100
     private final Chunk codeChunk;
     private final List<MusicPhase> phases;
 
-    public PlayTitleMusic(SourceDataLine sdl, SimpleObjectProperty<Integer> volume, Chunk codeChunk) {
+    public PlayTitleMusic(SourceDataLine sdl, DoubleProperty volume, Chunk codeChunk) {
         this.sdl = sdl;
         this.codeChunk = codeChunk;
         this.volumeProp = volume;
@@ -116,7 +117,7 @@ public class PlayTitleMusic extends Task<Void> {
         final float frequency = this.sdl.getFormat().getSampleRate();
         final byte[] buf = new byte[1];
         for (int i = 0; i < ms * frequency / 1000; i++) {
-            final int volume = volumeProp.get();
+            final double volume = 1.5 * volumeProp.get();
             final double angle = i / (frequency / hz) * 2.0 * Math.PI;
             buf[0] = (byte)(Math.sin(angle) * volume);
             buf[0] += (byte)(Math.sin(2 * angle) * volume * 0.2);

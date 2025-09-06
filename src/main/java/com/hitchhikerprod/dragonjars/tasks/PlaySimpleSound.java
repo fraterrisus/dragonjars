@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.util.Pair;
@@ -8,10 +9,10 @@ import javax.sound.sampled.SourceDataLine;
 
 public class PlaySimpleSound extends Task<Void> {
     private final SourceDataLine sdl;
-    private final SimpleObjectProperty<Integer> volume;
+    private final DoubleProperty volume;
     private final int effectId;
 
-    public PlaySimpleSound(SourceDataLine sdl, SimpleObjectProperty<Integer> volume, int effectId) {
+    public PlaySimpleSound(SourceDataLine sdl, DoubleProperty volume, int effectId) {
         this.sdl = sdl;
         this.volume = volume;
         this.effectId = effectId;
@@ -37,7 +38,7 @@ public class PlaySimpleSound extends Task<Void> {
                 j = timing.getKey();
                 toggle = !toggle;
             }
-            buf[0] = (byte)(toggle ? volume.get() : 0);
+            buf[0] = (byte)(toggle ? Math.round(1.5 * volume.get()) : 0);
             sdl.write(buf, 0, 1);
             j -= 1;
             i -= 1;

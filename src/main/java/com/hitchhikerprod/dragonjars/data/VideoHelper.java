@@ -244,8 +244,8 @@ public class VideoHelper {
         }
     }
 
-    public void exportToPNG(String filename) {
-        Objects.requireNonNull(vb).writeTo(filename);
+    public void exportToPNG(String filename, double scale) {
+        Objects.requireNonNull(vb).writeTo(filename, scale);
     }
 
     public CharRectangle getHudRegionArea(int index) {
