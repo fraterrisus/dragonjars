@@ -1,0 +1,3 @@
+A faithful, if imperfect, reimplementation of the DragonWars game engine, based on reverse engineering the original binaries.
+
+DragonWars is (c) Interplay 1990. This program will not operate without properly-licensed original data files.

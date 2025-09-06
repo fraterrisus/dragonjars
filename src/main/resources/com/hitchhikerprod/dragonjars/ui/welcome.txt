@@ -1,0 +1,7 @@
+Welcome to DragonJars!
+
+In order to start the game you need to point me at
+your DRAGON.COM, DATA1, and DATA2 files.
+
+Use the File menu to do that and the game
+should start automatically. Have fun!

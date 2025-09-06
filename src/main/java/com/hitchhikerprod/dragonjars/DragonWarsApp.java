@@ -85,6 +85,10 @@ public class DragonWarsApp extends Application {
         return RootWindow.getInstance().videoScaleProperty().get();
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     public void loadDataFiles() {
         final AppPreferences prefs = AppPreferences.getInstance();
         final String executablePath = prefs.executablePathProperty().get();

@@ -48,8 +48,9 @@ public class MenuBar {
         final Menu fileM = makeFileMenu();
         final Menu videoM = makeVideoMenu();
         final Menu audioM = makeAudioMenu();
+        final Menu helpM = makeHelpMenu();
 
-        menuBar = new javafx.scene.control.MenuBar(fileM, videoM, audioM);
+        menuBar = new javafx.scene.control.MenuBar(fileM, videoM, audioM, helpM);
         VBox.setVgrow(menuBar, Priority.NEVER);
     }
 
@@ -60,6 +61,7 @@ public class MenuBar {
     public void start(DragonWarsApp app) {
         videoScale.set(3);
         activateFileMenu(app);
+        activateHelpMenu(app);
     }
 
     private Menu makeFileMenu() {
@@ -173,6 +175,22 @@ public class MenuBar {
 
         audioMenu.getItems().setAll(volumeMenu);
         return audioMenu;
+    }
+
+    private Menu makeHelpMenu() {
+        final Menu helpMenu = new Menu("Help");
+
+        final MenuItem aboutMI = new MenuItem("About");
+        items.put("help.about", aboutMI);
+
+        helpMenu.getItems().setAll(aboutMI);
+        return helpMenu;
+    }
+
+    private void activateHelpMenu(DragonWarsApp app) {
+        items.get("help.about").setOnAction(ev -> {
+            new AboutDialog(app.getStage()).showAndWait();
+        });
     }
 
     private void updateScaleProperty(Toggle nVal) {

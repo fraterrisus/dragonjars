@@ -1,0 +1,21 @@
+.about-dialog {
+    -fx-background-color: antiquewhite;
+}
+
+.about-dialog > *.button-bar > *.container{
+    -fx-background-color: antiquewhite;
+}
+
+.about-dialog > *.label.content {
+    -fx-font-size: 16px;
+    -fx-text-fill: darkblue;
+}
+
+.about-dialog:header *.header-panel {
+    -fx-background-color: antiquewhite;
+}
+
+.about-dialog:header *.header-panel *.label {
+    -fx-font-size: 18px;
+    -fx-text-fill: darkblue;
+}

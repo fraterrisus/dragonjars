@@ -11,20 +11,25 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 public class RootWindow {
     public static final RootWindow INSTANCE = new RootWindow();
 
-    private static final String WELCOME_TEXT = "Welcome to DragonJars!\n\n" +
-            "In order to start the game you need to point me at\n" +
-            "your DRAGON.COM, DATA1, and DATA2 files.\n\n" +
-            "Use the File menu to do that and the game\n" +
-            "should start automatically. Have fun!";
-
     public static RootWindow getInstance() {
         return INSTANCE;
     }
+
+    private static final String RESOURCE_NAME = "welcome.txt";
 
     private DragonWarsApp app;
     private final VBox root;
@@ -44,11 +49,19 @@ public class RootWindow {
     public void start(DragonWarsApp app) {
         this.app = app;
         this.menuBar.start(app);
-        final Label welcomeText = new Label(WELCOME_TEXT);
+        final Label welcomeText = new Label(getWelcomeText());
         welcomeText.getStyleClass().add("welcome-text");
         this.pane.getChildren().setAll(welcomeText);
 
         this.menuBar.videoScaleProperty().addListener((obs, oVal, nVal) -> resetScale(nVal));
+    }
+
+    private String getWelcomeText() {
+        try (final InputStream textfile = this.getClass().getResourceAsStream(RESOURCE_NAME)) {
+            return new String(Objects.requireNonNull(textfile).readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setLoading() {
