@@ -45,10 +45,6 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        // TODO: because this is on the main thread, if we run this Instruction multiple times
-        //   without reason for the thread to sleep, we don't actually see multiple updates.
-        //   But fixing that might require moving the Interpreter to its own thread, yikes.
-
         i.draw().withVideoBuffer(i.videoForeground, d -> {
             if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
                 drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());

@@ -164,7 +164,7 @@ public class DragonWarsApp extends Application {
     }
 
     public void setKeyHandler(EventHandler<KeyEvent> handler) {
-        this.scene.setOnKeyReleased(handler);
+        this.scene.setOnKeyPressed(handler);
     }
 
     private void showTitleScreen() {
