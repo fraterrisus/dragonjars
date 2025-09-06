@@ -2,8 +2,8 @@ package com.hitchhikerprod.dragonjars;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
-import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
@@ -121,9 +121,11 @@ public class DragonWarsApp extends Application {
             progress.unbind();
             progress.setValue(0.0);
             task.getException().printStackTrace();
-            final Alert alert = new Alert(Alert.AlertType.ERROR, task.getException().getMessage());
+            prefs.executablePathProperty().set(null);
+            prefs.data1PathProperty().set(null);
+            prefs.data2PathProperty().set(null);
+            final Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to load data files. Your settings have been cleared.");
             alert.showAndWait();
-            close();
         });
 
         final Thread thread = new Thread(task);

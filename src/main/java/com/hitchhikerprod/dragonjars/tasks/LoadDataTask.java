@@ -34,7 +34,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
 
             for (int chunkId = 0; chunkId < count; chunkId++) {
                 if (isCancelled()) return null;
-                updateMessage("Loading segment " + (chunkId+1) + " of " + count+1);
+                updateMessage("Loading segment " + (chunkId + 1) + " of " + count + 1);
                 ModifiableChunk newChunk = new ModifiableChunk(table.readChunk(chunkId));
 
                 if (newChunk.getSize() != 0) {
@@ -58,18 +58,18 @@ public class LoadDataTask extends Task<List<Chunk>> {
                 }
 
                 chunks.add(newChunk);
-                updateProgress(chunkId+1, count+1);
+                updateProgress(chunkId + 1, count + 1);
             }
 
-            updateMessage("Loading code segment " + count+1 + " of " + count+1);
-            final int codeSize = (int)(exec.length());
-            if ((long)codeSize != exec.length()) {
+            updateMessage("Loading code segment " + (count + 1) + " of " + (count + 1));
+            final int codeSize = (int) (exec.length());
+            if ((long) codeSize != exec.length()) {
                 throw new RuntimeException("Executable is too big for one byte array");
             }
             final byte[] codeSegment = new byte[codeSize];
             exec.readFully(codeSegment);
             chunks.add(new Chunk(codeSegment));
-            updateProgress(count+1, count+1);
+            updateProgress(count + 1, count + 1);
 
             updateMessage("Finished.");
         }

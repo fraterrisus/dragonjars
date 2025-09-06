@@ -1,6 +1,5 @@
 package com.hitchhikerprod.dragonjars.ui;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -23,12 +22,12 @@ public class LoadingWindow {
         progressBar.setPrefWidth(300.0);
 
         label = new Label("Loading...");
-        label.setAlignment(Pos.TOP_CENTER);
+        label.getStyleClass().add("welcome-text");
 
         pane = new VBox();
-        final ObservableList<Node> children = pane.getChildren();
-        children.add(label);
-        children.add(progressBar);
+        pane.setFillWidth(true);
+        pane.getChildren().addAll(label, progressBar);
+        pane.setAlignment(Pos.CENTER);
     }
 
     public Node asNode() {
