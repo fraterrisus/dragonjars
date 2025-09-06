@@ -73,14 +73,6 @@ public class RootWindow {
         menuBar.setStylesheets(cssUrl);
     }
 
-    public DoubleProperty volumeProperty() {
-        return this.menuBar.volumeProperty();
-    }
-
-    public IntegerProperty videoScaleProperty() {
-        return this.menuBar.videoScaleProperty();
-    }
-
     public Image getImage() {
         final Node node = pane.getChildren().getFirst();
         if (node instanceof ImageView imageView) {

@@ -9,6 +9,7 @@ import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
+import com.hitchhikerprod.dragonjars.ui.MenuBar;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
@@ -62,12 +63,15 @@ public class DragonWarsApp extends Application {
         this.stage.setResizable(false);
         this.stage.show();
 
+        final MenuBar menuBar = MenuBar.getInstance();
+
         this.musicService = new MusicService();
-        this.musicService.volumeProperty().bind(root.volumeProperty());
+        this.musicService.volumeProperty().bind(menuBar.volumeProperty());
 
         final AppPreferences prefs = AppPreferences.getInstance();
-        root.volumeProperty().bindBidirectional(prefs.volumeProperty());
-        root.videoScaleProperty().bindBidirectional(prefs.scaleProperty());
+        menuBar.volumeProperty().bindBidirectional(prefs.volumeProperty());
+        menuBar.videoScaleProperty().bindBidirectional(prefs.scaleProperty());
+        menuBar.combatDelayProperty().bindBidirectional(prefs.combatDelayProperty());
 
         loadDataFiles();
     }
@@ -82,7 +86,7 @@ public class DragonWarsApp extends Application {
     }
 
     public int getScaleFactor() {
-        return RootWindow.getInstance().videoScaleProperty().get();
+        return MenuBar.getInstance().videoScaleProperty().get();
     }
 
     public Stage getStage() {
@@ -150,7 +154,8 @@ public class DragonWarsApp extends Application {
 
     public void setImage(Image image) {
         // FIXME I don't get why this doesn't result in actual integer scaling.
-        RootWindow.getInstance().setImage(image, getScaleFactor());
+        final int scale = AppPreferences.getInstance().scaleProperty().get();
+        RootWindow.getInstance().setImage(image, scale);
         resize();
     }
 

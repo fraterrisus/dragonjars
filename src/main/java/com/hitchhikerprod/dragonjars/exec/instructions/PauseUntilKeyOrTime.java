@@ -3,13 +3,11 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.SleepTask;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PauseUntilKeyOrTime implements Instruction {
-    // TODO: make this configurable
-    private static final long SLEEP_TIME_MS = 5000;
-
     private final AtomicBoolean handled;
     private final SleepTask sleepTask;
     private final Interpreter i;
@@ -18,7 +16,8 @@ public class PauseUntilKeyOrTime implements Instruction {
     public PauseUntilKeyOrTime(Interpreter i) {
         this.i = i;
         this.handled = new AtomicBoolean(false);
-        this.sleepTask = new SleepTask(SLEEP_TIME_MS);
+        final double sleepTimeSec = AppPreferences.getInstance().combatDelayProperty().get();
+        this.sleepTask = new SleepTask(Math.round(1000 * sleepTimeSec));
     }
 
     @Override

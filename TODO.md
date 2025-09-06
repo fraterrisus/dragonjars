@@ -3,7 +3,6 @@
 - The startup check on files doesn't actually check anything on DRAGON.COM.
 - Write the Torch animation handler.
 - Figure out how the timers work for spell duration (including summons!!!)
-- Make the combat delay configurable.
 - Add a menu item that draws the current parsed map.
 - Add a menu item with documentation, including this TODO list, BUGFIXes, design choices, and other places where this diverges from the original.
 - Figure out what the fuck Frobs actually are, and manage them better. (This is a memory allocation thing; right now you're lazily assuming that you can load as many chunks as you want without penalty, which is basically true.)

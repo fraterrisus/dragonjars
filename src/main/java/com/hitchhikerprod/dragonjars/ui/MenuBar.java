@@ -35,22 +35,36 @@ public class MenuBar {
     private final ToggleGroup videoScaleGroup;
     private final IntegerProperty videoScale;
     private final Slider volumeSlider;
+    private final Slider delaySlider;
 
     private MenuBar() {
         items = new HashMap<>();
 
         volumeSlider = new Slider(0, 100, 50);
+        volumeSlider.setShowTickMarks(true);
+        volumeSlider.setShowTickLabels(true);
+        volumeSlider.setMajorTickUnit(25);
+        volumeSlider.setMinorTickCount(0);
+        volumeSlider.setBlockIncrement(5);
+
+        delaySlider = new Slider(0, 10, 5);
+        delaySlider.setShowTickMarks(true);
+        delaySlider.setShowTickLabels(true);
+        delaySlider.setSnapToTicks(true);
+        delaySlider.setMajorTickUnit(1);
+        delaySlider.setMinorTickCount(1);
+        delaySlider.setBlockIncrement(.5);
+
         videoScaleGroup = new ToggleGroup();
         videoScaleGroup.selectedToggleProperty().addListener((obs, oVal, nVal) -> updateScaleProperty(nVal));
         videoScale = new SimpleIntegerProperty();
         videoScale.addListener((obs, oVal, nVal) -> updateScaleButtons(nVal));
 
-        final Menu fileM = makeFileMenu();
-        final Menu videoM = makeVideoMenu();
-        final Menu audioM = makeAudioMenu();
-        final Menu helpM = makeHelpMenu();
-
-        menuBar = new javafx.scene.control.MenuBar(fileM, videoM, audioM, helpM);
+        menuBar = new javafx.scene.control.MenuBar(
+                makeFileMenu(),
+                makeSettingsMenu(),
+                makeHelpMenu()
+        );
         VBox.setVgrow(menuBar, Priority.NEVER);
     }
 
@@ -144,10 +158,15 @@ public class MenuBar {
         }
     }
 
-    private Menu makeVideoMenu() {
-        final Menu videoMenu = new Menu("Video");
+    private Menu makeSettingsMenu() {
+        final Menu settings = new Menu("Settings");
 
-        final Menu scaleMenu = new Menu("Scale");
+        final Menu volumeMenu = new Menu("Volume");
+        final CustomMenuItem volumeMI = new CustomMenuItem(volumeSlider);
+        volumeMI.setHideOnClick(false);
+        volumeMenu.getItems().setAll(volumeMI);
+
+        final Menu scaleMenu = new Menu("Video Scale");
         for (int i = 1; i <= 4; i++) {
             final RadioMenuItem scaleMI = new RadioMenuItem(i + "x");
             scaleMI.getStyleClass().add("dark");
@@ -156,25 +175,14 @@ public class MenuBar {
             scaleMenu.getItems().add(scaleMI);
         }
 
-        videoMenu.getItems().setAll(scaleMenu);
-        return videoMenu;
-    }
+        final Menu delayMenu = new Menu("Combat Delay");
+        final CustomMenuItem delayMI = new CustomMenuItem(delaySlider);
+        delaySlider.setPrefWidth(300);
+        delayMI.setHideOnClick(false);
+        delayMenu.getItems().add(delayMI);
 
-    private Menu makeAudioMenu() {
-        final Menu audioMenu = new Menu("Audio");
-
-        final Menu volumeMenu = new Menu("Volume");
-
-        volumeSlider.setShowTickMarks(true);
-        volumeSlider.setMajorTickUnit(25);
-        volumeSlider.setBlockIncrement(5);
-        final CustomMenuItem volumeMI = new CustomMenuItem(volumeSlider);
-        volumeMI.setHideOnClick(false);
-
-        volumeMenu.getItems().setAll(volumeMI);
-
-        audioMenu.getItems().setAll(volumeMenu);
-        return audioMenu;
+        settings.getItems().setAll(volumeMenu, scaleMenu, delayMenu);
+        return settings;
     }
 
     private Menu makeHelpMenu() {
@@ -208,6 +216,8 @@ public class MenuBar {
                 .findFirst()
                 .ifPresent(videoScaleGroup::selectToggle);
     }
+
+    public DoubleProperty combatDelayProperty() { return delaySlider.valueProperty(); }
 
     public IntegerProperty videoScaleProperty() {
         return videoScale;
