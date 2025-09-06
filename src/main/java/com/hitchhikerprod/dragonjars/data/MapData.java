@@ -154,6 +154,13 @@ public class MapData {
         primaryData.write(offset+1, 1, rawData | 0x08);
     }
 
+    public void setSquare(int x, int y, int newData) {
+        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        primaryData.write(offset, 1, (newData >> 16) & 0xff);
+        primaryData.write(offset, 1, (newData >> 8) & 0xff);
+        primaryData.write(offset, 1, newData & 0xff);
+    }
+
     public Item getItem(int index) {
         return items.get(index);
     }
@@ -217,6 +224,7 @@ public class MapData {
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        // Consider fixing this: it's backwards from how we usually read multi-byte values.
         final int rawData = (primaryData.getUnsignedByte(offset) << 16) |
                 (primaryData.getUnsignedByte(offset+1) << 8) |
                 (primaryData.getUnsignedByte(offset+2));
@@ -232,7 +240,7 @@ public class MapData {
             if (textureIndex > 0x6e) {
                 northWallTextureId = Optional.of(textureIndex);
             } else {
-                northWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+                northWallTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(textureIndex)));
             }
             northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex - 1));
         }
@@ -248,7 +256,7 @@ public class MapData {
             if (textureIndex > 0x6e) {
                 westWallTextureId = Optional.of(textureIndex);
             } else {
-                westWallTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(textureIndex)));
+                westWallTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(textureIndex)));
             }
             westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex - 1));
         }
@@ -256,11 +264,11 @@ public class MapData {
         // Note that we look up the texture index on the master texture list but DO NOT add 0x6e for chunk id
         final int roofTextureIndex0 = (rawData >> 14) & 0x3;
         final int roofTextureIndex1 = 0xff & roofTextures54c5.get(roofTextureIndex0);
-        final int roofTextureId = 0xff & textureChunks5677.get(roofTextureIndex1);
+        final int roofTextureId = 0x7f & textureChunks5677.get(roofTextureIndex1);
 
         final int floorTextureIndex0 = (rawData >> 12) & 0x3;
         final int floorTextureIndex1 = 0xff & floorTextures54c9.get(floorTextureIndex0);
-        final int floorTextureId = 0x6e + (0xff & textureChunks5677.get(floorTextureIndex1));
+        final int floorTextureId = 0x6e + (0x7f & textureChunks5677.get(floorTextureIndex1));
 
         final boolean touched = (rawData & 0x000800) > 0;
 
@@ -270,7 +278,7 @@ public class MapData {
             otherTextureId = Optional.empty();
         } else {
             final int overallTextureIndex = 0xff & otherTextures54cd.get(otherTextureIndex - 1);
-            otherTextureId = Optional.of(0x6e + (0xff & textureChunks5677.get(overallTextureIndex)));
+            otherTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(overallTextureIndex)));
         }
 
         final int eventId = (rawData) & 0xff;
@@ -287,12 +295,6 @@ public class MapData {
                 touched,
                 eventId
         );
-    }
-
-    public void setSquare(int x, int y, int newData) {
-        // note that newData should be three bytes long
-        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
-        primaryData.write(offset, 3, newData);
     }
 
     public Square[][] getView(int x, int y, int facing) {

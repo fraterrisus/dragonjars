@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoadDataTask extends Task<List<Chunk>> {
+    public static final String MAGIC_STRING = "Created on an Apple ][ GS. Apple ][ Forever!";
+
     private final String executablePath;
     private final String data1Path;
     private final String data2Path;
@@ -68,7 +70,16 @@ public class LoadDataTask extends Task<List<Chunk>> {
             }
             final byte[] codeSegment = new byte[codeSize];
             exec.readFully(codeSegment);
-            chunks.add(new Chunk(codeSegment));
+
+            final byte[] checkString = MAGIC_STRING.getBytes();
+            for (int i = 0; i < checkString.length; i++) {
+                if (codeSegment[0x08 + i] != checkString[i]) {
+                    throw new RuntimeException("DRAGON.COM does not appear to be valid");
+                }
+            }
+
+            final Chunk codeChunk = new Chunk(codeSegment);
+            chunks.add(codeChunk);
             updateProgress(count + 1, count + 1);
 
             updateMessage("Finished.");

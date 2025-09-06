@@ -101,6 +101,7 @@ public class DragonWarsApp extends Application {
 
         if (Objects.isNull(executablePath) || Objects.isNull(data1Path) || Objects.isNull(data2Path)) return;
 
+        musicService.stop();
         RootWindow.getInstance().setLoading();
         final LoadDataTask task = new LoadDataTask(executablePath, data1Path, data2Path);
 
