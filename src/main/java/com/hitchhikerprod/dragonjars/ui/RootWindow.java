@@ -5,6 +5,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -14,6 +15,12 @@ import java.net.URL;
 
 public class RootWindow {
     public static final RootWindow INSTANCE = new RootWindow();
+
+    private static final String WELCOME_TEXT = "Welcome to DragonJars!\n\n" +
+            "In order to start the game you need to point me at\n" +
+            "your DRAGON.COM, DATA1, and DATA2 files.\n\n" +
+            "Use the File menu to do that and the game\n" +
+            "should start automatically. Have fun!";
 
     public static RootWindow getInstance() {
         return INSTANCE;
@@ -37,9 +44,15 @@ public class RootWindow {
     public void start(DragonWarsApp app) {
         this.app = app;
         this.menuBar.start(app);
-        this.pane.getChildren().setAll(LoadingWindow.getInstance().asNode());
+        final Label welcomeText = new Label(WELCOME_TEXT);
+        welcomeText.getStyleClass().add("welcome-text");
+        this.pane.getChildren().setAll(welcomeText);
 
         this.menuBar.videoScaleProperty().addListener((obs, oVal, nVal) -> resetScale(nVal));
+    }
+
+    public void setLoading() {
+        this.pane.getChildren().setAll(LoadingWindow.getInstance().asNode());
     }
 
     public void setStylesheets(URL cssUrl) {

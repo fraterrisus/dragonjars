@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.SaveChunkTask;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import javafx.scene.control.Alert;
 
 import java.util.Objects;
@@ -27,7 +28,16 @@ public class PersistChunk implements Instruction {
         final Chunk chunkData = getChunkData(i, chunkId);
         if (Objects.isNull(chunkData)) return nextIP;
 
-        final SaveChunkTask task = new SaveChunkTask(chunkId, chunkData);
+        final AppPreferences prefs = AppPreferences.getInstance();
+        final String data1Path = prefs.data1PathProperty().get();
+        final String data2Path = prefs.data2PathProperty().get();
+        if (Objects.isNull(data1Path) || Objects.isNull(data2Path)) {
+            final Alert alert = new Alert(Alert.AlertType.ERROR, "Can't save game without DATA1 and DATA2");
+            alert.showAndWait();
+            return nextIP;
+        }
+
+        final SaveChunkTask task = new SaveChunkTask(data1Path, data2Path, chunkId, chunkData);
         task.setOnSucceeded(event -> i.start(nextIP));
         task.setOnFailed(event -> {
             final Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save your game.");

@@ -4,6 +4,7 @@ module com.hitchhikerprod.dragonjars {
     requires java.desktop;
     requires javafx.graphics;
     requires javafx.base;
+    requires java.prefs;
 
     exports com.hitchhikerprod.dragonjars;
     opens com.hitchhikerprod.dragonjars to javafx.fxml;

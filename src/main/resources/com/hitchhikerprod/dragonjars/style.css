@@ -1,7 +1,6 @@
 .menu, .menu-bar, .menu-button, .context-menu, .menu-item {
     -fx-background-color: #222222;
     -fx-focus-color: #222222;
-    -fx-font-color: #dddddd;
 }
 
 .menu .label, .menu-button .label, .menu-item .label {
@@ -9,7 +8,26 @@
     -fx-text-fill: #dddddd;
 }
 
+.welcome-text {
+    -fx-padding: 10px;
+    -fx-font-size: 18px;
+    -fx-text-alignment: center;
+    -fx-background-color: antiquewhite;
+    -fx-text-fill: darkblue;
+}
+
 .content-right .label {
     -fx-content-display: right;
 }
 
+.label-roman .label {
+    -fx-font-style: normal;
+}
+
+.label-italic .label {
+    -fx-font-style: italic;
+}
+
+.label-red > .label {
+    -fx-text-fill: red !important;
+}

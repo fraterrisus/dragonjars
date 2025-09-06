@@ -1,22 +1,23 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -64,15 +65,81 @@ public class MenuBar {
     private Menu makeFileMenu() {
         final Menu fileMenu = new Menu("File");
 
+        final Menu execSubMenu = new Menu("Executable");
+        final Circle execLight = new Circle(8);
+        execLight.setFill(Color.GREY);
+        execSubMenu.setGraphic(execLight);
+        final MenuItem execMI = new MenuItem();
+        items.put("file.exec", execMI);
+        execSubMenu.getItems().setAll(execMI);
+
+        final Menu data1SubMenu = new Menu("Data 1");
+        final Circle data1Light = new Circle(8);
+        data1Light.setFill(Color.GREY);
+        data1SubMenu.setGraphic(data1Light);
+        final MenuItem data1MI = new MenuItem();
+        items.put("file.data1", data1MI);
+        data1SubMenu.getItems().setAll(data1MI);
+
+        final Menu data2SubMenu = new Menu("Data 2");
+        final Circle data2Light = new Circle(8);
+        data2Light.setFill(Color.GREY);
+        data2SubMenu.setGraphic(data2Light);
+        final MenuItem data2MI = new MenuItem();
+        items.put("file.data2", data2MI);
+        data2SubMenu.getItems().setAll(data2MI);
+
         final MenuItem quitMI = new MenuItem("Quit");
         items.put("file.quit", quitMI);
 
-        fileMenu.getItems().setAll(quitMI);
+        fileMenu.getItems().setAll(execSubMenu, data1SubMenu, data2SubMenu,
+                new SeparatorMenuItem(), quitMI);
         return fileMenu;
     }
 
-    private void activateFileMenu(DragonWarsApp app) {
-        items.get("file.quit").setOnAction(ev -> Platform.exit());
+    private void activateFileMenu(final DragonWarsApp app) {
+        final AppPreferences prefs = AppPreferences.getInstance();
+
+        items.get("file.quit").setOnAction(ev -> app.close());
+
+        final StringProperty executablePathProperty = prefs.executablePathProperty();
+        manageDiskFile("exec", executablePathProperty.get());
+        executablePathProperty.addListener((obs, oVal, nVal) -> manageDiskFile("exec", nVal));
+        items.get("file.exec").setOnAction(ev -> {
+            executablePathProperty.set(app.runOpenFileDialog("DRAGON.COM"));
+            app.loadDataFiles();
+        });
+
+        final StringProperty data1PathProperty = prefs.data1PathProperty();
+        manageDiskFile("data1", data1PathProperty.get());
+        data1PathProperty.addListener((obs, oVal, nVal) -> manageDiskFile("data1", nVal));
+        items.get("file.data1").setOnAction(ev -> {
+            data1PathProperty.set(app.runOpenFileDialog("DATA1"));
+            app.loadDataFiles();
+        });
+
+        final StringProperty data2PathProperty = prefs.data2PathProperty();
+        manageDiskFile("data2", data2PathProperty.get());
+        data2PathProperty.addListener((obs, oVal, nVal) -> manageDiskFile("data2", nVal));
+        items.get("file.data2").setOnAction(ev -> {
+            data2PathProperty.set(app.runOpenFileDialog("DATA2"));
+            app.loadDataFiles();
+        });
+    }
+
+    private void manageDiskFile(String menuItem, String path) {
+        final MenuItem fileMI = items.get("file." + menuItem);
+        final Menu fileMenu = fileMI.getParentMenu();
+        fileMI.getStyleClass().removeAll("label-italic", "label-roman");
+        if (Objects.isNull(path)) {
+            fileMI.setText("not set");
+            fileMI.getStyleClass().add("label-italic");
+            if (fileMenu.getGraphic() instanceof Circle c) c.setFill(Color.RED);
+        } else {
+            fileMI.setText(path);
+            fileMI.getStyleClass().add("label-roman");
+            if (fileMenu.getGraphic() instanceof Circle c) c.setFill(Color.GREEN);
+        }
     }
 
     private Menu makeVideoMenu() {

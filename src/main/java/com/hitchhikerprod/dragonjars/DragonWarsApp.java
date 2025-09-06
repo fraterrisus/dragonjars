@@ -7,6 +7,7 @@ import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
@@ -21,10 +22,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DragonWarsApp extends Application {
@@ -61,6 +65,10 @@ public class DragonWarsApp extends Application {
         this.musicService = new MusicService();
         this.musicService.volumeProperty().bind(root.volumeProperty());
 
+        final AppPreferences prefs = AppPreferences.getInstance();
+        root.volumeProperty().bindBidirectional(prefs.volumeProperty());
+        root.videoScaleProperty().bindBidirectional(prefs.scaleProperty());
+
         loadDataFiles();
     }
 
@@ -77,8 +85,16 @@ public class DragonWarsApp extends Application {
         return RootWindow.getInstance().videoScaleProperty().get();
     }
 
-    private void loadDataFiles() {
-        final LoadDataTask task = new LoadDataTask();
+    public void loadDataFiles() {
+        final AppPreferences prefs = AppPreferences.getInstance();
+        final String executablePath = prefs.executablePathProperty().get();
+        final String data1Path = prefs.data1PathProperty().get();
+        final String data2Path = prefs.data2PathProperty().get();
+
+        if (Objects.isNull(executablePath) || Objects.isNull(data1Path) || Objects.isNull(data2Path)) return;
+
+        RootWindow.getInstance().setLoading();
+        final LoadDataTask task = new LoadDataTask(executablePath, data1Path, data2Path);
 
         final StringProperty label = LoadingWindow.getInstance().getLabel().textProperty();
         final DoubleProperty progress = LoadingWindow.getInstance().getProgressBar().progressProperty();
@@ -117,6 +133,13 @@ public class DragonWarsApp extends Application {
 
     public MusicService musicService() {
         return musicService;
+    }
+
+    public String runOpenFileDialog(String header) {
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open " + header);
+        final File selected = fileChooser.showOpenDialog(this.stage);
+        return (Objects.isNull(selected)) ? null : selected.getAbsolutePath();
     }
 
     public void setImage(Image image) {
