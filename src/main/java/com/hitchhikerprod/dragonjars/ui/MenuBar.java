@@ -188,17 +188,19 @@ public class MenuBar {
     private Menu makeHelpMenu() {
         final Menu helpMenu = new Menu("Help");
 
+        final MenuItem paraMI = new MenuItem("Paragraphs");
+        items.put("help.paragraphs", paraMI);
+
         final MenuItem aboutMI = new MenuItem("About");
         items.put("help.about", aboutMI);
 
-        helpMenu.getItems().setAll(aboutMI);
+        helpMenu.getItems().setAll(paraMI, new SeparatorMenuItem(), aboutMI);
         return helpMenu;
     }
 
     private void activateHelpMenu(DragonWarsApp app) {
-        items.get("help.about").setOnAction(ev -> {
-            new AboutDialog(app.getStage()).showAndWait();
-        });
+        items.get("help.about").setOnAction(ev -> app.openAboutDialog());
+        items.get("help.paragraphs").setOnAction(ev -> app.openParagraphsWindow());
     }
 
     private void updateScaleProperty(Toggle nVal) {

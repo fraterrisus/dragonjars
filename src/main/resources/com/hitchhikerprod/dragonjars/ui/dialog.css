@@ -19,3 +19,22 @@
     -fx-font-size: 18px;
     -fx-text-fill: darkblue;
 }
+
+.paragraphs-window {
+    -fx-background-color: grey;
+}
+
+.paragraphs-window > .text-area {
+    -fx-font-size: 16px;
+    -fx-text-fill: black;
+}
+
+.paragraph-cell {
+    -fx-background-color: antiquewhite;
+    -fx-font-size: 18px;
+    -fx-text-fill: black;
+}
+
+.paragraph-cell:even {
+    -fx-background-color: #e1ceb6;
+}

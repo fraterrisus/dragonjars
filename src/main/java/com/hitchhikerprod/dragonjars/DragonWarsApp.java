@@ -7,10 +7,12 @@ import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
+import com.hitchhikerprod.dragonjars.ui.AboutDialog;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MenuBar;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
+import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -89,10 +91,6 @@ public class DragonWarsApp extends Application {
         return MenuBar.getInstance().videoScaleProperty().get();
     }
 
-    public Stage getStage() {
-        return stage;
-    }
-
     public void loadDataFiles() {
         final AppPreferences prefs = AppPreferences.getInstance();
         final String executablePath = prefs.executablePathProperty().get();
@@ -144,6 +142,14 @@ public class DragonWarsApp extends Application {
 
     public MusicService musicService() {
         return musicService;
+    }
+
+    public void openAboutDialog() {
+        new AboutDialog(stage).showAndWait();
+    }
+
+    public void openParagraphsWindow() {
+        ParagraphsWindow.getInstance().show();
     }
 
     public String runOpenFileDialog(String header) {

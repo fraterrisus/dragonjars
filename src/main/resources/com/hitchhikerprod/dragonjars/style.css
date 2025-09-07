@@ -4,7 +4,7 @@
 }
 
 .menu .label, .menu-button .label, .menu-item .label {
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-text-fill: #dddddd;
 }
 
