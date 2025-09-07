@@ -14,6 +14,7 @@ import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
+import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
@@ -671,7 +672,19 @@ public class Interpreter {
 
     private MonsterAnimationTask monsterAnimationTask;
     private EyeAnimationTask eyeAnimationTask;
+    private TorchAnimationTask torchAnimationTask;
 
+    public void startTorchAnimation() {
+        torchAnimationTask = new TorchAnimationTask(this);
+        torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
+        torchAnimationTask.setOnFailed(ev -> torchAnimationTask = null);
+        torchAnimationTask.setOnCancelled(ev -> torchAnimationTask = null);
+
+        final Thread taskThread = new Thread(torchAnimationTask);
+        taskThread.setDaemon(true);
+        taskThread.start();
+    }
+    
     public void startEyeAnimation() {
         eyeAnimationTask = new EyeAnimationTask(this);
         eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
@@ -761,7 +774,7 @@ public class Interpreter {
         if (torchPhase < 0) {
             bitBlastBackground(mask);
         } else {
-            draw().romImage(VideoHelper.TORCH_UNLIT + torchPhase);
+            draw().romImage(VideoHelper.TORCH_1 + torchPhase);
             bitBlastForeground(mask);
         }
     }
@@ -799,14 +812,14 @@ public class Interpreter {
         } else {
             eyePhase = -1;
         }
-/*      TODO TorchAnimation thread
+
         final int torch = heap(Heap.LIGHT_SOURCE).read();
         if (torch > 0) {
             if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
         } else {
             torchPhase = -1;
         }
-*/
+
         drawCompassHelper();
         drawShieldHelper();
         drawEyeHelper();

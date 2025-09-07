@@ -36,7 +36,7 @@ public class MonsterAnimationTask extends Task<Void> {
     }
 
     private boolean weShouldStop() {
-        return isCancelled() || interpreter.isPaused() || !interpreter.isMonsterAnimationEnabled();
+        return isCancelled() || !interpreter.isMonsterAnimationEnabled();
     }
 
     @Override
