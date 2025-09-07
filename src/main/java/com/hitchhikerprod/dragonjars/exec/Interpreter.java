@@ -14,6 +14,7 @@ import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
+import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
@@ -59,6 +60,11 @@ public class Interpreter {
     private final VideoBuffer videoBackground = new VideoBuffer();
     // Write everything else
     public final VideoBuffer videoForeground = new VideoBuffer();
+
+    private MonsterAnimationTask monsterAnimationTask;
+    private EyeAnimationTask eyeAnimationTask;
+    private TorchAnimationTask torchAnimationTask;
+    private SpellDecayTask spellDecayTask;
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -156,6 +162,11 @@ public class Interpreter {
             videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
+
+            spellDecayTask = new SpellDecayTask(this);
+            final Thread spellDecayThread = new Thread(spellDecayTask);
+            spellDecayThread.setDaemon(true);
+            spellDecayThread.start();
         }
 
         // cs:0150  ax <- 0x0000
@@ -668,10 +679,6 @@ public class Interpreter {
         bitBlastForeground(draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel());
     }
 
-    private MonsterAnimationTask monsterAnimationTask;
-    private EyeAnimationTask eyeAnimationTask;
-    private TorchAnimationTask torchAnimationTask;
-
     public void startTorchAnimation() {
         torchAnimationTask = new TorchAnimationTask(this);
         torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
@@ -780,7 +787,7 @@ public class Interpreter {
     private void drawCompassHelper() {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.COMPASS_N);
         final boolean naturalLight = Objects.nonNull(mapDecoder) && mapDecoder().isLit();
-        final int compass = heap(Heap.COMPASS_DURATION).read();
+        final int compass = heap(Heap.COMPASS_ENABLED).read();
         if (compass <= 0 && !naturalLight) {
             bitBlastBackground(mask);
         } else {
@@ -792,7 +799,7 @@ public class Interpreter {
 
     private void drawShieldHelper() {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.SHIELD);
-        final int shield = heap(Heap.SHIELD_DURATION).read();
+        final int shield = heap(Heap.SHIELD_POWER).read();
         if (shield <= 0) {
             bitBlastBackground(mask);
         } else {
@@ -804,14 +811,14 @@ public class Interpreter {
     public void drawSpellIcons(boolean force) {
         if (!force && isPaused()) return;
 
-        final int trap = heap(Heap.DETECT_TRAPS_DURATION).read();
+        final int trap = heap(Heap.DETECT_TRAPS_RANGE).read();
         if (trap > 0) {
             if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
         } else {
             eyePhase = -1;
         }
 
-        final int torch = heap(Heap.LIGHT_SOURCE).read();
+        final int torch = heap(Heap.LIGHT_RANGE).read();
         if (torch > 0) {
             if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
         } else {

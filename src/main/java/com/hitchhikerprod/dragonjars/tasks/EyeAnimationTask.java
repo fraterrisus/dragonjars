@@ -37,7 +37,7 @@ public class EyeAnimationTask extends Task<Void> {
 
     public EyeAnimationTask(Interpreter interpreter) {
         this.interpreter = interpreter;
-        this.heap = interpreter.heap(Heap.DETECT_TRAPS_DURATION);
+        this.heap = interpreter.heap(Heap.DETECT_TRAPS_RANGE);
     }
 
     @Override
@@ -55,7 +55,6 @@ public class EyeAnimationTask extends Task<Void> {
 
             try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
-            // This clearly isn't actually based on the heap value
             if (isCancelled() || heap.read() == 0) {
                 interpreter.setEyePhase(-1);
                 return null;

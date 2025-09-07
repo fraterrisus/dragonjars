@@ -17,7 +17,7 @@ public class TorchAnimationTask extends Task<Void> {
 
     public TorchAnimationTask(Interpreter interpreter) {
         this.interpreter = interpreter;
-        this.heap = interpreter.heap(Heap.LIGHT_SOURCE);
+        this.heap = interpreter.heap(Heap.LIGHT_RANGE);
     }
 
     @Override

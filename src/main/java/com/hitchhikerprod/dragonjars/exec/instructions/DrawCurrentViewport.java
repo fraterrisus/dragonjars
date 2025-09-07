@@ -4,7 +4,6 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
-import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
@@ -16,7 +15,6 @@ import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class DrawCurrentViewport implements Instruction {
     private final Interpreter i;
@@ -46,7 +44,7 @@ public class DrawCurrentViewport implements Instruction {
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
         i.draw().withVideoBuffer(i.videoForeground, d -> {
-            if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_SOURCE).read() != 0)) {
+            if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
                 drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
                 drawFloorTexture();
                 drawWallTextures(); // also handles decor
