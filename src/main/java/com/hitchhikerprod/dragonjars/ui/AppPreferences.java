@@ -1,7 +1,9 @@
 package com.hitchhikerprod.dragonjars.ui;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,12 +18,13 @@ public class AppPreferences {
     public static AppPreferences getInstance() { return INSTANCE; }
 
     private static final String NODE_NAME = "com.hitchhikerprod.dragonjars";
-    private static final String PREF_FILE_EXEC = "file.executable";
+    private static final String PREF_AUTO_OPEN_PARAGRAPHS = "help.autoparagraph";
+    private static final String PREF_AUDIO_VOLUME = "audio.volume";
+    private static final String PREF_COMBAT_DELAY = "game.delay";
     private static final String PREF_FILE_DATA1 = "file.data1";
     private static final String PREF_FILE_DATA2 = "file.data2";
-    private static final String PREF_AUDIO_VOLUME = "audio.volume";
+    private static final String PREF_FILE_EXEC = "file.executable";
     private static final String PREF_VIDEO_SCALE = "video.scale";
-    private static final String PREF_COMBAT_DELAY = "game.delay";
 
     private final StringProperty executablePath = new SimpleStringProperty();
     private final StringProperty data1Path = new SimpleStringProperty();
@@ -29,6 +32,7 @@ public class AppPreferences {
     private final IntegerProperty volume = new SimpleIntegerProperty();
     private final IntegerProperty scale = new SimpleIntegerProperty();
     private final DoubleProperty combatDelay = new SimpleDoubleProperty();
+    private final BooleanProperty autoOpenParagraphs = new SimpleBooleanProperty();
 
     private final Preferences onDiskPrefs = Preferences.userRoot().node(NODE_NAME);
 
@@ -59,6 +63,9 @@ public class AppPreferences {
 
         combatDelay.set(onDiskPrefs.getDouble(PREF_COMBAT_DELAY, 5.0));
         combatDelay.addListener((obs, oVal, nVal) -> onDiskPrefs.putDouble(PREF_COMBAT_DELAY, nVal.doubleValue()));
+
+        autoOpenParagraphs.set(onDiskPrefs.getBoolean(PREF_AUTO_OPEN_PARAGRAPHS, true));
+        autoOpenParagraphs.addListener((obs, oVal, nVal) -> onDiskPrefs.putBoolean(PREF_AUTO_OPEN_PARAGRAPHS, nVal));
     }
 
     public StringProperty executablePathProperty() {
@@ -83,5 +90,9 @@ public class AppPreferences {
 
     public DoubleProperty combatDelayProperty() {
         return combatDelay;
+    }
+
+    public BooleanProperty autoOpenParagraphsProperty() {
+        return autoOpenParagraphs;
     }
 }

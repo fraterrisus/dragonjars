@@ -74,6 +74,7 @@ public class DragonWarsApp extends Application {
         menuBar.volumeProperty().bindBidirectional(prefs.volumeProperty());
         menuBar.videoScaleProperty().bindBidirectional(prefs.scaleProperty());
         menuBar.combatDelayProperty().bindBidirectional(prefs.combatDelayProperty());
+        menuBar.autoOpenParagraphsProperty().bindBidirectional(prefs.autoOpenParagraphsProperty());
 
         loadDataFiles();
     }
@@ -150,6 +151,10 @@ public class DragonWarsApp extends Application {
 
     public void openParagraphsWindow() {
         ParagraphsWindow.getInstance().show();
+    }
+
+    public void openParagraphsWindow(int index) {
+        ParagraphsWindow.getInstance().show(index);
     }
 
     public String runOpenFileDialog(String header) {

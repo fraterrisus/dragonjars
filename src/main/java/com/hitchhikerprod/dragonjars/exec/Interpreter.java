@@ -16,6 +16,7 @@ import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
@@ -251,6 +252,7 @@ public class Interpreter {
     private static final int BREAKPOINT_ADR = 0x032f;
 
     private void mainLoop(Address startPoint) {
+        final AppPreferences prefs = AppPreferences.getInstance();
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
@@ -261,6 +263,9 @@ public class Interpreter {
             System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
+            }
+            if (csChunk == 0x08 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
+                app.openParagraphsWindow(ax);
             }
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);

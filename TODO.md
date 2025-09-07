@@ -4,11 +4,11 @@
 - Add a menu item that draws the current parsed map.
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original.
-- Consider adding a trigger to the "read paragraph" longcall that auto-opens the paragraph window.
 - Check that the weird wrapping behavior on the Dwarf Clan Hall works.
 
 # Known Bugs and Differences
 
+- Monster animations continue after the combat booty dialog pops up, but stop once you clear it.
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
   idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
   as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.

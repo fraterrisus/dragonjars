@@ -1,11 +1,14 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -32,10 +35,12 @@ public class MenuBar {
     private final javafx.scene.control.MenuBar menuBar;
 
     private final Map<String, MenuItem> items;
+
     private final ToggleGroup videoScaleGroup;
     private final IntegerProperty videoScale;
     private final Slider volumeSlider;
     private final Slider delaySlider;
+    private CheckMenuItem autoOpenParagraphs;
 
     private MenuBar() {
         items = new HashMap<>();
@@ -191,10 +196,13 @@ public class MenuBar {
         final MenuItem paraMI = new MenuItem("Paragraphs");
         items.put("help.paragraphs", paraMI);
 
+        autoOpenParagraphs = new CheckMenuItem("Auto-open paragraphs");
+        items.put("help.autoparagraph", autoOpenParagraphs);
+
         final MenuItem aboutMI = new MenuItem("About");
         items.put("help.about", aboutMI);
 
-        helpMenu.getItems().setAll(paraMI, new SeparatorMenuItem(), aboutMI);
+        helpMenu.getItems().setAll(paraMI, autoOpenParagraphs, new SeparatorMenuItem(), aboutMI);
         return helpMenu;
     }
 
@@ -227,6 +235,10 @@ public class MenuBar {
 
     public DoubleProperty volumeProperty() {
         return volumeSlider.valueProperty();
+    }
+
+    public BooleanProperty autoOpenParagraphsProperty() {
+        return autoOpenParagraphs.selectedProperty();
     }
 
     public Node asNode() { return menuBar; }
