@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class MonsterAnimationTask extends Task<Void> {
+    // In theory this uses the same 0x02 counter as the torch
+    private static final int ANIMATION_DELAY_MS = 120;
+
     private final Interpreter interpreter;
     private final Chunk priChunk, secChunk;
     private final List<Subimage> subimages = new ArrayList<>();
@@ -52,7 +55,7 @@ public class MonsterAnimationTask extends Task<Void> {
         }
 
         while (true) {
-            sleepHelper(250);
+            sleepHelper(ANIMATION_DELAY_MS);
             if (weShouldStop()) break;
             decodeSecondary();
             if (weShouldStop()) break;

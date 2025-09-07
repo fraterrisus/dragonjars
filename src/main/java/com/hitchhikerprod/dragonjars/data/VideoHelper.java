@@ -54,7 +54,7 @@ public class VideoHelper {
     public static final int EYE_RIGHT = 19;
     public static final int SHIELD = 20;
     public static final int TORCH_UNLIT = 21;
-    public static final int TORCH_1 = 22;
+    public static final int TORCH_1 = 22; // 0x16
     public static final int TORCH_2 = 23;
     public static final int TORCH_3 = 24;
     public static final int TORCH_4 = 25;

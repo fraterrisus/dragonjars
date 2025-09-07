@@ -6,6 +6,10 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 public class TorchAnimationTask extends Task<Void> {
+    // the assembly uses a counter that's initialized to 0x02 and checked for 0x00
+    // so this task runs 3x slower than the eye task
+    public static final int ANIMATION_DELAY_MS = 120;
+
     private final Interpreter interpreter;
     private final Heap.Access heap;
 
@@ -22,7 +26,7 @@ public class TorchAnimationTask extends Task<Void> {
             phaseIndex = (phaseIndex + 1 + (int)(Math.random() * 4)) % 5;
             Platform.runLater(() -> interpreter.setTorchPhase(phaseIndex));
 
-            sleepHelper(100);
+            try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
             if (isCancelled() || heap.read() == 0) {
                 interpreter.setTorchPhase(-1);
@@ -31,7 +35,4 @@ public class TorchAnimationTask extends Task<Void> {
         }
     }
 
-    private void sleepHelper(int ms) {
-        try { Thread.sleep(ms); } catch (InterruptedException e) {}
-    }
 }

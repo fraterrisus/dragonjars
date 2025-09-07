@@ -236,8 +236,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0c;
-    private static final int BREAKPOINT_ADR = 0x0102;
+    private static final int BREAKPOINT_CHUNK = 0x0f;
+    private static final int BREAKPOINT_ADR = 0x032f;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -256,8 +256,6 @@ public class Interpreter {
             this.instructionsExecuted++;
         }
     }
-
-    // FIXME: the stone with a plaque on the south side of the first Guard Bridge
 
     public int instructionsExecuted() {
         return this.instructionsExecuted;

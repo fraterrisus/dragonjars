@@ -31,8 +31,6 @@ public class RunBoardEvent implements Instruction {
             }
         }
 
-        // FIXME: if you refuse to move to another board, we mess up the return address(?)
-
         final int address = i.mapDecoder().getEventPointer(0);
         i.reenter(0x46 + location.mapId(), address, () -> nextIP);
         return null;

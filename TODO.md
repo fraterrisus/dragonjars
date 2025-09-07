@@ -4,10 +4,14 @@
 - Add a menu item that draws the current parsed map.
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original.
+- Import the paragraphs into a menu. (You could probably add a trigger to the longcall.)
 - Check that the weird wrapping behavior on the Dwarf Clan Hall works.
 
 # Known Bugs and Differences
 
+- The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
+  idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
+  as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.
 - MapData reads the 3b square data "backwards", or in a more big-endian style.
 - "Enter Slave Camp" + "?" results in a full line with the question mark on the following. This is because we don't
   do the weird string "redirect to list, then print the saved list" thing.

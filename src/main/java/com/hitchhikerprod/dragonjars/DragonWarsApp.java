@@ -154,7 +154,7 @@ public class DragonWarsApp extends Application {
     }
 
     public void setImage(Image image) {
-        // FIXME I don't get why this doesn't result in actual integer scaling.
+        // TODO I don't get why this doesn't result in actual integer scaling.
         final int scale = AppPreferences.getInstance().scaleProperty().get();
         RootWindow.getInstance().setImage(image, scale);
         resize();
