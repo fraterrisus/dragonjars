@@ -13,11 +13,19 @@ public class Memory {
         private Segment withFrob(Frob newFrob) {
             return new Segment(chunk, chunkId, size, newFrob);
         }
+
+        @Override
+        public String toString() {
+            return String.format("Segment[frob=%6s, chunkId=0x%04x, size=%5d, chunk=0x%08x]",
+                    frob.name(), chunkId, size, System.identityHashCode(chunk));
+        }
     }
 
     private final Chunk codeChunk; // contents of DRAGON.COM binary
     private final List<Chunk> dataChunks;
     private final List<Segment> segments = new ArrayList<>();
+
+    private int lastOpenSegmentIdx = 0;
 
     public Memory(Chunk codeChunk, List<Chunk> dataChunks) {
         this.codeChunk = codeChunk;
@@ -37,10 +45,16 @@ public class Memory {
      * or an index equal to the size of the data structure, which can be used to add a new segment.
      */
     public int getFreeSegmentId() {
-        return IntStream.range(2, segments.size())
-                .filter(i -> segments.get(i).frob() == Frob.EMPTY)
-                .findFirst()
-                .orElse(segments.size());
+        int candidateSegmentIdx = (lastOpenSegmentIdx + 1) % segments.size();
+        while (candidateSegmentIdx != lastOpenSegmentIdx) {
+            final Segment candidateSegment = segments.get(candidateSegmentIdx);
+            if (candidateSegment.frob() == Frob.GONE || candidateSegment.frob() == Frob.FREE) {
+                lastOpenSegmentIdx = candidateSegmentIdx;
+                return candidateSegmentIdx;
+            }
+            candidateSegmentIdx = (candidateSegmentIdx + 1) % segments.size();
+        }
+        return segments.size();
     }
 
     public ModifiableChunk getSegment(int segmentId) {
@@ -61,10 +75,16 @@ public class Memory {
         }
     }
 
+    /**
+     * Returns the chunk ID associated with the given segment ID.
+     */
     public int getSegmentChunk(int segmentId) {
         return segments.get(segmentId).chunkId();
     }
 
+    /**
+     * Returns the current frob for the given segment ID.
+     */
     public Frob getSegmentFrob(int segmentId) {
         return segments.get(segmentId).frob();
     }
@@ -73,10 +93,16 @@ public class Memory {
         segments.set(segmentId, segments.get(segmentId).withFrob(frob));
     }
 
+    /**
+     * Returns the size of the given segment ID.
+     */
     public int getSegmentSize(int segmentId) {
         return segments.get(segmentId).size();
     }
 
+    /**
+     * Returns the segment ID matching this chunk ID, or -1 if the chunk is not in the segment table.
+     */
     public int lookupChunkId(int chunkId) {
         return IntStream.range(0, segments.size())
                 .filter(i -> segments.get(i).chunkId() == chunkId)
@@ -106,5 +132,15 @@ public class Memory {
 
     public void writeList(Address address, List<Byte> data) {
         getSegment(address.segment()).setBytes(address.offset(), data);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("Segments:\n");
+        for (Segment segment : segments) {
+            sb.append("  ").append(segment).append("\n");
+        }
+        return sb.toString();
     }
 }

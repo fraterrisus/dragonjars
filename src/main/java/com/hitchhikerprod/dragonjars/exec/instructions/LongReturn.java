@@ -10,7 +10,7 @@ public class LongReturn implements Instruction {
         i.popByte(); // frob, unused here but needed for mirroring
         final int segmentId = i.popByte();
         final int address = i.popWord();
-        i.memory().setSegmentFrob(segmentId, Frob.DIRTY);
+        i.memory().setSegmentFrob(segmentId, Frob.FREE); // [cs/4012]
         i.setDS(segmentId);
         return new Address(segmentId, address);
     }

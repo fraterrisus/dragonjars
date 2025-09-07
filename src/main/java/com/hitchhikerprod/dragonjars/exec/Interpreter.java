@@ -103,7 +103,7 @@ public class Interpreter {
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
     private boolean animationEnabled_4d4e = false;
-    private int animationSegment2_4d33 = 0xff;
+//    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;
 
     /* Architectural registers */
@@ -220,14 +220,14 @@ public class Interpreter {
      */
     public void reenter(int chunk, int addr, Supplier<Address> after) {
         this.executionStack.push(after);
-        final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
+        final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
         final Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
     }
 
     public void start(int chunk, int addr) {
         if (Objects.nonNull(app())) app().setKeyHandler(null);
-        final int startingSegment = getSegmentForChunk(chunk, Frob.CLEAN);
+        final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
         final Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
     }
@@ -305,15 +305,19 @@ public class Interpreter {
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
         if (heap(Heap.DECODED_BOARD_ID).read() != mapId) {
+            if (Objects.nonNull(mapDecoder)) {
+                mapDecoder.chunkIds().forEach(this::freeSegmentForChunk);
+            }
+
             heap(Heap.DECODED_BOARD_ID).write(mapId);
 
             this.mapDecoder = new MapData(stringDecoder());
 
-            final int primarySegment = getSegmentForChunk(mapId + 0x46, Frob.DIRTY);
+            final int primarySegment = getSegmentForChunk(mapId + 0x46, Frob.IN_USE);
             heap(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
             final ModifiableChunk primaryData = memory().getSegment(primarySegment);
 
-            final int secondarySegment = getSegmentForChunk(mapId + 0x1e, Frob.CLEAN);
+            final int secondarySegment = getSegmentForChunk(mapId + 0x1e, Frob.IN_USE);
             heap(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
             final ModifiableChunk secondaryData = memory().getSegment(secondarySegment);
 
@@ -334,28 +338,37 @@ public class Interpreter {
             segmentId = memory().getFreeSegmentId();
             final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
+            System.out.format("getSegmentForChunk(0x%03x), %s", chunkId, memory());
         }
         // should there be a "don't overwrite frob 0xff" guard here?
         memory().setSegmentFrob(segmentId, frob);
         return segmentId;
     }
 
-    public void unloadSegmentForChunk(int chunkId) {
+    /**
+     * Marks the segment related to a chunk as available to be unloaded.
+     * This method is much safer than #freeSegment, because it looks up the chunk-to-segment relationship first.
+     * @param chunkId
+     */
+    public void freeSegmentForChunk(int chunkId) {
         final int segmentId = memory().lookupChunkId(chunkId);
-        if (segmentId != -1)
-            memory().setSegmentFrob(segmentId, Frob.EMPTY);
+        if (segmentId != -1) freeSegment(segmentId);
     }
 
     /**
      * Marks a segment as available to be unloaded, but doesn't actually remove it. If a subsequent call to
      * getSegmentForChunk() occurs for the same chunk, there's a chance that the existing segment will be revived
      * (rather than unloading and reloading it).
+     * Note that this method is somewhat dangerous, in that it requires the caller to pass a correct segment ID with
+     * the knowledge that it refers to the correct segment (chunk).
      * @param segmentId
      */
     public void freeSegment(int segmentId) {
+        if (segmentId == 0xff) return;
         if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
-            memory().setSegmentFrob(segmentId, Frob.EMPTY);
+            memory().setSegmentFrob(segmentId, Frob.FREE);
         }
+        System.out.format("freeSegment(%d), %s", segmentId, memory());
     }
 
     public DragonWarsApp app() {
@@ -708,14 +721,8 @@ public class Interpreter {
         taskThread.start();
     }
 
-    public void stopEyeAnimation() {
-        if (Objects.isNull(eyeAnimationTask)) return;
-        eyeAnimationTask.cancel();
-    }
-
     public boolean isMonsterAnimationEnabled() {
         return animationEnabled_4d4e;
-        // (heap(Heap.COMBAT_MODE).read() != 0)
     }
 
     public int activeMonster() {
@@ -723,9 +730,9 @@ public class Interpreter {
     }
 
     // This may all very well be overengineered at this point, but it does work.
-    public void enableMonsterAnimation(int monsterId, int priSegment, int secSegment) {
+    public void enableMonsterAnimation(int monsterId) { //, int priSegment, int secSegment) {
         animationEnabled_4d4e = true;
-        animationSegment2_4d33 = secSegment;
+//        animationSegment2_4d33 = secSegment;
         animationMonsterId_4d32 = monsterId;
         // 4d32: active monster ID
         //   set to 0xff during start(),eraseVideoBuffer(),drawCurrentViewport()
@@ -733,11 +740,9 @@ public class Interpreter {
     }
 
     public void disableMonsterAnimation() {
-        if (animationSegment2_4d33 != 0xff) {
-            memory.setSegmentFrob(animationSegment2_4d33, Frob.DIRTY);
-        }
+//        freeSegment(animationSegment2_4d33);
         animationEnabled_4d4e = false;
-        animationSegment2_4d33 = 0xff;
+//        animationSegment2_4d33 = 0xff;
         // technically this doesn't happen when the automap closes
         animationMonsterId_4d32 = 0xff;
     }

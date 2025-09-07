@@ -30,7 +30,7 @@ class ArrayMaxTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.setDS(i.getSegmentForChunk(1, Frob.CLEAN));
+        i.setDS(i.getSegmentForChunk(1, Frob.IN_USE));
         i.setBX(0x0106);
         i.start(0, 0);
 

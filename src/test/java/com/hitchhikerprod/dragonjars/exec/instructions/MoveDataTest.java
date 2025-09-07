@@ -29,7 +29,7 @@ class MoveDataTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(true);
         i.start(0, 0);
@@ -47,7 +47,7 @@ class MoveDataTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(false);
         i.start(0, 0);

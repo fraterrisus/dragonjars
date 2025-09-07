@@ -10,7 +10,7 @@ public class LoadChunkAX implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int chunkId = i.getAL();
-        final int segmentId = i.getSegmentForChunk(chunkId, Frob.CLEAN);
+        final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
         i.setAX(segmentId, true);
         return i.getIP().incr();
     }

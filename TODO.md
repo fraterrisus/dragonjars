@@ -8,13 +8,13 @@
 
 # Known Bugs and Differences
 
-- Monster animations continue after the combat booty dialog pops up, but stop once you clear it.
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
   idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
   as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.
 - MapData reads the 3b square data "backwards", or in a more big-endian style.
 - "Enter Slave Camp" + "?" results in a full line with the question mark on the following. This is because we don't
   do the weird string "redirect to list, then print the saved list" thing.
+- The automap is not persisting correctly, but I'm not sure what mechanism is or is not causing that.
 - The original relies on the fact that calling DrawCurrentViewport multiple times takes long enough that you get to see
   each screen draw before it executes the next one. So, for instance, running from combat actually draws three frames 
   (turn R, turn R, step). Our video handler runs multiple frames on a single thread, so that doesn't work. It's possible

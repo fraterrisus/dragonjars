@@ -23,7 +23,7 @@ class BufferCopyTest {
         for (int idx = 0; idx < 0x700; idx++) {
             i.writeBufferD1B0(idx, (int)(Math.random() * 0xff));
         }
-        final int segmentId = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int segmentId = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(segmentId);
         i.setAH(0x00);
         i.setAL(0x00);
@@ -48,7 +48,7 @@ class BufferCopyTest {
         final Chunk data = new Chunk(rawBytes);
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
-        i.setDS(i.getSegmentForChunk(0x01, Frob.CLEAN));
+        i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0xff);

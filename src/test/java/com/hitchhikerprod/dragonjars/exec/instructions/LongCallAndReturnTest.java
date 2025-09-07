@@ -36,6 +36,6 @@ public class LongCallAndReturnTest {
 
         assertEquals(0xaa, i.getAL());
         assertEquals(5, i.instructionsExecuted());
-        assertEquals(new Address(i.getSegmentForChunk(0, Frob.CLEAN), 0x05), i.getIP());
+        assertEquals(new Address(i.getSegmentForChunk(0, Frob.IN_USE), 0x05), i.getIP());
     }
 }

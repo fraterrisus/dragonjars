@@ -26,7 +26,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setAH(0xff);
         i.setAL(0xff);
         i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
@@ -54,7 +54,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
         ));
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setAH(0xff);
         i.setAL(0xff);
         i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo

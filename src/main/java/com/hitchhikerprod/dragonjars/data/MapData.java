@@ -63,6 +63,18 @@ public class MapData {
         this.stringDecoder = stringDecoder;
     }
 
+    public List<Integer> chunkIds() {
+        if (this.mapId == -1) return List.of();
+        final List<Integer> ids = new ArrayList<>();
+        // loadMapChunks [cs/5544] does seem to unload the previous value of heap[5a]
+        ids.add(0x46 + mapId); // primary map segment
+        ids.add(0x1e + mapId); // secondary map segment
+        ids.addAll(textureChunks5677.stream()
+                .map(t -> 0x6e + (0x7f & t))
+                .toList());
+        return ids;
+    }
+
     public void parse(int mapId, ModifiableChunk primary, Chunk secondary) {
         this.mapId = mapId;
         this.primaryData = primary;      // primary = mapId + 0x46

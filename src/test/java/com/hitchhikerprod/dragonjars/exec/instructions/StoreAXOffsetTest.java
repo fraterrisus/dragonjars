@@ -27,7 +27,7 @@ class StoreAXOffsetTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
@@ -48,7 +48,7 @@ class StoreAXOffsetTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.CLEAN);
+        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);

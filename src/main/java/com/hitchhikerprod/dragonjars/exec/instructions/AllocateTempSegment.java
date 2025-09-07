@@ -11,7 +11,7 @@ public class AllocateTempSegment implements Instruction {
         final int bufferSize = i.getAX(true);
         final ModifiableChunk tempChunk = new ModifiableChunk(new byte[bufferSize]);
         final int segmentId = i.memory().getFreeSegmentId();
-        i.memory().setSegment(segmentId, tempChunk, 0xffff, bufferSize, Frob.CLEAN);
+        i.memory().setSegment(segmentId, tempChunk, 0xffff, bufferSize, Frob.IN_USE);
         i.setAX(segmentId, true);
         return i.getIP().incr(OPCODE);
     }
