@@ -30,7 +30,6 @@ public class DrawCurrentViewport implements Instruction {
         i.unpause();
         i.disableMonsterAnimation();
 
-        // i.markSegment4d33Dirty();
         final PartyLocation loc = i.getPartyLocation();
 
         i.decodeMap(loc.mapId());

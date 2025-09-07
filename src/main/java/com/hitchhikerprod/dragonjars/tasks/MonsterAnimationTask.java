@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.tasks;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.VideoHelper;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.application.Platform;
@@ -57,8 +58,12 @@ public class MonsterAnimationTask extends Task<Void> {
         while (true) {
             sleepHelper(ANIMATION_DELAY_MS);
             if (weShouldStop()) break;
+
+            if (interpreter.isPaused() && (interpreter.heap(Heap.COMBAT_MODE).read() == 0)) continue;
+
             decodeSecondary();
             if (weShouldStop()) break;
+
             sendToScreen();
             if (weShouldStop()) break;
         }

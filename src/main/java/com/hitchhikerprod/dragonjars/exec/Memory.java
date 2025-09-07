@@ -37,7 +37,7 @@ public class Memory {
      * or an index equal to the size of the data structure, which can be used to add a new segment.
      */
     public int getFreeSegmentId() {
-        return IntStream.range(0, segments.size())
+        return IntStream.range(2, segments.size())
                 .filter(i -> segments.get(i).frob() == Frob.EMPTY)
                 .findFirst()
                 .orElse(segments.size());

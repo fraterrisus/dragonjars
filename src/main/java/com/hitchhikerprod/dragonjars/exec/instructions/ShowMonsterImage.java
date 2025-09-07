@@ -11,15 +11,22 @@ import javafx.event.EventHandler;
 public class ShowMonsterImage implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        i.enableMonsterAnimation();
+        final Address nextIP = i.getIP().incr(OPCODE);
 
-        final int priChunkId = 0x8a + (i.getAL() * 2);
-        final int priSegment = i.getSegmentForChunk(priChunkId, Frob.CLEAN);
+        final int monsterId = i.getAL();
+        if (monsterId == i.activeMonster()) return nextIP;
+
+        i.disableMonsterAnimation();
+
+        final int priChunkId = 0x8a + (2 * monsterId);
+        final int priSegment = i.getSegmentForChunk(priChunkId, Frob.DIRTY); // see 0x4aaa
         final Chunk priChunk = i.memory().getSegment(priSegment);
 
         final int secChunkId = priChunkId + 1;
         final int secSegment = i.getSegmentForChunk(secChunkId, Frob.CLEAN);
         final Chunk secChunk = i.memory().getSegment(secSegment);
+
+        i.enableMonsterAnimation(monsterId, priSegment, secSegment);
 
         final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priChunk, secChunk);
 
@@ -33,6 +40,6 @@ public class ShowMonsterImage implements Instruction {
         monsterAnimationTask.setOnCancelled(taskEnd);
 
         i.startMonsterAnimation(monsterAnimationTask);
-        return i.getIP().incr(OPCODE);
+        return nextIP;
     }
 }

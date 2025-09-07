@@ -97,6 +97,7 @@ public class DrawAutomap implements Instruction {
         i.app().setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
+                    i.disableMonsterAnimation();
                     i.drawHud();
                     i.start(nextIP);
                 }

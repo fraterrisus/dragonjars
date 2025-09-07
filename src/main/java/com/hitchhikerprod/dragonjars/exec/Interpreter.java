@@ -102,7 +102,9 @@ public class Interpreter {
     //     draw_current_viewport
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
-    private boolean runMonsterAnimation4D4E = false;
+    private boolean animationEnabled_4d4e = false;
+    private int animationSegment2_4d33 = 0xff;
+    private int animationMonsterId_4d32 = 0xff;
 
     /* Architectural registers */
 
@@ -712,15 +714,32 @@ public class Interpreter {
     }
 
     public boolean isMonsterAnimationEnabled() {
-        return runMonsterAnimation4D4E;
+        return animationEnabled_4d4e;
+        // (heap(Heap.COMBAT_MODE).read() != 0)
     }
 
-    public void enableMonsterAnimation() {
-        runMonsterAnimation4D4E = true;
+    public int activeMonster() {
+        return animationMonsterId_4d32;
+    }
+
+    // This may all very well be overengineered at this point, but it does work.
+    public void enableMonsterAnimation(int monsterId, int priSegment, int secSegment) {
+        animationEnabled_4d4e = true;
+        animationSegment2_4d33 = secSegment;
+        animationMonsterId_4d32 = monsterId;
+        // 4d32: active monster ID
+        //   set to 0xff during start(),eraseVideoBuffer(),drawCurrentViewport()
+        //   set to monster ID (parameter ax) during 0x4a80
     }
 
     public void disableMonsterAnimation() {
-        runMonsterAnimation4D4E = false;
+        if (animationSegment2_4d33 != 0xff) {
+            memory.setSegmentFrob(animationSegment2_4d33, Frob.DIRTY);
+        }
+        animationEnabled_4d4e = false;
+        animationSegment2_4d33 = 0xff;
+        // technically this doesn't happen when the automap closes
+        animationMonsterId_4d32 = 0xff;
     }
 
     public void cleanUpMonsterAnimationTask() {
