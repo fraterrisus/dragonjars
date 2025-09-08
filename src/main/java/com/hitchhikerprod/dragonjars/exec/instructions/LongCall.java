@@ -13,7 +13,6 @@ public class LongCall implements Instruction {
         final Address returnAddress = ip.incr(OPCODE + IMMEDIATE + ADDRESS);
         i.pushWord(returnAddress.offset());
         i.pushByte(returnAddress.segment());
-        // if segment.frob is DIRTY, re-unpack it and set it to CLEAN?
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
         i.pushByte(0x00); // 0xff if we had to load the segment, 0x00 if it was already there
         i.setDS(segmentId);

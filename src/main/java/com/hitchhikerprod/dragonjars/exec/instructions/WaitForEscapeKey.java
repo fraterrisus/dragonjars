@@ -13,8 +13,6 @@ public class WaitForEscapeKey implements Instruction {
         i.app().setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;
             i.fillRectangle();
-            i.setAX(0x9b);
-            i.unpause();
             i.start(nextIP);
         });
         return null;

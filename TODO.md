@@ -8,9 +8,6 @@
 
 # Known Bugs
 
-- Find the cache on Forlorn. (1) There are two modals, but we apparently don't fill() the second one? (2) The 'who is
-  going to take loot' code loops infinitely.
-
 # Implementation Differences
 
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 

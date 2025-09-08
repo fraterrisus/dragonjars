@@ -244,8 +244,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x08;
-    private static final int BREAKPOINT_ADR = 0x0006;
+    private static final int BREAKPOINT_CHUNK = 0x0b;
+    private static final int BREAKPOINT_ADR = 0x00f0;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -374,10 +374,12 @@ public class Interpreter {
     }
 
     public void pause() {
+        if (!gameIsPaused) System.out.println("pause <- true");
         gameIsPaused = true;
     }
 
     public void unpause() {
+        if (gameIsPaused) System.out.println("pause <- false");
         gameIsPaused = false;
     }
 
@@ -573,12 +575,14 @@ public class Interpreter {
     }
 
     public void resetUI() {
+        unpause();
         drawString313e();
         if (draw_borders != 0x00) drawHud();
         draw_borders = 0x00;
-        setBBox(draw().getHudRegionArea(VideoHelper.HUD_MESSAGE_AREA));
-        x_31ed = 0x01;
-        y_31ef = 0x98;
+        final CharRectangle messageArea = draw().getHudRegionArea(VideoHelper.HUD_MESSAGE_AREA);
+        setBBox(messageArea);
+        x_31ed = messageArea.x0();
+        y_31ef = messageArea.y0();
     }
 
     public void addToString313e(List<Integer> st) {
