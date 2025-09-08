@@ -8,8 +8,6 @@
 
 # Known Bugs
 
-- The color text when entering Purgatory contains "...stands as a", but "as " winds up at the end of a line, and for 
-  some reason we print "a" over the space after "as " instead of indenting to the next line.
 - Find the cache on Forlorn. (1) There are two modals, but we apparently don't fill() the second one? (2) The 'who is
   going to take loot' code loops infinitely.
 

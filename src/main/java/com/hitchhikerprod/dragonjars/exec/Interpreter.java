@@ -689,6 +689,9 @@ public class Interpreter {
                 if (x < bbox_x1 - 1) {
                     draw().character(0xa0, x * 8, y, bg_color_3431 == 0, pixelWriter);
                     x++;
+                } else {
+                    x = bbox_x0;
+                    y += 8;
                 }
                 p0++;
             }
