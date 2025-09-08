@@ -46,7 +46,7 @@ public class ReadKeySwitch implements Instruction {
         }
 
         final Address ip = i.getIP();
-        // i.drawString313e();
+        i.drawString313e();
         final int imm_2a44 = i.memory().read(ip.incr(1), 1);
         final int imm_2a45 = i.memory().read(ip.incr(2), 1);
         int pointer = ip.offset() + 3; // stored at [3a41/seg,3a3f/adr]

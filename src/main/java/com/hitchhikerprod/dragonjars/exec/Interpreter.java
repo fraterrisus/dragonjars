@@ -76,8 +76,7 @@ public class Interpreter {
     private int bbox_x1; // 0x254a (ch)
     private int bbox_y1; // 0x254c (px)
 
-//    private int strlen_313c;
-//    private List<Integer> string_313e = new ArrayList<>();
+    private final List<Integer> string_313e = new ArrayList<>();
     private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
 
 //    public int x_3166;
@@ -206,7 +205,7 @@ public class Interpreter {
 
         setBBox(VideoBuffer.DEFAULT_RECT);
         if (!testMode) draw_borders = 0xff;
-        drawStringAndResetBBox();
+        resetUI();
 
         this.instructionsExecuted = 0;
         // [width] <- 0x00
@@ -262,7 +261,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
+//            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -578,8 +577,8 @@ public class Interpreter {
         }
     }
 
-    public void drawStringAndResetBBox() {
-        // drawString313e();
+    public void resetUI() {
+        drawString313e();
         if (draw_borders != 0x00) drawHud();
         draw_borders = 0x00;
         setBBox(draw().getHudRegionArea(VideoHelper.HUD_MESSAGE_AREA));
@@ -587,19 +586,29 @@ public class Interpreter {
         y_31ef = 0x98;
     }
 
-/*
+    public void addToString313e(List<Integer> st) {
+        // if (!string_313e.isEmpty()) string_313e.add(0xa0);
+        string_313e.addAll(st);
+    }
+
     public void drawString313e() {
+        if (string_313e.isEmpty()) return;
+
         int i0 = 0;
         // skip leading spaces
         while (string_313e.get(i0) == 0xa0) i0++;
+
+        drawString(string_313e.subList(i0, string_313e.size()));
+/*
         for (int i = i0; i < strlen_313c; i++) {
             draw().character(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
             x_31ed += 8;
         }
-        strlen_313c = 0;
-        x_3166 = x_31ed;
-    }
 */
+
+        string_313e.clear();
+        // x_3166 = x_31ed;
+    }
 
     public void fillRectangle() {
         getImageWriter(this::fillRectangle);
@@ -986,7 +995,6 @@ public class Interpreter {
             }
         }
 
-        System.out.println();
         drawBarHelper(statusRegion, 0x00, charBaseAddress + 0x14, 12);
         drawBarHelper(statusRegion, 0x03, charBaseAddress + 0x18, 10);
         drawBarHelper(statusRegion, 0x06, charBaseAddress + 0x1c, 9);
@@ -994,8 +1002,12 @@ public class Interpreter {
         setBackground();
     }
 
-    public void indentFromBbox(int dx) {
+    public void indentFromBBox(int dx) {
         getImageWriter(w -> indentTo(bbox_x0 + dx, w));
+    }
+
+    public void indentToBBox() {
+        getImageWriter(w -> indentTo(bbox_x1, w));
     }
 
     private void indentTo(int limit, PixelWriter w) {
@@ -1079,6 +1091,7 @@ public class Interpreter {
 
     public void drawModal(CharRectangle r) {
         pause();
+        drawString313e();
 
         boolean invert = bg_color_3431 == 0;
 
@@ -1318,7 +1331,7 @@ public class Interpreter {
             case 0x72 -> new FindBoardAction();
             case 0x73 -> Instructions.COPY_HEAP_3E_3F;
             case 0x74 -> new DrawModal();
-            case 0x75 -> (i) -> { i.drawStringAndResetBBox(); return i.getIP().incr(); };
+            case 0x75 -> (i) -> { i.resetUI(); return i.getIP().incr(); };
             case 0x76 -> Instructions.FILL_BBOX;
             case 0x77 -> DecodeStringFrom.CS_WITH_FILL;
             case 0x78 -> DecodeStringFrom.CS;
@@ -1351,7 +1364,7 @@ public class Interpreter {
             case 0x93 -> new PushBL();
             case 0x94 -> new PopBL();
             case 0x95 -> new SetCursor();
-            case 0x96 -> (i) -> { getImageWriter(w -> i.indentTo(bbox_x1, w)); return i.getIP().incr(); };
+            case 0x96 -> new IndentToBBox();
             case 0x97 -> new ReadPCField();
             case 0x98 -> new WritePCField();
             case 0x99 -> new TestAX();

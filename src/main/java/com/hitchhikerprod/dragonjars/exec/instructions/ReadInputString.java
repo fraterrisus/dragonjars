@@ -18,6 +18,8 @@ public class ReadInputString implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr();
+        i.drawString313e();
+
         chars.clear();
         i.drawChar(0xba);
         i.drawChar(PROMPT_BOX);

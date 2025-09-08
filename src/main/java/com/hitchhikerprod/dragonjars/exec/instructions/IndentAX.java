@@ -8,7 +8,8 @@ public class IndentAX implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int x = i.memory().read(ip.incr(1), 1);
-        i.indentFromBbox(x);
+        i.drawString313e();
+        i.indentFromBBox(x);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

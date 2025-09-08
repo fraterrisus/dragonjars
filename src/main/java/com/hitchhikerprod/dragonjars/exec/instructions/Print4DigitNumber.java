@@ -12,7 +12,7 @@ public class Print4DigitNumber implements Instruction {
     }
 
     public static void printNumber(Interpreter i, int val) {
-        i.drawString(String.valueOf(val).chars()
+        i.addToString313e(String.valueOf(val).chars()
                 .map(ch -> ch | 0x80)
                 .boxed().toList());
     }
