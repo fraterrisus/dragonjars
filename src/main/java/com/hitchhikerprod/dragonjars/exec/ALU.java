@@ -52,6 +52,10 @@ public class ALU {
         );
     }
 
+    public static int incByte(int val) {
+        return (val + 1) & 0xff;
+    }
+
     public static int decByte(int val) {
         return (val - 1) & 0xff;
     }

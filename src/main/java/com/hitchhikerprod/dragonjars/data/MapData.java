@@ -202,7 +202,7 @@ public class MapData {
         // see 0x52eb
         final Square sq = getSquare(x, y);
         return new Square(
-                sq.rawData & 0x003000, // remove everything but roof and floor
+                sq.rawData & 0x00f000, // remove everything but roof and floor
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -215,22 +215,29 @@ public class MapData {
         );
     }
 
-    public Square getSquare(int x, int y) {
+    public Square getSquare(int xin, int yin) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
+        int x, y;
         // Wrapping logic. I bet this breaks in the Dwarf Clan Hall.
-        if (x < 0) {
-            if (isWrapping()) x = xMax - 1;
-            else return stripSquare(0, y);
-        } else if (x >= xMax) {
-            if (isWrapping()) x = 0;
-            else return stripSquare(xMax - 1, y);
-        } else if (y < 0) {
-            if (isWrapping()) y = yMax - 1;
-            else return stripSquare(x, yMax - 1);
-        } else if (y >= yMax) {
-            if (isWrapping()) y = 0;
-            else return stripSquare(x, 0);
+        if (isWrapping()) {
+            x = xin % xMax;
+            y = yin % yMax;
+//            System.out.format("getSquare(%d,%d) -> (%d,%d)\n", xin, yin, x, y);
+        } else {
+            // Map coordinates *should* be bytes, but if we tried to do math they might be negative ints.
+            if (xin < 0 || xin > 0x80) x = 0;
+            else if (xin >= xMax) x = xMax - 1;
+            else x = xin;
+
+            if (yin < 0 || yin > 0x80) y = 0;
+            else if (yin >= yMax) y = yMax - 1;
+            else y = yin;
+
+            if (x != xin || y != yin) {
+//                System.out.format("getSquare(%d,%d) -> stripSquare(%d,%d)\n", xin, yin, x, y);
+                return stripSquare(x, y);
+            }
         }
 
         // The list of row pointers has one-too-many, and the "extra" is at the START

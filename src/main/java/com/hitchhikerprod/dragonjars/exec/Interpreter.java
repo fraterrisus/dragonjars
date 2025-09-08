@@ -88,10 +88,6 @@ public class Interpreter {
     private int mem_3430 = 0x00;
     private int bg_color_3431 = 0xffff;
 
-    // TODO: a more thorough investigation of what this is for
-//    private int struct_id_4d33 = 0xff;
-//    private int struct_id_4d4e = 0xff;
-
     // 0x4a80(), called from mfn8a(RunMonster) sets this to 3
     // Any call to setFrob02For4d33 (0x4bc2) sets this to 0
     //   erase_video_buffer (0x3608)
@@ -249,8 +245,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0f;
-    private static final int BREAKPOINT_ADR = 0x032f;
+    private static final int BREAKPOINT_CHUNK = 0x08;
+    private static final int BREAKPOINT_ADR = 0x0006;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -261,7 +257,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-//            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
+            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -337,7 +333,7 @@ public class Interpreter {
             segmentId = memory().getFreeSegmentId();
             final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
-            System.out.format("getSegmentForChunk(0x%03x), %s", chunkId, memory());
+            // System.out.format("getSegmentForChunk(0x%03x), %s", chunkId, memory());
         }
         // should there be a "don't overwrite frob 0xff" guard here?
         memory().setSegmentFrob(segmentId, frob);
@@ -367,7 +363,7 @@ public class Interpreter {
         if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
             memory().setSegmentFrob(segmentId, Frob.FREE);
         }
-        System.out.format("freeSegment(%d), %s", segmentId, memory());
+        // System.out.format("freeSegment(%d), %s", segmentId, memory());
     }
 
     public DragonWarsApp app() {

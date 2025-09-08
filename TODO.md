@@ -3,7 +3,7 @@
 - Find the timer mechanism on summons.
 - Add a menu item that draws the current parsed map.
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
-  diverges from the original.
+  diverges from the original. (Note the use of data patches in the LoadDataTask.)
 - Check that the weird wrapping behavior on the Dwarf Clan Hall works.
 
 # Known Bugs and Differences

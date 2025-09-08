@@ -59,6 +59,17 @@ public class LoadDataTask extends Task<List<Chunk>> {
                     }
                 }
 
+                for (Patch p : PATCHES) {
+                    if (p.chunkId() == chunkId) {
+                        final byte oldValue = newChunk.getByte(p.address());
+                        if (p.oldValue() == oldValue) {
+                            newChunk.write(p.address(), 1, p.newValue());
+                        } else {
+                            System.err.println("Patch failed to apply " + p);
+                        }
+                    }
+                }
+
                 chunks.add(newChunk);
                 updateProgress(chunkId + 1, count + 1);
             }
@@ -109,4 +120,17 @@ public class LoadDataTask extends Task<List<Chunk>> {
             writeAddress += 4;
         }
     }
+
+    private record Patch(int chunkId, int address, byte oldValue, byte newValue) {}
+
+    // BUGFIX
+    private static final List<Patch> PATCHES = List.of(
+            // Purgatory: if you leave to the north, it drops you 2E of where you should be
+            new Patch(0x047, 0x1696, (byte)0x0f, (byte)0x0d),
+            // Pilgrim dock exits are _all_ messed up
+            new Patch(0x060, 0x02bf, (byte)0x13, (byte)0x12),
+            new Patch(0x060, 0x02c1, (byte)0x13, (byte)0x12),
+            new Patch(0x060, 0x02c2, (byte)0x14, (byte)0x15),
+            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12)
+    );
 }

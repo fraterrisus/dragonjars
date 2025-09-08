@@ -31,6 +31,7 @@ public class DrawCurrentViewport implements Instruction {
         i.disableMonsterAnimation();
 
         final PartyLocation loc = i.getPartyLocation();
+        System.out.format("drawCurrentViewport(%s)\n", loc);
 
         i.decodeMap(loc.mapId());
 

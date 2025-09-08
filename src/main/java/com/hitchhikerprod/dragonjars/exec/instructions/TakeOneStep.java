@@ -26,7 +26,7 @@ public class TakeOneStep implements Instruction {
         int x = pos.x();
         int y = pos.y();
         switch (facing) {
-            case NORTH -> y++;
+            case NORTH -> y++; // could use ALU.addByte here
             case EAST -> x++;
             case SOUTH -> y--;
             case WEST -> x--;
@@ -34,10 +34,10 @@ public class TakeOneStep implements Instruction {
         // TODO: make sure we get the weird wrapping behavior on some maps right
         // (it's probably just incrementing past 0xff)
         if (i.mapDecoder().isWrapping()) {
-            x = x % i.heap(0x21).read();
-            y = y % i.heap(0x22).read();
+            x = x % i.heap(Heap.BOARD_MAX_X).read();
+            y = y % i.heap(Heap.BOARD_MAX_Y).read();
         }
-        i.heap(Heap.PARTY_Y).write(y & 0xff);
-        i.heap(Heap.PARTY_X).write(x & 0xff);
+        i.heap(Heap.PARTY_Y).write(y);
+        i.heap(Heap.PARTY_X).write(x);
     }
 }
