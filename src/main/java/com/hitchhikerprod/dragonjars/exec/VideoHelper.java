@@ -1,7 +1,9 @@
-package com.hitchhikerprod.dragonjars.data;
+package com.hitchhikerprod.dragonjars.exec;
 
-import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
+import com.hitchhikerprod.dragonjars.data.CharRectangle;
+import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import javafx.scene.image.PixelWriter;
 
 import java.util.List;
@@ -84,8 +86,11 @@ public class VideoHelper {
         } else {
             final VideoBuffer oldVb = this.vb;
             setVideoBuffer(vb);
-            callback.accept(this);
-            setVideoBuffer(oldVb);
+            try {
+                callback.accept(this);
+            } finally {
+                setVideoBuffer(oldVb);
+            }
         }
     }
 

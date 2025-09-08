@@ -5,7 +5,6 @@ import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
-import com.hitchhikerprod.dragonjars.data.VideoHelper;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
@@ -152,12 +151,12 @@ public class Interpreter {
             videoHelper.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) videoHelper.romImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) videoHelper.romImage(0x1b + i); // HUD title bar
-            videoBackground.writeTo("video-background.png", app.getScaleFactor());
+//            videoBackground.writeTo("video-background.png", app.getScaleFactor());
 
             videoHelper.setVideoBuffer(videoForeground);
             final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             videoHelper.rectangle(mask, (byte)0);
-            videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
+//            videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
 
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
 
