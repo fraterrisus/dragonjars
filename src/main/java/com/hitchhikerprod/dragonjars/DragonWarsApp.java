@@ -13,10 +13,14 @@ import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MenuBar;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
+import com.hitchhikerprod.dragonjars.ui.PreferencesWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -65,16 +69,7 @@ public class DragonWarsApp extends Application {
         this.stage.setResizable(false);
         this.stage.show();
 
-        final MenuBar menuBar = MenuBar.getInstance();
-
         this.musicService = new MusicService();
-        this.musicService.volumeProperty().bind(menuBar.volumeProperty());
-
-        final AppPreferences prefs = AppPreferences.getInstance();
-        menuBar.volumeProperty().bindBidirectional(prefs.volumeProperty());
-        menuBar.videoScaleProperty().bindBidirectional(prefs.scaleProperty());
-        menuBar.combatDelayProperty().bindBidirectional(prefs.combatDelayProperty());
-        menuBar.autoOpenParagraphsProperty().bindBidirectional(prefs.autoOpenParagraphsProperty());
 
         loadDataFiles();
     }
@@ -88,11 +83,11 @@ public class DragonWarsApp extends Application {
         Platform.exit();
     }
 
-    public int getScaleFactor() {
-        return MenuBar.getInstance().videoScaleProperty().get();
-    }
+    private boolean gameStarted = false;
 
     public void loadDataFiles() {
+        if (gameStarted) return;
+
         final AppPreferences prefs = AppPreferences.getInstance();
         final String executablePath = prefs.executablePathProperty().get();
         final String data1Path = prefs.data1PathProperty().get();
@@ -157,6 +152,10 @@ public class DragonWarsApp extends Application {
         ParagraphsWindow.getInstance().show(index);
     }
 
+    public void openPreferencesDialog() {
+        PreferencesWindow.getInstance().show();
+    }
+
     public String runOpenFileDialog(String header) {
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open " + header);
@@ -189,7 +188,6 @@ public class DragonWarsApp extends Application {
         vb.writeTo(titleScreenImage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
         setImage(titleScreenImage);
         setKeyHandler(this::titleScreenHandler);
-        musicService.enable();
         musicService.playTitleMusic(dataChunks.getLast());
     }
 
@@ -265,10 +263,11 @@ public class DragonWarsApp extends Application {
         switch (event.getCode()) {
             case S -> {
                 if (event.isControlDown()) {
-                    if (musicService.isEnabled()) {
-                        musicService.disable();
+                    final BooleanProperty pref = AppPreferences.getInstance().soundEnabledProperty();
+                    if (pref.get()) {
+                        pref.set(false);
                     } else {
-                        musicService.enable();
+                        pref.set(true);
                         musicService.playTitleMusic(dataChunks.getLast());
                     }
                 } else {
@@ -279,10 +278,12 @@ public class DragonWarsApp extends Application {
             case Q -> close();
             case T -> {
                 musicService.stop();
+                this.gameStarted = true;
                 testPattern();
             }
             default -> {
                 musicService.stop();
+                this.gameStarted = true;
                 startInterpreter();
             }
         }

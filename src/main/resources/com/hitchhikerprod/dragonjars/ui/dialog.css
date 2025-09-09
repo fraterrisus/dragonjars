@@ -38,3 +38,36 @@
 .paragraph-cell:even {
     -fx-background-color: #e1ceb6;
 }
+
+.prefs-window {
+    -fx-background-color: antiquewhite;
+}
+
+/*.prefs-window > *.label.content {*/
+/*    -fx-font-size: 16px;*/
+/*}*/
+
+.prefs-window .text-header {
+    -fx-font-size: 18px;
+}
+
+.prefs-grid {
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-padding: 20;
+}
+
+.prefs-window > .separator {
+    -fx-min-height: 2;
+    -fx-pref-width: 2;
+    -fx-background-color: #444;
+}
+
+.prefs-window > .hbox {
+    -fx-spacing: 10;
+}
+
+.debug {
+    -fx-border-color: red;
+    -fx-border-width: 1;
+}

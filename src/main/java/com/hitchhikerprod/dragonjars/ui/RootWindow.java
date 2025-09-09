@@ -1,8 +1,6 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -11,15 +9,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class RootWindow {
@@ -53,7 +46,11 @@ public class RootWindow {
         welcomeText.getStyleClass().add("welcome-text");
         this.pane.getChildren().setAll(welcomeText);
 
-        this.menuBar.videoScaleProperty().addListener((obs, oVal, nVal) -> resetScale(nVal));
+        final PreferencesWindow prefsWindow = PreferencesWindow.getInstance();
+        prefsWindow.start(app);
+
+        final AppPreferences prefs = AppPreferences.getInstance();
+        prefs.scaleProperty().addListener((obs, oVal, nVal) -> resetScale(nVal));
     }
 
     private String getWelcomeText() {

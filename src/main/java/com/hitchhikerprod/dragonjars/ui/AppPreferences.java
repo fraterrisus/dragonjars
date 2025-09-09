@@ -19,6 +19,7 @@ public class AppPreferences {
 
     private static final String NODE_NAME = "com.hitchhikerprod.dragonjars";
     private static final String PREF_AUTO_OPEN_PARAGRAPHS = "help.autoparagraph";
+    private static final String PREF_AUDIO_ENABLED = "audio.enable";
     private static final String PREF_AUDIO_VOLUME = "audio.volume";
     private static final String PREF_COMBAT_DELAY = "game.delay";
     private static final String PREF_FILE_DATA1 = "file.data1";
@@ -29,6 +30,7 @@ public class AppPreferences {
     private final StringProperty executablePath = new SimpleStringProperty();
     private final StringProperty data1Path = new SimpleStringProperty();
     private final StringProperty data2Path = new SimpleStringProperty();
+    private final BooleanProperty soundEnabled = new SimpleBooleanProperty();
     private final IntegerProperty volume = new SimpleIntegerProperty();
     private final IntegerProperty scale = new SimpleIntegerProperty();
     private final DoubleProperty combatDelay = new SimpleDoubleProperty();
@@ -55,6 +57,12 @@ public class AppPreferences {
             else onDiskPrefs.put(PREF_FILE_DATA2, nVal);
         });
 
+        soundEnabled.set(onDiskPrefs.getBoolean(PREF_AUDIO_ENABLED, true));
+        soundEnabled.addListener((obs, oVal, nVal) -> {
+            System.out.println("soundEnabled pref updated (" + nVal + ")");
+            onDiskPrefs.putBoolean(PREF_AUDIO_ENABLED, nVal);
+        });
+
         volume.set(onDiskPrefs.getInt(PREF_AUDIO_VOLUME, 50));
         volume.addListener((obs, oVal, nVal) -> onDiskPrefs.putInt(PREF_AUDIO_VOLUME, nVal.intValue()));
 
@@ -78,6 +86,10 @@ public class AppPreferences {
 
     public StringProperty data2PathProperty() {
         return data2Path;
+    }
+
+    public BooleanProperty soundEnabledProperty() {
+        return soundEnabled;
     }
 
     public IntegerProperty volumeProperty() {

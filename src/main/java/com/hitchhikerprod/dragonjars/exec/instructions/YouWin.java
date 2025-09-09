@@ -20,7 +20,6 @@ public class YouWin implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         this.i = i;
-        i.app().musicService().enable();
         i.app().musicService().playTitleMusic(i.memory().getCodeChunk());
         i.draw().setVideoBuffer(vb);
         handler(0);

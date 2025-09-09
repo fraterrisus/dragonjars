@@ -1,18 +1,17 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
 
 import javax.sound.sampled.SourceDataLine;
 
 public class PlayChunkSound extends Task<Void> {
     private final SourceDataLine sdl;
-    private final DoubleProperty volume;
+    private final IntegerProperty volume;
     private final Chunk soundChunk;
 
-    public PlayChunkSound(SourceDataLine sdl, DoubleProperty volume, Chunk soundChunk) {
+    public PlayChunkSound(SourceDataLine sdl, IntegerProperty volume, Chunk soundChunk) {
         this.sdl = sdl;
         this.volume = volume;
         this.soundChunk = soundChunk;

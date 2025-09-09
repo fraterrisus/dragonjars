@@ -17,6 +17,7 @@ import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
@@ -1146,11 +1147,8 @@ public class Interpreter {
         final EventHandler<KeyEvent> keyHandler = event -> {
             if (event.getCode().isModifierKey()) return;
             if (event.getCode() == KeyCode.S && event.isControlDown()) {
-                if (app.musicService().isEnabled()) {
-                    app.musicService().disable();
-                } else {
-                    app.musicService().enable();
-                }
+                final BooleanProperty soundEnabled = AppPreferences.getInstance().soundEnabledProperty();
+                soundEnabled.set(!soundEnabled.get());
                 return;
             }
             for (ReadKeySwitch.KeyAction prompt : prompts) {

@@ -8,6 +8,9 @@
 
 # Known Bugs
 
+- You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
+  system fails, I work around this by popping a dialog and then resetting the Property value aftewards. Ick.
+
 # Implementation Differences
 
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 

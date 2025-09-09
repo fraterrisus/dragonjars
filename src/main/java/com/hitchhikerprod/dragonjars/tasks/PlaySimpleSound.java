@@ -1,7 +1,6 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
 import javafx.util.Pair;
 
@@ -9,10 +8,10 @@ import javax.sound.sampled.SourceDataLine;
 
 public class PlaySimpleSound extends Task<Void> {
     private final SourceDataLine sdl;
-    private final DoubleProperty volume;
+    private final IntegerProperty volume;
     private final int effectId;
 
-    public PlaySimpleSound(SourceDataLine sdl, DoubleProperty volume, int effectId) {
+    public PlaySimpleSound(SourceDataLine sdl, IntegerProperty volume, int effectId) {
         this.sdl = sdl;
         this.volume = volume;
         this.effectId = effectId;

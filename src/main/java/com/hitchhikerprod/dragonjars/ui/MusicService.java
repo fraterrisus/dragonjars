@@ -4,14 +4,14 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.tasks.PlayChunkSound;
 import com.hitchhikerprod.dragonjars.tasks.PlaySimpleSound;
 import com.hitchhikerprod.dragonjars.tasks.PlayTitleMusic;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -26,16 +26,28 @@ public class MusicService {
     private static final float FREQUENCY = 44100 * 4;
     private static final AudioFormat FORMAT = new AudioFormat(FREQUENCY, 8, 1, true, false);
 
-    private static SourceDataLine sdl;
 
+
+    private SourceDataLine sdl;
+
+    private final AppPreferences prefs = AppPreferences.getInstance();
     private final BooleanProperty enabled = new SimpleBooleanProperty(false);
-    private final DoubleProperty volume = new SimpleDoubleProperty(50.0);
+    private final IntegerProperty volume;
 
     private final List<Task<Void>> runningTasks = new ArrayList<>();
 
     public MusicService() {
-        sdl = openLine();
-        this.enabled.set(sdl != null);
+        volume = prefs.volumeProperty();
+
+        prefs.soundEnabledProperty().addListener((obs, oVal, nVal) -> {
+            System.out.println("music service received update (" + nVal + ")");
+            if (nVal) enable();
+            else disable();
+        });
+        enabled.addListener((obs, oVal, nVal) -> {
+            System.out.println("music service set enabled property (" + nVal + ")");
+            prefs.soundEnabledProperty().set(nVal);
+        });
     }
 
     private static SourceDataLine openLine() {
@@ -49,24 +61,15 @@ public class MusicService {
         }
     }
 
-    public DoubleProperty volumeProperty() {
-        return volume;
-    }
-
-    public BooleanProperty enabledProperty() {
-        return enabled;
-    }
-
-    public boolean isEnabled() {
-        return enabled.get();
-    }
-
-    public void enable() {
+    private void enable() {
+        enabled.set(true);
         if (Objects.isNull(sdl)) sdl = openLine();
         if (Objects.isNull(sdl)) {
-            this.enabled.set(false);
+            final Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to initialize sound system.");
+            alert.showAndWait();
+            // I don't love this, but if you move it earlier, the checkbox won't toggle off.
+            enabled.set(false);
         } else {
-            this.enabled.set(true);
             sdl.start();
         }
     }
@@ -77,13 +80,13 @@ public class MusicService {
         new ArrayList<>(runningTasks).forEach(Task::cancel);
     }
 
-    public void disable() {
+    private void disable() {
+        enabled.set(false);
         if (Objects.nonNull(sdl)) {
             stop();
             sdl.stop();
             sdl.flush();
         }
-        this.enabled.set(false);
     }
 
     public void close() {
@@ -105,7 +108,7 @@ public class MusicService {
     }
 
     private void runTaskHelper(Supplier<Task<Void>> taskGetter) {
-        if (!isEnabled()) return;
+        if (!prefs.soundEnabledProperty().get()) return;
         final Task<Void> task = taskGetter.get();
         task.setOnSucceeded(removeThisTaskHelper(task));
         task.setOnFailed(removeThisTaskHelper(task));

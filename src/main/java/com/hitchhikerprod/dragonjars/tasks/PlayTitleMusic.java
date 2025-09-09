@@ -1,8 +1,7 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
 
 import javax.sound.sampled.LineUnavailableException;
@@ -26,11 +25,11 @@ public class PlayTitleMusic extends Task<Void> {
     ) {}
 
     private final SourceDataLine sdl;
-    private final DoubleProperty volumeProp; // 0-100
+    private final IntegerProperty volumeProp; // 0-100
     private final Chunk codeChunk;
     private final List<MusicPhase> phases;
 
-    public PlayTitleMusic(SourceDataLine sdl, DoubleProperty volume, Chunk codeChunk) {
+    public PlayTitleMusic(SourceDataLine sdl, IntegerProperty volume, Chunk codeChunk) {
         this.sdl = sdl;
         this.codeChunk = codeChunk;
         this.volumeProp = volume;
