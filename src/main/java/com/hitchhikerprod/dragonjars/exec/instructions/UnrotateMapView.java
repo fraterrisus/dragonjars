@@ -21,22 +21,22 @@ public class UnrotateMapView implements Instruction {
             case NORTH -> {
                 x = loc.pos().x();
                 y = loc.pos().y();
-                shiftDistance = 20;
+                shiftDistance = 4;
             }
             case EAST -> {
                 x = loc.pos().x() + 1;
                 y = loc.pos().y();
-                shiftDistance = 16;
+                shiftDistance = 0;
             }
             case SOUTH -> {
                 x = loc.pos().x();
                 y = loc.pos().y() - 1;
-                shiftDistance = 20;
+                shiftDistance = 4;
             }
             case WEST -> {
                 x = loc.pos().x();
                 y = loc.pos().y();
-                shiftDistance = 16;
+                shiftDistance = 0;
             }
             default -> throw new IllegalArgumentException("This shouldn't be possible");
         }

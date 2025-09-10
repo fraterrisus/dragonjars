@@ -167,10 +167,9 @@ public class MapData {
     }
 
     public void setSquare(int x, int y, int newData) {
+        // FIXME check?
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
-        primaryData.write(offset, 1, (newData >> 16) & 0xff);
-        primaryData.write(offset+1, 1, (newData >> 8) & 0xff);
-        primaryData.write(offset+2, 1, newData & 0xff);
+        primaryData.write(offset, 3, newData);
     }
 
     public Item getItem(int index) {
@@ -183,10 +182,6 @@ public class MapData {
 
     public int getRandomEncounters() {
         return primaryData.getUnsignedByte(0x03);
-    }
-
-    public Square getSquare(GridCoordinate position) {
-        return getSquare(position.x(), position.y());
     }
 
     private Square stripSquare(int x, int y) {
@@ -206,6 +201,19 @@ public class MapData {
         );
     }
 
+    public void eraseSquareSpecial(GridCoordinate position) {
+        eraseSquareSpecial(position.x(), position.y());
+    }
+
+    public void eraseSquareSpecial(int x, int y) {
+        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        primaryData.write(offset+2, 1, 0x00);
+    }
+
+    public Square getSquare(GridCoordinate position) {
+        return getSquare(position.x(), position.y());
+    }
+
     public Square getSquare(int xin, int yin) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
@@ -214,6 +222,8 @@ public class MapData {
         if (isWrapping()) {
             x = xin % xMax;
             y = yin % yMax;
+            if (x < 0) x += xMax;
+            if (y < 0) y += yMax;
 //            System.out.format("getSquare(%d,%d) -> (%d,%d)\n", xin, yin, x, y);
         } else {
             // Map coordinates *should* be bytes, but if we tried to do math they might be negative ints.
@@ -231,15 +241,15 @@ public class MapData {
             }
         }
 
+        if ((x < 0) || (y < 0)) throw new RuntimeException("Error: illegal coordinates (" + x + "," + y + ")");
+
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
-        // Consider fixing this: it's backwards from how we usually read multi-byte values.
-        final int rawData = (primaryData.getUnsignedByte(offset) << 16) |
-                (primaryData.getUnsignedByte(offset+1) << 8) |
-                (primaryData.getUnsignedByte(offset+2));
 
-        final int northWallTextureIndex = (rawData >> 20) & 0xf;
+        final int rawData = primaryData.getQuadWord(offset) & 0x00ffffff;
+
+        final int northWallTextureIndex = (rawData >> 4) & 0xf;
         final Optional<Integer> northWallTextureId;
         final Optional<Integer> northWallTextureMetadata;
         if (northWallTextureIndex == 0) {
@@ -255,7 +265,7 @@ public class MapData {
             northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex - 1));
         }
 
-        final int westWallTextureIndex = (rawData >> 16) & 0xf;
+        final int westWallTextureIndex = (rawData) & 0xf;
         final Optional<Integer> westWallTextureId;
         final Optional<Integer> westWallTextureMetadata;
         if (westWallTextureIndex == 0) {
@@ -291,7 +301,7 @@ public class MapData {
             otherTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(overallTextureIndex)));
         }
 
-        final int eventId = (rawData) & 0xff;
+        final int eventId = (rawData >> 16) & 0xff;
 
         return new Square(
                 rawData,
