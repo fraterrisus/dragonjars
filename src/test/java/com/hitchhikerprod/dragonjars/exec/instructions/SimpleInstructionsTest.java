@@ -21,7 +21,7 @@ public class SimpleInstructionsTest {
         i.heap(Heap.RECENT_EVENT).write(0x00);
         i.heap(Heap.NEXT_EVENT).write(0xff);
 
-        Instructions.COPY_HEAP_3E_3F.exec(i);
+        Instructions.COPY_HEAP_3F_3E.exec(i);
 
         assertEquals(0xff, i.heap(Heap.RECENT_EVENT).read());
     }

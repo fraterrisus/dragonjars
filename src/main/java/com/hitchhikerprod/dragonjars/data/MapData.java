@@ -25,7 +25,7 @@ public class MapData {
     private int xMax;
     private int yMax;
     // private int flags; we're reading this live now
-    private int randomEncounters;
+    // private int randomEncounters;
 
     private List<Integer> primaryPointers;
     // private List<Integer> secondaryPointers;
@@ -85,7 +85,7 @@ public class MapData {
         this.xMax = primaryData.getByte(chunkPointer);
         // for some reason this is one larger than it should be; see below
         this.yMax = primaryData.getByte(chunkPointer + 1);
-        this.randomEncounters = primaryData.getUnsignedByte(chunkPointer + 3);
+        // this.randomEncounters = primaryData.getUnsignedByte(chunkPointer + 3);
         chunkPointer += 4;
 
         byteReader(textureChunks5677::add);
@@ -169,8 +169,8 @@ public class MapData {
     public void setSquare(int x, int y, int newData) {
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
         primaryData.write(offset, 1, (newData >> 16) & 0xff);
-        primaryData.write(offset, 1, (newData >> 8) & 0xff);
-        primaryData.write(offset, 1, newData & 0xff);
+        primaryData.write(offset+1, 1, (newData >> 8) & 0xff);
+        primaryData.write(offset+2, 1, newData & 0xff);
     }
 
     public Item getItem(int index) {
@@ -181,18 +181,9 @@ public class MapData {
         return primaryPointers.get(eventId);
     }
 
-    public record Square(
-            int rawData,
-            Optional<Integer> northWallTextureChunk,
-            Optional<Integer> northWallTextureMetadata,
-            Optional<Integer> westWallTextureChunk,
-            Optional<Integer> westWallTextureMetadata,
-            int roofTexture,
-            int floorTextureChunk,
-            Optional<Integer> otherTextureChunk,
-            boolean touched,
-            int eventId
-    ) {}
+    public int getRandomEncounters() {
+        return primaryData.getUnsignedByte(0x03);
+    }
 
     public Square getSquare(GridCoordinate position) {
         return getSquare(position.x(), position.y());
@@ -468,4 +459,17 @@ public class MapData {
             this.encounters.add(enc);
         }
     }
+
+    public record Square(
+            int rawData,
+            Optional<Integer> northWallTextureChunk,
+            Optional<Integer> northWallTextureMetadata,
+            Optional<Integer> westWallTextureChunk,
+            Optional<Integer> westWallTextureMetadata,
+            int roofTexture,
+            int floorTextureChunk,
+            Optional<Integer> otherTextureChunk,
+            boolean touched,
+            int eventId
+    ) {}
 }

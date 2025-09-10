@@ -68,14 +68,6 @@ public class DrawAutomap implements Instruction {
                         drawChunk(square.floorTextureChunk(), 0, xOffset, yOffset);
                     }
 
-                    // Party avatar, or Deco (texture offset 0)
-                    if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
-                        i.draw().textureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
-                                xOffset, yOffset, 0, automapRectangle);
-                    } else if (square.touched()) {
-                        square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
-                    }
-
                     // West wall (texture offset 2)
                     final MapData.Square squareLeft = i.mapDecoder().getSquare(mapx - 1, mapy);
                     if (square.touched() || squareLeft.touched()) {
@@ -86,6 +78,14 @@ public class DrawAutomap implements Instruction {
                     final MapData.Square squareUp = i.mapDecoder().getSquare(mapx, mapy + 1);
                     if (square.touched() || squareUp.touched()) {
                         square.northWallTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset-8, yOffset-8));
+                    }
+
+                    // Party avatar, or Deco (texture offset 0)
+                    if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
+                        i.draw().textureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
+                                xOffset, yOffset, 0, automapRectangle);
+                    } else if (square.touched()) {
+                        square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
                     }
                 }
             }

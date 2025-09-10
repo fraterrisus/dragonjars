@@ -38,6 +38,7 @@ public class DrawCurrentViewport implements Instruction {
         i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
         i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
         i.heap(Heap.BOARD_FLAGS).write(i.mapDecoder().flags());
+        i.heap(Heap.RANDOM_ENCOUNTERS).write(i.mapDecoder().getRandomEncounters());
         i.heap(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 

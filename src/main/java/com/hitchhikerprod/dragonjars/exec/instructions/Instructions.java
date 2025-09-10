@@ -47,8 +47,9 @@ public class Instructions {
         return i.getIP().incr(OPCODE);
     };
 
-    public static final Instruction COPY_HEAP_3E_3F = (i) -> {
-        i.heap(Heap.RECENT_EVENT).write(i.heap(Heap.NEXT_EVENT).read());
+    public static final Instruction COPY_HEAP_3F_3E = (i) -> {
+        final int value = i.heap(Heap.NEXT_EVENT).read();
+        i.heap(Heap.RECENT_EVENT).write(value);
         return i.getIP().incr(OPCODE);
     };
 

@@ -17,6 +17,7 @@ public class Heap {
     public static final int BOARD_MAX_X = 0x21;
     public static final int BOARD_MAX_Y = 0x22;
     public static final int BOARD_FLAGS = 0x23;
+    public static final int RANDOM_ENCOUNTERS = 0x24;
     public static final int WALL_METADATA = 0x26;
     public static final int LONGPTR_ADR = 0x34;
     public static final int COMBAT_MODE = 0x35; // 0xff combat, 0x00 travel

@@ -217,6 +217,7 @@ public class Interpreter {
         this.executionStack.push(after);
         final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
         final Address nextIP = new Address(startingSegment, addr);
+        setDS(startingSegment);
         mainLoop(nextIP);
     }
 
@@ -232,6 +233,7 @@ public class Interpreter {
      */
     public void reenter(Address startPoint, Supplier<Address> after) {
         this.executionStack.push(after);
+        setDS(startPoint.segment());
         mainLoop(startPoint);
     }
 
@@ -245,8 +247,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0b;
-    private static final int BREAKPOINT_ADR = 0x00f0;
+    private static final int BREAKPOINT_CHUNK = 0x47;
+    private static final int BREAKPOINT_ADR = 0x1684;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -1329,7 +1331,7 @@ public class Interpreter {
             case 0x70 -> new UnrotateMapView();
             case 0x71 -> new RunBoardEvent();
             case 0x72 -> new FindBoardAction();
-            case 0x73 -> Instructions.COPY_HEAP_3E_3F;
+            case 0x73 -> Instructions.COPY_HEAP_3F_3E;
             case 0x74 -> new DrawModal();
             case 0x75 -> (i) -> { i.resetUI(); return i.getIP().incr(); };
             case 0x76 -> Instructions.FILL_BBOX;
