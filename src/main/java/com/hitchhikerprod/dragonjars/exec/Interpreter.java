@@ -259,12 +259,12 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
+//            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
             if (csChunk == 0x08 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
-                app.openParagraphsWindow(ax);
+                app().openParagraphsWindow(ax);
             }
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
@@ -710,7 +710,7 @@ public class Interpreter {
 
     public void drawViewportCorners() {
         for (int i = 0; i < 4; i++) draw().corner(i);
-        bitBlastForeground(draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel());
+        bitBlast(videoForeground, draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel());
     }
 
     public void startTorchAnimation() {
@@ -810,20 +810,20 @@ public class Interpreter {
     private void drawEyeHelper() {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.EYE_CLOSED);
         if (eyePhase < 0) {
-            bitBlastBackground(mask);
+            bitBlast(videoBackground, mask);
         } else {
             draw().romImage(VideoHelper.EYE_CLOSED + eyePhase);
-            bitBlastForeground(mask);
+            bitBlast(videoForeground, mask);
         }
     }
 
     private void drawTorchHelper() {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.TORCH_1);
         if (torchPhase < 0) {
-            bitBlastBackground(mask);
+            bitBlast(videoBackground, mask);
         } else {
             draw().romImage(VideoHelper.TORCH_1 + torchPhase);
-            bitBlastForeground(mask);
+            bitBlast(videoForeground, mask);
         }
     }
 
@@ -832,11 +832,11 @@ public class Interpreter {
         final boolean naturalLight = Objects.nonNull(mapDecoder) && mapDecoder().isLit();
         final int compass = heap(Heap.COMPASS_ENABLED).read();
         if (compass <= 0 && !naturalLight) {
-            bitBlastBackground(mask);
+            bitBlast(videoBackground, mask);
         } else {
             final int facing = heap(Heap.PARTY_FACING).read();
             draw().romImage(VideoHelper.COMPASS_N + facing);
-            bitBlastForeground(mask);
+            bitBlast(videoForeground, mask);
         }
     }
 
@@ -844,10 +844,10 @@ public class Interpreter {
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.SHIELD);
         final int shield = heap(Heap.SHIELD_POWER).read();
         if (shield <= 0) {
-            bitBlastBackground(mask);
+            bitBlast(videoBackground, mask);
         } else {
             draw().romImage(VideoHelper.SHIELD);
-            bitBlastForeground(mask);
+            bitBlast(videoForeground, mask);
         }
     }
 
@@ -891,13 +891,13 @@ public class Interpreter {
                         // We could probably fix this another way, because that row never gets drawn over,
                         // but this is relatively simple.
                         final PixelRectangle myRect = draw().getRomImageArea(regionId);
-                        bitBlastBackground(myRect);
+                        bitBlast(videoBackground, myRect);
                     }
                     case VideoHelper.HUD_PILLAR -> {
-                        bitBlastBackground(regionRect.toPixel());
+                        bitBlast(videoBackground, regionRect.toPixel());
                         drawSpellIcons(true);
                     }
-                    case VideoHelper.HUD_GAMEPLAY -> bitBlastForeground(regionRect.toPixel());
+                    case VideoHelper.HUD_GAMEPLAY -> bitBlast(videoForeground, regionRect.toPixel());
                     case VideoHelper.HUD_PARTY_AREA -> {
                         heap(Heap.PC_DIRTY).write(0x00, 7); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
@@ -908,18 +908,10 @@ public class Interpreter {
                         fillRectangle();
                     }
                     // Just copy this from the background video buffer, it's already been drawn
-                    default -> bitBlastBackground(regionRect.toPixel());
+                    default -> bitBlast(videoBackground, regionRect.toPixel());
                 }
             }
         }
-    }
-
-    public void bitBlastBackground(PixelRectangle mask) {
-        getImageWriter(w -> videoBackground.writeTo(w, mask, false));
-    }
-
-    public void bitBlastForeground(PixelRectangle mask) {
-        getImageWriter(w -> videoForeground.writeTo(w, mask, true));
     }
 
     public void bitBlast(VideoBuffer buffer, PixelRectangle mask) {
@@ -949,7 +941,7 @@ public class Interpreter {
 
         // copy everything we just did to the screen
         final PixelRectangle mask = draw().getHudRegionArea(VideoHelper.HUD_PARTY_AREA).toPixel();
-        bitBlastForeground(mask);
+        bitBlast(videoForeground, mask);
 
         // set the indirect function back to 0x30c1
 
@@ -1090,8 +1082,8 @@ public class Interpreter {
         }
         setBackground();
 
-        bitBlastBackground(mask);
-        bitBlastForeground(mask);
+        bitBlast(videoBackground, mask);
+        bitBlast(videoForeground, mask);
     }
 
     public void drawModal(CharRectangle r) {

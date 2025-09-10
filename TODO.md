@@ -17,12 +17,40 @@
   idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
   as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.
 - The automap is not persisting correctly, but I'm not sure what mechanism is or is not causing that.
-- The original relies on the fact that calling DrawCurrentViewport multiple times takes long enough that you get to see
-  each screen draw before it executes the next one. So, for instance, running from combat actually draws three frames 
-  (turn R, turn R, step). Our video handler runs multiple frames on a single thread, so that doesn't work. It's possible
-  that fixing this requires separating the `Interpreter` out into a separate thread and using `Platform.runLater` to 
-  manage the screen draws. But it would make e.g. the Tars tracking bit, look MUCH better.
 - My implementation of Frobs is definitely incomplete/different. It's possible that I'm freeing some segments too 
   aggressively and that's causing bugs.
 - Using JavaFX's `scale` function to scale the output `Image` doesn't actually result in integer scaling, and I 
   have no idea why not.
+
+# Threading the Interpreter
+
+The original relies on the fact that calling DrawCurrentViewport multiple times takes long enough that you get to see
+each screen draw before it executes the next one. So, for instance, running from combat actually draws three frames
+(turn R, turn R, step). Our video handler runs multiple frames on a single thread -- on the UI thread, no less -- so 
+that doesn't work.
+
+If we split the Interpreter out into its own thread, the primary difficulty will be separating out all the places 
+where the Interpreter calls the App directly; in particular, the way that we "return null" in order to wait for user 
+input will be different, so we may have to rebuild the #reenter system (again). The second difficulty will be 
+rewriting the VideoHelper to push everything to the screen Image with Platform.runLater(); we'll also want to run 
+some sort of delay when we do it. But how will we know when we've pushed the "whole screen"?
+
+Places where we try to talk to the DragonWarsApp object directly:
+- DragonWarsApp#startInterpreter gets a little more interesting because it's a Thread#start
+- Calls to app#setKeyHandler happen in a bunch of places; this requires re-architecting user input, but that might be 
+  *better*. I wonder if we can manage the thread communication with an actual Lock object.
+- Interpreter#mainLoop calls app#openParagraphsWindow. Trivial runLater.
+- app#close should be fine.
+- We talk to the MusicService via the app, which may be tricky given the way we currently play the title music. Or 
+  maybe this just works with runLater(); it's spawning off its own threads, after all.
+- YouWin probably needs some rewriting, although mostly it's playTitleMusic(), setKeyHandler(), and one call to 
+  setImage() (that's the tricky one).
+
+Uses of PixelBuffer#writeTo(PixelWriter):
+- app#showTitleScreen(), app#testPattern(), fine
+- YouWin#handler(), see above
+- Interpreter#bitBlast(), which gets used in a limited number of places:
+  - drawViewportCorners
+  - drawHUD, drawMapTitle, and spell icons, which could easily be refactored into a local buffer
+  - drawPartyInfoArea
+  - MonsterAnimationTask, which already uses Platform.runLater()
