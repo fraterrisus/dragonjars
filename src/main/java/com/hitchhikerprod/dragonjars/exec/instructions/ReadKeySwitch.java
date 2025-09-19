@@ -1,7 +1,10 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
+import javafx.beans.property.BooleanProperty;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -72,7 +75,7 @@ public class ReadKeySwitch implements Instruction {
         // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115
         if ((imm_2a44 & 0x40) != 0) {
             final Address nextIP = new Address(ip.segment(), pointer);
-            i.setPrompt(List.of(new KeyAction((ev) -> true, nextIP)));
+            setPrompt(i, List.of(new KeyAction((ev) -> true, nextIP)));
             return null;
         }
 
@@ -98,7 +101,7 @@ public class ReadKeySwitch implements Instruction {
                 prompts.add(new KeyAction(detector(ch), new Address(ip.segment(), target)));
             }
         }
-        i.setPrompt(prompts);
+        setPrompt(i, prompts);
         return null;
     }
 
@@ -141,5 +144,28 @@ public class ReadKeySwitch implements Instruction {
             case DIGIT0, DIGIT1, DIGIT2, DIGIT3, DIGIT4, DIGIT5, DIGIT6, DIGIT7, DIGIT8, DIGIT9 -> 0x01;
             default -> 0x80 | key.getCode();
         };
+    }
+
+    private static void setPrompt(Interpreter i, List<ReadKeySwitch.KeyAction> prompts) {
+        i.app().setKeyHandler(event -> {
+            if (event.getCode().isModifierKey()) return;
+            if (event.getCode() == KeyCode.S && event.isControlDown()) {
+                final BooleanProperty soundEnabled = AppPreferences.getInstance().soundEnabledProperty();
+                soundEnabled.set(!soundEnabled.get());
+                return;
+            }
+            for (ReadKeySwitch.KeyAction prompt : prompts) {
+                if (prompt.function().match(event)) {
+                    i.doLater(j -> {
+                        if (event.getCode().isDigitKey()) {
+                            j.heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
+                        }
+                        j.setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
+                        j.start(prompt.destination());
+                    });
+                    return;
+                }
+            }
+        });
     }
 }

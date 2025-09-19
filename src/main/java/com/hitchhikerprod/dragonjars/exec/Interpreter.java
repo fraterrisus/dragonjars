@@ -17,13 +17,10 @@ import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
-import javafx.beans.property.BooleanProperty;
-import javafx.event.EventHandler;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -31,10 +28,12 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class Interpreter {
+public class Interpreter implements Runnable {
     private static final int MASK_LOW = 0x000000ff;
     private static final int MASK_HIGH = 0x0000ff00;
     private static final int MASK_WORD = 0x0000ffff;
@@ -49,6 +48,11 @@ public class Interpreter {
     private final VideoHelper videoHelper;
     private MapData mapDecoder;
 
+    private MonsterAnimationTask monsterAnimationTask;
+    private EyeAnimationTask eyeAnimationTask;
+    private TorchAnimationTask torchAnimationTask;
+    private SpellDecayTask spellDecayTask;
+
     /* Memory space */
 
     private final Memory memory;
@@ -62,11 +66,6 @@ public class Interpreter {
     // Write everything else
     public final VideoBuffer videoForeground = new VideoBuffer();
 
-    private MonsterAnimationTask monsterAnimationTask;
-    private EyeAnimationTask eyeAnimationTask;
-    private TorchAnimationTask torchAnimationTask;
-    private SpellDecayTask spellDecayTask;
-
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
 
@@ -77,12 +76,12 @@ public class Interpreter {
     private int bbox_y1; // 0x254c (px)
 
     private final List<Integer> string_313e = new ArrayList<>();
-    private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
+    private final List<Integer> titleString = new ArrayList<>(); // 0x273a (len) 0x273b:16 (string)
 
 //    public int x_3166;
 //    public int y_3168;
-    public int x_31ed; // default for draw_char
-    public int y_31ef; // default for draw_char
+    public int x_31ed;
+    public int y_31ef;
 
     private int mem_342f = 0x00;
     private int mem_3430 = 0x00;
@@ -101,7 +100,7 @@ public class Interpreter {
 //    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;
 
-    /* Architectural registers */
+    /* 'Architectural' registers */
 
     // In assembly, metaregister CS contains the address of the segment to which the current code segment
     // has been loaded. Here I store the structure index instead.
@@ -121,6 +120,13 @@ public class Interpreter {
     private boolean gameIsPaused = false;
 
     private int instructionsExecuted = 0;
+
+    private final ReentrantLock messageLock = new ReentrantLock();
+    private final Queue<Consumer<Interpreter>> messageQueue = new LinkedList<>();
+
+    private final ReentrantLock frameLock = new ReentrantLock();
+    private Address frameIP = null;
+
     private final Deque<Supplier<Address>> executionStack = new LinkedList<>();
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
@@ -140,6 +146,50 @@ public class Interpreter {
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
         this.videoHelper = new VideoHelper(this.memory().getCodeChunk());
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            Thread.onSpinWait();
+            if (messageLock.tryLock()) {
+                if (messageQueue.isEmpty()) {
+                    messageLock.unlock();
+                } else {
+                    final Consumer<Interpreter> op = messageQueue.remove();
+                    messageLock.unlock();
+                    op.accept(this);
+                }
+            }
+        }
+    }
+
+    public void doLater(Consumer<Interpreter> fn) {
+        messageLock.lock();
+        messageQueue.add(fn);
+        messageLock.unlock();
+    }
+
+    public void waitForFrame(Address nextIP) {
+        frameLock.lock();
+        frameIP = nextIP;
+        frameLock.unlock();
+    }
+
+    public void onFrame() {
+        frameLock.lock();
+        if (frameIP == null) {
+            frameLock.unlock();
+        } else {
+            final Address nextIP = frameIP;
+            frameIP = null;
+            frameLock.unlock();
+
+            doLater((i) -> {
+                try { Thread.sleep(100); } catch (InterruptedException e) {}
+                i.mainLoop(nextIP);
+            });
+        }
     }
 
     public Interpreter init() {
@@ -162,9 +212,10 @@ public class Interpreter {
             loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
 
             spellDecayTask = new SpellDecayTask(this);
-            final Thread spellDecayThread = new Thread(spellDecayTask);
-            spellDecayThread.setDaemon(true);
-            spellDecayThread.start();
+            Thread.ofPlatform()
+                    .daemon(true)
+                    .name("spell-decay")
+                    .start(spellDecayTask);
         }
 
         // cs:0150  ax <- 0x0000
@@ -251,6 +302,8 @@ public class Interpreter {
     private static final int BREAKPOINT_ADR = 0x1684;
 
     private void mainLoop(Address startPoint) {
+        if (Platform.isFxApplicationThread()) throw new RuntimeException("Don't call this from the application thread");
+
         final AppPreferences prefs = AppPreferences.getInstance();
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
@@ -264,7 +317,7 @@ public class Interpreter {
                 System.out.println("breakpoint");
             }
             if (csChunk == 0x08 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
-                app().openParagraphsWindow(ax);
+                Platform.runLater(() -> app().openParagraphsWindow(ax));
             }
             final Instruction ins = decodeOpcode(opcode);
             nextIP = ins.exec(this);
@@ -718,10 +771,7 @@ public class Interpreter {
         torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnFailed(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnCancelled(ev -> torchAnimationTask = null);
-
-        final Thread taskThread = new Thread(torchAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform().daemon(true).name("torch-animation").start(torchAnimationTask);
     }
     
     public void startEyeAnimation() {
@@ -729,10 +779,7 @@ public class Interpreter {
         eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnFailed(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnCancelled(ev -> eyeAnimationTask = null);
-
-        final Thread taskThread = new Thread(eyeAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform().daemon(true).name("eye-animation").start(eyeAnimationTask);
     }
 
     public boolean isMonsterAnimationEnabled() {
@@ -768,10 +815,10 @@ public class Interpreter {
     public void startMonsterAnimation(MonsterAnimationTask task) {
         if (monsterAnimationTask != null) monsterAnimationTask.cancel();
         monsterAnimationTask = task;
-
-        final Thread taskThread = new Thread(monsterAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform()
+                .daemon(true)
+                .name("monster-animation")
+                .start(monsterAnimationTask);
     }
 
     public void stopMonsterAnimation() {
@@ -1060,10 +1107,11 @@ public class Interpreter {
     }
 
     public void setTitleString(List<Integer> chars) {
+        this.titleString.clear();
         if (chars.size() > 16) {
-            this.titleString = List.copyOf(chars.subList(0, 16));
+            this.titleString.addAll(chars.subList(0, 16));
         } else {
-            this.titleString = List.copyOf(chars);
+            this.titleString.addAll(chars);
         }
         drawMapTitle();
     }
@@ -1135,28 +1183,6 @@ public class Interpreter {
             fillRectangle(w);
         });
         draw_borders = 0xff;
-    }
-
-    public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
-        final EventHandler<KeyEvent> keyHandler = event -> {
-            if (event.getCode().isModifierKey()) return;
-            if (event.getCode() == KeyCode.S && event.isControlDown()) {
-                final BooleanProperty soundEnabled = AppPreferences.getInstance().soundEnabledProperty();
-                soundEnabled.set(!soundEnabled.get());
-                return;
-            }
-            for (ReadKeySwitch.KeyAction prompt : prompts) {
-                if (prompt.function().match(event)) {
-                    if (event.getCode().isDigitKey()) {
-                        heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
-                    }
-                    setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
-                    start(prompt.destination());
-                    break;
-                }
-            }
-        };
-        app().setKeyHandler(keyHandler);
     }
 
     private static final List<Integer> FOOTER_OFFSETS = List.of(0x0c, 0x0f, 0x09, 0x0e);

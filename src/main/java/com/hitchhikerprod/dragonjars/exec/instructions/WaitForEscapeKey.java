@@ -12,8 +12,10 @@ public class WaitForEscapeKey implements Instruction {
         i.printFooter(0x02); // hardcoded at 0x2bab
         i.app().setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;
-            i.fillRectangle();
-            i.start(nextIP);
+            i.doLater(j -> {
+                j.fillRectangle();
+                j.start(nextIP);
+            });
         });
         return null;
     }

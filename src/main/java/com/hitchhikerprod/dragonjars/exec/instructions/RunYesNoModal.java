@@ -19,11 +19,15 @@ public class RunYesNoModal implements Instruction {
         final Address nextIP = i.getIP().incr(OPCODE);
         i.app().setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {
-                i.setZeroFlag(true);
-                i.start(nextIP);
+                i.doLater(j -> {
+                    j.setZeroFlag(true);
+                    j.start(nextIP);
+                });
             } else if (event.getCode() == KeyCode.N) {
-                i.setZeroFlag(false);
-                i.start(nextIP);
+                i.doLater(j -> {
+                    j.setZeroFlag(false);
+                    j.start(nextIP);
+                });
             }
         });
         return null;

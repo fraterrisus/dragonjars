@@ -40,8 +40,7 @@ public class PauseUntilKeyOrTime implements Instruction {
     private void moveAlong() {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
-            i.app().setKeyHandler(null);
-            i.start(nextIP);
+            i.doLater(j -> j.start(nextIP));
         }
     }
 }

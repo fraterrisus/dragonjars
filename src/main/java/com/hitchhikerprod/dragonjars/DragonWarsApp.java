@@ -14,6 +14,7 @@ import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
 import com.hitchhikerprod.dragonjars.ui.PreferencesWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -42,6 +43,9 @@ public class DragonWarsApp extends Application {
     private Stage stage;
     private Scene scene;
 
+    private Thread interpreterThread;
+    private Interpreter interpreter;
+    private AnimationTimer frameTimer;
     private MusicService musicService;
 
     private List<Chunk> dataChunks;
@@ -76,6 +80,7 @@ public class DragonWarsApp extends Application {
     }
 
     public void close() {
+        // TODO: graceful thread shutdown?
         musicService.close();
         Platform.exit();
     }
@@ -128,9 +133,7 @@ public class DragonWarsApp extends Application {
             alert.showAndWait();
         });
 
-        final Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        Thread.ofPlatform().daemon(true).start(task);
     }
 
     public MusicService musicService() {
@@ -190,7 +193,22 @@ public class DragonWarsApp extends Application {
 
     private void startInterpreter() {
         setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
-        new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
+
+        interpreter = new Interpreter(this, dataChunks);
+        interpreterThread = Thread.ofPlatform().daemon(true).name("Interpreter").start(interpreter);
+
+        frameTimer = new AnimationTimer() {
+            @Override
+            public void handle(long l) {
+                interpreter.onFrame();
+            }
+        };
+        frameTimer.start();
+
+        interpreter.doLater((i) -> {
+            i.init();
+            i.reenter(0, 0, () -> { i.app().close(); return null; });
+        });
     }
 
     private void stringHelper(VideoHelper draw, String s, int x, int y, boolean invert) {

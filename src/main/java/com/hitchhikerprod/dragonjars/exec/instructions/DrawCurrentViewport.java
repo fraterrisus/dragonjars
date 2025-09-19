@@ -7,12 +7,12 @@ import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
-import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 
 import java.util.List;
 
@@ -52,8 +52,8 @@ public class DrawCurrentViewport implements Instruction {
             }
         });
         i.drawViewportCorners();
-
-        return i.getIP().incr();
+        i.waitForFrame(i.getIP().incr());
+        return null;
     }
 
     public void drawFloorTexture() {

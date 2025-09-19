@@ -65,27 +65,27 @@ public class DrawAutomap implements Instruction {
 
                     // Floor (texture offset 0)
                     if (square.touched()) {
-                        drawChunk(square.floorTextureChunk(), 0, xOffset, yOffset);
+                        drawChunk(d, square.floorTextureChunk(), 0, xOffset, yOffset);
                     }
 
                     // West wall (texture offset 2)
                     final MapData.Square squareLeft = i.mapDecoder().getSquare(mapx - 1, mapy);
                     if (square.touched() || squareLeft.touched()) {
-                        square.westWallTextureChunk().ifPresent(id -> drawChunk(id, 2, xOffset-8, yOffset-8));
+                        square.westWallTextureChunk().ifPresent(id -> drawChunk(d, id, 2, xOffset-8, yOffset-8));
                     }
 
                     // North wall (texture offset 0)
                     final MapData.Square squareUp = i.mapDecoder().getSquare(mapx, mapy + 1);
                     if (square.touched() || squareUp.touched()) {
-                        square.northWallTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset-8, yOffset-8));
+                        square.northWallTextureChunk().ifPresent(id -> drawChunk(d, id, 0, xOffset-8, yOffset-8));
                     }
 
                     // Party avatar, or Deco (texture offset 0)
                     if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
-                        i.draw().textureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
+                        d.textureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
                                 xOffset, yOffset, 0, automapRectangle);
                     } else if (square.touched()) {
-                        square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
+                        square.otherTextureChunk().ifPresent(id -> drawChunk(d, id, 0, xOffset, yOffset));
                     }
                 }
             }
@@ -94,38 +94,40 @@ public class DrawAutomap implements Instruction {
         i.bitBlast(this.automapBuffer, automapRectangle);
 
         // The switch is at cs:1717, but it points to code segment addresses so we emulate it here
+        final int xMax = i.heap(Heap.BOARD_MAX_X).read();
+        final int yMax = i.heap(Heap.BOARD_MAX_Y).read();
         i.app().setKeyHandler(event -> {
             switch(event.getCode()) {
-                case KeyCode.ESCAPE -> {
-                    i.disableMonsterAnimation();
-                    i.resetUI(); // i.drawHud();
-                    i.start(nextIP);
-                }
-                case KeyCode.UP, KeyCode.I, KeyCode.A -> {
+                case KeyCode.ESCAPE -> i.doLater(j -> {
+                    j.disableMonsterAnimation();
+                    j.resetUI();
+                    j.start(nextIP);
+                });
+                case KeyCode.UP, KeyCode.I, KeyCode.A -> i.doLater(j -> {
                     final int y1 = y0 + 1;
-                    if (y1 < i.heap(Heap.BOARD_MAX_Y).read()) displayAutomapPage(x0, y1);
-                }
-                case KeyCode.DOWN, KeyCode.K, KeyCode.Z -> {
+                    if (y1 < yMax) displayAutomapPage(x0, y1);
+                });
+                case KeyCode.DOWN, KeyCode.K, KeyCode.Z -> i.doLater(j -> {
                     final int y1 = y0 - 1;
                     if (y1 >= 0) displayAutomapPage(x0, y1);
-                }
-                case KeyCode.RIGHT, KeyCode.L -> {
+                });
+                case KeyCode.RIGHT, KeyCode.L -> i.doLater(j -> {
                     final int x1 = x0 + 1;
-                    if (x1 < i.heap(Heap.BOARD_MAX_X).read()) displayAutomapPage(x1, y0);
-                }
-                case KeyCode.LEFT, KeyCode.J -> {
+                    if (x1 < xMax) displayAutomapPage(x1, y0);
+                });
+                case KeyCode.LEFT, KeyCode.J -> i.doLater(j -> {
                     final int x1 = x0 - 1;
                     if (x1 >= 0) displayAutomapPage(x1, y0);
-                }
+                });
             }
         });
 
         return null;
     }
 
-    private void drawChunk(int chunkId, int chunkIndex, int x, int y) {
+    private void drawChunk(VideoHelper d, int chunkId, int chunkIndex, int x, int y) {
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
         final Chunk chunk = i.memory().getSegment(segmentId);
-        i.draw().texture(chunk, chunkIndex, x, y, 0, automapRectangle);
+        d.texture(chunk, chunkIndex, x, y, 0, automapRectangle);
     }
 }
