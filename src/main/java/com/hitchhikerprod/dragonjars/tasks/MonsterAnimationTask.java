@@ -2,11 +2,10 @@ package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
-import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
-import javafx.application.Platform;
+import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import javafx.concurrent.Task;
 
 import java.util.ArrayList;
@@ -30,12 +29,13 @@ public class MonsterAnimationTask extends Task<Void> {
         }
     }
 
-    public MonsterAnimationTask(Interpreter interpreter, Chunk primarychunk, Chunk secondaryChunk) {
+    public MonsterAnimationTask(Interpreter interpreter, Chunk primarychunk, Chunk secondaryChunk, VideoBuffer background) {
         this.interpreter = interpreter;
         this.priChunk = primarychunk;
         this.secChunk = secondaryChunk;
-        this.background = interpreter.draw().getSnapshot();
+        this.background = background;
         this.foreground = new VideoBuffer(VideoBuffer.CHROMA_KEY);
+        // this is threadsafe
         this.mask = interpreter.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 
@@ -59,7 +59,9 @@ public class MonsterAnimationTask extends Task<Void> {
             sleepHelper(ANIMATION_DELAY_MS);
             if (weShouldStop()) break;
 
-            if (interpreter.isPaused() && (interpreter.heap(Heap.COMBAT_MODE).read() == 0)) continue;
+            // This isn't threadsafe but I mostly don't care
+            final boolean travelMode = interpreter.heap(Heap.COMBAT_MODE).read() == 0;
+            if (interpreter.isPaused() && travelMode) continue;
 
             decodeSecondary();
             if (weShouldStop()) break;
@@ -154,6 +156,6 @@ public class MonsterAnimationTask extends Task<Void> {
         final VideoBuffer output = new VideoBuffer(background);
         foreground.writeTo(output, mask);
         if (weShouldStop()) return;
-        Platform.runLater(() -> interpreter.bitBlast(output, mask));
+        interpreter.bitBlast(output, mask);
     }
 }

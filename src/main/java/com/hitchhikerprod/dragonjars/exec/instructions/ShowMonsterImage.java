@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -27,8 +28,8 @@ public class ShowMonsterImage implements Instruction {
         final Chunk secChunk = i.memory().getSegment(secSegment);
 
         i.enableMonsterAnimation(monsterId); //, priSegment, secSegment);
-
-        final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priChunk, secChunk);
+        final VideoBuffer background = i.draw().getSnapshot();
+        final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priChunk, secChunk, background);
 
         final EventHandler<WorkerStateEvent> taskEnd = event -> {
             i.freeSegmentForChunk(priChunkId);

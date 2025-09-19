@@ -80,20 +80,6 @@ public class VideoHelper {
         this.vb = vb;
     }
 
-    public void withVideoBuffer(VideoBuffer vb, Consumer<VideoHelper> callback) {
-        if (this.vb == vb) {
-            callback.accept(this);
-        } else {
-            final VideoBuffer oldVb = this.vb;
-            setVideoBuffer(vb);
-            try {
-                callback.accept(this);
-            } finally {
-                setVideoBuffer(oldVb);
-            }
-        }
-    }
-
     public void clearBuffer(byte value) {
         Objects.requireNonNull(vb).reset(value);
     }
@@ -280,6 +266,10 @@ public class VideoHelper {
         final int y0 = codeChunk.getUnsignedByte(baseAddress + 3);
 
         return new PixelRectangle(x0, y0, x0 + width, y0 + height);
+    }
+
+    public void writeTo(PixelWriter writer, PixelRectangle mask, boolean respectChroma) {
+        Objects.requireNonNull(vb).writeTo(writer, mask, respectChroma);
     }
 
     // ----- Draw helpers -----

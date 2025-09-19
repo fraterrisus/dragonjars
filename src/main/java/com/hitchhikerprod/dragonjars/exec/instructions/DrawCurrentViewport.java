@@ -44,15 +44,14 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        i.draw().withVideoBuffer(i.videoForeground, d -> {
-            if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
-                drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
-                drawFloorTexture();
-                drawWallTextures(); // also handles decor
-            }
-        });
-        i.drawViewportCorners();
+        if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
+            drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
+            drawFloorTexture();
+            drawWallTextures(); // also handles decor
+        }
+
         i.waitForFrame(i.getIP().incr());
+        i.drawViewportCorners();
         return null;
     }
 

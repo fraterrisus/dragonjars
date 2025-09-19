@@ -179,8 +179,8 @@ public class DragonWarsApp extends Application {
     }
 
     private void showTitleScreen() {
-        final VideoHelper draw = new VideoHelper(dataChunks.getLast());
         final VideoBuffer vb = new VideoBuffer();
+        final VideoHelper draw = new VideoHelper(dataChunks.getLast());
         draw.setVideoBuffer(vb);
         final Chunk rawChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
         draw.chunkImage(rawChunk);

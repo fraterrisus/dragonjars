@@ -17,6 +17,8 @@ import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import com.hitchhikerprod.dragonjars.util.LockedBoolean;
+import com.hitchhikerprod.dragonjars.util.LockedInteger;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
@@ -48,10 +50,15 @@ public class Interpreter implements Runnable {
     private final VideoHelper videoHelper;
     private MapData mapDecoder;
 
+    /* Tasks, threads, etc. */
+
     private MonsterAnimationTask monsterAnimationTask;
     private EyeAnimationTask eyeAnimationTask;
     private TorchAnimationTask torchAnimationTask;
     private SpellDecayTask spellDecayTask;
+
+    private final LockedInteger eyePhase = new LockedInteger(-1);
+    private final LockedInteger torchPhase = new LockedInteger(-1);
 
     /* Memory space */
 
@@ -64,7 +71,7 @@ public class Interpreter implements Runnable {
     // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
     private final VideoBuffer videoBackground = new VideoBuffer();
     // Write everything else
-    public final VideoBuffer videoForeground = new VideoBuffer();
+    private final VideoBuffer videoForeground = new VideoBuffer();
 
     private int mul_result; // 0x1166:4
     private int div_result; // 0x116a:4
@@ -96,6 +103,7 @@ public class Interpreter implements Runnable {
     //     draw_current_viewport
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
+    private ReentrantLock monsterAnimationLock = new ReentrantLock();
     private boolean animationEnabled_4d4e = false;
 //    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;
@@ -117,7 +125,7 @@ public class Interpreter implements Runnable {
     private boolean flagSign;  // 0x0080
 
     // debugging information
-    private boolean gameIsPaused = false;
+    private final LockedBoolean gameIsPaused = new LockedBoolean(false);
 
     private int instructionsExecuted = 0;
 
@@ -426,17 +434,15 @@ public class Interpreter implements Runnable {
     }
 
     public boolean isPaused() {
-        return gameIsPaused;
+        return gameIsPaused.get();
     }
 
     public void pause() {
-        if (!gameIsPaused) System.out.println("pause <- true");
-        gameIsPaused = true;
+        gameIsPaused.set(true);
     }
 
     public void unpause() {
-        if (gameIsPaused) System.out.println("pause <- false");
-        gameIsPaused = false;
+        gameIsPaused.set(false);
     }
 
     public CharRectangle getBBox() {
@@ -649,18 +655,11 @@ public class Interpreter implements Runnable {
     public void drawString313e() {
         if (string_313e.isEmpty()) return;
 
-        int i0 = 0;
         // skip leading spaces
-        while (string_313e.get(i0) == 0xa0) i0++;
+        int i0 = 0;
+        while ((string_313e.get(i0) & 0x7f) == 0x20) i0++;
 
         drawString(string_313e.subList(i0, string_313e.size()));
-/*
-        for (int i = i0; i < strlen_313c; i++) {
-            draw().character(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
-            x_31ed += 8;
-        }
-*/
-
         string_313e.clear();
         // x_3166 = x_31ed;
     }
@@ -783,29 +782,32 @@ public class Interpreter implements Runnable {
     }
 
     public boolean isMonsterAnimationEnabled() {
-        return animationEnabled_4d4e;
+        monsterAnimationLock.lock();
+        final boolean enabled = animationEnabled_4d4e;
+        monsterAnimationLock.unlock();
+        return enabled;
     }
 
     public int activeMonster() {
-        return animationMonsterId_4d32;
+        monsterAnimationLock.lock();
+        final int monsterId = animationMonsterId_4d32;
+        monsterAnimationLock.unlock();
+        return monsterId;
     }
 
-    // This may all very well be overengineered at this point, but it does work.
-    public void enableMonsterAnimation(int monsterId) { //, int priSegment, int secSegment) {
+    public void enableMonsterAnimation(int monsterId) {
+        monsterAnimationLock.lock();
         animationEnabled_4d4e = true;
-//        animationSegment2_4d33 = secSegment;
         animationMonsterId_4d32 = monsterId;
-        // 4d32: active monster ID
-        //   set to 0xff during start(),eraseVideoBuffer(),drawCurrentViewport()
-        //   set to monster ID (parameter ax) during 0x4a80
+        monsterAnimationLock.unlock();
     }
 
     public void disableMonsterAnimation() {
-//        freeSegment(animationSegment2_4d33);
+        monsterAnimationLock.lock();
         animationEnabled_4d4e = false;
-//        animationSegment2_4d33 = 0xff;
         // technically this doesn't happen when the automap closes
         animationMonsterId_4d32 = 0xff;
+        monsterAnimationLock.unlock();
     }
 
     public void cleanUpMonsterAnimationTask() {
@@ -841,35 +843,36 @@ public class Interpreter implements Runnable {
         }
     }
 
-    private int eyePhase = -1;
-    private int torchPhase = -1;
-
     public void setTorchPhase(int phase) {
-        this.torchPhase = phase;
+        this.torchPhase.set(phase);
         if (!isPaused()) drawTorchHelper();
     }
 
     public void setEyePhase(int phase) {
-        this.eyePhase = phase;
+        eyePhase.set(phase);
         if (!isPaused()) drawEyeHelper();
     }
 
     private void drawEyeHelper() {
+        final int phase = eyePhase.get();
+
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.EYE_CLOSED);
-        if (eyePhase < 0) {
+        if (phase < 0) {
             bitBlast(videoBackground, mask);
         } else {
-            draw().romImage(VideoHelper.EYE_CLOSED + eyePhase);
+            draw().romImage(VideoHelper.EYE_CLOSED + phase);
             bitBlast(videoForeground, mask);
         }
     }
 
     private void drawTorchHelper() {
+        final int phase = torchPhase.get();
+
         final PixelRectangle mask = draw().getRomImageArea(VideoHelper.TORCH_1);
-        if (torchPhase < 0) {
+        if (phase < 0) {
             bitBlast(videoBackground, mask);
         } else {
-            draw().romImage(VideoHelper.TORCH_1 + torchPhase);
+            draw().romImage(VideoHelper.TORCH_1 + phase);
             bitBlast(videoForeground, mask);
         }
     }
@@ -905,14 +908,14 @@ public class Interpreter implements Runnable {
         if (trap > 0) {
             if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
         } else {
-            eyePhase = -1;
+            eyePhase.set(-1);
         }
 
         final int torch = heap(Heap.LIGHT_RANGE).read();
         if (torch > 0) {
             if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
         } else {
-            torchPhase = -1;
+            torchPhase.set(-1);
         }
 
         drawCompassHelper();
@@ -959,6 +962,10 @@ public class Interpreter implements Runnable {
                 }
             }
         }
+    }
+
+    public void bitBlast(VideoHelper helper, PixelRectangle mask) {
+        getImageWriter(w -> helper.writeTo(w, mask, true));
     }
 
     public void bitBlast(VideoBuffer buffer, PixelRectangle mask) {
@@ -1344,7 +1351,7 @@ public class Interpreter implements Runnable {
             case 0x6b -> new TakeOneStep(true);
             case 0x6c -> new TakeOneStep(false);
             case 0x6d -> new DrawAutomap();
-            case 0x6e -> new DrawCompass();
+            case 0x6e -> new DrawCompass(); // never called
             case 0x6f -> new RotateMapView();
             case 0x70 -> new UnrotateMapView();
             case 0x71 -> new RunBoardEvent();
