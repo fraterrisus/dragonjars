@@ -93,7 +93,7 @@ public class SpellDecayTask extends Task<Void> {
                     .map(d -> d.decrementAndUpdate(interpreter))
                     .reduce(Boolean::logicalOr)
                     .orElse(false);
-            if (updates) Platform.runLater(() -> interpreter.drawSpellIcons(false));
+            if (updates) interpreter.drawSpellIcons(false);
             try {Thread.sleep(ANIMATION_DELAY_MS);} catch (InterruptedException e) {}
         }
     }

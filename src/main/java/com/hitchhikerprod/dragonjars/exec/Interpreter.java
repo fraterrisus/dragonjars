@@ -103,7 +103,7 @@ public class Interpreter implements Runnable {
     //     draw_current_viewport
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
-    private ReentrantLock monsterAnimationLock = new ReentrantLock();
+    private final ReentrantLock monsterAnimationLock = new ReentrantLock();
     private boolean animationEnabled_4d4e = false;
 //    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;

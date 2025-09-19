@@ -35,7 +35,7 @@ public class MonsterAnimationTask extends Task<Void> {
         this.secChunk = secondaryChunk;
         this.background = background;
         this.foreground = new VideoBuffer(VideoBuffer.CHROMA_KEY);
-        // this is threadsafe
+        // threadsafe / static data read
         this.mask = interpreter.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 

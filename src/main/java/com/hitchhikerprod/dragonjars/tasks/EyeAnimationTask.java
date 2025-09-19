@@ -55,6 +55,7 @@ public class EyeAnimationTask extends Task<Void> {
 
             try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
+            // not threadsafe
             if (isCancelled() || heap.read() == 0) {
                 interpreter.setEyePhase(-1);
                 return null;
