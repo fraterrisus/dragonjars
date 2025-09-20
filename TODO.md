@@ -5,7 +5,7 @@
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
 - Check that the weird wrapping behavior on the Dwarf Clan Hall works.
-- Display "hidden" information, like the game flags and character flags.
+- Display "hidden" information, like the game flags (done) and character flags.
 - BUGFIX the Dwarf Hammer chest.
 
 # Known Bugs

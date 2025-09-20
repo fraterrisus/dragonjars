@@ -1,0 +1,138 @@
+Slave Camp: Slaughtered the camp residents
+Slave Camp: Appeased the camp
+Slave Camp: Dealt with the sick man
+Slave Camp: Impressed the wizard
+Slave Camp: Killed the guardian spirit
+Tars Ruins: Moved the stone slab
+Smuggler's Cove: Killed the pirate crew
+Freeport: Revealed the fake Sword of Freedom (one way or the other)
+Necropolis: Found the chest in the Guardian room
+Necropolis: Burned out the Spiders' nest
+Necropolis: Beat Nergal's guards
+Necropolis: Fed Nergal Mushrooms
+unused
+Dwarf Ruins: Used Jade Eyes to open the Dwarf Clan Hall
+Dwarf Clan Hall: Depetrified the dwarves
+Dwarf Clan Hall: [Gave the Skull to the dwarven smith]
+Dwarf Clan Hall: Stole from the dwarves
+Game Preserve: Killed the stag
+Game Preserve: Jack has vanished (or was killed)
+Snake Pit: Found the Stone Head
+Snake Pit: Found Drake's other throne
+Kingshome: Met Namtar
+Kingshome Dungeon: Found Drake's real throne
+Mystic Wood: Wrestled Enkidu?
+Mystic Wood: Revived Zaton's spirit
+Purgatory: Start square intro message has been played
+Mud Toad: Stone Arms have been returned
+Mud Toad: Stone Trunk has been returned
+Mud Toad: Stone Head has been returned
+Mud Toad: Stone Hand has been returned
+Lanac'toor: Found the Spectacles
+Sunken Dungeon: Clam has been brought to surface and replaced with Skull
+Sunken Dungeon: Defeated the locker guards
+Byzanople, Siege Camp: Kingshome won the siege of Byzanople
+Byzanople, Siege Camp: Byzanople won the siege of Byzanople
+Byzanople: Killed the Byzanople observation party (and Princess Myrilla)
+Byzanople Dungeon, Siege Camp: Joined forces with Prince Jordan
+Purgatory: Defeated the Humbaba
+Purgatory: Received reward from Clopin for defeating the Humbaba
+Slave Camp: Found the Nature Axe
+Slave Camp, Dwarf Ruins: Unlocked the Forest Axe chest (Camp) -or- the Dwarf Hammer chest (Ruins)
+Tars Ruins: Killed the scroll guards
+Tars Ruins: Killed the Guardian Serpent
+Tars Dungeon: Unlocked the scrolls chest
+Guard Bridge #1: Found the cache
+Phoebus: Unlocked the chest at (01,10)
+Phoebus: Unlocked the chest at (01,15)
+Phoebus: Unlocked the chest at (11,15)
+Slave Estate: Found the chest at (10,11)
+Slave Estate: Found the chest at (05,08)
+Slave Estate: Unlocked the chest at (03,08)
+Slave Mines, Slave Estate: Defeated the guards to escape the mines -or- Found the ugly statue of Mog
+Slave Estate: Killed the Gaze Demon
+Purgatory, Slave Mines: Sold yourself into slavery
+Slave Mines: Gave water to the dying old man
+Slave Mines: Unlocked the hidden chest
+Phoebus, Mud Toad: Attempted to meet Berengaria at the Icarus
+Mud Toad: Have access to the militia's cache
+Smuggler's Cove: Unlocked the pirates' treasure chest
+Lansk: Unlocked the chest
+Kingshome Dungeon: Found the Armory
+Kingshome: Found the weapons cache
+Snake Pit: Unlocked the hidden chest
+Mystic Wood: Unlocked the chest in the SW corner
+Mystic Wood: Unlocked the chest along the shoreline
+Mystic Wood: Found The Ring
+Mystic Wood: Found the Beast Horn
+Mystic Wood: Defeated the Water Spirits guarding the chest
+Mystic Wood: Defeated the Lagooners guarding the pond
+Old Dock: Moved the statue
+Byzanople: Unlocked the Fire Shield chest
+Scorpion Bridge: Have access to the chest
+Sunken Ruins: Have access to the chest
+Sunken Dungeon: Unlocked the hidden chest
+Freeport: Unlocked the Order's chest
+Freeport: Defeated the Order of the Sword
+Dwarf Clan Hall: Found the Spiked Flail
+Dwarf Clan Hall: Found the Dragon Horn
+Dwarf Clan Hall: Found the Crush Mace
+Dragon Valley: Unlocked the chest in the NE corner
+Dragon Valley: Beat the encounter guarding the SW chest
+Lanac'toor: Have access to the scrolls chest
+Lanac'toor: Unlocked the Healing Potion chest
+Nisir: Unlocked the weapons chest
+Game Preserve: Killed the bandits
+Magan Underworld: Scared off the malign fairies
+Mud Toad: Sealed the leak, received the Golden Boots
+Purgatory: NPC ID 0 (Ulrik) is in the party
+unused: NPC ID 1 (—) is in the party
+Slave Camp NPC ID 2 (Louie) is in the party
+Phoebus NPC ID 3 (Valar) is in the party
+Freeport NPC ID 4 (Halifax) is in the party
+unused: NPC ID 5 (—) is in the party
+unused: NPC ID 6 (—) is in the party
+unused: NPC ID 7 (—) is in the party
+unused: NPC ID 8 (—) is in the party
+unused
+Slave Estate: Killed the Gaze Demon with a mirror
+Purgatory: Won citizenship by defeating the Gladiators in the Arena
+Dilmun: Found the cache on Forlorn
+Siege Camp: Found the soldier's cache
+Siege Camp: Unlocked the other chest
+Phoeban Dungeon: Have access to the good treasure
+Phoeban Dungeon: Have access to the bad treasure
+Phoeban Dungeon: The Druid told you the password (and died)
+Phoeban Dungeon: Been captured by Mystalvision and thrown in the dungeon
+Magan Underworld: Freed Irkalla from the Isle of Woe
+Dwarf Clan Hall, Magan Underworld: The Sword of Freedom has been forged
+Byzanople Dungeon: Found the MagicAxe
+Byzanople Dungeon: Killed Prince Jordan
+Byzanople Dungeon: Killed Princess Myrolla
+Byzanople Dungeon: Found the treasure vault
+Nisir, Phoebus, Phoeban Dungeon: Killed Mystalvision (for real)
+Nisir: Killed Buck Ironhead
+Magan Underworld: Unlocked the Rusty Axe chest
+Magan Underworld: Defeated the encounter at the Rusty Axe
+Byzanople: Killed the Hydra
+Byzanople: Killed the defenders at the top of the stairs
+Byzanople: Killed the defenders in the outer city ring
+Dilmun: Defeated the Guards on Forlorn before the first bridge
+Dilmun, Kingshome, Kingshome Dungeon: Kingshome ambush has been triggered
+Lansk Undercity: Have unlocked the chest under the statue
+Phoebus: Have encountered Mystalvision
+Magan Underworld: Unlocked the Slicer chest
+Guard Bridge #2: Have defeated the guards in the Armory
+Guard Bridge #2: Have defeated both sets of guards in the Barracks
+Phoeban Dungeon, Dilmun: Phoebus has been destroyed
+Dilmun: Defeated the Goblins outside Phoebus
+Phoeban Dungeon: The dragon has been fed
+Magan Underworld: Have taken the 5 AP Leap of Faith
+Pilgrim Dock: Killed the dock guards
+Magan Underworld: Have access to the first Namtar's Body chest
+Magan Underworld: Dropped Namtar's Body to set up the first fight
+Magan Underworld: Defeated Namtar the first time
+Magan Underworld: Have access to the second Namtar's Body chest
+Scorpion Bridge: Killed the Scorpion guards
+Tars Underground: Have opened the Stone Arms cache
+Dragon Valley, Nisir: Showed the Dragon Gem to the Queen

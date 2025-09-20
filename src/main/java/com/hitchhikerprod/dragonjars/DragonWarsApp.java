@@ -9,6 +9,7 @@ import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.AboutDialog;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
+import com.hitchhikerprod.dragonjars.ui.GameStateDialog;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
@@ -139,6 +140,10 @@ public class DragonWarsApp extends Application {
 
     public void openAboutDialog() {
         new AboutDialog(stage).showAndWait();
+    }
+
+    public void openGameStateWindow() {
+        new GameStateDialog(stage).showAndWait();
     }
 
     public void openParagraphsWindow() {

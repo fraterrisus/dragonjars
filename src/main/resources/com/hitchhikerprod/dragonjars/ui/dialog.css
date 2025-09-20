@@ -67,6 +67,19 @@
     -fx-spacing: 10;
 }
 
+.state-dialog, .state-dialog > .scroll-pane, .state-grid {
+    -fx-background-color: antiquewhite;
+}
+
+.state-dialog > *.label.content {
+    -fx-font-size: 14px;
+}
+
+.state-grid {
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+}
+
 .debug {
     -fx-border-color: red;
     -fx-border-width: 1;
