@@ -189,7 +189,7 @@ public class Interpreter {
         Heap.get(0x08).write(0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
         Heap.get(0xdc).write(0x00);
-        // 0x377c <- 0x00  ; @0x017e
+        // cd:017e  0x377c <- 0x00
         setBackground(0x00);
         // run_opening_titles, which we already did
         // eraseSmallVideoBuffer(); // we do this above when we reset the foreground layer
@@ -373,12 +373,12 @@ public class Interpreter {
     }
 
     public void pause() {
-        if (!gameIsPaused) System.out.println("pause <- true");
+//        if (!gameIsPaused) System.out.println("pause <- true");
         gameIsPaused = true;
     }
 
     public void unpause() {
-        if (gameIsPaused) System.out.println("pause <- false");
+//        if (gameIsPaused) System.out.println("pause <- false");
         gameIsPaused = false;
     }
 

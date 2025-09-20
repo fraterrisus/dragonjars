@@ -353,9 +353,9 @@ public class MapData {
         }
     }
 
-    public Optional<Action> findAction(int header, int eventId) {
+    public Optional<Action> findAction(int header, int specialId) {
         return actions.stream()
-                .filter(a -> a.event() == 0 || a.event() == eventId)
+                .filter(a -> a.special() == 0 || a.special() == specialId)
                 .filter(a -> a.header() == header)
                 .findFirst();
     }
