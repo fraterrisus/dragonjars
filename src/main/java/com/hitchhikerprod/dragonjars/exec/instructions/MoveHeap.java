@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class MoveHeap implements Instruction {
@@ -11,8 +12,8 @@ public class MoveHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapReadIndex = i.memory().read(ip.incr(1), 1);
         final int heapWriteIndex = i.memory().read(ip.incr(2), 1);
-        final int value = i.heap(heapReadIndex).read(i.isWide() ? 2 : 1);
-        i.heap(heapWriteIndex).write(value, i.isWide() ? 2 : 1);
+        final int value = Heap.get(heapReadIndex).read(i.isWide() ? 2 : 1);
+        Heap.get(heapWriteIndex).write(value, i.isWide() ? 2 : 1);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
     }
 }

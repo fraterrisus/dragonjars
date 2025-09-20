@@ -10,9 +10,9 @@ public class WriteInventoryWord implements Instruction {
         final Address ip = i.getIP();
         final int byteOffset = i.memory().read(ip.incr(), 1);
         final int newValue = i.getAX();
-        final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
-        final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-        final int slotId = i.heap(Heap.SELECTED_ITEM).read();
+        final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+        final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        final int slotId = Heap.get(Heap.SELECTED_ITEM).read();
         final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
         i.memory().write(
                 Interpreter.PARTY_SEGMENT,

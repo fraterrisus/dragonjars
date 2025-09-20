@@ -11,9 +11,9 @@ public class RecurseOverParty implements Instruction {
         i.setWidth(false);
         i.setAH(0x00);
         final int funcPtr = i.memory().read(ip.incr(1), 2);
-        final Heap.Access selectedPC = i.heap(Heap.SELECTED_PC);
+        final Heap.Access selectedPC = Heap.get(Heap.SELECTED_PC);
 
-        final int partySize = i.heap(Heap.PARTY_SIZE).read();
+        final int partySize = Heap.get(Heap.PARTY_SIZE).read();
         if (partySize != 0) {
             final int oldSelectedPC = selectedPC.read();
             for (int charId = 0; charId < partySize; charId++) {

@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class StoreImmHeapTest {
 
         i.start(0, 0);
 
-        assertEquals(0x0000bbaa, i.heap(0x3a).read(2));
+        assertEquals(0x0000bbaa, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -41,7 +42,7 @@ class StoreImmHeapTest {
 
         i.start(0, 0);
 
-        assertEquals(0x000000aa, i.heap(0x3a).read(2));
+        assertEquals(0x000000aa, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

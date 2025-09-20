@@ -20,8 +20,8 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x04);
-        i.heap(Heap.SELECTED_PC).write(0x03);
-        i.heap(0x0d).write(0x02);
+        Heap.get(Heap.SELECTED_PC).write(0x03);
+        Heap.get(0x0d).write(0x02);
         i.start(0, 0);
 
         assertEquals(0x08, i.memory().read(Interpreter.PARTY_SEGMENT, 0x024d, 1));
@@ -37,8 +37,8 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x04);
-        i.heap(Heap.SELECTED_PC).write(0x03);
-        i.heap(0x0d).write(0x02);
+        Heap.get(Heap.SELECTED_PC).write(0x03);
+        Heap.get(0x0d).write(0x02);
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);
 
@@ -55,8 +55,8 @@ class PartyFlagTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL((0x01 << 3) | 0x00);
-        i.heap(Heap.SELECTED_PC).write(0x03);
-        i.heap(0x0d).write(0x02);
+        Heap.get(Heap.SELECTED_PC).write(0x03);
+        Heap.get(0x0d).write(0x02);
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x024d, 1, 0xff);
         i.start(0, 0);
 

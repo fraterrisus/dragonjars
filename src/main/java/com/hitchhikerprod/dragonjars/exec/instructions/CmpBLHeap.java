@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class CmpBLHeap implements Instruction {
@@ -10,7 +11,7 @@ public class CmpBLHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final ALU.Result result = ALU.subByte(i.getBL(), i.heap(heapIndex).read(1));
+        final ALU.Result result = ALU.subByte(i.getBL(), Heap.get(heapIndex).read(1));
         i.setCarryFlag(!result.carry());
         i.setSignFlag(result.sign());
         i.setZeroFlag(result.zero());

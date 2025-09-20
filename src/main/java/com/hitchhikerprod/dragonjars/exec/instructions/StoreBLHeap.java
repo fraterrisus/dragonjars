@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class StoreBLHeap implements Instruction {
@@ -9,7 +10,7 @@ public class StoreBLHeap implements Instruction {
         final Address ip = i.getIP();
         final int index = i.memory().read(ip.incr(1), 1);
         final int value = i.getBL();
-        i.heap(index).write(value, 1);
+        Heap.get(index).write(value, 1);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

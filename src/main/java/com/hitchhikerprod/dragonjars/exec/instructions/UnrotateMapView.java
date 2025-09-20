@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class UnrotateMapView implements Instruction {
@@ -11,7 +12,7 @@ public class UnrotateMapView implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(), 1);
-        final int wallByte = i.heap(heapIndex).read();
+        final int wallByte = Heap.get(heapIndex).read();
 
         final PartyLocation loc = i.getPartyLocation();
         final int x;

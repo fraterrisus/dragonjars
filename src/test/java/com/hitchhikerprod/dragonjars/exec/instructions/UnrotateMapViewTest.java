@@ -62,10 +62,10 @@ class UnrotateMapViewTest {
         final MapData mockMapData = mock(MapData.class);
         doReturn(mockMapData).when(j).mapDecoder();
         doReturn(SQUARE).when(mockMapData).getSquare(anyInt(), anyInt());
-        j.heap(Heap.PARTY_X).write(5);
-        j.heap(Heap.PARTY_Y).write(5);
-        j.heap(Heap.PARTY_FACING).write(facing.index());
-        j.heap(0x41).write(0x03); // new wall metadata (which doesn't make any sense)
+        Heap.get(Heap.PARTY_X).write(5);
+        Heap.get(Heap.PARTY_Y).write(5);
+        Heap.get(Heap.PARTY_FACING).write(facing.index());
+        Heap.get(0x41).write(0x03); // new wall metadata (which doesn't make any sense)
         j.start(0,0);
         verify(mockMapData).setSquare(x, y, result);
     }

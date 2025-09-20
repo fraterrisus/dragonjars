@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Frob;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +33,8 @@ class StoreAXIndirectImmTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.heap(0x5b).write(0x07);
-        i.heap(0x5c).write(0x00);
+        Heap.get(0x5b).write(0x07);
+        Heap.get(0x5c).write(0x00);
         i.setWidth(true);
         i.start(0, 0);
 
@@ -55,8 +56,8 @@ class StoreAXIndirectImmTest {
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.heap(0x5b).write(0x07);
-        i.heap(0x5c).write(0x00);
+        Heap.get(0x5b).write(0x07);
+        Heap.get(0x5c).write(0x00);
         i.start(0, 0);
 
         assertEquals(0x00aa, i.memory().read(dataSegment, 0x0a, 2));

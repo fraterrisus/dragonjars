@@ -48,8 +48,8 @@ public class Instructions {
     };
 
     public static final Instruction COPY_HEAP_3F_3E = (i) -> {
-        final int value = i.heap(Heap.NEXT_EVENT).read();
-        i.heap(Heap.RECENT_EVENT).write(value);
+        final int value = Heap.get(Heap.NEXT_EVENT).read();
+        Heap.get(Heap.RECENT_EVENT).write(value);
         return i.getIP().incr(OPCODE);
     };
 

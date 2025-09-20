@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -21,8 +22,8 @@ class LoadAXHeapTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(0x26).write(0xaa);
-        i.heap(0x27).write(0xbb);
+        Heap.get(0x26).write(0xaa);
+        Heap.get(0x27).write(0xbb);
         i.start(0, 0);
 
         assertEquals(0x0000bbaa, i.getAX());
@@ -42,8 +43,8 @@ class LoadAXHeapTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(0x26).write(0xaa);
-        i.heap(0x27).write(0xbb);
+        Heap.get(0x26).write(0xaa);
+        Heap.get(0x27).write(0xbb);
         i.start(0, 0);
 
         assertEquals(0x000000aa, i.getAX());

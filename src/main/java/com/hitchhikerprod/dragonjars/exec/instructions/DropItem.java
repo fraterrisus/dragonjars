@@ -7,9 +7,9 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class DropItem implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        int slotId = i.heap(Heap.SELECTED_ITEM).read();
-        final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
-        final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        int slotId = Heap.get(Heap.SELECTED_ITEM).read();
+        final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+        final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         while (slotId < 11) {
             final int slotBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
             final Address slotAddress = new Address(Interpreter.PARTY_SEGMENT, slotBaseAddress);

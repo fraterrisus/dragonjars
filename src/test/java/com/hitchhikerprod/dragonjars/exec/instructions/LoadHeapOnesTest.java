@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -19,9 +20,9 @@ class LoadHeapOnesTest {
     public void wide() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap(0x48).write(0x0000, 2);
+        Heap.get(0x48).write(0x0000, 2);
         i.start(0, 0);
-        assertEquals(0xffff, i.heap(0x48).read(2));
+        assertEquals(0xffff, Heap.get(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -29,9 +30,9 @@ class LoadHeapOnesTest {
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap(0x48).write(0x0000, 2);
+        Heap.get(0x48).write(0x0000, 2);
         i.start(0, 0);
-        assertEquals(0x00ff, i.heap(0x48).read(2));
+        assertEquals(0x00ff, Heap.get(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 

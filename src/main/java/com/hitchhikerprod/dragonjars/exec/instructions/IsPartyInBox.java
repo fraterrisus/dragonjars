@@ -9,8 +9,8 @@ public class IsPartyInBox implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int yParty = i.heap(Heap.PARTY_Y).read();
-        final int xParty = i.heap(Heap.PARTY_X).read();
+        final int yParty = Heap.get(Heap.PARTY_Y).read();
+        final int xParty = Heap.get(Heap.PARTY_X).read();
         final int yMin = i.memory().read(ip.incr(1), 1);
         final int xMin = i.memory().read(ip.incr(2), 1);
         final int yMax = i.memory().read(ip.incr(3), 1);

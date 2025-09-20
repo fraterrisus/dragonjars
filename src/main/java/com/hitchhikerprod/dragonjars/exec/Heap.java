@@ -1,10 +1,13 @@
 package com.hitchhikerprod.dragonjars.exec;
 
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 /** This isn't really a heap, but it is a chunk of the memory space that a lot of active data gets written to. */
 public class Heap {
+    private static final Heap INSTANCE = new Heap();
+
+    public static Heap getInstance() { return INSTANCE; }
+
     public static final int PARTY_Y = 0x00;
     public static final int PARTY_X = 0x01;
     public static final int BOARD_ID = 0x02;
@@ -40,6 +43,8 @@ public class Heap {
 
     private final int[] storage = new int[256];
 
+    private Heap() {}
+
     private synchronized void write(int index, int count, int val) {
         if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
@@ -59,14 +64,16 @@ public class Heap {
         return value;
     }
 
-    public Access get(int index) {
-        return new Access(index);
+    public static Access get(int index) {
+        return new Access(INSTANCE, index);
     }
 
-    public class Access {
+    public static class Access {
+        private final Heap heap;
         private final int index;
 
-        private Access(int index) {
+        private Access(Heap heap, int index) {
+            this.heap = heap;
             this.index = index;
         }
 
@@ -75,7 +82,7 @@ public class Heap {
         }
 
         public int read(int count) {
-            return Heap.this.read(index, count);
+            return heap.read(index, count);
         }
 
         public void write(int val) {
@@ -83,7 +90,7 @@ public class Heap {
         }
 
         public void write(int val, int count) {
-            Heap.this.write(index, count, val);
+            heap.write(index, count, val);
         }
 
         public void modify(int count, Function<Integer, Integer> fn) {

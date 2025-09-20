@@ -105,7 +105,7 @@ public class DrawAutomap implements Instruction {
                 }
                 case KeyCode.UP, KeyCode.I, KeyCode.A -> {
                     final int y1 = y0 + 1;
-                    if (y1 < i.heap(Heap.BOARD_MAX_Y).read()) displayAutomapPage(x0, y1);
+                    if (y1 < Heap.get(Heap.BOARD_MAX_Y).read()) displayAutomapPage(x0, y1);
                 }
                 case KeyCode.DOWN, KeyCode.K, KeyCode.Z -> {
                     final int y1 = y0 - 1;
@@ -113,7 +113,7 @@ public class DrawAutomap implements Instruction {
                 }
                 case KeyCode.RIGHT, KeyCode.L -> {
                     final int x1 = x0 + 1;
-                    if (x1 < i.heap(Heap.BOARD_MAX_X).read()) displayAutomapPage(x1, y0);
+                    if (x1 < Heap.get(Heap.BOARD_MAX_X).read()) displayAutomapPage(x1, y0);
                 }
                 case KeyCode.LEFT, KeyCode.J -> {
                     final int x1 = x0 - 1;

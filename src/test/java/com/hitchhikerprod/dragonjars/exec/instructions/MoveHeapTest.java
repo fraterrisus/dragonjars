@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -20,11 +21,11 @@ class MoveHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap(0x3a).write(0x1234, 2);
+        Heap.get(0x3a).write(0x1234, 2);
 
         i.start(0, 0);
 
-        assertEquals(0x00001234, i.heap(0x18).read(2));
+        assertEquals(0x00001234, Heap.get(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -40,11 +41,11 @@ class MoveHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap(0x3a).write(0x1234, 2);
+        Heap.get(0x3a).write(0x1234, 2);
 
         i.start(0, 0);
 
-        assertEquals(0x00000034, i.heap(0x18).read(2));
+        assertEquals(0x00000034, Heap.get(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

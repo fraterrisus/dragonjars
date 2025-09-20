@@ -15,7 +15,7 @@ public class RotateMapView implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(), 1);
-        i.heap(heapIndex).write(i.heap(Heap.WALL_METADATA).read());
+        Heap.get(heapIndex).write(Heap.get(Heap.WALL_METADATA).read());
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

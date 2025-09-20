@@ -14,15 +14,15 @@ public class RunBoardEvent implements Instruction {
         final PartyLocation location = i.getPartyLocation();
         final Address nextIP = i.getIP().incr();
 
-        if (location.mapId() != (i.heap(Heap.DECODED_BOARD_ID).read() & 0x7f)) return nextIP;
+        if (location.mapId() != (Heap.get(Heap.DECODED_BOARD_ID).read() & 0x7f)) return nextIP;
 
         final MapData.Square square = i.mapDecoder().getSquare(location.pos());
-        if (square.eventId() != i.heap(Heap.RECENT_EVENT).read()) {
-            i.heap(Heap.RECENT_EVENT).write(0);
+        if (square.eventId() != Heap.get(Heap.RECENT_EVENT).read()) {
+            Heap.get(Heap.RECENT_EVENT).write(0);
             if (square.eventId() != 0) {
-                i.heap(Heap.NEXT_EVENT).write(square.eventId(), 1);
+                Heap.get(Heap.NEXT_EVENT).write(square.eventId(), 1);
                 final Address target = new Address(
-                        i.heap(Heap.BOARD_1_SEGIDX).read(),
+                        Heap.get(Heap.BOARD_1_SEGIDX).read(),
                         i.mapDecoder().getEventPointer(square.eventId() + 1)
                 );
                 final After after = new After(i, location, nextIP);
@@ -51,7 +51,7 @@ public class RunBoardEvent implements Instruction {
         public Address get() {
             // maybe should be oldLoc.mapId()?
             // we're trying to catch when the event program moved us to a new board and exit quickly
-            if (i.heap(Heap.BOARD_ID).read(1) != i.heap(Heap.DECODED_BOARD_ID).read(1)) return nextIP;
+            if (Heap.get(Heap.BOARD_ID).read(1) != Heap.get(Heap.DECODED_BOARD_ID).read(1)) return nextIP;
 
             final int address = i.mapDecoder().getEventPointer(0);
             i.reenter(0x46 + oldLoc.mapId(), address, () -> nextIP);

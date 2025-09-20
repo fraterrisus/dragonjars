@@ -129,7 +129,7 @@ public class Interpreter {
                 dataChunks.getLast(),
                 dataChunks.subList(0, dataChunks.size() - 1)
         );
-        this.heap = new Heap();
+        this.heap = Heap.getInstance();
 
         this.width = false;
         this.ax = 0;
@@ -183,12 +183,12 @@ public class Interpreter {
         // which sets ax to 0x2a..
         // cs:0166  al <- 0xff
         // cs:0168  frob.4d32 <- 0xff
-        heap(Heap.BOARD_1_SEGIDX).write(0xffff, 2);
-        heap(Heap.BOARD_2_SEGIDX).write(0xffff, 2);
+        Heap.get(Heap.BOARD_1_SEGIDX).write(0xffff, 2);
+        Heap.get(Heap.BOARD_2_SEGIDX).write(0xffff, 2);
         // cs:0177  struct_idx.4d33 <- 0xff
-        heap(0x08).write(0xff);
+        Heap.get(0x08).write(0xff);
         // cs:017d  inc ax  (ax <- 0x2b00)
-        heap(0xdc).write(0x00);
+        Heap.get(0xdc).write(0x00);
         // 0x377c <- 0x00  ; @0x017e
         setBackground(0x00);
         // run_opening_titles, which we already did
@@ -280,10 +280,6 @@ public class Interpreter {
         return this.memory;
     }
 
-    public Heap.Access heap(int index) {
-        return heap.get(index);
-    }
-
     public VideoHelper fg() {
         return this.videoHelper;
     }
@@ -301,21 +297,21 @@ public class Interpreter {
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
-        if (heap(Heap.DECODED_BOARD_ID).read() != mapId) {
+        if (Heap.get(Heap.DECODED_BOARD_ID).read() != mapId) {
             if (Objects.nonNull(mapDecoder)) {
                 mapDecoder.chunkIds().forEach(this::freeSegmentForChunk);
             }
 
-            heap(Heap.DECODED_BOARD_ID).write(mapId);
+            Heap.get(Heap.DECODED_BOARD_ID).write(mapId);
 
             this.mapDecoder = new MapData(stringDecoder());
 
             final int primarySegment = getSegmentForChunk(mapId + 0x46, Frob.IN_USE);
-            heap(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
+            Heap.get(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
             final ModifiableChunk primaryData = memory().getSegment(primarySegment);
 
             final int secondarySegment = getSegmentForChunk(mapId + 0x1e, Frob.IN_USE);
-            heap(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
+            Heap.get(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
             final ModifiableChunk secondaryData = memory().getSegment(secondarySegment);
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
@@ -830,11 +826,11 @@ public class Interpreter {
     private void drawCompassHelper() {
         final PixelRectangle mask = fg().getRomImageArea(VideoHelper.COMPASS_N);
         final boolean naturalLight = Objects.nonNull(mapDecoder) && mapDecoder().isLit();
-        final int compass = heap(Heap.COMPASS_ENABLED).read();
+        final int compass = Heap.get(Heap.COMPASS_ENABLED).read();
         if (compass <= 0 && !naturalLight) {
             bitBlast(videoBackground, mask);
         } else {
-            final int facing = heap(Heap.PARTY_FACING).read();
+            final int facing = Heap.get(Heap.PARTY_FACING).read();
             fg().drawRomImage(VideoHelper.COMPASS_N + facing);
             bitBlast(videoForeground, mask);
         }
@@ -842,7 +838,7 @@ public class Interpreter {
 
     private void drawShieldHelper() {
         final PixelRectangle mask = fg().getRomImageArea(VideoHelper.SHIELD);
-        final int shield = heap(Heap.SHIELD_POWER).read();
+        final int shield = Heap.get(Heap.SHIELD_POWER).read();
         if (shield <= 0) {
             bitBlast(videoBackground, mask);
         } else {
@@ -854,14 +850,14 @@ public class Interpreter {
     public void drawSpellIcons(boolean force) {
         if (!force && isPaused()) return;
 
-        final int trap = heap(Heap.DETECT_TRAPS_RANGE).read();
+        final int trap = Heap.get(Heap.DETECT_TRAPS_RANGE).read();
         if (trap > 0) {
             if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
         } else {
             eyePhase = -1;
         }
 
-        final int torch = heap(Heap.LIGHT_RANGE).read();
+        final int torch = Heap.get(Heap.LIGHT_RANGE).read();
         if (torch > 0) {
             if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
         } else {
@@ -899,7 +895,7 @@ public class Interpreter {
                     }
                     case VideoHelper.HUD_GAMEPLAY -> bitBlast(videoForeground, regionRect.toPixel());
                     case VideoHelper.HUD_PARTY_AREA -> {
-                        heap(Heap.PC_DIRTY).write(0x00, 7); // heap[18:1e] <- 0x00
+                        Heap.get(Heap.PC_DIRTY).write(0x00, 7); // heap[18:1e] <- 0x00
                         drawPartyInfoArea();
                     }
                     case VideoHelper.HUD_TITLE_BAR -> drawMapTitle();
@@ -925,7 +921,7 @@ public class Interpreter {
     public void drawPartyInfoArea() { // 0x1a12
         final int save_31ed = x_31ed;
         final int save_31ef = y_31ef;
-        final int save_heap_06 = heap(Heap.SELECTED_PC).read();
+        final int save_heap_06 = Heap.get(Heap.SELECTED_PC).read();
 
         // set the indirect function to draw_char()
 
@@ -933,14 +929,14 @@ public class Interpreter {
             // Assembly loops in the other direction, but our bar-drawing code needs to go this way
             // to avoid mishaps with the black pixels between bars.
             final int heapIndex = Heap.PC_DIRTY + charId;
-            int bg = heap(heapIndex).read();
+            int bg = Heap.get(heapIndex).read();
             // In theory this is a "don't bother, nothing's changed" check,
             // but I'm probably missing some updates (see 0x2bb1)
             if ((bg & 0x80) > 0) continue;
-            heap(Heap.SELECTED_PC).write(charId);
+            Heap.get(Heap.SELECTED_PC).write(charId);
             bg = ((bg & 0x02) > 0) ? 0x01 : 0x10;
             drawCharacterInfo(charId, bg);
-            heap(heapIndex).write(0xff);
+            Heap.get(heapIndex).write(0xff);
         }
 
         // copy everything we just did to the screen
@@ -949,7 +945,7 @@ public class Interpreter {
 
         // set the indirect function back to 0x30c1
 
-        heap(Heap.SELECTED_PC).write(save_heap_06);
+        Heap.get(Heap.SELECTED_PC).write(save_heap_06);
         x_31ed = save_31ed;
         y_31ef = save_31ef;
     }
@@ -966,7 +962,7 @@ public class Interpreter {
         fg().drawRectangle(nameRegion, (byte)(bg_color_3431 == 0 ? 0x0 : 0xf));
         fg().drawRectangle(statusRegion, (byte)(bg_color_3431 == 0 ? 0x0 : 0xf));
 
-        final int charsInParty = heap(Heap.PARTY_SIZE).read();
+        final int charsInParty = Heap.get(Heap.PARTY_SIZE).read();
         if (charId >= charsInParty) {
             // black out non-existing characters
             fg().drawRectangle(nameRegion, (byte)0);
@@ -975,7 +971,7 @@ public class Interpreter {
             return;
         }
 
-        final int charBaseAddress = heap(Heap.MARCHING_ORDER + charId).read() << 8;
+        final int charBaseAddress = Heap.get(Heap.MARCHING_ORDER + charId).read() << 8;
 
         final Address namePointer = new Address(PARTY_SEGMENT, charBaseAddress);
         final List<Integer> nameCh = Instructions.getStringFromMemory(this, namePointer);
@@ -1057,9 +1053,9 @@ public class Interpreter {
 
     public PartyLocation getPartyLocation() {
         return new PartyLocation(
-            heap(Heap.BOARD_ID).read(),
-            new GridCoordinate(heap(Heap.PARTY_X).read(), heap(Heap.PARTY_Y).read()),
-            Facing.valueOf(heap(Heap.PARTY_FACING).read())
+            Heap.get(Heap.BOARD_ID).read(),
+            new GridCoordinate(Heap.get(Heap.PARTY_X).read(), Heap.get(Heap.PARTY_Y).read()),
+            Facing.valueOf(Heap.get(Heap.PARTY_FACING).read())
         );
     }
 
@@ -1152,7 +1148,7 @@ public class Interpreter {
             for (ReadKeySwitch.KeyAction prompt : prompts) {
                 if (prompt.function().match(event)) {
                     if (event.getCode().isDigitKey()) {
-                        heap(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
+                        Heap.get(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
                     }
                     setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
                     start(prompt.destination());

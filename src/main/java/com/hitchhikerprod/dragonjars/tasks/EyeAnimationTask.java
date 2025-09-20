@@ -37,7 +37,7 @@ public class EyeAnimationTask extends Task<Void> {
 
     public EyeAnimationTask(Interpreter interpreter) {
         this.interpreter = interpreter;
-        this.heap = interpreter.heap(Heap.DETECT_TRAPS_RANGE);
+        this.heap = Heap.get(Heap.DETECT_TRAPS_RANGE);
     }
 
     @Override

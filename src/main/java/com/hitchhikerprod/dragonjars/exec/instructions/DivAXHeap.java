@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class DivAXHeap implements Instruction {
@@ -10,15 +11,15 @@ public class DivAXHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final int op1 = i.heap(heapIndex).read(4);
+        final int op1 = Heap.get(heapIndex).read(4);
         i.setMulResult(op1); // 0x3dae
         final int op2 = i.getAX(true);
         final int divResult = op1 / op2;
         final int modResult = op1 % op2;
         i.setMulResult(divResult);
         i.setDivResult(modResult);
-        i.heap(0x37).write(divResult, 4);
-        i.heap(0x3b).write(modResult, 2);
+        Heap.get(0x37).write(divResult, 4);
+        Heap.get(0x3b).write(modResult, 2);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

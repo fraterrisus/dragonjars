@@ -18,12 +18,12 @@ public class SimpleInstructionsTest {
     @Test
     public void copyHeap3E3F() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-        i.heap(Heap.RECENT_EVENT).write(0x00);
-        i.heap(Heap.NEXT_EVENT).write(0xff);
+        Heap.get(Heap.RECENT_EVENT).write(0x00);
+        Heap.get(Heap.NEXT_EVENT).write(0xff);
 
         Instructions.COPY_HEAP_3F_3E.exec(i);
 
-        assertEquals(0xff, i.heap(Heap.RECENT_EVENT).read());
+        assertEquals(0xff, Heap.get(Heap.RECENT_EVENT).read());
     }
     
     @Test
@@ -77,8 +77,8 @@ public class SimpleInstructionsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x26).write(0xaa);
-        i.heap(0x27).write(0xbb);
+        Heap.get(0x26).write(0xaa);
+        Heap.get(0x27).write(0xbb);
         i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
@@ -196,7 +196,7 @@ public class SimpleInstructionsTest {
         i.setBL(0xffff);
         i.start(0, 0);
 
-        assertEquals(0x000000ff, i.heap(0x7a).read());
+        assertEquals(0x000000ff, Heap.get(0x7a).read());
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -207,12 +207,12 @@ public class SimpleInstructionsTest {
         final char[] chars = new char[]{'1', '5', '3', '9', '4'};
         int pointer = Heap.INPUT_STRING;
         for (char ch : chars) {
-            i.heap(pointer++).write(((int)ch) | 0x80);
+            Heap.get(pointer++).write(((int)ch) | 0x80);
         }
-        i.heap(pointer).write(0x00);
+        Heap.get(pointer).write(0x00);
 
         final Address nextIP = new StrToInt().exec(i);
 
-        assertEquals(15394, i.heap(0x37).read(4));
+        assertEquals(15394, Heap.get(0x37).read(4));
     }
 }

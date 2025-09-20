@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class DivAXImm implements Instruction {
@@ -18,8 +19,8 @@ public class DivAXImm implements Instruction {
         final int modResult = op1 % op2;
         i.setMulResult(divResult);
         i.setDivResult(modResult);
-        i.heap(0x37).write(divResult, 4);
-        i.heap(0x3b).write(modResult, 2);
+        Heap.get(0x37).write(divResult, 4);
+        Heap.get(0x3b).write(modResult, 2);
         i.setAX(divResult);
         return ip.incr(OPCODE + wordSize(i));
     }

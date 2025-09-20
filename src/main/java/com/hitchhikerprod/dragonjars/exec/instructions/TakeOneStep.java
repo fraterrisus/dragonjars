@@ -34,10 +34,10 @@ public class TakeOneStep implements Instruction {
         // TODO: make sure we get the weird wrapping behavior on some maps right
         // (it's probably just incrementing past 0xff)
         if (i.mapDecoder().isWrapping()) {
-            x = x % i.heap(Heap.BOARD_MAX_X).read();
-            y = y % i.heap(Heap.BOARD_MAX_Y).read();
+            x = x % Heap.get(Heap.BOARD_MAX_X).read();
+            y = y % Heap.get(Heap.BOARD_MAX_Y).read();
         }
-        i.heap(Heap.PARTY_Y).write(y);
-        i.heap(Heap.PARTY_X).write(x);
+        Heap.get(Heap.PARTY_Y).write(y);
+        Heap.get(Heap.PARTY_X).write(x);
     }
 }

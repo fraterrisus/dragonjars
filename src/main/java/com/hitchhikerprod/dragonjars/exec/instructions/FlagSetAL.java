@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class FlagSetAL implements Instruction {
@@ -17,7 +18,7 @@ public class FlagSetAL implements Instruction {
         final int op = i.getAL();
         final int mask = 0x80 >> (op & 0x7);
         final int heapIndex = (op >> 3) + i.memory().read(ip.incr(1), 1);
-        i.heap(heapIndex).modify(1, x -> x | mask);
+        Heap.get(heapIndex).modify(1, x -> x | mask);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

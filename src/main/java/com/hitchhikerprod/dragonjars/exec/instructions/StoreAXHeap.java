@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class StoreAXHeap implements Instruction {
@@ -9,7 +10,7 @@ public class StoreAXHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int val = i.getAX();
-        i.heap(heapIndex).write(val, i.isWide() ? 2 : 1);
+        Heap.get(heapIndex).write(val, i.isWide() ? 2 : 1);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

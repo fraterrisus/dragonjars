@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -20,12 +21,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.heap(0x26).write(0xaa);
-        i.heap(0x27).write(0xbb);
-        i.heap(0x28).write(0xcc);
-        i.heap(0x29).write(0xdd);
-        i.heap(0x2a).write(0xee);
-        i.heap(0x2b).write(0xff);
+        Heap.get(0x26).write(0xaa);
+        Heap.get(0x27).write(0xbb);
+        Heap.get(0x28).write(0xcc);
+        Heap.get(0x29).write(0xdd);
+        Heap.get(0x2a).write(0xee);
+        Heap.get(0x2b).write(0xff);
 
         i.start(0, 0);
 
@@ -45,12 +46,12 @@ class LoadAXHeapOffsetTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setBL(0x04);
-        i.heap(0x26).write(0xaa);
-        i.heap(0x27).write(0xbb);
-        i.heap(0x28).write(0xcc);
-        i.heap(0x29).write(0xdd);
-        i.heap(0x2a).write(0xee);
-        i.heap(0x2b).write(0xff);
+        Heap.get(0x26).write(0xaa);
+        Heap.get(0x27).write(0xbb);
+        Heap.get(0x28).write(0xcc);
+        Heap.get(0x29).write(0xdd);
+        Heap.get(0x2a).write(0xee);
+        Heap.get(0x2b).write(0xff);
 
         i.start(0, 0);
 

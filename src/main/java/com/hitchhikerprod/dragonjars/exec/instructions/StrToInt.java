@@ -11,9 +11,11 @@ public class StrToInt implements Instruction {
         final StringBuilder digits = new StringBuilder();
         int pointer = Heap.INPUT_STRING;
         // skip leading spaces
-        while ((i.heap(pointer).read(1) & 0x7f) == 0x2a) { pointer++; }
+        while ((Heap.get(pointer).read(1) & 0x7f) == 0x2a) {
+            pointer++;
+        }
         while (true) {
-            final int ord = i.heap(pointer).read(1);
+            final int ord = Heap.get(pointer).read(1);
             final char c = (char)(ord & 0x7f);
             if (c >= '0' && c <= '9') {
                 digits.append(c);
@@ -24,7 +26,7 @@ public class StrToInt implements Instruction {
         }
         if (digits.isEmpty()) digits.append('0');
         final int value = Integer.parseInt(digits.toString());
-        i.heap(0x37).write(value, 4);
+        Heap.get(0x37).write(value, 4);
         return i.getIP().incr();
     }
 }

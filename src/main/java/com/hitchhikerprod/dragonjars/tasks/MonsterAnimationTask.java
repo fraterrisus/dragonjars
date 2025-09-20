@@ -59,7 +59,7 @@ public class MonsterAnimationTask extends Task<Void> {
             sleepHelper(ANIMATION_DELAY_MS);
             if (weShouldStop()) break;
 
-            if (interpreter.isPaused() && (interpreter.heap(Heap.COMBAT_MODE).read() == 0)) continue;
+            if (interpreter.isPaused() && Heap.get(Heap.COMBAT_MODE).read() == 0) continue;
 
             decodeSecondary();
             if (weShouldStop()) break;

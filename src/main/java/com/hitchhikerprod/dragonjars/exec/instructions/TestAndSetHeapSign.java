@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class TestAndSetHeapSign implements Instruction {
@@ -12,9 +13,9 @@ public class TestAndSetHeapSign implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        final int value = i.heap(heapIndex).read(1);
+        final int value = Heap.get(heapIndex).read(1);
         if ((value & 0x80) == 0) {
-            i.heap(heapIndex).write(value | 0x80);
+            Heap.get(heapIndex).write(value | 0x80);
             i.setZeroFlag(true);
         } else {
             i.setZeroFlag(false);

@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 import java.util.ArrayList;
@@ -108,8 +109,8 @@ public class DecodeStringFrom implements Instruction {
         }
         if (chars.getFirst() == 0x00) return getNextIp.apply(i);
 
-        if ((i.heap(0x08).read() & 0x80) == 0) {
-            i.heap(0x08).write(chars.getFirst() | 0x80);
+        if ((Heap.get(0x08).read() & 0x80) == 0) {
+            Heap.get(0x08).write(chars.getFirst() | 0x80);
         }
 
         boolean writeSingular = true;
@@ -133,7 +134,7 @@ public class DecodeStringFrom implements Instruction {
             }
         }
 
-        outputFn.accept(i, (i.heap(0x09).read() == 0x00) ? singular : plural);
+        outputFn.accept(i, (Heap.get(0x09).read() == 0x00) ? singular : plural);
         return getNextIp.apply(i);
     }
 }

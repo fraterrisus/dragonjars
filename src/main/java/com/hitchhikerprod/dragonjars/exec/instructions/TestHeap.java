@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class TestHeap implements Instruction {
@@ -10,11 +11,11 @@ public class TestHeap implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         if (i.isWide()) {
-            final int value = i.heap(heapIndex).read(2);
+            final int value = Heap.get(heapIndex).read(2);
             i.setZeroFlag(value == 0x0000);
             i.setSignFlag((value & 0x8000) > 0);
         } else {
-            final int value = i.heap(heapIndex).read(1);
+            final int value = Heap.get(heapIndex).read(1);
             i.setZeroFlag(value == 0x00);
             i.setSignFlag((value & 0x80) > 0);
         }

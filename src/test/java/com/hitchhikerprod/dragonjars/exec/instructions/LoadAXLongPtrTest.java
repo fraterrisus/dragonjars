@@ -29,8 +29,8 @@ public class LoadAXLongPtrTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
-        i.heap(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
+        Heap.get(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
+        Heap.get(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
         i.start(0, 0);
 
@@ -57,8 +57,8 @@ public class LoadAXLongPtrTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setAH(0xff);
         i.setAL(0xff);
-        i.heap(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
-        i.heap(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
+        Heap.get(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
+        Heap.get(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
         i.start(0, 0);
 

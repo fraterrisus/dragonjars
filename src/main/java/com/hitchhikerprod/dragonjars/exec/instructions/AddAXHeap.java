@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class AddAXHeap implements Instruction {
@@ -14,10 +15,10 @@ public class AddAXHeap implements Instruction {
         final ALU.Result result;
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         if (i.isWide()) {
-            result = ALU.addWord(i.getAX(), i.heap(heapIndex).read(2));
+            result = ALU.addWord(i.getAX(), Heap.get(heapIndex).read(2));
             i.setAX(result.value());
         } else {
-            result = ALU.addByte(i.getAL(), i.heap(heapIndex).read(1));
+            result = ALU.addByte(i.getAL(), Heap.get(heapIndex).read(1));
             i.setAL(result.value());
         }
         // Unlike the subtraction and compare operations, we DON'T invert CF here

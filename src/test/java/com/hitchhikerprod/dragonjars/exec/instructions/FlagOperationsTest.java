@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class FlagOperationsTest {
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, i.heap(0x13).read());
+        assertEquals(0x08, Heap.get(0x13).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -35,13 +36,13 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x12).write(0xff);
+        Heap.get(0x12).write(0xff);
         i.setAL((0x10 << 3) | (0x3));
         i.start(0, 0);
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
-        assertEquals(0xef, i.heap(0x12).read());
+        assertEquals(0xef, Heap.get(0x12).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -54,7 +55,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x25).write(0x02);
+        Heap.get(0x25).write(0x02);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
         // heap index 0x10 + 0x15
@@ -74,7 +75,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x25).write(0xfd);
+        Heap.get(0x25).write(0xfd);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
         // heap index 0x10 + 0x15
@@ -100,7 +101,7 @@ class FlagOperationsTest {
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, i.heap(0x13).read());
+        assertEquals(0x08, Heap.get(0x13).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -115,12 +116,12 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x12).write(0xff);
+        Heap.get(0x12).write(0xff);
         i.start(0, 0);
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
-        assertEquals(0xef, i.heap(0x12).read());
+        assertEquals(0xef, Heap.get(0x12).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -135,7 +136,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x25).write(0x02);
+        Heap.get(0x25).write(0x02);
         i.start(0, 0);
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
@@ -156,7 +157,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x25).write(0xfd);
+        Heap.get(0x25).write(0xfd);
         i.start(0, 0);
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02

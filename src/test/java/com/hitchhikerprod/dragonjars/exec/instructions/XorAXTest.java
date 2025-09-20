@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +20,8 @@ public class XorAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(true);
-        i.heap(0x1a).write(0xff);
-        i.heap(0x1b).write(0xff);
+        Heap.get(0x1a).write(0xff);
+        Heap.get(0x1b).write(0xff);
         i.setAL(0xff);
         i.setAH(0xff);
         i.start(0, 0);
@@ -39,8 +40,8 @@ public class XorAXTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap(0x1a).write(0x5a);
-        i.heap(0x1b).write(0xc3);
+        Heap.get(0x1a).write(0x5a);
+        Heap.get(0x1b).write(0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
         i.start(0, 0);

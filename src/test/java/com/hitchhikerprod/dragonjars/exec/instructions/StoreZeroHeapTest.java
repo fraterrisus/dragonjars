@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -18,12 +19,12 @@ class StoreZeroHeapTest {
                 (byte)0x5a  // Exit
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x3a).write(0xff);
-        i.heap(0x3b).write(0xff);
+        Heap.get(0x3a).write(0xff);
+        Heap.get(0x3b).write(0xff);
 
         i.start(0, 0);
 
-        assertEquals(0x00000000, i.heap(0x3a).read(2));
+        assertEquals(0x00000000, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -37,12 +38,12 @@ class StoreZeroHeapTest {
                 (byte)0x5a  // Exit
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.heap(0x3a).write(0xff);
-        i.heap(0x3b).write(0xff);
+        Heap.get(0x3a).write(0xff);
+        Heap.get(0x3b).write(0xff);
 
         i.start(0, 0);
 
-        assertEquals(0x0000ff00, i.heap(0x3a).read(2));
+        assertEquals(0x0000ff00, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

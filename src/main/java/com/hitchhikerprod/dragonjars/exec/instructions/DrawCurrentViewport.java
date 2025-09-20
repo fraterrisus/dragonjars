@@ -46,16 +46,16 @@ public class DrawCurrentViewport implements Instruction {
 
         i.decodeMap(loc.mapId());
 
-        i.heap(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
-        i.heap(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
-        i.heap(Heap.BOARD_FLAGS).write(i.mapDecoder().flags());
-        i.heap(Heap.RANDOM_ENCOUNTERS).write(i.mapDecoder().getRandomEncounters());
-        i.heap(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
+        Heap.get(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
+        Heap.get(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
+        Heap.get(Heap.BOARD_FLAGS).write(i.mapDecoder().flags());
+        Heap.get(Heap.RANDOM_ENCOUNTERS).write(i.mapDecoder().getRandomEncounters());
+        Heap.get(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
+        if (i.mapDecoder().isLit() || (Heap.get(Heap.LIGHT_RANGE).read() != 0)) {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();
             drawWallTextures(); // also handles decor

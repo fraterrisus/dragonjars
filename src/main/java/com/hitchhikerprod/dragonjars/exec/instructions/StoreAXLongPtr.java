@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class StoreAXLongPtr implements Instruction {
@@ -10,8 +11,8 @@ public class StoreAXLongPtr implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int index = i.memory().read(ip.incr(1), 1);
-        final int addr = i.heap(index).read(2) + i.getBX(true);
-        final int segmentId = i.heap(index + 2).read();
+        final int addr = Heap.get(index).read(2) + i.getBX(true);
+        final int segmentId = Heap.get(index + 2).read();
         final int value = i.getAX(true);
 //        System.out.format("  [s=%02x,c=%03x,a=%08x] <- %04x\n", segmentId, i.memory().getSegmentChunk(segmentId), addr, value);
         i.memory().write(segmentId, addr, i.isWide() ? 2 : 1, value);

@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class MulAXImm implements Instruction {
@@ -12,7 +13,7 @@ public class MulAXImm implements Instruction {
         final int op2 = i.getAX(true);
         final int result = op1 * op2;
         i.setMulResult(result);
-        i.heap(0x37).write(result, 4);
+        Heap.get(0x37).write(result, 4);
         i.setAX(result);
         return ip.incr(OPCODE + wordSize(i));
     }

@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Frob;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +32,9 @@ class StoreAXLongPtrTest {
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.heap(0x5b).write(0x03); // address (lo)
-        i.heap(0x5c).write(0x00); // address (hi)
-        i.heap(0x5d).write(0x02); // segment#
+        Heap.get(0x5b).write(0x03); // address (lo)
+        Heap.get(0x5c).write(0x00); // address (hi)
+        Heap.get(0x5d).write(0x02); // segment#
         i.setBL(0x03); // address offset
         i.setWidth(true);
         i.start(1, 1);
@@ -55,9 +56,9 @@ class StoreAXLongPtrTest {
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
-        i.heap(0x5b).write(0x03);
-        i.heap(0x5c).write(0x00);
-        i.heap(0x5d).write(0x02);
+        Heap.get(0x5b).write(0x03);
+        Heap.get(0x5c).write(0x00);
+        Heap.get(0x5d).write(0x02);
         i.setBL(0x03); // address offset
         i.start(1, 1);
 

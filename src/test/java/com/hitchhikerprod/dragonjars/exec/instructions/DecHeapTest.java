@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -19,14 +20,14 @@ class DecHeapTest {
     public void wideUnderflow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap(0xaa).write(0x00);
-        i.heap(0xab).write(0x01);
+        Heap.get(0xaa).write(0x00);
+        Heap.get(0xab).write(0x01);
         i.setWidth(true);
         i.start(0, 0);
 
         i.setWidth(false);
-        assertEquals(0xff, i.heap(0xaa).read());
-        assertEquals(0x00, i.heap(0xab).read());
+        assertEquals(0xff, Heap.get(0xaa).read());
+        assertEquals(0x00, Heap.get(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -34,12 +35,12 @@ class DecHeapTest {
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap(0xaa).write(0x16);
-        i.heap(0xab).write(0xff);
+        Heap.get(0xaa).write(0x16);
+        Heap.get(0xab).write(0xff);
         i.start(0, 0);
 
-        assertEquals(0x15, i.heap(0xaa).read());
-        assertEquals(0xff, i.heap(0xab).read());
+        assertEquals(0x15, Heap.get(0xaa).read());
+        assertEquals(0xff, Heap.get(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -47,12 +48,12 @@ class DecHeapTest {
     public void narrowUnderflow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(false);
-        i.heap(0xaa).write(0x00);
-        i.heap(0xab).write(0x01);
+        Heap.get(0xaa).write(0x00);
+        Heap.get(0xab).write(0x01);
         i.start(0, 0);
 
-        assertEquals(0xff, i.heap(0xaa).read());
-        assertEquals(0x01, i.heap(0xab).read());
+        assertEquals(0xff, Heap.get(0xaa).read());
+        assertEquals(0x01, Heap.get(0xab).read());
         assertEquals(2, i.instructionsExecuted());
     }
 }

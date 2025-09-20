@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class TestValueTest {
     private void heapHelper(boolean width, int heap, boolean zero, boolean sign) {
         final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM, Chunk.EMPTY)).init();
         i.setWidth(width);
-        i.heap(0x1a).write(heap, 2);
+        Heap.get(0x1a).write(heap, 2);
         i.start(0, 0);
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");

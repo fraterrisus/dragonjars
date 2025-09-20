@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class StoreAXHeapOffsetTest {
 
         i.init().start(0, 0);
 
-        assertEquals(0x00001234, i.heap(0x3c).read(2));
+        assertEquals(0x00001234, Heap.get(0x3c).read(2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -43,7 +44,7 @@ class StoreAXHeapOffsetTest {
 
         i.init().start(0, 0);
 
-        assertEquals(0x00000034, i.heap(0x3c).read(2));
+        assertEquals(0x00000034, Heap.get(0x3c).read(2));
         assertEquals(2, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

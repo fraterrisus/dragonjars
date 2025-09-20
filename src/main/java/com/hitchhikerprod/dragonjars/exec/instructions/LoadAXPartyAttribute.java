@@ -8,8 +8,8 @@ public class LoadAXPartyAttribute implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int marchingOrder = i.heap(Heap.SELECTED_PC).read();
-        final int pcBaseAddress = i.heap(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+        final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int attributeOffset = i.memory().read(ip.incr(1), 1);
         final int value = i.memory().read(Interpreter.PARTY_SEGMENT, pcBaseAddress + attributeOffset, 2);
         i.setAX(value);

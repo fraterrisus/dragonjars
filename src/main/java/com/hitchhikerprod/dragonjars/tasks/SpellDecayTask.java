@@ -42,26 +42,26 @@ public class SpellDecayTask extends Task<Void> {
         }
 
         private int getDuration(Interpreter i) {
-            return i.heap(durationIndex).read();
+            return Heap.get(durationIndex).read();
         }
 
         private void setDuration(Interpreter i, int newValue) {
             System.out.format("duration %02x -> %02x\n", durationIndex, newValue);
-            Platform.runLater(() -> i.heap(durationIndex).write(newValue));
+            Platform.runLater(() -> Heap.get(durationIndex).write(newValue));
         }
 
         private int getEffect(Interpreter i) {
-            return i.heap(effectIndex).read();
+            return Heap.get(effectIndex).read();
         }
 
         private void setEffect(Interpreter i, int newValue) {
             System.out.format("effect %02x -> %02x\n", effectIndex, newValue);
-            Platform.runLater(() -> i.heap(effectIndex).write(newValue));
+            Platform.runLater(() -> Heap.get(effectIndex).write(newValue));
         }
 
         public boolean decrementAndUpdate(Interpreter i) {
             final int duration = getDuration(i);
-            if (!i.isPaused() && (i.heap(Heap.COMBAT_MODE).read() == 0) && duration > 0) {
+            if (!i.isPaused() && (Heap.get(Heap.COMBAT_MODE).read() == 0) && duration > 0) {
                 if (decrement()) {
                     setDuration(i, duration - 1);
                     if (duration - 1 == 0) {

@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
@@ -96,12 +97,12 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
-        i.heap(0x03).write(0x4181, 2);
+        Heap.get(0x03).write(0x4181, 2);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 0010 0000 1100 0000
-        assertEquals(0x20c0, i.heap(0x03).read(2));
+        assertEquals(0x20c0, Heap.get(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -115,13 +116,13 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
-        i.heap(0x03).write(0x81);
-        i.heap(0x04).write(0x41);
+        Heap.get(0x03).write(0x81);
+        Heap.get(0x04).write(0x41);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001  bit[8] is shifted to [7], but the high byte
         // new: 0100 0001 1100 0000  doesn't get written back
-        assertEquals(0x4140, i.heap(0x03).read(2));
+        assertEquals(0x4140, Heap.get(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -135,12 +136,12 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
-        i.heap(0x03).write(0x4181, 2);
+        Heap.get(0x03).write(0x4181, 2);
         i.init().start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 1000 0011 0000 0010
-        assertEquals(0x8302, i.heap(0x03).read(2));
+        assertEquals(0x8302, Heap.get(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -154,13 +155,13 @@ class ShiftTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
-        i.heap(0x03).write(0xc1);
-        i.heap(0x04).write(0x41);
+        Heap.get(0x03).write(0xc1);
+        Heap.get(0x04).write(0x41);
         i.init().start(0, 0);
 
         // old: 0100 0001 1100 0001
         // new: 0100 0001 1000 0010
-        assertEquals(0x4182, i.heap(0x03).read(2));
+        assertEquals(0x4182, Heap.get(0x03).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
 }
