@@ -5,11 +5,13 @@
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
 - Check that the weird wrapping behavior on the Dwarf Clan Hall works.
+- Display "hidden" information, like the game flags and character flags.
+- BUGFIX the Dwarf Hammer chest.
 
 # Known Bugs
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
-  system fails, I work around this by popping a dialog and then resetting the Property value aftewards. Ick.
+  system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 
 # Implementation Differences
 
@@ -27,13 +29,14 @@
 The original relies on the fact that calling DrawCurrentViewport multiple times takes long enough that you get to see
 each screen draw before it executes the next one. So, for instance, running from combat actually draws three frames
 (turn R, turn R, step). Our video handler runs multiple frames on a single thread -- on the UI thread, no less -- so 
-that doesn't work.
+that doesn't work. The simple solution, which I've already implemented, is just to insert a 100ms pause before
+DrawCurrentViewport does its work. It's inelegant, but effective.
 
-If we split the Interpreter out into its own thread, the primary difficulty will be separating out all the places 
-where the Interpreter calls the App directly; in particular, the way that we "return null" in order to wait for user 
-input will be different, so we may have to rebuild the #reenter system (again). The second difficulty will be 
-rewriting the VideoHelper to push everything to the screen Image with Platform.runLater(); we'll also want to run 
-some sort of delay when we do it. But how will we know when we've pushed the "whole screen"?
+The other alternative is to split the Interpreter out into its own thread. The primary difficulty will be 
+separating out all the places where the Interpreter calls the App directly; in particular, the way that we "return 
+null" in order to wait for user input will be different, so we may have to rebuild the #reenter system (again). The 
+second difficulty will be rewriting the VideoHelper to push everything to the screen Image with Platform.runLater(); 
+we'll also want to run some sort of delay when we do it. But how will we know when we've pushed the "whole screen"? 
 
 Places where we try to talk to the DragonWarsApp object directly:
 - DragonWarsApp#startInterpreter gets a little more interesting because it's a Thread#start

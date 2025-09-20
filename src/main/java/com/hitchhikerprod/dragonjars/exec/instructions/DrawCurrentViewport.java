@@ -13,6 +13,7 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.tasks.SleepTask;
 
 import java.util.List;
 
@@ -27,6 +28,16 @@ public class DrawCurrentViewport implements Instruction {
 
     @Override
     public Address exec(Interpreter ignored) {
+        /* This emulates the slight performance delay that's baked into the old x86 processor (and emulators). Without
+         * it, spots where the game takes multiple steps (Tracking in Tars, fleeing combat, etc.) all get smushed
+         * together into a single video update. */
+        final SleepTask sleep = new SleepTask(100);
+        sleep.setOnSucceeded(ev -> draw());
+        Thread.ofPlatform().daemon(true).start(sleep);
+        return null;
+    }
+
+    private void draw() {
         i.unpause();
         i.disableMonsterAnimation();
 
@@ -52,7 +63,7 @@ public class DrawCurrentViewport implements Instruction {
 
         i.drawViewportCorners();
 
-        return i.getIP().incr();
+        i.start(i.getIP().incr());
     }
 
     public void drawFloorTexture() {
