@@ -10,7 +10,7 @@ public class DrawCompass implements Instruction {
     public Address exec(Interpreter i) {
         final PartyLocation loc = i.getPartyLocation();
         final int regionId = VideoHelper.COMPASS_N + loc.facing().index();
-        i.draw().romImage(regionId);
+        i.fg().drawRomImage(regionId);
         return null;
     }
 }

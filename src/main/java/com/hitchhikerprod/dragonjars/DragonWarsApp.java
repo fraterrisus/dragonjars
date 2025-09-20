@@ -180,7 +180,7 @@ public class DragonWarsApp extends Application {
         final VideoBuffer vb = new VideoBuffer();
         draw.setVideoBuffer(vb);
         final Chunk rawChunk = dataChunks.get(ChunkTable.TITLE_SCREEN);
-        draw.chunkImage(rawChunk);
+        draw.drawChunkImage(rawChunk);
         final WritableImage titleScreenImage = Images.blankImage(IMAGE_X, IMAGE_Y);
         vb.writeTo(titleScreenImage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
         setImage(titleScreenImage);
@@ -197,7 +197,7 @@ public class DragonWarsApp extends Application {
         int fx = x * 8;
         int fy = y * 8;
         for (char ch : s.toCharArray()) {
-            draw.character(ch, fx, fy, invert);
+            draw.drawCharacter(ch, fx, fy, invert);
             fx += 8;
         }
     }
@@ -217,32 +217,32 @@ public class DragonWarsApp extends Application {
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 2) * 16;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            draw.character(ch, fx, 18, true);
+            draw.drawCharacter(ch, fx, 18, true);
         }
         for (int y = 0; y < 2; y++) {
             final int fy = (y + 2) * 16;
-            draw.character(0x30 + y, 12, fy, true);
-            draw.character('x', 20, fy, true);
+            draw.drawCharacter(0x30 + y, 12, fy, true);
+            draw.drawCharacter('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 2) * 16;
                 final int ch = (16 * y) + x;
-                draw.character(ch, fx, fy, false);
+                draw.drawCharacter(ch, fx, fy, false);
             }
         }
 
         for (int x = 0; x < 16; x++) {
             final int fx = (x + 4) * 8;
             final int ch = (x < 10) ? 0x30 + x : 0x37 + x;
-            draw.character(ch, fx, 68, true);
+            draw.drawCharacter(ch, fx, 68, true);
         }
         for (int y = 2; y < 8; y++) {
             final int fy = (y + 8) * 8;
-            draw.character(0x30 + y, 12, fy, true);
-            draw.character('x', 20, fy, true);
+            draw.drawCharacter(0x30 + y, 12, fy, true);
+            draw.drawCharacter('x', 20, fy, true);
             for (int x = 0; x < 16; x++) {
                 final int fx = (x + 4) * 8;
                 final int ch = (16 * y) + x;
-                draw.character(ch, fx, fy, false);
+                draw.drawCharacter(ch, fx, fy, false);
             }
         }
 

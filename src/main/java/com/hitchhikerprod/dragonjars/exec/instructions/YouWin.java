@@ -21,7 +21,7 @@ public class YouWin implements Instruction {
     public Address exec(Interpreter i) {
         this.i = i;
         i.app().musicService().playTitleMusic(i.memory().getCodeChunk());
-        i.draw().setVideoBuffer(vb);
+        i.fg().setVideoBuffer(vb);
         handler(0);
         i.app().setImage(image);
         return null;
@@ -29,7 +29,7 @@ public class YouWin implements Instruction {
 
     private void handler(int page) {
         final Chunk pageChunk = i.memory().copyDataChunk(ChunkTable.YOU_WIN + page);
-        i.draw().chunkImage(pageChunk);
+        i.fg().drawChunkImage(pageChunk);
         vb.writeTo(image.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
 
         switch (page) {

@@ -13,7 +13,7 @@ import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.scene.input.KeyCode;
 
 public class DrawAutomap implements Instruction {
-    private final VideoBuffer automapBuffer = new VideoBuffer();
+    private VideoHelper automap;
     private Interpreter i;
     private PixelRectangle automapRectangle;
 
@@ -21,6 +21,9 @@ public class DrawAutomap implements Instruction {
     public Address exec(Interpreter i) {
         this.i = i;
         i.setBackground(0x10);
+
+        automap = new VideoHelper(i.memory().getCodeChunk());
+        automap.setVideoBuffer(new VideoBuffer());
 
         // drawModal uses the BBox and then shrinks it by one to draw the interior rectangle
         // so we can capture the BBox afterwards to write that same space
@@ -48,57 +51,56 @@ public class DrawAutomap implements Instruction {
         // This is a BUGFIX: the original won't draw the easternmost walls (although it *does* draw north and west
         // walls for squares 1S of the map viewport)
 
-        automapBuffer.reset((byte)0);
-        i.draw().withVideoBuffer(automapBuffer, d -> {
-            // (x0,y0) = center of automap
-            // Screen ('box') coordinates origin = top-left (x0-4, y0+3)
-            // Map coordinates origin = bottom-left
-            for (int boxy = 0; boxy <= 7; boxy++) { // top to bottom, plus one
-                int mapy = y0 + 3 - boxy;
-                for (int boxx = 0; boxx <= 9; boxx++) { // left to right, plus one
-                    int mapx = x0 - 4 + boxx;
+        automap.clearBuffer((byte)0);
 
-                    final int xOffset = 0x20 * boxx;
-                    final int yOffset = 0x18 * boxy;
+        // (x0,y0) = center of automap
+        // Screen ('box') coordinates origin = top-left (x0-4, y0+3)
+        // Map coordinates origin = bottom-left
+        for (int boxy = 0; boxy <= 7; boxy++) { // top to bottom, plus one
+            int mapy = y0 + 3 - boxy;
+            for (int boxx = 0; boxx <= 9; boxx++) { // left to right, plus one
+                int mapx = x0 - 4 + boxx;
 
-                    final MapData.Square square = i.mapDecoder().getSquare(mapx, mapy);
+                final int xOffset = 0x20 * boxx;
+                final int yOffset = 0x18 * boxy;
 
-                    // Floor (texture offset 0)
-                    if (square.touched()) {
-                        drawChunk(square.floorTextureChunk(), 0, xOffset, yOffset);
-                    }
+                final MapData.Square square = i.mapDecoder().getSquare(mapx, mapy);
 
-                    // West wall (texture offset 2)
-                    final MapData.Square squareLeft = i.mapDecoder().getSquare(mapx - 1, mapy);
-                    if (square.touched() || squareLeft.touched()) {
-                        square.westWallTextureChunk().ifPresent(id -> drawChunk(id, 2, xOffset-8, yOffset-8));
-                    }
+                // Floor (texture offset 0)
+                if (square.touched()) {
+                    drawChunk(square.floorTextureChunk(), 0, xOffset, yOffset);
+                }
 
-                    // North wall (texture offset 0)
-                    final MapData.Square squareUp = i.mapDecoder().getSquare(mapx, mapy + 1);
-                    if (square.touched() || squareUp.touched()) {
-                        square.northWallTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset-8, yOffset-8));
-                    }
+                // West wall (texture offset 2)
+                final MapData.Square squareLeft = i.mapDecoder().getSquare(mapx - 1, mapy);
+                if (square.touched() || squareLeft.touched()) {
+                    square.westWallTextureChunk().ifPresent(id -> drawChunk(id, 2, xOffset-8, yOffset-8));
+                }
 
-                    // Party avatar, or Deco (texture offset 0)
-                    if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
-                        i.draw().textureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
-                                xOffset, yOffset, 0, automapRectangle);
-                    } else if (square.touched()) {
-                        square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
-                    }
+                // North wall (texture offset 0)
+                final MapData.Square squareUp = i.mapDecoder().getSquare(mapx, mapy + 1);
+                if (square.touched() || squareUp.touched()) {
+                    square.northWallTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset-8, yOffset-8));
+                }
+
+                // Party avatar, or Deco (texture offset 0)
+                if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
+                    automap.drawTextureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
+                            xOffset, yOffset, 0, automapRectangle);
+                } else if (square.touched()) {
+                    square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
                 }
             }
-        });
+        }
 
-        i.bitBlast(this.automapBuffer, automapRectangle);
+        i.bitBlast(automap, automapRectangle);
 
         // The switch is at cs:1717, but it points to code segment addresses so we emulate it here
         i.app().setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
                     i.disableMonsterAnimation();
-                    i.resetUI(); // i.drawHud();
+                    i.resetUI();
                     i.start(nextIP);
                 }
                 case KeyCode.UP, KeyCode.I, KeyCode.A -> {
@@ -126,6 +128,6 @@ public class DrawAutomap implements Instruction {
     private void drawChunk(int chunkId, int chunkIndex, int x, int y) {
         final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
         final Chunk chunk = i.memory().getSegment(segmentId);
-        i.draw().texture(chunk, chunkIndex, x, y, 0, automapRectangle);
+        automap.drawTexture(chunk, chunkIndex, x, y, 0, automapRectangle);
     }
 }

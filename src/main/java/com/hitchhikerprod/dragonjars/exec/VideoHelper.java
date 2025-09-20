@@ -8,7 +8,6 @@ import javafx.scene.image.PixelWriter;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_X;
 import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
@@ -80,25 +79,11 @@ public class VideoHelper {
         this.vb = vb;
     }
 
-    public void withVideoBuffer(VideoBuffer vb, Consumer<VideoHelper> callback) {
-        if (this.vb == vb) {
-            callback.accept(this);
-        } else {
-            final VideoBuffer oldVb = this.vb;
-            setVideoBuffer(vb);
-            try {
-                callback.accept(this);
-            } finally {
-                setVideoBuffer(oldVb);
-            }
-        }
-    }
-
     public void clearBuffer(byte value) {
         Objects.requireNonNull(vb).reset(value);
     }
 
-    public void character(int ch, int x0, int y0, boolean invert) {
+    public void drawCharacter(int ch, int x0, int y0, boolean invert) {
         Objects.requireNonNull(vb);
         final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
         List<Byte> bitmask = codeChunk.getBytes(offset, 8);
@@ -112,7 +97,7 @@ public class VideoHelper {
         }
     }
 
-    public void character(int ch, int x0, int y0, boolean invert, PixelWriter writer) {
+    public void drawCharacter(int ch, int x0, int y0, boolean invert, PixelWriter writer) {
         final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
         List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
@@ -126,13 +111,13 @@ public class VideoHelper {
         }
     }
 
-    public void chunkImage(Chunk chunk) {
+    public void drawChunkImage(Chunk chunk) {
         final List<Byte> imageData = chunk.getBytes(0, chunk.getSize());
         final ImageData c = new ImageData(imageData, 0, 0, IMAGE_X, IMAGE_Y);
         drawImageData(c, 0, WHOLE_IMAGE, false);
     }
 
-    public void corner(int index) {
+    public void drawCorner(int index) {
         final int lutAddress = CORNER_LUT_ADDRESS + (index * 4);
 
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x100;
@@ -152,7 +137,7 @@ public class VideoHelper {
         drawImageData(c, 4, gameplayArea, true);
     }
 
-    public void grid() {
+    public void drawGrid() {
         Objects.requireNonNull(vb);
         for (int y = 0; y < IMAGE_Y; y += 8) {
             for (int x = 0; x < IMAGE_X; x++) {
@@ -166,11 +151,11 @@ public class VideoHelper {
         }
     }
 
-    public void pixel(int x, int y, byte value) {
-        vb.set(x, y, value);
+    public void drawGrid(int x, int y, byte value) {
+        Objects.requireNonNull(vb).set(x, y, value);
     }
 
-    public void rectangle(PixelRectangle r, byte value) {
+    public void drawRectangle(PixelRectangle r, byte value) {
         Objects.requireNonNull(vb);
         for (int y = 0; y < IMAGE_Y; y++) {
             for (int x = 0; x < IMAGE_X; x++) {
@@ -179,7 +164,7 @@ public class VideoHelper {
         }
     }
 
-    public void rectangle(PixelRectangle r, byte value, PixelWriter writer) {
+    public void drawRectangle(PixelRectangle r, byte value, PixelWriter writer) {
         final int color = Images.convertColorIndex(value);
         for (int y = 0; y < IMAGE_Y; y++) {
             for (int x = 0; x < IMAGE_X; x++) {
@@ -188,7 +173,7 @@ public class VideoHelper {
         }
     }
 
-    public void romImage(int index) {
+    public void drawRomImage(int index) {
         final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
 
@@ -208,14 +193,14 @@ public class VideoHelper {
     }
 
     // invertbyte is only ever 0x00, 0x01 (doesn't do anything???), or 0x80 (flip x)
-    public void texture(Chunk chunk, int index, int x0i, int y0i, int invert, PixelRectangle mask) {
+    public void drawTexture(Chunk chunk, int index, int x0i, int y0i, int invert, PixelRectangle mask) {
         final int baseAddress = chunk.getWord(index);
         if (baseAddress == 0 || baseAddress > chunk.getSize()) return;
-        textureData(chunk, baseAddress, x0i, y0i, invert, mask);
+        drawTextureData(chunk, baseAddress, x0i, y0i, invert, mask);
     }
 
     // same as above, but skip the index lookup
-    public void textureData(Chunk chunk, int baseAddress, int x0i, int y0i, int invert, PixelRectangle mask) {
+    public void drawTextureData(Chunk chunk, int baseAddress, int x0i, int y0i, int invert, PixelRectangle mask) {
         final int w = chunk.getUnsignedByte(baseAddress);
         final boolean widthSign = (w & 0x80) > 0;
         final int width = w & 0x7f;
@@ -255,10 +240,6 @@ public class VideoHelper {
         }
     }
 
-    public void exportToPNG(String filename, double scale) {
-        Objects.requireNonNull(vb).writeTo(filename, scale);
-    }
-
     public CharRectangle getHudRegionArea(int index) {
         final List<Integer> rect = codeChunk.getBytes(HUD_REGION_LUT_ADDRESS + (4 * index), 4)
                 .stream().map(Interpreter::byteToInt).toList();
@@ -280,6 +261,14 @@ public class VideoHelper {
         final int y0 = codeChunk.getUnsignedByte(baseAddress + 3);
 
         return new PixelRectangle(x0, y0, x0 + width, y0 + height);
+    }
+
+    public void writeTo(String filename, double scale) {
+        Objects.requireNonNull(vb).writeTo(filename, scale);
+    }
+
+    public void writeTo(PixelWriter writer, PixelRectangle mask, boolean respectChroma) {
+        Objects.requireNonNull(vb).writeTo(writer, mask, respectChroma);
     }
 
     // ----- Draw helpers -----

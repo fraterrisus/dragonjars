@@ -34,9 +34,9 @@ public class MonsterAnimationTask extends Task<Void> {
         this.interpreter = interpreter;
         this.priChunk = primarychunk;
         this.secChunk = secondaryChunk;
-        this.background = interpreter.draw().getSnapshot();
+        this.background = interpreter.fg().getSnapshot();
         this.foreground = new VideoBuffer(VideoBuffer.CHROMA_KEY);
-        this.mask = interpreter.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+        this.mask = interpreter.fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 
     private boolean weShouldStop() {

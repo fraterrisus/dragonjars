@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec;
 
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 /** This isn't really a heap, but it is a chunk of the memory space that a lot of active data gets written to. */
@@ -39,7 +40,7 @@ public class Heap {
 
     private final int[] storage = new int[256];
 
-    private void write(int index, int count, int val) {
+    private synchronized void write(int index, int count, int val) {
         if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
 //            System.out.format("  heap[%02x] = %02x\n", (index + i) & 0xff, val & 0xff);
@@ -48,7 +49,7 @@ public class Heap {
         }
     }
 
-    private int read(int index, int count) {
+    private synchronized int read(int index, int count) {
         if (count > 4) throw new IllegalArgumentException();
         int value = 0;
         for (int i = count - 1; i >= 0; i--) {

@@ -62,8 +62,3 @@ public class ReadInputString implements Instruction {
         return null;
     }
 }
-
-// a 1010
-// b 1011
-// c 1100
-// d 1101

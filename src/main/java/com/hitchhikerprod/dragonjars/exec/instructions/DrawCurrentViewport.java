@@ -22,7 +22,7 @@ public class DrawCurrentViewport implements Instruction {
 
     public DrawCurrentViewport(Interpreter i) {
         this.i = i;
-        this.gameplayArea = i.draw().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+        this.gameplayArea = i.fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
     }
 
     @Override
@@ -44,13 +44,12 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
-        i.draw().withVideoBuffer(i.videoForeground, d -> {
-            if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
-                drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
-                drawFloorTexture();
-                drawWallTextures(); // also handles decor
-            }
-        });
+        if (i.mapDecoder().isLit() || (i.heap(Heap.LIGHT_RANGE).read() != 0)) {
+            drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
+            drawFloorTexture();
+            drawWallTextures(); // also handles decor
+        }
+
         i.drawViewportCorners();
 
         return i.getIP().incr();
@@ -69,7 +68,7 @@ public class DrawCurrentViewport implements Instruction {
             final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
 //            System.out.format("decodeTexture(0x%02x, %d, %d, %d, %d, %d)\n",
 //                    s.floorTextureChunk(), 0, textureOffset, x0, y0, 0);
-            i.draw().texture(textureChunk, textureOffset, x0, y0, 0x0, gameplayArea);
+            i.fg().drawTexture(textureChunk, textureOffset, x0, y0, 0x0, gameplayArea);
         }
     }
 
@@ -77,16 +76,16 @@ public class DrawCurrentViewport implements Instruction {
         if (textureId == 1) { // 0x54f8
             final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.IN_USE);
             final Chunk textureChunk = i.memory().getSegment(segmentId);
-            i.draw().texture(textureChunk, 0x4, 0x0, 0x0, 0x0, gameplayArea);
+            i.fg().drawTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, gameplayArea);
         } else { // 0x5515
             // Draw a generic checkerboard roof
             // I don't bother reading the silly array of bytes from the executable (0x55ec)
-            i.draw().rectangle(new PixelRectangle(gameplayArea.x0(), 0x30, gameplayArea.x1(), gameplayArea.y1()), (byte)0);
+            i.fg().drawRectangle(new PixelRectangle(gameplayArea.x0(), 0x30, gameplayArea.x1(), gameplayArea.y1()), (byte)0);
             for (int y = 0x08; y < 0x39; y++) {
                 int x = gameplayArea.x0();
                 while (x < gameplayArea.x1()) {
-                    i.draw().pixel(x++, y, (byte)(y % 2 == 0 ? 0 : 4));
-                    i.draw().pixel(x++, y, (byte)(y % 2 == 0 ? 4 : 0));
+                    i.fg().drawGrid(x++, y, (byte)(y % 2 == 0 ? 0 : 4));
+                    i.fg().drawGrid(x++, y, (byte)(y % 2 == 0 ? 4 : 0));
                 }
             }
         }
@@ -109,7 +108,7 @@ public class DrawCurrentViewport implements Instruction {
             if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
                 final int segmentId = i.getSegmentForChunk(wallChunk, Frob.IN_USE);
                 final Chunk textureChunk = i.memory().getSegment(segmentId);
-                i.draw().texture(textureChunk, textureOffset, x0, y0, invert, gameplayArea);
+                i.fg().drawTexture(textureChunk, textureOffset, x0, y0, invert, gameplayArea);
             }
 
             // 'Other' decor texture; try to only run each square once
@@ -119,7 +118,7 @@ public class DrawCurrentViewport implements Instruction {
                     final Integer otherChunkId = sq.otherTextureChunk().get();
                     final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.IN_USE);
                     final Chunk textureChunk = i.memory().getSegment(segmentId);
-                    i.draw().texture(textureChunk, textureOffset, x0, y0, 0, gameplayArea);
+                    i.fg().drawTexture(textureChunk, textureOffset, x0, y0, 0, gameplayArea);
                 }
             }
         }
