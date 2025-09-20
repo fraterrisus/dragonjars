@@ -27,9 +27,14 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
+// Always check your release notes: https://github.com/openjdk/jfx/tree/master/doc-files
 application {
     mainModule.set("com.hitchhikerprod.dragonjars")
     mainClass.set("com.hitchhikerprod.dragonjars.DragonWarsApp")
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics", // ,javafx.media,javafx.web
+        "--sun-misc-unsafe-memory-access=allow" // should be unnecessary in JFX25
+    )
 }
 
 javafx {
@@ -52,7 +57,7 @@ tasks.withType<Test> {
 
 jlink {
     imageZip.set(layout.buildDirectory.file("/distributions/app-${javafx.platform.classifier}.zip"))
-    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    options.set(listOf("--strip-debug", "--no-header-files", "--no-man-pages"))
     launcher {
         name = "app"
     }
