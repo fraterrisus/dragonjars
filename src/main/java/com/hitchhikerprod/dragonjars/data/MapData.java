@@ -218,7 +218,6 @@ public class MapData {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
         int x, y;
-        // Wrapping logic. I bet this breaks in the Dwarf Clan Hall.
         if (isWrapping()) {
             x = xin % xMax;
             y = yin % yMax;

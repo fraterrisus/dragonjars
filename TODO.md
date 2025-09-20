@@ -4,13 +4,13 @@
 - Add a menu item that draws the current parsed map.
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
-- Check that the weird wrapping behavior on the Dwarf Clan Hall works.
 - Display "hidden" information, like the game flags (done) and character flags.
 
 # Known Bugs
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
+- In the Dwarf Clan Hall, the invisible crystal wall displays the broken statue base texture.
 
 # Implementation Differences
 

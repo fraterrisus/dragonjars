@@ -139,9 +139,9 @@ public class DrawCurrentViewport implements Instruction {
         return switch (facing) {
             case NORTH -> i.mapDecoder().getSquare(position)
                     .northWallTextureChunk().orElse(0);
-            case EAST -> i.mapDecoder().getSquare(position.x() + 1, position.y())
+            case EAST -> i.mapDecoder().getSquare(ALU.addByte(position.x(), 1).value(), position.y())
                     .westWallTextureChunk().orElse(0);
-            case SOUTH -> i.mapDecoder().getSquare(position.x(), position.y() - 1)
+            case SOUTH -> i.mapDecoder().getSquare(position.x(), ALU.subByte(position.y(), 1).value())
                     .northWallTextureChunk().orElse(0);
             case WEST -> i.mapDecoder().getSquare(position)
                     .westWallTextureChunk().orElse(0);
@@ -152,9 +152,9 @@ public class DrawCurrentViewport implements Instruction {
         return switch (facing) {
             case NORTH -> i.mapDecoder().getSquare(position)
                     .northWallTextureMetadata().orElse(0);
-            case EAST -> i.mapDecoder().getSquare(position.x() + 1, position.y())
+            case EAST -> i.mapDecoder().getSquare(ALU.addByte(position.x(), 1).value(), position.y())
                     .westWallTextureMetadata().orElse(0);
-            case SOUTH -> i.mapDecoder().getSquare(position.x(), position.y() - 1)
+            case SOUTH -> i.mapDecoder().getSquare(position.x(), ALU.subByte(position.y(), 1).value())
                     .northWallTextureMetadata().orElse(0);
             case WEST -> i.mapDecoder().getSquare(position)
                     .westWallTextureMetadata().orElse(0);

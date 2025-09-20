@@ -64,7 +64,7 @@ public class DrawAutomap implements Instruction {
                 final int xOffset = 0x20 * boxx;
                 final int yOffset = 0x18 * boxy;
 
-                final MapData.Square square = i.mapDecoder().getSquare(mapx, mapy);
+                final MapData.Square square = i.mapDecoder().getSquare((mapx % 256), (mapy % 256));
 
                 // Floor (texture offset 0)
                 if (square.touched()) {
