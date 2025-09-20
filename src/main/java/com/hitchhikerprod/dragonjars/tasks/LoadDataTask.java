@@ -127,10 +127,14 @@ public class LoadDataTask extends Task<List<Chunk>> {
     private static final List<Patch> PATCHES = List.of(
             // Purgatory: if you leave to the north, it drops you 2E of where you should be
             new Patch(0x047, 0x1696, (byte)0x0f, (byte)0x0d),
+            // Dwarf Ruins: move the Dwarven Hammer chest flag from [9e:80] to [9a:08]
+            new Patch(0x055, 0x02d7, (byte)0x28, (byte)0x0c),
             // Pilgrim dock exits are _all_ messed up
             new Patch(0x060, 0x02bf, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c1, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c2, (byte)0x14, (byte)0x15),
-            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12)
+            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12),
+            // Slave Estate: move the Statue of Mog flag from [9f:10] to [a5:80]
+            new Patch(0x06b, 0x041b, (byte)0x33, (byte)0x60)
     );
 }

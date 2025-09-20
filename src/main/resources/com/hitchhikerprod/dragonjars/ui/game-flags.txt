@@ -5,15 +5,15 @@ Slave Camp: Impressed the wizard
 Slave Camp: Killed the guardian spirit
 Tars Ruins: Moved the stone slab
 Smuggler's Cove: Killed the pirate crew
-Freeport: Revealed the fake Sword of Freedom (one way or the other)
+Freeport: Revealed the fake Sword of Freedom
 Necropolis: Found the chest in the Guardian room
 Necropolis: Burned out the Spiders' nest
 Necropolis: Beat Nergal's guards
 Necropolis: Fed Nergal Mushrooms
-unused
+Dwarf Ruins: Unlocked the Dwarf Hammer chest (BUGFIX)
 Dwarf Ruins: Used Jade Eyes to open the Dwarf Clan Hall
 Dwarf Clan Hall: Depetrified the dwarves
-Dwarf Clan Hall: [Gave the Skull to the dwarven smith]
+Dwarf Clan Hall: Gave the Skull to the dwarven smith
 Dwarf Clan Hall: Stole from the dwarves
 Game Preserve: Killed the stag
 Game Preserve: Jack has vanished (or was killed)
@@ -21,9 +21,9 @@ Snake Pit: Found the Stone Head
 Snake Pit: Found Drake's other throne
 Kingshome: Met Namtar
 Kingshome Dungeon: Found Drake's real throne
-Mystic Wood: Wrestled Enkidu?
+Mystic Wood: Wrestled Enkidu
 Mystic Wood: Revived Zaton's spirit
-Purgatory: Start square intro message has been played
+Purgatory: Start square intro message
 Mud Toad: Stone Arms have been returned
 Mud Toad: Stone Trunk has been returned
 Mud Toad: Stone Head has been returned
@@ -38,7 +38,7 @@ Byzanople Dungeon, Siege Camp: Joined forces with Prince Jordan
 Purgatory: Defeated the Humbaba
 Purgatory: Received reward from Clopin for defeating the Humbaba
 Slave Camp: Found the Nature Axe
-Slave Camp, Dwarf Ruins: Unlocked the Forest Axe chest (Camp) -or- the Dwarf Hammer chest (Ruins)
+Slave Camp: Unlocked the Forest Axe chest
 Tars Ruins: Killed the scroll guards
 Tars Ruins: Killed the Guardian Serpent
 Tars Dungeon: Unlocked the scrolls chest
@@ -49,7 +49,7 @@ Phoebus: Unlocked the chest at (11,15)
 Slave Estate: Found the chest at (10,11)
 Slave Estate: Found the chest at (05,08)
 Slave Estate: Unlocked the chest at (03,08)
-Slave Mines, Slave Estate: Defeated the guards to escape the mines -or- Found the ugly statue of Mog
+Slave Mines: Defeated the guards to escape the mines
 Slave Estate: Killed the Gaze Demon
 Purgatory, Slave Mines: Sold yourself into slavery
 Slave Mines: Gave water to the dying old man
@@ -85,18 +85,18 @@ Nisir: Unlocked the weapons chest
 Game Preserve: Killed the bandits
 Magan Underworld: Scared off the malign fairies
 Mud Toad: Sealed the leak, received the Golden Boots
-Purgatory: NPC ID 0 (Ulrik) is in the party
-unused: NPC ID 1 (—) is in the party
-Slave Camp NPC ID 2 (Louie) is in the party
-Phoebus NPC ID 3 (Valar) is in the party
-Freeport NPC ID 4 (Halifax) is in the party
-unused: NPC ID 5 (—) is in the party
-unused: NPC ID 6 (—) is in the party
-unused: NPC ID 7 (—) is in the party
-unused: NPC ID 8 (—) is in the party
-unused
+NPC ID 0 (Ulrik) is in the party
+NPC ID 1 (—) is in the party
+NPC ID 2 (Louie) is in the party
+NPC ID 3 (Valar) is in the party
+NPC ID 4 (Halifax) is in the party
+NPC ID 5 (—) is in the party
+NPC ID 6 (—) is in the party
+NPC ID 7 (—) is in the party
+NPC ID 8 (—) is in the party
+Slave Estate: Found the ugly statue of Mog (BUGFIX)
 Slave Estate: Killed the Gaze Demon with a mirror
-Purgatory: Won citizenship by defeating the Gladiators in the Arena
+Purgatory: Defeated the Gladiators in the Arena
 Dilmun: Found the cache on Forlorn
 Siege Camp: Found the soldier's cache
 Siege Camp: Unlocked the other chest
@@ -132,7 +132,7 @@ Pilgrim Dock: Killed the dock guards
 Magan Underworld: Have access to the first Namtar's Body chest
 Magan Underworld: Dropped Namtar's Body to set up the first fight
 Magan Underworld: Defeated Namtar the first time
-Magan Underworld: Have access to the second Namtar's Body chest
+Magan Underworld: Second defeat / Second Namtar's Body chest
 Scorpion Bridge: Killed the Scorpion guards
 Tars Underground: Have opened the Stone Arms cache
 Dragon Valley, Nisir: Showed the Dragon Gem to the Queen
