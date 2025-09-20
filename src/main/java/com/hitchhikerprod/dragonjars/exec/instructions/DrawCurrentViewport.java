@@ -116,7 +116,7 @@ public class DrawCurrentViewport implements Instruction {
             final int invert = WALL_INVERT.get(data.listIndex());
 
             // Wall texture
-            if ((wallChunk >= 0x6e) && (wallChunk <= 0x7f)) {
+            if ((wallChunk >= 0x6e) && (wallChunk < 0x7f)) {
                 final int segmentId = i.getSegmentForChunk(wallChunk, Frob.IN_USE);
                 final Chunk textureChunk = i.memory().getSegment(segmentId);
                 i.fg().drawTexture(textureChunk, textureOffset, x0, y0, invert, gameplayArea);
