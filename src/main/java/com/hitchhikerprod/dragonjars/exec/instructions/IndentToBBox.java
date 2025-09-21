@@ -6,7 +6,7 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 public class IndentToBBox implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        i.drawString313e();
+        i.drawStringBuffer();
         i.indentToBBox();
         return i.getIP().incr();
     }

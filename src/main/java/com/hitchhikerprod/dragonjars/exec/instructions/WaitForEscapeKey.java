@@ -8,7 +8,7 @@ public class WaitForEscapeKey implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr(OPCODE);
-        i.drawString313e();
+        i.drawStringBuffer();
         i.printFooter(0x02); // hardcoded at 0x2bab
         i.app().setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;

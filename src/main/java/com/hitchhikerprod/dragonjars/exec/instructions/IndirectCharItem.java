@@ -17,7 +17,7 @@ public class IndirectCharItem implements Instruction {
         final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * selectedItem);
         final Address itemPointer = new Address(PARTY_SEGMENT, itemBaseAddress + 0x0b);
         final List<Integer> string = Instructions.getStringFromMemory(i, itemPointer);
-        i.addToString313e(string);
+        i.addToStringBuffer(string);
         // Instructions.indirectFunction(i, itemPointer);
         return i.getIP().incr();
     }

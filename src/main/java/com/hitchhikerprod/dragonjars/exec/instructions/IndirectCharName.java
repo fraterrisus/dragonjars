@@ -15,7 +15,7 @@ public class IndirectCharName implements Instruction {
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final Address namePointer = new Address(PARTY_SEGMENT, pcBaseAddress);
         final List<Integer> string = Instructions.getStringFromMemory(i, namePointer);
-        i.addToString313e(string);
+        i.addToStringBuffer(string);
         // Instructions.indirectFunction(i, namePointer);
         return i.getIP().incr();
     }

@@ -31,6 +31,8 @@ public class Heap {
     public static final int BOARD_1_SEGIDX = 0x56;
     public static final int DECODED_BOARD_ID = 0x57;
     public static final int BOARD_2_SEGIDX = 0x5a;
+    public static final int GAME_STATE_GLOBAL = 0x99;
+    public static final int GAME_STATE_BOARD = 0xb9;
     public static final int COMPASS_ENABLED = 0xbe;       // see 0x4a47
     public static final int DETECT_TRAPS_RANGE = 0xbf;
     public static final int SHIELD_POWER = 0xc0;

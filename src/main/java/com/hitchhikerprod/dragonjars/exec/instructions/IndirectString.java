@@ -10,7 +10,7 @@ public class IndirectString implements Instruction {
     public Address exec(Interpreter i) {
         final Address pointer = new Address(i.getDS(), i.getAX(true));
         final List<Integer> string = Instructions.getStringFromMemory(i, pointer);
-        i.addToString313e(string);
+        i.addToStringBuffer(string);
 //        Instructions.indirectFunction(i, pointer);
         return i.getIP().incr();
     }

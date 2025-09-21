@@ -127,6 +127,14 @@ public class MapData {
         parseActions();
     }
 
+    public boolean isDirty() {
+        return primaryData.isDirty();
+    }
+
+    public void clean() {
+        primaryData.clean();
+    }
+
     public List<Integer> getTitleChars() {
         return titleChars;
     }

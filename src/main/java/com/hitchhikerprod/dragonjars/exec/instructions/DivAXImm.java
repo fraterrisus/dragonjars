@@ -17,8 +17,8 @@ public class DivAXImm implements Instruction {
         final int op1 = i.getAX(true);
         final int divResult = op1 / op2;
         final int modResult = op1 % op2;
-        i.setMulResult(divResult);
-        i.setDivResult(modResult);
+//        i.setMulResult(divResult);
+//        i.setDivResult(modResult);
         Heap.get(0x37).write(divResult, 4);
         Heap.get(0x3b).write(modResult, 2);
         i.setAX(divResult);

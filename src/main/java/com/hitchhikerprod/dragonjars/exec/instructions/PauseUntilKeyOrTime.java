@@ -23,7 +23,7 @@ public class PauseUntilKeyOrTime implements Instruction {
     @Override
     public Address exec(Interpreter ignored) {
         i.drawPartyInfoArea(); // 0x4840
-        i.drawString313e(); // 0x4843
+        i.drawStringBuffer(); // 0x4843
 
         nextIP = i.getIP().incr(OPCODE);
 

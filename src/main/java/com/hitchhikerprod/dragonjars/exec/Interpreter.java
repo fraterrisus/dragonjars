@@ -49,11 +49,11 @@ public class Interpreter {
     private final StringDecoder stringDecoder;
     private final VideoHelper videoHelper;
     private MapData mapDecoder;
+    private boolean redrawMapWindow = false;
 
     /* Memory space */
 
     private final Memory memory;
-    private final Heap heap;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
 
@@ -67,8 +67,8 @@ public class Interpreter {
     private TorchAnimationTask torchAnimationTask;
     private SpellDecayTask spellDecayTask;
 
-    private int mul_result; // 0x1166:4
-    private int div_result; // 0x116a:4
+//    private int mul_result; // 0x1166:4
+//    private int div_result; // 0x116a:4
 
     private int draw_borders; // 0x253e
     private int bbox_x0; // 0x2547 (ch)
@@ -76,11 +76,9 @@ public class Interpreter {
     private int bbox_x1; // 0x254a (ch)
     private int bbox_y1; // 0x254c (px)
 
-    private final List<Integer> string_313e = new ArrayList<>();
+    private final List<Integer> stringBuffer = new ArrayList<>(); // 0x313e
     private List<Integer> titleString = List.of(); // 0x273a (len) 0x273b:16 (string)
 
-//    public int x_3166;
-//    public int y_3168;
     public int x_31ed; // default for draw_char
     public int y_31ef; // default for draw_char
 
@@ -129,7 +127,6 @@ public class Interpreter {
                 dataChunks.getLast(),
                 dataChunks.subList(0, dataChunks.size() - 1)
         );
-        this.heap = Heap.getInstance();
 
         this.width = false;
         this.ax = 0;
@@ -249,8 +246,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x0;
-    private static final int BREAKPOINT_ADR = 0x1684;
+    private static final int BREAKPOINT_CHUNK = 0x000;
+    private static final int BREAKPOINT_ADR = 0x17d5;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -295,7 +292,7 @@ public class Interpreter {
     }
 
     public void decodeMap(int mapId) {
-        // See [00/0384] load_dirty_map_state()
+        // See [cs/0384] load_dirty_map_state() and [cs/5544] load_map_chunks()
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
@@ -320,6 +317,14 @@ public class Interpreter {
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
             unpackAutomapData(mapId);
+
+            // erase board state flags on every load (see cs:5589)
+            Heap.get(Heap.GAME_STATE_BOARD).write(0, 4);
+        }
+
+        if (mapDecoder().isDirty()) {
+            mapDecoder().clean();
+            System.out.println("redraw");
             MapWindow.getInstance().setMap(mapDecoder());
         }
     }
@@ -445,7 +450,6 @@ public class Interpreter {
         bbox_y0 = bbox.y0();
         bbox_x1 = bbox.x1();
         bbox_y1 = bbox.y1();
-        System.out.println("setBBox(" + bbox + ")");
     }
 
     public void expandBBox() {
@@ -462,7 +466,7 @@ public class Interpreter {
         bbox_x0 = bbox_x0 + 1;
     }
 
-    public int getMulResult() {
+/*    public int getMulResult() {
         return mul_result;
     }
 
@@ -476,7 +480,7 @@ public class Interpreter {
 
     public void setDivResult(int divResult) {
         this.div_result = divResult;
-    }
+    }*/
 
     public boolean getCarryFlag() {
         return flagCarry;
@@ -609,7 +613,7 @@ public class Interpreter {
 
     public void resetUI() {
         unpause();
-        drawString313e();
+        drawStringBuffer();
         if (draw_borders != 0x00) drawHud();
         draw_borders = 0x00;
         final CharRectangle messageArea = fg().getHudRegionArea(VideoHelper.HUD_MESSAGE_AREA);
@@ -618,28 +622,19 @@ public class Interpreter {
         y_31ef = messageArea.y0();
     }
 
-    public void addToString313e(List<Integer> st) {
-        // if (!string_313e.isEmpty()) string_313e.add(0xa0);
-        string_313e.addAll(st);
+    public void addToStringBuffer(List<Integer> st) {
+        stringBuffer.addAll(st);
     }
 
-    public void drawString313e() {
-        if (string_313e.isEmpty()) return;
+    public void drawStringBuffer() {
+        if (stringBuffer.isEmpty()) return;
 
         int i0 = 0;
         // skip leading spaces
-        while (string_313e.get(i0) == 0xa0) i0++;
+        while (stringBuffer.get(i0) == 0xa0) i0++;
 
-        drawString(string_313e.subList(i0, string_313e.size()));
-/*
-        for (int i = i0; i < strlen_313c; i++) {
-            draw().character(string_313e.get(i), x_31ed * 8, y_31ef, bg_color_3431 == 0);
-            x_31ed += 8;
-        }
-*/
-
-        string_313e.clear();
-        // x_3166 = x_31ed;
+        drawString(stringBuffer.subList(i0, stringBuffer.size()));
+        stringBuffer.clear();
     }
 
     public void fillRectangle() {
@@ -650,9 +645,8 @@ public class Interpreter {
         fg().drawRectangle(getBBox().toPixel(), (byte)(bg_color_3431 & 0xf), w);
 
         x_31ed = bbox_x0; // 0x32a8
-        // x_3166 = bbox_x0;
         y_31ef = bbox_y0;
-        // strlen_313c = 0;
+        stringBuffer.clear();
     }
 
     /**
@@ -1136,13 +1130,12 @@ public class Interpreter {
 
     public void drawModal(CharRectangle r) {
         pause();
-        drawString313e();
+        drawStringBuffer();
 
         boolean invert = bg_color_3431 == 0;
 
         // four immediates: 16 00 28 98 (combat window)
         // written as words to 0x253f/tmp
-        // draw_string_313e (to empty buffer??)
         if (draw_borders != 0) { //           <- come back to this
             //   expand bounding box()
             //   do some bounds checking?...   ???

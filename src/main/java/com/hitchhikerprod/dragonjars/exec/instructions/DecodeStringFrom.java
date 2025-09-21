@@ -47,7 +47,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom CS = new DecodeStringFrom(
             i -> i.getIP().incr(OPCODE),
             i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-            Interpreter::addToString313e,
+            Interpreter::addToStringBuffer,
             false,
             false
     );
@@ -55,7 +55,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom CS_WITH_FILL = new DecodeStringFrom(
             i -> i.getIP().incr(OPCODE),
             i -> new Address(i.getIP().segment(), i.stringDecoder().getPointer()),
-            Interpreter::drawString,
+            Interpreter::addToStringBuffer,
             true,
             false
     );
@@ -63,7 +63,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom DS = new DecodeStringFrom(
             i -> new Address(i.getDS(), i.getAX(true)),
             i -> i.getIP().incr(OPCODE),
-            Interpreter::addToString313e,
+            Interpreter::addToStringBuffer,
             false,
             true
     );
@@ -71,7 +71,7 @@ public class DecodeStringFrom implements Instruction {
     public static DecodeStringFrom DS_WITH_FILL = new DecodeStringFrom(
             i -> new Address(i.getDS(), i.getAX(true)),
             i -> i.getIP().incr(OPCODE),
-            Interpreter::drawString,
+            Interpreter::addToStringBuffer,
             true,
             true
     );

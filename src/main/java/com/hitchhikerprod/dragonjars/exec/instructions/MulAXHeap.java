@@ -13,7 +13,7 @@ public class MulAXHeap implements Instruction {
         final int op1 = Heap.get(heapIndex).read(4);
         final int op2 = i.getAX(true);
         final int result = op1 * op2;
-        i.setMulResult(result);
+//        i.setMulResult(result);
         Heap.get(0x37).write(result, 4);
         return ip.incr(OPCODE + IMMEDIATE);
     }

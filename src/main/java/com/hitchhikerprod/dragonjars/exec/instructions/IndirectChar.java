@@ -10,7 +10,7 @@ public class IndirectChar implements Instruction {
     public Address exec(Interpreter i) {
         final int ax = i.getAX(true);
         final List<Integer> chars = (i.isWide()) ? List.of((ax >> 8) & 0xff, ax & 0xff) : List.of(ax & 0xff);
-        i.addToString313e(chars);
+        i.addToStringBuffer(chars);
         return i.getIP().incr(OPCODE);
     }
 }

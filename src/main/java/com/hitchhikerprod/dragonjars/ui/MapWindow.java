@@ -274,7 +274,6 @@ public class MapWindow {
 
                 gfx.fill(floor);
                 if (sq.otherTextureChunk().isPresent()) {
-                    System.out.format("otherTex: %2x\n", sq.otherTextureChunk().get());
                     switch (sq.otherTextureChunk().get()) {
                         case 0x71 -> { // tree
                             gfx.setColor(TREE);

@@ -14,8 +14,8 @@ public class RunYesNoModal implements Instruction {
 
     @Override
     public Address exec(Interpreter i) {
-        i.addToString313e(YES_NO_STRING);
-        i.drawString313e();
+        i.addToStringBuffer(YES_NO_STRING);
+        i.drawStringBuffer();
         final Address nextIP = i.getIP().incr(OPCODE);
         i.app().setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {
