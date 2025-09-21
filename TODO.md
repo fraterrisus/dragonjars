@@ -54,3 +54,6 @@ Uses of PixelBuffer#writeTo(PixelWriter):
   - drawHUD, drawMapTitle, and spell icons, which could easily be refactored into a local buffer
   - drawPartyInfoArea
   - MonsterAnimationTask, which already uses Platform.runLater()
+
+It's also worth thinking clearly about the use of locks and cross-thread communication, which is currently kind of a 
+mess.

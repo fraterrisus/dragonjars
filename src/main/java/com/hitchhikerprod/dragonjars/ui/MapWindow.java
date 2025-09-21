@@ -1,7 +1,6 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.data.MapData;
-import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -13,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
@@ -62,12 +62,19 @@ public class MapWindow {
         this.stage.sizeToScene();
     }
 
-    private static final int GRID_SCALE = 4;
+    private static final int GRID_SCALE = 3;
     private static final int GRID_SIZE = GRID_SCALE * 10;
 
-    private static final Color GRID = new Color(148, 186, 207);
-    private static final Color WALL = Color.DARK_GRAY;
     private static final Color FENCE = new Color(133, 63, 36);
+    private static final Color FIRE = new Color(196, 75, 0);
+    private static final Color GRID = new Color(148, 186, 207);
+    private static final Color OCEAN = new Color(89, 137, 155);
+    private static final Color RED_FLOOR = new Color(255, 234, 234);
+    private static final Color ROCK = new Color(153, 153, 153);
+    private static final Color STATUE = new Color(104, 52, 104);
+    private static final Color STONE_FLOOR = new Color(225, 225, 225);
+    private static final Color TREE = new Color(36, 110, 36);
+    private static final Color WALL = Color.DARK_GRAY;
     private static final Color WATER = new Color(0x80, 0xa0, 0xff);
 
     private int xMax;
@@ -227,18 +234,82 @@ public class MapWindow {
         for (int y = 0; y < yMax; y++) {
             for (int x = 0; x < xMax; x++) {
                 final MapData.Square sq = mapData.getSquare(x, y);
-                final Point topLeft = new Point(
-                        ((x + 1) * GRID_SIZE) + 1,
-                        ((yMax - y) * GRID_SIZE) + 1
+
+                final Point topLeft = new Point(((x + 1) * GRID_SIZE) + 1, ((yMax - y) * GRID_SIZE) + 1);
+                final Point middle = new Point(
+                        ((x + 1) * GRID_SIZE) + (GRID_SIZE / 2),
+                        ((yMax - y) * GRID_SIZE) + (GRID_SIZE / 2)
                 );
-                final Rectangle floor = new Rectangle(topLeft, new Dimension(GRID_SIZE - 2, GRID_SIZE - 2));
+
+                final Dimension floorDim = new Dimension(GRID_SIZE - 2, GRID_SIZE - 2);
+                final Rectangle floor = new Rectangle(topLeft, floorDim);
+                final Point circleStart = new Point(middle.x - (2 * GRID_SCALE), middle.y - (2 * GRID_SCALE));
+                final Dimension circleDim = new Dimension(4 * GRID_SCALE, 4 * GRID_SCALE);
+                final Ellipse2D.Float circle = new Ellipse2D.Float(circleStart.x, circleStart.y, circleDim.width, circleDim.height);
+                final Ellipse2D.Float cluster1 = new Ellipse2D.Float(
+                        circleStart.x - GRID_SCALE,
+                        circleStart.y - GRID_SCALE,
+                        circleDim.width,
+                        circleDim.height
+                );
+                final Ellipse2D.Float cluster2 = new Ellipse2D.Float(
+                        circleStart.x + GRID_SCALE,
+                        circleStart.y,
+                        circleDim.width,
+                        circleDim.height
+                );
+                final Ellipse2D.Float cluster3 = new Ellipse2D.Float(
+                        circleStart.x,
+                        circleStart.y + GRID_SCALE,
+                        circleDim.width,
+                        circleDim.height
+                );
+
                 switch (sq.floorTextureChunk()) {
-                    case 0x70 -> gfx.setColor(new Color(255, 234, 234)); // red floor
-                    case 0x75 -> gfx.setColor(new Color(89, 137, 155)); // water
-                    case 0x7c -> gfx.setColor(new Color(225, 225, 225)); // stone floor
+                    case 0x70 -> gfx.setColor(RED_FLOOR); // red floor
+                    case 0x75 -> gfx.setColor(OCEAN); // water
+                    case 0x7c -> gfx.setColor(STONE_FLOOR); // stone floor
                     default -> gfx.setColor(Color.WHITE);
                 }
+
                 gfx.fill(floor);
+                if (sq.otherTextureChunk().isPresent()) {
+                    System.out.format("otherTex: %2x\n", sq.otherTextureChunk().get());
+                    switch (sq.otherTextureChunk().get()) {
+                        case 0x71 -> { // tree
+                            gfx.setColor(TREE);
+                            gfx.fill(cluster1);
+                            gfx.fill(cluster2);
+                            gfx.fill(cluster3);
+                        }
+                        case 0x72 -> { // rock
+                            gfx.setColor(ROCK);
+                            gfx.fill(circle);
+                        }
+                        case 0x74 -> { // puddle
+                            gfx.setColor(WATER);
+                            gfx.fill(circle);
+                        }
+                        case 0x77 -> { // pile of rubble
+                            gfx.setColor(ROCK);
+                            gfx.fill(cluster1);
+                            gfx.fill(cluster2);
+                            gfx.fill(cluster3);
+                        }
+                        case 0x78 -> { // bush
+                            gfx.setColor(TREE);
+                            gfx.fill(circle);
+                        }
+                        case 0x79 -> {
+                            gfx.setColor(FIRE);
+                            gfx.fill(circle);
+                        }
+                        case 0x7f, 0x81 -> { // statue
+                            gfx.setColor(STATUE);
+                            gfx.fill(circle);
+                        }
+                    }
+                }
             }
         }
     }
