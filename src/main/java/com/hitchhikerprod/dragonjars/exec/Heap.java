@@ -1,10 +1,12 @@
 package com.hitchhikerprod.dragonjars.exec;
 
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 /** This isn't really a heap, but it is a chunk of the memory space that a lot of active data gets written to. */
 public class Heap {
     private static final Heap INSTANCE = new Heap();
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     public static Heap getInstance() { return INSTANCE; }
 
@@ -47,7 +49,7 @@ public class Heap {
 
     private Heap() {}
 
-    private synchronized void write(int index, int count, int val) {
+    private void write(int index, int count, int val) {
         if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {
 //            System.out.format("  heap[%02x] = %02x\n", (index + i) & 0xff, val & 0xff);
@@ -56,7 +58,7 @@ public class Heap {
         }
     }
 
-    private synchronized int read(int index, int count) {
+    private int read(int index, int count) {
         if (count > 4) throw new IllegalArgumentException();
         int value = 0;
         for (int i = count - 1; i >= 0; i--) {
@@ -79,12 +81,41 @@ public class Heap {
             this.index = index;
         }
 
+        public void lock() {
+            LOCK.lock();
+        }
+
+        public void unlock() {
+            LOCK.unlock();
+        }
+
+        public int lockedRead() {
+            return lockedRead(1);
+        }
+
+        public int lockedRead(int count) {
+            if (!LOCK.isHeldByCurrentThread()) throw new RuntimeException("lockedRead() called without lock()");
+            return heap.read(index, count);
+        }
+
         public int read() {
             return read(1);
         }
 
         public int read(int count) {
-            return heap.read(index, count);
+            if (LOCK.isHeldByCurrentThread()) throw new RuntimeException("read() called after lock()");
+            LOCK.lock();
+            try { return lockedRead(count); }
+            finally { LOCK.unlock(); }
+        }
+
+        public void lockedWrite(int val) {
+            lockedWrite(val, 1);
+        }
+
+        public void lockedWrite(int val, int count) {
+            if (!LOCK.isHeldByCurrentThread()) throw new RuntimeException("lockedWrite() called without lock()");
+            heap.write(index, count, val);
         }
 
         public void write(int val) {
@@ -92,13 +123,21 @@ public class Heap {
         }
 
         public void write(int val, int count) {
-            heap.write(index, count, val);
+            if (LOCK.isHeldByCurrentThread()) throw new RuntimeException("write() called after lock()");
+            LOCK.lock();
+            try { lockedWrite(val, count); }
+            finally { LOCK.unlock(); }
         }
 
         public void modify(int count, Function<Integer, Integer> fn) {
-            final int before = read(count);
-            final int after = fn.apply(before);
-            write(after, count);
+            if (LOCK.isHeldByCurrentThread()) throw new RuntimeException("modify() called after lock()");
+            LOCK.lock();
+            try {
+                final int before = lockedRead(count);
+                final int after = fn.apply(before);
+                lockedWrite(after, count);
+            }
+            finally { LOCK.unlock(); }
         }
     }
 }

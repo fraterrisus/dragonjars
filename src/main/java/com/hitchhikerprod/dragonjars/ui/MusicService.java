@@ -113,9 +113,7 @@ public class MusicService {
         task.setOnSucceeded(removeThisTaskHelper(task));
         task.setOnFailed(removeThisTaskHelper(task));
         task.setOnCancelled(removeThisTaskHelper(task));
-        final Thread musicThread = new Thread(task);
-        musicThread.setDaemon(true);
-        musicThread.start();
+        Thread.ofPlatform().daemon().start(task);
         runningTasks.add(task);
     }
 

@@ -24,19 +24,19 @@ Kingshome Dungeon: Found Drake's real throne
 Mystic Wood: Wrestled Enkidu
 Mystic Wood: Revived Zaton's spirit
 Purgatory: Start square intro message
-Mud Toad: Stone Arms have been returned
-Mud Toad: Stone Trunk has been returned
-Mud Toad: Stone Head has been returned
-Mud Toad: Stone Hand has been returned
+Mud Toad: Returned the Stone Arms
+Mud Toad: Returned the Stone Trunk
+Mud Toad: Returned the Stone Head
+Mud Toad: Returned the Stone Hand
 Lanac'toor: Found the Spectacles
-Sunken Dungeon: Clam has been brought to surface and replaced with Skull
+Sunken Dungeon: Brought the Clam to the surface
 Sunken Dungeon: Defeated the locker guards
 Byzanople, Siege Camp: Kingshome won the siege of Byzanople
 Byzanople, Siege Camp: Byzanople won the siege of Byzanople
 Byzanople: Killed the Byzanople observation party (and Princess Myrilla)
 Byzanople Dungeon, Siege Camp: Joined forces with Prince Jordan
 Purgatory: Defeated the Humbaba
-Purgatory: Received reward from Clopin for defeating the Humbaba
+Purgatory: Received reward for defeating the Humbaba
 Slave Camp: Found the Nature Axe
 Slave Camp: Unlocked the Forest Axe chest
 Tars Ruins: Killed the scroll guards
@@ -54,8 +54,8 @@ Slave Estate: Killed the Gaze Demon
 Purgatory, Slave Mines: Sold yourself into slavery
 Slave Mines: Gave water to the dying old man
 Slave Mines: Unlocked the hidden chest
-Phoebus, Mud Toad: Attempted to meet Berengaria at the Icarus
-Mud Toad: Have access to the militia's cache
+Phoebus, Mud Toad: Tried to meet Berengaria at the Icarus
+Mud Toad: Gained access to the militia's cache
 Smuggler's Cove: Unlocked the pirates' treasure chest
 Lansk: Unlocked the chest
 Kingshome Dungeon: Found the Armory
@@ -69,8 +69,8 @@ Mystic Wood: Defeated the Water Spirits guarding the chest
 Mystic Wood: Defeated the Lagooners guarding the pond
 Old Dock: Moved the statue
 Byzanople: Unlocked the Fire Shield chest
-Scorpion Bridge: Have access to the chest
-Sunken Ruins: Have access to the chest
+Scorpion Bridge: Can access the chest
+Sunken Ruins: Can access the chest
 Sunken Dungeon: Unlocked the hidden chest
 Freeport: Unlocked the Order's chest
 Freeport: Defeated the Order of the Sword
@@ -79,7 +79,7 @@ Dwarf Clan Hall: Found the Dragon Horn
 Dwarf Clan Hall: Found the Crush Mace
 Dragon Valley: Unlocked the chest in the NE corner
 Dragon Valley: Beat the encounter guarding the SW chest
-Lanac'toor: Have access to the scrolls chest
+Lanac'toor: Can access the scrolls chest
 Lanac'toor: Unlocked the Healing Potion chest
 Nisir: Unlocked the weapons chest
 Game Preserve: Killed the bandits
@@ -100,8 +100,8 @@ Purgatory: Defeated the Gladiators in the Arena
 Dilmun: Found the cache on Forlorn
 Siege Camp: Found the soldier's cache
 Siege Camp: Unlocked the other chest
-Phoeban Dungeon: Have access to the good treasure
-Phoeban Dungeon: Have access to the bad treasure
+Phoeban Dungeon: Can access the good treasure
+Phoeban Dungeon: Can access the bad treasure
 Phoeban Dungeon: The Druid told you the password (and died)
 Phoeban Dungeon: Been captured by Mystalvision and thrown in the dungeon
 Magan Underworld: Freed Irkalla from the Isle of Woe
@@ -119,20 +119,20 @@ Byzanople: Killed the defenders at the top of the stairs
 Byzanople: Killed the defenders in the outer city ring
 Dilmun: Defeated the Guards on Forlorn before the first bridge
 Dilmun, Kingshome, Kingshome Dungeon: Kingshome ambush has been triggered
-Lansk Undercity: Have unlocked the chest under the statue
-Phoebus: Have encountered Mystalvision
+Lansk Undercity: Unlocked the chest under the statue
+Phoebus: Encountered Mystalvision
 Magan Underworld: Unlocked the Slicer chest
-Guard Bridge #2: Have defeated the guards in the Armory
-Guard Bridge #2: Have defeated both sets of guards in the Barracks
+Guard Bridge #2: Defeated the guards in the Armory
+Guard Bridge #2: Defeated both sets of guards in the Barracks
 Phoeban Dungeon, Dilmun: Phoebus has been destroyed
 Dilmun: Defeated the Goblins outside Phoebus
 Phoeban Dungeon: The dragon has been fed
-Magan Underworld: Have taken the 5 AP Leap of Faith
+Magan Underworld: Took the 5 AP Leap of Faith
 Pilgrim Dock: Killed the dock guards
-Magan Underworld: Have access to the first Namtar's Body chest
+Magan Underworld: Can access the first Namtar's Body chest
 Magan Underworld: Dropped Namtar's Body to set up the first fight
 Magan Underworld: Defeated Namtar the first time
-Magan Underworld: Second defeat / Second Namtar's Body chest
+Magan Underworld: Second defeat / second Namtar's Body chest
 Scorpion Bridge: Killed the Scorpion guards
-Tars Underground: Have opened the Stone Arms cache
+Tars Underground: Opened the Stone Arms cache
 Dragon Valley, Nisir: Showed the Dragon Gem to the Queen

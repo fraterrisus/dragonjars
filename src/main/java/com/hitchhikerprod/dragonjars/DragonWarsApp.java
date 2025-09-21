@@ -131,9 +131,7 @@ public class DragonWarsApp extends Application {
             alert.showAndWait();
         });
 
-        final Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        Thread.ofPlatform().daemon().start(task);
     }
 
     public MusicService musicService() {

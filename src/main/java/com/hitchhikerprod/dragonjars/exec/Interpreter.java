@@ -66,7 +66,7 @@ public class Interpreter {
     private MonsterAnimationTask monsterAnimationTask;
     private EyeAnimationTask eyeAnimationTask;
     private TorchAnimationTask torchAnimationTask;
-    private SpellDecayTask spellDecayTask;
+//    private SpellDecayTask spellDecayTask;
 
 //    private int mul_result; // 0x1166:4
 //    private int div_result; // 0x116a:4
@@ -98,7 +98,6 @@ public class Interpreter {
     //   draw_current_viewport (0x4f90)
     private final ReentrantLock monsterAnimationLock = new ReentrantLock();
     private boolean animationEnabled_4d4e = false;
-//    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;
 
     /* Architectural registers */
@@ -151,19 +150,14 @@ public class Interpreter {
             videoHelper.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) videoHelper.drawRomImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) videoHelper.drawRomImage(0x1b + i); // HUD title bar
-            videoBackground.writeTo("video-background.png", AppPreferences.getInstance().scaleProperty().get());
+//            videoBackground.writeTo("video-background.png", AppPreferences.getInstance().scaleProperty().get());
 
             videoHelper.setVideoBuffer(videoForeground);
             final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             videoHelper.drawRectangle(mask, (byte)0);
-            videoForeground.writeTo("video-foreground.png", AppPreferences.getInstance().scaleProperty().get());
+//            videoForeground.writeTo("video-foreground.png", AppPreferences.getInstance().scaleProperty().get());
 
-            // loadFromCodeSegment(0xd1b0, 0, automapBuffer, 80);
-
-            spellDecayTask = new SpellDecayTask(this);
-            final Thread spellDecayThread = new Thread(spellDecayTask);
-            spellDecayThread.setDaemon(true);
-            spellDecayThread.start();
+            Thread.ofPlatform().daemon().start(new SpellDecayTask(this));
         }
 
         // cs:0150  ax <- 0x0000
@@ -738,10 +732,7 @@ public class Interpreter {
         torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnFailed(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnCancelled(ev -> torchAnimationTask = null);
-
-        final Thread taskThread = new Thread(torchAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform().daemon().start(torchAnimationTask);
     }
     
     public void startEyeAnimation() {
@@ -749,10 +740,7 @@ public class Interpreter {
         eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnFailed(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnCancelled(ev -> eyeAnimationTask = null);
-
-        final Thread taskThread = new Thread(eyeAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform().daemon().start(eyeAnimationTask);
     }
 
     public boolean isMonsterAnimationEnabled() {
@@ -787,7 +775,7 @@ public class Interpreter {
     public void startMonsterAnimation(MonsterAnimationTask task) {
         stopMonsterAnimation();
         monsterAnimationTask = task;
-        Thread.ofPlatform().daemon(true).start(monsterAnimationTask);
+        Thread.ofPlatform().daemon().start(monsterAnimationTask);
     }
 
     public void stopMonsterAnimation() {

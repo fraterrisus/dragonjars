@@ -62,9 +62,7 @@ public class YouWin implements Instruction {
             i.app().setKeyHandler(null);
             final SleepTask sleepTask = new SleepTask(1000);
             sleepTask.setOnSucceeded(event -> pageOne(box+1));
-            final Thread thread = new Thread(sleepTask);
-            thread.setDaemon(true);
-            thread.start();
+            Thread.ofPlatform().daemon().start(sleepTask);
         } else {
             i.app().setKeyHandler(event -> {
                 if (event.getCode().isModifierKey()) return;

@@ -12,7 +12,7 @@ public class SpellDecayTask extends Task<Void> {
     // Radiance, Disarm Traps, Sense Traps: 2 ticks
     // Cloak Arcane: 1 tick
     private static final int ANIMATION_DELAY_MS = 250;
-    private static final int CYCLES_PER_POINT = 4 * 60; // one minute per tick
+    private static final int CYCLES_PER_POINT = 60000 / ANIMATION_DELAY_MS; // one minute per tick
 
     private final Interpreter interpreter;
 
@@ -41,36 +41,24 @@ public class SpellDecayTask extends Task<Void> {
             }
         }
 
-        private int getDuration(Interpreter i) {
-            return Heap.get(durationIndex).read();
-        }
-
-        private void setDuration(Interpreter i, int newValue) {
-            System.out.format("duration %02x -> %02x\n", durationIndex, newValue);
-            Platform.runLater(() -> Heap.get(durationIndex).write(newValue));
-        }
-
-        private int getEffect(Interpreter i) {
-            return Heap.get(effectIndex).read();
-        }
-
-        private void setEffect(Interpreter i, int newValue) {
-            System.out.format("effect %02x -> %02x\n", effectIndex, newValue);
-            Platform.runLater(() -> Heap.get(effectIndex).write(newValue));
-        }
-
         public boolean decrementAndUpdate(Interpreter i) {
-            final int duration = getDuration(i);
-            if (!i.isPaused() && (Heap.get(Heap.COMBAT_MODE).read() == 0) && duration > 0) {
-                if (decrement()) {
-                    setDuration(i, duration - 1);
-                    if (duration - 1 == 0) {
-                        setEffect(i, 0);
-                        return true;
+            final Heap.Access dur = Heap.get(durationIndex);
+            dur.lock();
+            try {
+                final int duration = dur.lockedRead();
+                if (!i.isPaused() && (Heap.get(Heap.COMBAT_MODE).lockedRead() == 0) && duration > 0) {
+                    if (decrement()) {
+                        dur.lockedWrite(duration - 1);
+                        if (duration - 1 == 0) {
+                            Heap.get(effectIndex).lockedWrite(0);
+                            return true;
+                        }
                     }
                 }
+                return false;
+            } finally {
+                dur.unlock();
             }
-            return false;
         }
     }
 
@@ -94,7 +82,7 @@ public class SpellDecayTask extends Task<Void> {
                     .reduce(Boolean::logicalOr)
                     .orElse(false);
             if (updates) Platform.runLater(() -> interpreter.drawSpellIcons(false));
-            try {Thread.sleep(ANIMATION_DELAY_MS);} catch (InterruptedException e) {}
+            try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException _) {}
         }
     }
 }

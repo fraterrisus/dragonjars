@@ -37,7 +37,7 @@ public class DrawCurrentViewport implements Instruction {
          * together into a single video update. */
         final SleepTask sleep = new SleepTask(100);
         sleep.setOnSucceeded(ev -> draw());
-        Thread.ofPlatform().daemon(true).start(sleep);
+        Thread.ofPlatform().daemon().start(sleep);
         return null;
     }
 

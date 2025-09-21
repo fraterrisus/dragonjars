@@ -45,9 +45,7 @@ public class PersistChunk implements Instruction {
             i.start(nextIP);
         });
 
-        final Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        Thread.ofPlatform().daemon().start(task);
         return null;
     }
 
