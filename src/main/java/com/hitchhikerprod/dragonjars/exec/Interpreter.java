@@ -55,7 +55,6 @@ public class Interpreter {
     private final Heap heap;
 
     private final Deque<Byte> stack = new ArrayDeque<>(); // one-byte values
-    private final byte[] bufferD1B0 = new byte[896 * 2]; // 0x380 words
 
     // Write the entire HUD to this (empty title, no spell icons, no corners). It shouldn't ever change!
     private final VideoBuffer videoBackground = new VideoBuffer();
@@ -159,7 +158,7 @@ public class Interpreter {
             videoHelper.drawRectangle(mask, (byte)0);
 //            videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
 
-            loadFromCodeSegment(0xd1b0, 0, bufferD1B0, 80);
+            // loadFromCodeSegment(0xd1b0, 0, automapBuffer, 80);
 
             spellDecayTask = new SpellDecayTask(this);
             final Thread spellDecayThread = new Thread(spellDecayTask);
@@ -200,8 +199,10 @@ public class Interpreter {
         if (!testMode) drawViewportCorners();
 
         setBBox(VideoBuffer.DEFAULT_RECT);
-        if (!testMode) draw_borders = 0xff;
-        resetUI();
+        if (!testMode) {
+            draw_borders = 0xff;
+            resetUI();
+        }
 
         this.instructionsExecuted = 0;
         // [width] <- 0x00
@@ -297,12 +298,14 @@ public class Interpreter {
         // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
         // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
         // formerly-clean primary map data instead of 0x10.
-        if (Heap.get(Heap.DECODED_BOARD_ID).read() != mapId) {
+        final Heap.Access boardId = Heap.get(Heap.DECODED_BOARD_ID);
+        if (boardId.read() != mapId) {
             if (Objects.nonNull(mapDecoder)) {
+                packAutomapData(boardId.read());
                 mapDecoder.chunkIds().forEach(this::freeSegmentForChunk);
             }
 
-            Heap.get(Heap.DECODED_BOARD_ID).write(mapId);
+            boardId.write(mapId);
 
             this.mapDecoder = new MapData(stringDecoder());
 
@@ -315,6 +318,55 @@ public class Interpreter {
             final ModifiableChunk secondaryData = memory().getSegment(secondarySegment);
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
+            unpackAutomapData(mapId);
+        }
+    }
+
+    private void packAutomapData(int mapId) { // 0x4e00 and 0x4e5a
+        final ModifiableChunk automap = memory().automapChunk();
+        final int xMax = mapDecoder().getMaxX();
+        final int yMax = mapDecoder().getMaxY();
+        int flagMask = automap.getWord(2 * mapId);
+        int address = 0x050 + (flagMask >> 3);
+        int mask = 0x80 >> (flagMask & 0x7);
+        int value = automap.getByte(address);
+        for (int y = 0; y < yMax; y++) {
+            for (int x = 0; x < xMax; x++) {
+                value = value & ~mask;
+                if ((mapDecoder().getSquare(x, y).rawData() & 0x000800) > 0) {
+                    value = value | mask;
+                }
+                mask = mask >> 1;
+                if (mask == 0) {
+                    automap.write(address, 1, value);
+                    mask = 0x80;
+                    value = automap.getByte(++address);
+                }
+            }
+        }
+        automap.write(address, 1, value);
+    }
+
+    private void unpackAutomapData(int mapId) { // 0x4e00 and 0x4e6b
+        final ModifiableChunk automap = memory().automapChunk();
+        final int xMax = mapDecoder().getMaxX();
+        final int yMax = mapDecoder().getMaxY();
+        int flagMask = automap.getWord(2 * mapId);
+        int address = 0x050 + (flagMask >> 3);
+        int mask = 0x80 >> (flagMask & 0x7);
+        int value = automap.getByte(address);
+        for (int y = 0; y < yMax; y++) {
+            for (int x = 0; x < xMax; x++) {
+                if ((value & mask) > 0) {
+                    final int rawData = mapDecoder().getSquare(x, y).rawData();
+                    mapDecoder().setSquare(x, y, rawData | 0x000800);
+                }
+                mask = mask >> 1;
+                if (mask == 0) {
+                    mask = 0x80;
+                    value = automap.getByte(++address);
+                }
+            }
         }
     }
 
@@ -551,26 +603,6 @@ public class Interpreter {
 
     public void setWidth(boolean width) {
         this.width = width;
-    }
-
-    public int readBufferD1B0(int offset) {
-        return byteToInt(this.bufferD1B0[offset]);
-    }
-
-    public void writeBufferD1B0(int offset, int value) {
-        this.bufferD1B0[offset] = intToByte(value);
-    }
-
-    public List<Byte> loadFromCodeSegment(int base, int offset, int length) {
-        final int addr = base - 0x0100 + offset;
-        return memory().getCodeChunk().getBytes(addr, length);
-    }
-    
-    public void loadFromCodeSegment(int base, int offset, byte[] dest, int length) {
-        final List<Byte> bytes = loadFromCodeSegment(base, offset, length);
-        for (int i = 0; i < length; i++) {
-            dest[i] = bytes.get(i);
-        }
     }
 
     public void resetUI() {
@@ -1235,7 +1267,7 @@ public class Interpreter {
             case 0x1a -> new StoreImmHeap();
             case 0x1b -> new MoveData();
             case 0x1c -> new StoreImm();
-            case 0x1d -> new BufferCopy();
+            case 0x1d -> new CopyAutomapBuffer();
             case 0x1e -> Instructions.HARD_EXIT; // "kill executable" aka "you lost"
             case 0x1f -> Instructions.NOOP; // "read chunk table", which we don't need to do
             //   0x20 sends the (real) IP to 0x0000, which is probably a segfault

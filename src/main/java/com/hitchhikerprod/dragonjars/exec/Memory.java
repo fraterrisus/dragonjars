@@ -22,7 +22,10 @@ public class Memory {
     }
 
     private final Chunk codeChunk; // contents of DRAGON.COM binary
+    private final ModifiableChunk automapChunk; // 0xd1b0
     private final List<Chunk> dataChunks;
+
+
     private final List<Segment> segments = new ArrayList<>();
 
     private int lastOpenSegmentIdx = 0;
@@ -30,6 +33,7 @@ public class Memory {
     public Memory(Chunk codeChunk, List<Chunk> dataChunks) {
         this.codeChunk = codeChunk;
         this.dataChunks = dataChunks;
+        this.automapChunk = new ModifiableChunk(new byte[0x700]);
     }
 
     public Chunk getCodeChunk() {
@@ -38,6 +42,10 @@ public class Memory {
 
     public ModifiableChunk copyDataChunk(int chunkId) {
         return new ModifiableChunk(dataChunks.get(chunkId));
+    }
+
+    public ModifiableChunk automapChunk() {
+        return automapChunk;
     }
 
     /**

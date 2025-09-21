@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BufferCopyTest {
+class CopyAutomapBufferTest {
     public static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x1d, // BufferCopy
             (byte) 0x1e  // Exit
@@ -21,7 +21,8 @@ class BufferCopyTest {
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
         for (int idx = 0; idx < 0x700; idx++) {
-            i.writeBufferD1B0(idx, (int)(Math.random() * 0xff));
+            int value = (int)(Math.random() * 0xff);
+            i.memory().automapChunk().write(idx, 1, value);
         }
         final int segmentId = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(segmentId);
@@ -33,7 +34,7 @@ class BufferCopyTest {
         final Chunk newData = i.memory().getSegment(segmentId);
 
         for (int idx = 0; idx < 0x700; idx++) {
-            assertEquals(i.readBufferD1B0(idx), newData.getUnsignedByte(idx),
+            assertEquals(i.memory().automapChunk().read(idx, 1), newData.getUnsignedByte(idx),
                     "Byte " + idx + " failed to match");
         }
         assertEquals(2, i.instructionsExecuted());
@@ -55,7 +56,7 @@ class BufferCopyTest {
         i.start(0, 0);
 
         for (int idx = 0; idx < 0x700; idx++) {
-            assertEquals(data.getUnsignedByte(idx), i.readBufferD1B0(idx),
+            assertEquals(data.getUnsignedByte(idx), i.memory().automapChunk().read(idx, 1),
                     "Byte " + idx + " failed to match");
         }
         assertEquals(2, i.instructionsExecuted());

@@ -16,7 +16,6 @@
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
   idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
   as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.
-- The automap is not persisting correctly, but I'm not sure what mechanism is or is not causing that.
 - My implementation of Frobs is definitely incomplete/different. It's possible that I'm freeing some segments too 
   aggressively and that's causing bugs.
 - Using JavaFX's `scale` function to scale the output `Image` doesn't actually result in integer scaling, and I 

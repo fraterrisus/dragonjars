@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class HeapAccessTest {
     @Test
     public void roundTrip() {
-        final Heap heap = new Heap();
-        final Heap.Access access = heap.get(0x10);
+        final Heap.Access access = Heap.get(0x10);
         access.write(0xddccbbaa, 4);
         assertEquals(0x000000aa, access.read(1));
         assertEquals(0x0000bbaa, access.read(2));
@@ -19,25 +18,22 @@ public class HeapAccessTest {
 
     @Test
     public void writeTooManyBytes() {
-        final Heap heap = new Heap();
-        final Heap.Access access = heap.get(0x10);
+        final Heap.Access access = Heap.get(0x10);
         assertThrows(IllegalArgumentException.class, () -> access.write(0xf, 8));
 
     }
 
     @Test
     public void writeTooManyZeroes() {
-        final Heap heap = new Heap();
-        heap.get(0x17).write(0xff, 1);
-        final Heap.Access access = heap.get(0x10);
+        Heap.get(0x17).write(0xff, 1);
+        final Heap.Access access = Heap.get(0x10);
         access.write(0x00, 8);
-        assertEquals(0x00, heap.get(0x17).read());
+        assertEquals(0x00, Heap.get(0x17).read());
     }
 
     @Test
     public void readTooManyBytes() {
-        final Heap heap = new Heap();
-        final Heap.Access access = heap.get(0x10);
+        final Heap.Access access = Heap.get(0x10);
         assertThrows(IllegalArgumentException.class, () -> access.read(8));
     }
 }
