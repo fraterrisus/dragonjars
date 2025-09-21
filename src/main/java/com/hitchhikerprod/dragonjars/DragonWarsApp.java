@@ -11,6 +11,7 @@ import com.hitchhikerprod.dragonjars.ui.AboutDialog;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.GameStateDialog;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
+import com.hitchhikerprod.dragonjars.ui.MapWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
 import com.hitchhikerprod.dragonjars.ui.PreferencesWindow;
@@ -44,6 +45,7 @@ public class DragonWarsApp extends Application {
     private Scene scene;
 
     private MusicService musicService;
+    private Interpreter interpreter;
 
     private List<Chunk> dataChunks;
 
@@ -143,7 +145,13 @@ public class DragonWarsApp extends Application {
     }
 
     public void openGameStateWindow() {
+        if (Objects.isNull(interpreter)) return;
         new GameStateDialog(stage).showAndWait();
+    }
+
+    public void openMapWindow() {
+        if (Objects.isNull(interpreter)) return;
+        MapWindow.getInstance().show();
     }
 
     public void openParagraphsWindow() {
@@ -195,7 +203,8 @@ public class DragonWarsApp extends Application {
 
     private void startInterpreter() {
         setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
-        new Interpreter(this, this.dataChunks).init().reenter(0, 0, () -> { close(); return null; });
+        interpreter = new Interpreter(this, this.dataChunks);
+        interpreter.init().reenter(0, 0, () -> { close(); return null; });
     }
 
     private void stringHelper(VideoHelper draw, String s, int x, int y, boolean invert) {

@@ -42,7 +42,7 @@ public class DrawCurrentViewport implements Instruction {
         i.disableMonsterAnimation();
 
         final PartyLocation loc = i.getPartyLocation();
-        System.out.format("drawCurrentViewport(%s)\n", loc);
+//        System.out.format("drawCurrentViewport(%s)\n", loc);
 
         i.decodeMap(loc.mapId());
 
@@ -55,6 +55,7 @@ public class DrawCurrentViewport implements Instruction {
 
         i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
 
+        i.fg().drawRectangle(gameplayArea, (byte)0);
         if (i.mapDecoder().isLit() || (Heap.get(Heap.LIGHT_RANGE).read() != 0)) {
             drawRoofTexture(i.mapDecoder().getSquare(loc.pos()).roofTexture());
             drawFloorTexture();

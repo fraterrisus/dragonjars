@@ -16,6 +16,7 @@ import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
+import com.hitchhikerprod.dragonjars.ui.MapWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
@@ -248,7 +249,7 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x47;
+    private static final int BREAKPOINT_CHUNK = 0x0;
     private static final int BREAKPOINT_ADR = 0x1684;
 
     private void mainLoop(Address startPoint) {
@@ -319,6 +320,7 @@ public class Interpreter {
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
             unpackAutomapData(mapId);
+            MapWindow.getInstance().setMap(mapDecoder());
         }
     }
 
@@ -1096,6 +1098,14 @@ public class Interpreter {
         );
     }
 
+    private String getMapTitle() {
+        final StringBuilder sb = new StringBuilder();
+        for (int ch : this.titleString) {
+            sb.append(Character.toChars(ch & 0x7f));
+        }
+        return sb.toString();
+    }
+
     public void setTitleString(List<Integer> chars) {
         if (chars.size() > 16) {
             this.titleString = List.copyOf(chars.subList(0, 16));
@@ -1103,6 +1113,7 @@ public class Interpreter {
             this.titleString = List.copyOf(chars);
         }
         drawMapTitle();
+        MapWindow.getInstance().setTitle(getMapTitle());
     }
 
     private void drawMapTitle() { // 0x2cd4
