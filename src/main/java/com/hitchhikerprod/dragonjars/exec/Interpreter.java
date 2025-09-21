@@ -151,12 +151,12 @@ public class Interpreter {
             videoHelper.setVideoBuffer(videoBackground);
             for (int i = 0; i < 10; i++) videoHelper.drawRomImage(i); // most HUD sections
             for (int i = 0; i < 16; i++) videoHelper.drawRomImage(0x1b + i); // HUD title bar
-//            videoBackground.writeTo("video-background.png", app.getScaleFactor());
+            videoBackground.writeTo("video-background.png", AppPreferences.getInstance().scaleProperty().get());
 
             videoHelper.setVideoBuffer(videoForeground);
             final PixelRectangle mask = videoHelper.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             videoHelper.drawRectangle(mask, (byte)0);
-//            videoForeground.writeTo("video-foreground.png", app.getScaleFactor());
+            videoForeground.writeTo("video-foreground.png", AppPreferences.getInstance().scaleProperty().get());
 
             // loadFromCodeSegment(0xd1b0, 0, automapBuffer, 80);
 
@@ -936,7 +936,8 @@ public class Interpreter {
                         fillRectangle();
                     }
                     // Just copy this from the background video buffer, it's already been drawn
-                    default -> bitBlast(videoBackground, regionRect.toPixel());
+                    // (and we want a faithful copy)
+                    default -> bitBlast(videoBackground, regionRect.toPixel(), false);
                 }
             }
         }
@@ -946,8 +947,12 @@ public class Interpreter {
         getImageWriter(w -> helper.writeTo(w, mask, true));
     }
 
+    public void bitBlast(VideoBuffer buffer, PixelRectangle mask, boolean respectChroma) {
+        getImageWriter(w -> buffer.writeTo(w, mask, respectChroma));
+    }
+
     public void bitBlast(VideoBuffer buffer, PixelRectangle mask) {
-        getImageWriter(w -> buffer.writeTo(w, mask, true));
+        bitBlast(buffer, mask, true);
     }
 
     public void drawPartyInfoArea() { // 0x1a12
