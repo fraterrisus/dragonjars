@@ -14,6 +14,7 @@ import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.SleepTask;
+import com.hitchhikerprod.dragonjars.ui.MapWindow;
 
 import java.util.List;
 
@@ -63,6 +64,9 @@ public class DrawCurrentViewport implements Instruction {
         }
 
         i.drawViewportCorners();
+
+        // A *little* worried about performance, here, but it's necessary if we want fog-of-war and avatar.
+        MapWindow.getInstance().setMap(i.mapDecoder());
 
         i.start(i.getIP().incr());
     }

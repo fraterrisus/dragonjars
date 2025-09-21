@@ -321,12 +321,6 @@ public class Interpreter {
             // erase board state flags on every load (see cs:5589)
             Heap.get(Heap.GAME_STATE_BOARD).write(0, 4);
         }
-
-        if (mapDecoder().isDirty()) {
-            mapDecoder().clean();
-            System.out.println("redraw");
-            MapWindow.getInstance().setMap(mapDecoder());
-        }
     }
 
     private void packAutomapData(int mapId) { // 0x4e00 and 0x4e5a

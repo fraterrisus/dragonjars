@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.data.MapData;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -11,10 +12,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 public class MapWindow {
     private static final MapWindow INSTANCE = new MapWindow();
@@ -23,8 +28,12 @@ public class MapWindow {
         return INSTANCE;
     }
 
+    private static final String AVATAR_RESOURCE = "avatar.png";
+
     private final Stage stage;
     private final Scene scene;
+
+    private final java.awt.Image avatarIcon;
 
     private final ImageView imageView;
 
@@ -33,6 +42,12 @@ public class MapWindow {
         imageView.setImage(new WritableImage(100,100));
         final ScrollPane root = new ScrollPane(imageView);
         this.scene = new Scene(root);
+
+        try {
+            avatarIcon = ImageIO.read(Objects.requireNonNull(getClass().getResource(AVATAR_RESOURCE)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         final URL cssUrl = getClass().getResource("dialog.css");
         if (cssUrl == null) {
@@ -76,6 +91,7 @@ public class MapWindow {
     private static final Color TREE = new Color(36, 110, 36);
     private static final Color WALL = Color.DARK_GRAY;
     private static final Color WATER = new Color(0x80, 0xa0, 0xff);
+    private static final Color FOG = new Color(0, 0, 0, 51);
 
     private int xMax;
     private int yMax;
@@ -86,7 +102,7 @@ public class MapWindow {
         final int xDim = GRID_SIZE * (xMax + 2);
         final int yDim = GRID_SIZE * (yMax + 2);
 
-        final BufferedImage image = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
+        final BufferedImage image = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D gfx = image.createGraphics();
         gfx.getTransform().setToIdentity();
 
@@ -99,6 +115,8 @@ public class MapWindow {
         drawGrid(gfx);
         drawFloors(gfx, mapData);
         drawWalls(gfx, mapData);
+        drawFog(gfx, mapData);
+        drawAvatar(gfx);
 
         final WritableImage map = new WritableImage(xDim, yDim);
         final PixelWriter out = map.getPixelWriter();
@@ -311,5 +329,30 @@ public class MapWindow {
                 }
             }
         }
+    }
+
+    private void drawFog(Graphics2D gfx, MapData mapData) {
+        gfx.setColor(FOG);
+        for (int y = 0; y < yMax; y++) {
+            for (int x = 0; x < xMax; x++) {
+                final MapData.Square sq = mapData.getSquare(x, y);
+
+                final Point topLeft = new Point(((x + 1) * GRID_SIZE) + 1, ((yMax - y) * GRID_SIZE) + 1);
+                final Dimension floorDim = new Dimension(GRID_SIZE - 2, GRID_SIZE - 2);
+                final Rectangle floor = new Rectangle(topLeft, floorDim);
+
+                if (!sq.touched()) gfx.fill(floor);
+            }
+        }
+    }
+
+    private void drawAvatar(Graphics2D gfx) {
+        final int x = Heap.get(Heap.PARTY_X).read();
+        final int y = Heap.get(Heap.PARTY_Y).read();
+        final AffineTransform translation = AffineTransform.getTranslateInstance(
+                ((x + 1) * GRID_SIZE),
+                ((yMax - y) * GRID_SIZE)
+        );
+        gfx.drawImage(avatarIcon, translation, null);
     }
 }
