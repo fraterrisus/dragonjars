@@ -32,6 +32,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -95,6 +96,7 @@ public class Interpreter {
     //     draw_current_viewport
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
+    private final ReentrantLock monsterAnimationLock = new ReentrantLock();
     private boolean animationEnabled_4d4e = false;
 //    private int animationSegment2_4d33 = 0xff;
     private int animationMonsterId_4d32 = 0xff;
@@ -754,46 +756,45 @@ public class Interpreter {
     }
 
     public boolean isMonsterAnimationEnabled() {
-        return animationEnabled_4d4e;
+        monsterAnimationLock.lock();
+        final boolean enabled = animationEnabled_4d4e;
+        monsterAnimationLock.unlock();
+        return enabled;
     }
 
     public int activeMonster() {
-        return animationMonsterId_4d32;
+        monsterAnimationLock.lock();
+        final int monsterId = animationMonsterId_4d32;
+        monsterAnimationLock.unlock();
+        return monsterId;
     }
 
-    // This may all very well be overengineered at this point, but it does work.
-    public void enableMonsterAnimation(int monsterId) { //, int priSegment, int secSegment) {
+    public void enableMonsterAnimation(int monsterId) {
+        monsterAnimationLock.lock();
         animationEnabled_4d4e = true;
-//        animationSegment2_4d33 = secSegment;
         animationMonsterId_4d32 = monsterId;
-        // 4d32: active monster ID
-        //   set to 0xff during start(),eraseVideoBuffer(),drawCurrentViewport()
-        //   set to monster ID (parameter ax) during 0x4a80
+        monsterAnimationLock.unlock();
     }
 
     public void disableMonsterAnimation() {
-//        freeSegment(animationSegment2_4d33);
+        monsterAnimationLock.lock();
+        stopMonsterAnimation();
         animationEnabled_4d4e = false;
-//        animationSegment2_4d33 = 0xff;
-        // technically this doesn't happen when the automap closes
         animationMonsterId_4d32 = 0xff;
-    }
-
-    public void cleanUpMonsterAnimationTask() {
-        monsterAnimationTask = null;
+        monsterAnimationLock.unlock();
     }
 
     public void startMonsterAnimation(MonsterAnimationTask task) {
-        if (monsterAnimationTask != null) monsterAnimationTask.cancel();
+        stopMonsterAnimation();
         monsterAnimationTask = task;
-
-        final Thread taskThread = new Thread(monsterAnimationTask);
-        taskThread.setDaemon(true);
-        taskThread.start();
+        Thread.ofPlatform().daemon(true).start(monsterAnimationTask);
     }
 
     public void stopMonsterAnimation() {
-        monsterAnimationTask.cancel();
+        if (Objects.nonNull(monsterAnimationTask)) {
+            monsterAnimationTask.cancel();
+            monsterAnimationTask = null;
+        }
     }
 
     private boolean regionOverlapsBBox(int regionId, boolean force) {

@@ -29,6 +29,9 @@ public class DrawCurrentViewport implements Instruction {
 
     @Override
     public Address exec(Interpreter ignored) {
+        i.unpause();
+        i.disableMonsterAnimation();
+
         /* This emulates the slight performance delay that's baked into the old x86 processor (and emulators). Without
          * it, spots where the game takes multiple steps (Tracking in Tars, fleeing combat, etc.) all get smushed
          * together into a single video update. */
@@ -39,9 +42,6 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     private void draw() {
-        i.unpause();
-        i.disableMonsterAnimation();
-
         final PartyLocation loc = i.getPartyLocation();
 //        System.out.format("drawCurrentViewport(%s)\n", loc);
 

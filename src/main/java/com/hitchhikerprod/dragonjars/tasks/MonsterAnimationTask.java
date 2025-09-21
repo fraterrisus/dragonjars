@@ -71,11 +71,7 @@ public class MonsterAnimationTask extends Task<Void> {
     }
 
     private void sleepHelper(int sleepTimeMs) {
-        try {
-            Thread.sleep(sleepTimeMs);
-        } catch (InterruptedException e) {
-            System.err.println(e);
-        }
+        try { Thread.sleep(sleepTimeMs); } catch (InterruptedException _) {}
     }
 
     private void decodePrimary() {
@@ -153,7 +149,9 @@ public class MonsterAnimationTask extends Task<Void> {
     private void sendToScreen() {
         final VideoBuffer output = new VideoBuffer(background);
         foreground.writeTo(output, mask);
-        if (weShouldStop()) return;
-        Platform.runLater(() -> interpreter.bitBlast(output, mask));
+        Platform.runLater(() -> {
+            if (interpreter.isMonsterAnimationEnabled())
+                interpreter.bitBlast(output, mask);
+        });
     }
 }

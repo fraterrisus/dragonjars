@@ -33,7 +33,6 @@ public class ShowMonsterImage implements Instruction {
         final EventHandler<WorkerStateEvent> taskEnd = event -> {
             i.freeSegmentForChunk(priChunkId);
             i.freeSegmentForChunk(secChunkId);
-            i.cleanUpMonsterAnimationTask();
         };
         monsterAnimationTask.setOnSucceeded(taskEnd);
         monsterAnimationTask.setOnFailed(taskEnd);
