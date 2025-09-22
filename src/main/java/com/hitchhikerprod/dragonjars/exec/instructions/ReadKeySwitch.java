@@ -112,7 +112,7 @@ public class ReadKeySwitch implements Instruction {
             case 0x8d -> (ev) -> ev.getCode() == KeyCode.ENTER;
             case 0x95 -> (ev) -> ev.getCode() == KeyCode.RIGHT;
             case 0x9b -> (ev) -> ev.getCode() == KeyCode.ESCAPE;
-            case 0xab -> (ev) -> ev.getCode() == KeyCode.PLUS;
+            case 0xab -> (ev) -> (ev.getCode() == KeyCode.EQUALS) && ev.isShiftDown();
             case 0xad -> (ev) -> ev.getCode() == KeyCode.MINUS;
             case 0xbf -> (ev) -> (ev.getCode() == KeyCode.SLASH) && ev.isShiftDown();
             default -> {
@@ -138,7 +138,16 @@ public class ReadKeySwitch implements Instruction {
             case PLUS -> 0xab;
             case MINUS -> 0xad;
             case SLASH -> (withShift) ? 0xbf : 0xaf;
-            case DIGIT0, DIGIT1, DIGIT2, DIGIT3, DIGIT4, DIGIT5, DIGIT6, DIGIT7, DIGIT8, DIGIT9 -> 0x01;
+            case DIGIT0 -> 0xb0;
+            case DIGIT1 -> 0xb1;
+            case DIGIT2 -> 0xb2;
+            case DIGIT3 -> 0xb3;
+            case DIGIT4 -> 0xb4;
+            case DIGIT5 -> 0xb5;
+            case DIGIT6 -> 0xb6;
+            case DIGIT7 -> 0xb7;
+            case DIGIT8 -> 0xb8;
+            case DIGIT9 -> 0xb9;
             default -> 0x80 | key.getCode();
         };
     }

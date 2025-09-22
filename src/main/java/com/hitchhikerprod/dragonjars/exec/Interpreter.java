@@ -242,8 +242,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x000;
-    private static final int BREAKPOINT_ADR = 0x17d5;
+    private static final int BREAKPOINT_CHUNK = 0x00f;
+    private static final int BREAKPOINT_ADR = 0x02e0;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -254,7 +254,7 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
-//            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
+            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
@@ -262,7 +262,12 @@ public class Interpreter {
                 app().openParagraphsWindow(ax);
             }
             final Instruction ins = decodeOpcode(opcode);
-            nextIP = ins.exec(this);
+            try {
+                nextIP = ins.exec(this);
+            } catch (Exception e) {
+                System.err.format("Caught exception at [%03x:%06x]\n", csChunk, this.ip);
+                throw(e);
+            }
             this.instructionsExecuted++;
         }
     }
@@ -621,7 +626,7 @@ public class Interpreter {
 
         int i0 = 0;
         // skip leading spaces
-        while (stringBuffer.get(i0) == 0xa0) i0++;
+//        while (stringBuffer.get(i0) == 0xa0) i0++;
 
         drawString(stringBuffer.subList(i0, stringBuffer.size()));
         stringBuffer.clear();
@@ -1048,6 +1053,8 @@ public class Interpreter {
     private void drawBarHelper(PixelRectangle region, int y, int attributeAddr, int colorIndex) {
         final int cur = memory().read(PARTY_SEGMENT, attributeAddr, 2);
         final int max = memory().read(PARTY_SEGMENT, attributeAddr + 2, 2);
+        // avoid divide-by-zero for null stats (usually Power)
+        if (cur == 0 || max == 0) return;
         final int barWidth = 0x60 * cur / max;
         for (int dx = 0; dx < 0x60; dx++) {
             final byte color = (byte)((dx <= barWidth) ? colorIndex : 0);
@@ -1055,17 +1062,6 @@ public class Interpreter {
             fg().drawGrid(region.x0() + dx, region.y0() + y + 1, color);
         }
     }
-
-/*
-    public void markSegment4d33Dirty() { // 0x4bc2
-        final int segmentId = struct_id_4d33;
-        if (segmentId != 0xff) {
-            memory().setSegmentFrob(segmentId, Frob.DIRTY);
-            struct_id_4d4e = 0x00;
-            struct_id_4d33 = 0xff;
-        }
-    }
-*/
 
     public PartyLocation getPartyLocation() {
         return new PartyLocation(
