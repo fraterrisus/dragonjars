@@ -1,9 +1,8 @@
 # TODO
 
-- Find the timer mechanism on summons.
+- Add a timer countdown on summons. (Summoned party members have their own internal counter at 0x66.)
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
-- Display "hidden" information, like the game flags (done) and character flags.
 
 # Known Bugs
 

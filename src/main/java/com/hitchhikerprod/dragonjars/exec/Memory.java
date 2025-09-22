@@ -25,7 +25,6 @@ public class Memory {
     private final ModifiableChunk automapChunk; // 0xd1b0
     private final List<Chunk> dataChunks;
 
-
     private final List<Segment> segments = new ArrayList<>();
 
     private int lastOpenSegmentIdx = 0;

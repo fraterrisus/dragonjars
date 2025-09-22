@@ -14,6 +14,7 @@ import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MapWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
+import com.hitchhikerprod.dragonjars.ui.PartyStateDialog;
 import com.hitchhikerprod.dragonjars.ui.PreferencesWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.application.Application;
@@ -158,6 +159,11 @@ public class DragonWarsApp extends Application {
 
     public void openParagraphsWindow(int index) {
         ParagraphsWindow.getInstance().show(index);
+    }
+
+    public void openPartyStateDialog() {
+        if (Objects.isNull(interpreter)) return;
+        new PartyStateDialog(stage, interpreter.memory()).showAndWait();
     }
 
     public void openPreferencesDialog() {
