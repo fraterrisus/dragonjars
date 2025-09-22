@@ -8,7 +8,7 @@ public class LoadAX implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int addr = i.memory().read(ip.incr(1), 2);
-        final int value = i.memory().read(i.getDS(), addr, 2);
+        final int value = i.memory().read(i.getDS(), addr, i.isWide() ? 2 : 1);
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + ADDRESS);

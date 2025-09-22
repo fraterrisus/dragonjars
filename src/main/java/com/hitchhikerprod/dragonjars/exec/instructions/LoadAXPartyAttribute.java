@@ -11,7 +11,11 @@ public class LoadAXPartyAttribute implements Instruction {
         final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int attributeOffset = i.memory().read(ip.incr(1), 1);
-        final int value = i.memory().read(Interpreter.PARTY_SEGMENT, pcBaseAddress + attributeOffset, 2);
+        final int value = i.memory().read(
+                Interpreter.PARTY_SEGMENT,
+                pcBaseAddress + attributeOffset,
+                i.isWide() ? 2 : 1
+        );
         i.setAX(value);
         return ip.incr(OPCODE + IMMEDIATE);
     }

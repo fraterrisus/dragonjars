@@ -12,7 +12,7 @@ public class ReadPCField implements Instruction {
         final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int pcOffset = wordOffset + i.getBL(); // 0x0c to skip PC name
-        final int pcWord = i.memory().read(Interpreter.PARTY_SEGMENT, pcBaseAddress + pcOffset, 2);
+        final int pcWord = i.memory().read(Interpreter.PARTY_SEGMENT, pcBaseAddress + pcOffset, i.isWide() ? 2 : 1);
         i.setAX(pcWord);
         return ip.incr(OPCODE + IMMEDIATE);
     }

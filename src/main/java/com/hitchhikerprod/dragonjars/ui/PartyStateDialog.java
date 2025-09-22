@@ -124,6 +124,7 @@ public class PartyStateDialog extends Dialog<Void> {
         final int partySize = Heap.get(Heap.PARTY_SIZE).read();
         for (int pcid = 0; pcid < partySize; pcid++) {
             final int baseAddress = Heap.get(Heap.MARCHING_ORDER + pcid).read() << 8;
+//            System.out.format("PC#%1d: [0x%04x]\n", pcid, baseAddress);
             items.add(PartyMember.parse(partyData, baseAddress));
         }
     }

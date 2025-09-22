@@ -13,7 +13,11 @@ public class ReadInventoryWord implements Instruction {
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int slotId = Heap.get(Heap.SELECTED_ITEM).read();
         final int itemBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
-        final int itemWord = i.memory().read(Interpreter.PARTY_SEGMENT, itemBaseAddress + byteOffset, 2);
+        final int itemWord = i.memory().read(
+                Interpreter.PARTY_SEGMENT,
+                itemBaseAddress + byteOffset,
+                i.isWide() ? 2 : 1
+        );
         i.setAX(itemWord);
         return ip.incr(OPCODE + IMMEDIATE);
     }

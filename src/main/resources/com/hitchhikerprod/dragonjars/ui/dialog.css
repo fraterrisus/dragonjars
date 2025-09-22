@@ -67,7 +67,7 @@
     -fx-spacing: 10;
 }
 
-.state-dialog, .state-dialog > .scroll-pane, .state-grid {
+.state-dialog, .state-scroll, .state-grid {
     -fx-background-color: antiquewhite;
 }
 

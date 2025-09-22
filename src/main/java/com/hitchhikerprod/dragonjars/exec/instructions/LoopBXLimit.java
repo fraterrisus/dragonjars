@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
@@ -9,7 +10,7 @@ public class LoopBXLimit implements Instruction {
         final Address ip = i.getIP();
         final int limit = i.memory().read(ip.incr(1), 1);
         final int address = i.memory().read(ip.incr(2), 2);
-        final int value = (i.getBL() + 1) & 0xff;
+        final int value = ALU.incByte(i.getBL());
         i.setBL(value);
         if (value == limit) {
             return ip.incr(OPCODE + IMMEDIATE + ADDRESS);

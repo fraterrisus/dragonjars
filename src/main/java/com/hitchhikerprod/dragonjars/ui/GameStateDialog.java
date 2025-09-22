@@ -75,6 +75,7 @@ public class GameStateDialog extends Dialog<Void> {
         }
 
         final ScrollPane scroll = new ScrollPane(grid);
+        scroll.getStyleClass().add("state-scroll");
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         return scroll;
