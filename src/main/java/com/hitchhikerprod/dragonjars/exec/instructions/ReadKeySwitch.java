@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -80,9 +81,12 @@ public class ReadKeySwitch implements Instruction {
         while (true) {
             final int ch = i.memory().read(ip.segment(), pointer, 1);
             if (ch == 0xff) break;
+            // This gets written dynamically when we should skip/disable an entry
             if (ch == 0x80) { pointer += 3; continue; }
+            // This gets written dynamically when we should skip/disable a RANGE entry (ex. [0d:0192])
+            if (ch == 0x81) { pointer += 4; continue; }
+            // This is a range; read *two* characters
             if ((ch & 0xc0) == 0x40) {
-                // this is a range; read two characters
                 final int min = ch;
                 final int max = i.memory().read(ip.segment(), pointer + 1, 1);
                 final int target = i.memory().read(ip.segment(), pointer + 2, 2);
@@ -105,7 +109,12 @@ public class ReadKeySwitch implements Instruction {
     public static KeyDetector detector(int code) {
         return switch(code) {
             case 0x00 -> (ev) -> true; // this is a default case, hopefully it's last
-            case 0x01 -> (ev) -> ev.getCode().isDigitKey();
+            case 0x01 -> (ev) -> {
+                if (!ev.getCode().isDigitKey()) return false;
+                // for five PCs, accept 1 through 5
+                final int pcid = ev.getCode().getCode() - (int)'0';
+                return (pcid > 0 && pcid <= Heap.get(Heap.PARTY_SIZE).read());
+            };
             case 0x88 -> (ev) -> ev.getCode() == KeyCode.LEFT;
             case 0x8a -> (ev) -> ev.getCode() == KeyCode.DOWN;
             case 0x8b -> (ev) -> ev.getCode() == KeyCode.UP;
