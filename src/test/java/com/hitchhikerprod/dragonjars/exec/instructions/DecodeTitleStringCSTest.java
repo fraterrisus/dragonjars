@@ -25,7 +25,7 @@ class DecodeTitleStringCSTest {
                 (byte) 0x7b, // DecodeTitleStringCS
                 (byte) 0xf2, (byte) 0x9d, (byte) 0x33, (byte) 0x46,
                 (byte) 0x0c, (byte) 0x15, (byte) 0xc0,
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final StringDecoder decoder = new StringDecoder(exec);
@@ -33,10 +33,10 @@ class DecodeTitleStringCSTest {
         final Interpreter j = spy(i);
         doReturn(decoder).when(j).stringDecoder();
         doNothing().when(j).setTitleString(anyList());
-        j.start(0x1, 0x0);
+        j.init().start(0x1, 0x0);
 
         final List<Integer> expectedChars = decoder.getDecodedChars();
-        verify(j).setTitleString(ArgumentMatchers.same(expectedChars));
+        verify(j).setTitleString(expectedChars);
         assertEquals(2, j.instructionsExecuted());
     }
 }

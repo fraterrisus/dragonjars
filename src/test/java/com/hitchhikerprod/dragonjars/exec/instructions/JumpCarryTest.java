@@ -18,7 +18,7 @@ class JumpCarryTest {
                 (byte)0x06, //   target (lo)
                 (byte)0x00, //   target (hi)
                 (byte)0x55, // PopAX (skipped over)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -39,7 +39,7 @@ class JumpCarryTest {
                 (byte)0x06, //   target (lo)
                 (byte)0x00, //   target (hi)
                 (byte)0x55, // PopAX
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

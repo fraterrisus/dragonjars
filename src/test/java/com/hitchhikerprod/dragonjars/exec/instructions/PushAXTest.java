@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PushAXTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x56, // PushAX
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test
@@ -23,8 +23,8 @@ class PushAXTest {
         i.setWidth(true);
         i.start(0, 0);
 
-        assertEquals(0x81, i.popByte());
         assertEquals(0xdd, i.popByte());
+        assertEquals(0x81, i.popByte());
         assertEquals(2, i.instructionsExecuted());
     }
 

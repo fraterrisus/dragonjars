@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 
 public class ExecutableImporter {
     public Chunk getChunk() {
-        try (final RandomAccessFile exec = new RandomAccessFile("DRAGON.COM", "r")) {
+        try (final RandomAccessFile exec = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DRAGON.COM", "r")) {
             final int codeSize = (int)(exec.length());
             if ((long)codeSize != exec.length()) {
                 throw new RuntimeException("Executable is too big for one byte array");

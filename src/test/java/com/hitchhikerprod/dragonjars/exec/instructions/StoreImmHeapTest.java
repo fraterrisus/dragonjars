@@ -18,7 +18,7 @@ class StoreImmHeapTest {
                 (byte)0x3a, // heap index
                 (byte)0xaa, // immediate value (2B)
                 (byte)0xbb,
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
 
@@ -34,15 +34,15 @@ class StoreImmHeapTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x01, // SetNarrow
                 (byte)0x1a, // StoreAXHeapImm
-                (byte)0x3a, // heap index
-                (byte)0xaa, // immediate value (1B)
-                (byte)0x5a  // Exit
+                (byte)0x43, //   heap index
+                (byte)0xaa, //   immediate value (1B)
+                (byte)0x1e  // Exit
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
 
         i.start(0, 0);
 
-        assertEquals(0x000000aa, Heap.get(0x3a).read(2));
+        assertEquals(0x000000aa, Heap.get(0x43).read(2));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

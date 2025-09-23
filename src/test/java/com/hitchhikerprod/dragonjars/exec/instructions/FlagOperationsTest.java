@@ -14,16 +14,16 @@ class FlagOperationsTest {
     public void setAL() {
         final Chunk program = new Chunk(List.of(
                 (byte)0x4e, // FlagSetAL
-                (byte)0x03, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x40, //   heap offset
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
-        i.setAL((0x10 << 3) | (0x4)); // 0x80 >> 4 = 0x08
+        i.setAL((0x03 << 3) | (0x4)); // 0x80 >> 4 = 0x08
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, Heap.get(0x13).read());
+        assertEquals(0x08, Heap.get(0x43).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -32,7 +32,7 @@ class FlagOperationsTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x4f, // FlagClearAL
                 (byte)0x02, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -51,7 +51,7 @@ class FlagOperationsTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x50, // FlagTestAL
                 (byte)0x15, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -71,7 +71,7 @@ class FlagOperationsTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x50, // FlagTestAL
                 (byte)0x15, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -89,19 +89,19 @@ class FlagOperationsTest {
 
     @Test
     public void setImm() {
-        final int val = (0x10 << 3) | 0x4;
+        final int val = (0x03 << 3) | 0x4;
         final Chunk program = new Chunk(List.of(
                 (byte)0x9b, // FlagSetImm
                 (byte)val,  //   flag index
-                (byte)0x03, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x40, //   heap offset
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
-        assertEquals(0x08, Heap.get(0x13).read());
+        assertEquals(0x08, Heap.get(0x43).read());
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -112,7 +112,7 @@ class FlagOperationsTest {
                 (byte)0x9c, // FlagClearImm
                 (byte)val,  //   flag index
                 (byte)0x02, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -132,7 +132,7 @@ class FlagOperationsTest {
                 (byte)0x9d, // FlagTestImm
                 (byte)val,  //   flag index
                 (byte)0x15, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -153,7 +153,7 @@ class FlagOperationsTest {
                 (byte)0x9d, // FlagTestImm
                 (byte)val,  //   flag index
                 (byte)0x15, //   heap offset
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

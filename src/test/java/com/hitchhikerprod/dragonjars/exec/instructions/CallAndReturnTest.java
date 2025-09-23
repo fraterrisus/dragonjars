@@ -14,7 +14,7 @@ class CallAndReturnTest {
             (byte)0x53, // Call
             (byte)0x05, //   target (lo)
             (byte)0x00, //   target (hi)
-            (byte)0x5a, // Exit
+            (byte)0x1e, // Exit
             (byte)0x09, // LoadAXImm
             (byte)0xff, //   immediate
             (byte)0x54  // Return

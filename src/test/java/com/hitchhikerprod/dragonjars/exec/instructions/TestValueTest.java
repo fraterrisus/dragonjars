@@ -13,12 +13,12 @@ class TestValueTest {
     public static final Chunk HEAP_PROGRAM = new Chunk(List.of(
             (byte) 0x66, // TestHeap
             (byte) 0x1a, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     public static final Chunk AX_PROGRAM = new Chunk(List.of(
             (byte) 0x99, // TestAX
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     private void heapHelper(boolean width, int heap, boolean zero, boolean sign) {

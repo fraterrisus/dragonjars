@@ -42,7 +42,7 @@ class IsPartyInBoxTest {
                 (byte)bounds.x0(),
                 (byte)bounds.y1(),
                 (byte)bounds.x1(),
-                (byte)0x5a // Exit
+                (byte)0x1e // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

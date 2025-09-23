@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class PopAXTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x55, // PopAX
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test
     public void wide() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
-        i.pushByte(0x7d);
         i.pushByte(0xf3);
+        i.pushByte(0x7d);
         i.setWidth(true);
         i.start(0, 0);
 
@@ -50,7 +50,7 @@ class PopAXTest {
                 (byte) 0x00, //   immediate (lo)
                 (byte) 0x00, //   immediate (hi)
                 (byte) 0x55, // PopAX
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

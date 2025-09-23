@@ -68,6 +68,10 @@ public class Heap {
         return value;
     }
 
+    public static void reset() {
+        for (int i = 0; i < 256; i++) INSTANCE.storage[i] = 0x00;
+    }
+
     public static Access get(int index) {
         return new Access(INSTANCE, index);
     }

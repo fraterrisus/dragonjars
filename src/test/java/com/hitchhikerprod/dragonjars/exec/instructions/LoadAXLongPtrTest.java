@@ -17,7 +17,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x00, // SetWide
                 (byte)0x0f, // LoadAXLongPtr
                 (byte)Heap.LONGPTR_ADR, // heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
         final Chunk data = new Chunk(List.of(
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
@@ -45,7 +45,7 @@ public class LoadAXLongPtrTest {
                 (byte)0x01, // SetNarrow
                 (byte)0x0f, // LoadAXLongPtr
                 (byte)Heap.LONGPTR_ADR, // heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
         final Chunk data = new Chunk(List.of(
                 (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,

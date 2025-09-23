@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,8 +14,13 @@ class IncHeapTest {
     public static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x23, // IncHeap
             (byte) 0x74, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
+
+    @BeforeAll
+    public static void setup() {
+        Heap.reset();
+    }
 
     @Test
     public void wide() {

@@ -18,7 +18,7 @@ class ScanCodeTest {
 
     @Test
     public void digits() {
-        assertEquals(0x01, ReadKeySwitch.scanCode(KeyCode.DIGIT5, false, false));
+        assertEquals(0xb5, ReadKeySwitch.scanCode(KeyCode.DIGIT5, false, false));
     }
 
     @Test

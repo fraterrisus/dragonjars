@@ -11,11 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LoadAXOffsetTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
-            (byte)0x5a, // padding
+            (byte)0x1e, // padding
             (byte)0x0d, // LoadAXOffset
             (byte)0x05, // address (lo)
             (byte)0x00, // address (hi)
-            (byte)0x5a  // exit
+            (byte)0x1e  // exit
     ));
     private static final Chunk DATA = new Chunk(List.of(
             (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,

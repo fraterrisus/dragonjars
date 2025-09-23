@@ -14,8 +14,8 @@ class AddAXHeapTest {
 
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte)0x2f, // AddAXHeap
-            (byte)0x81, // heapIndex
-            (byte)0x5a  // Exit
+            (byte)0x81, //   heapIndex
+            (byte)0x1e  // Exit
     ));
 
     private void helper(boolean wide, int ax, int heap, int total, boolean carryOut) {

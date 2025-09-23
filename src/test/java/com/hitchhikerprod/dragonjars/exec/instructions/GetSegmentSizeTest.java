@@ -14,7 +14,7 @@ class GetSegmentSizeTest {
     public void chunkSize() {
         final Chunk program = new Chunk(List.of(
                 (byte)0x9e, // GetSegmentSize
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Chunk data = new Chunk(new byte[0x135]);

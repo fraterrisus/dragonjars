@@ -13,7 +13,7 @@ class LoadAXPartyAttributeTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x5d, // LoadAXPartyAttribute
             (byte) 0x1e, //   character attribute offset
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     private static final Chunk CODE = new Chunk(List.of());

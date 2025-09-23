@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LoadAXIndirectTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
-            (byte)0x5a, // padding
+            (byte)0x1e, // padding
             (byte)0x0e, // LoadAXIndirect
             (byte)0x31, // heap address
-            (byte)0x5a  // exit
+            (byte)0x1e  // exit
     ));
     private static final Chunk DATA = new Chunk(List.of(
             (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,

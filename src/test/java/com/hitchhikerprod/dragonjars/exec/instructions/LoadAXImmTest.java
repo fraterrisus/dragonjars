@@ -16,7 +16,7 @@ public class LoadAXImmTest {
                 (byte)0x09, // LoadAXImm
                 (byte)0xaa, // immediate word (2B)
                 (byte)0xbb,
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -33,7 +33,7 @@ public class LoadAXImmTest {
                 (byte)0x01, // SetNarrow
                 (byte)0x09, // LoadAXImm
                 (byte)0xaa, // immediate word (1B)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

@@ -16,7 +16,7 @@ class StoreAXLongPtrTest {
             (byte) 0x00, // Padding
             (byte) 0x17, // StoreAXIndirect
             (byte) 0x5b, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test

@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,12 +11,17 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AndAXTest {
+    @BeforeAll
+    public static void setup() {
+        Heap.reset();
+    }
+
     @Test
     public void andAXHeap() {
         final Chunk program = new Chunk(List.of(
                 (byte)0x37, // AndAXHeap
                 (byte)0x1a, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -35,7 +41,7 @@ class AndAXTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x38, // AndAXHeap
                 (byte)0x77, //   immediate
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -54,7 +60,7 @@ class AndAXTest {
                 (byte)0x38, // AndAXHeap
                 (byte)0x77, //   immediate
                 (byte)0x77, //   immediate
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

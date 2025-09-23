@@ -20,11 +20,11 @@ class UnrotateMapViewTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte)0x70, // UnrotateMapView
             (byte)0x41, //   heap index
-            (byte)0x5a  // Exit
+            (byte)0x1e  // Exit
     ));
 
     private static final MapData.Square SQUARE = new MapData.Square(
-            0xffaabb,
+            0xbbaaff,
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
@@ -38,22 +38,22 @@ class UnrotateMapViewTest {
 
     @Test
     public void north() {
-        helper(Facing.NORTH, 5, 5, 0x3faabb);
+        helper(Facing.NORTH, 5, 5, 0xbbaa3f);
     }
 
     @Test
     public void south() {
-        helper(Facing.SOUTH, 5, 4, 0x3faabb);
+        helper(Facing.SOUTH, 5, 4, 0xbbaa3f);
     }
 
     @Test
     public void east() {
-        helper(Facing.EAST, 6, 5, 0xf3aabb);
+        helper(Facing.EAST, 6, 5, 0xbbaaf3);
     }
 
     @Test
     public void west() {
-        helper(Facing.WEST, 5, 5, 0xf3aabb);
+        helper(Facing.WEST, 5, 5, 0xbbaaf3);
     }
 
     private void helper(Facing facing, int x, int y, int result) {
@@ -67,6 +67,7 @@ class UnrotateMapViewTest {
         Heap.get(Heap.PARTY_FACING).write(facing.index());
         Heap.get(0x41).write(0x03); // new wall metadata (which doesn't make any sense)
         j.start(0,0);
+        verify(mockMapData).getSquare(x, y);
         verify(mockMapData).setSquare(x, y, result);
     }
 

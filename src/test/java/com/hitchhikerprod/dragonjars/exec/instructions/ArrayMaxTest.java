@@ -16,7 +16,7 @@ class ArrayMaxTest {
                 (byte)0x51, // ArrayMax
                 (byte)0x10,  //  address (lo)
                 (byte)0x00, //   address (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final byte[] dataBytes = new byte[0x200];

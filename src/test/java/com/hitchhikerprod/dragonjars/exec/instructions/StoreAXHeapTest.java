@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,8 +14,13 @@ class StoreAXHeapTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x12, // StoreAXHeap
             (byte) 0x3a, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
+
+    @BeforeAll
+    public static void setup() {
+        Heap.reset();
+    }
 
     @Test
     public void wide() {
@@ -32,9 +38,9 @@ class StoreAXHeapTest {
     @Test
     public void narrow() {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
-        i.setWidth(true);
-        i.setAX(0x1234);
         i.setWidth(false);
+        i.setAH(0x12);
+        i.setAL(0x34);
         i.init().start(0, 0);
 
         assertEquals(0x00000034, Heap.get(0x3a).read(2));

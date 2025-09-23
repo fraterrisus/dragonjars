@@ -15,7 +15,7 @@ public class MulDivTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x35, // DivAXHeap
                 (byte)0x10, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -34,7 +34,7 @@ public class MulDivTest {
                 (byte)0x36, // DivAXImm
                 (byte)0x22, //   immediate (lo)
                 (byte)0x11, //   immediate (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -52,7 +52,7 @@ public class MulDivTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x36, // DivAXImm
                 (byte)0x22, //   immediate (lo)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -70,7 +70,7 @@ public class MulDivTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x33, // MulAXHeap
                 (byte)0x10, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -88,7 +88,7 @@ public class MulDivTest {
                 (byte)0x34, // MulAXImm
                 (byte)0x1a, //   immediate (lo)
                 (byte)0x42, //   immediate (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -105,7 +105,7 @@ public class MulDivTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x34, // MulAXImm
                 (byte)0x1a, //   immediate (lo)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

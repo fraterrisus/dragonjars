@@ -13,7 +13,7 @@ class LoadHeapOnesTest {
     public static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x9a, // LoadHeapOnes
             (byte) 0x48, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test

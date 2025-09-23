@@ -27,15 +27,6 @@ public class SimpleInstructionsTest {
     }
     
     @Test
-    public void exitInstruction() {
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-
-        final Address newIP = Instructions.SOFT_EXIT.exec(i);
-
-        assertNull(newIP);
-    }
-
-    @Test
     public void incBL() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
         i.setWidth(true);
@@ -56,7 +47,7 @@ public class SimpleInstructionsTest {
                 (byte)0x05, //   target (lo)
                 (byte)0x00, //   target (hi)
                 (byte)0x55, // PopAX (skipped over)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
         i.setAL(0x00);
@@ -73,7 +64,7 @@ public class SimpleInstructionsTest {
                 (byte)0x00, // SetWide
                 (byte)0x05, // LoadBLHeap
                 (byte)0x26, // heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -92,7 +83,7 @@ public class SimpleInstructionsTest {
                 (byte)0x00, // SetWide
                 (byte)0x06, // LoadBLImm
                 (byte)0xaa, // immediate word (1B)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -167,7 +158,7 @@ public class SimpleInstructionsTest {
         final Address newIP = uut.exec(i);
 
         assertFalse(i.isWide());
-        assertEquals(0x00000000, i.getAL());
+        assertEquals(0x000000ff, i.getAL());
         assertEquals(0, newIP.offset());
     }
 
@@ -189,7 +180,7 @@ public class SimpleInstructionsTest {
                 (byte)0x00, // SetWide
                 (byte)0x08, // StoreBLHeap
                 (byte)0x7a, // heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

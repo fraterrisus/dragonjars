@@ -15,7 +15,7 @@ class StoreAXIndirectTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
             (byte) 0x16, // StoreAXIndirect
             (byte) 0x5b, //   heap index
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test

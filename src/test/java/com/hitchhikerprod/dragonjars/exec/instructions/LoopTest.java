@@ -16,7 +16,7 @@ class LoopTest {
                 (byte)0x49, // LoopBX
                 (byte)0x00, //   target (lo)
                 (byte)0x00, //   target (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -35,7 +35,7 @@ class LoopTest {
                 (byte)0x03, //   limit
                 (byte)0x00, //   target (lo)
                 (byte)0x00, //   target (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

@@ -15,7 +15,7 @@ public class OrAXTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x39, // OrAXHeap
                 (byte)0x1a, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -35,7 +35,7 @@ public class OrAXTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x39, // OrAXHeap
                 (byte)0x1a, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -56,7 +56,7 @@ public class OrAXTest {
                 (byte)0x3a, // OrAXImm
                 (byte)0x5a, //   immediate (lo)
                 (byte)0xc3, //   immediate (hi)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -74,7 +74,7 @@ public class OrAXTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x3a, // OrAXImm
                 (byte)0x5a, //   immediate (lo)
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

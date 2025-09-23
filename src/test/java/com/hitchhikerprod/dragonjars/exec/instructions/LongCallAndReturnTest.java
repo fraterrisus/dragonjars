@@ -17,7 +17,7 @@ public class LongCallAndReturnTest {
             (byte)0x01, //   target (segment)
             (byte)0x02, //   target (lo)
             (byte)0x00, //   target (hi)
-            (byte)0x5a  // Exit
+            (byte)0x1e  // Exit
     ));
 
     final Chunk PROGRAM_2 = new Chunk(List.of(

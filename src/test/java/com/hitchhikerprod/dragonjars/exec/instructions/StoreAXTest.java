@@ -15,7 +15,7 @@ class StoreAXTest {
             (byte) 0x14, // StoreAX
             (byte) 0x05, //   index (lo)
             (byte) 0x00, //   index (hi)
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test

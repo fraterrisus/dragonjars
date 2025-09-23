@@ -15,7 +15,7 @@ class PartyFlagTest {
         final Chunk program = new Chunk(List.of(
                 (byte) 0x5f, // SetPartyFlag
                 (byte) 0x4c, //   chardata base offset
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -32,7 +32,7 @@ class PartyFlagTest {
         final Chunk program = new Chunk(List.of(
                 (byte) 0x60, // ClearPartyFlag
                 (byte) 0x4c, //  chardata base offset
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
@@ -50,7 +50,7 @@ class PartyFlagTest {
         final Chunk program = new Chunk(List.of(
                 (byte) 0x61, // TestPartyFlag
                 (byte) 0x4c, //  chardata base offset
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

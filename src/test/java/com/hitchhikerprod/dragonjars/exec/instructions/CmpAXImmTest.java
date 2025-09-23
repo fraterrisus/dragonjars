@@ -28,7 +28,7 @@ class CmpAXImmTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x3e, // CmpAXImm
                 (byte)immediate, //   immediate value
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();

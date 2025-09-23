@@ -19,7 +19,7 @@ class StoreImmTest {
                 (byte) 0x00, //   addr (hi)
                 (byte) 0xaa, //   value (lo)
                 (byte) 0xbb, //   value (hi)
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Chunk data = new ModifiableChunk(List.of(
@@ -45,7 +45,7 @@ class StoreImmTest {
                 (byte) 0x06, //   addr (lo)
                 (byte) 0x00, //   addr (hi)
                 (byte) 0xaa, //   value (lo)
-                (byte) 0x5a  // Exit
+                (byte) 0x1e  // Exit
         ));
 
         final Chunk data = new ModifiableChunk(List.of(

@@ -16,7 +16,7 @@ class StoreAXIndirectImmTest {
             (byte) 0x18, // StoreAXIndirectImm
             (byte) 0x5b, //   heap index
             (byte) 0x03, //   addr offset
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test

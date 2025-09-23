@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -12,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ShiftTest {
     private static final Chunk EMPTY = new Chunk(List.of());
+
+    @BeforeAll
+    public static void setup() {
+        Heap.reset();
+    }
 
     @Test
     public void leftAXNarrow() {
@@ -92,7 +98,7 @@ class ShiftTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x2c, // ShiftRightHeap
                 (byte)0x03, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
@@ -111,7 +117,7 @@ class ShiftTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x2c, // ShiftRightHeap
                 (byte)0x03, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
@@ -131,7 +137,7 @@ class ShiftTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x29, // ShiftLeftHeap
                 (byte)0x03, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
@@ -150,7 +156,7 @@ class ShiftTest {
         final Chunk program = new Chunk(List.of(
                 (byte)0x29, // ShiftLeftHeap
                 (byte)0x03, //   heap index
-                (byte)0x5a  // Exit
+                (byte)0x1e  // Exit
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));

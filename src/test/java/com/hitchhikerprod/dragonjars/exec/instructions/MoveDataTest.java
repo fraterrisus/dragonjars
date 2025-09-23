@@ -17,7 +17,7 @@ class MoveDataTest {
             (byte) 0x00, //   src addr (hi)
             (byte) 0x06, //   dst addr (lo)
             (byte) 0x00, //   dst addr (hi)
-            (byte) 0x5a  // Exit
+            (byte) 0x1e  // Exit
     ));
 
     @Test
