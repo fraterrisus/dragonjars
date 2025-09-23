@@ -15,7 +15,7 @@ public class FindBoardAction implements Instruction {
         // The assembly for this is a lot more complicated; this is a major candidate for bug fixes.
         final Address nextIP = i.getIP().incr();
         if (Heap.get(Heap.BOARD_ID).read() != Heap.get(Heap.DECODED_BOARD_ID).read()) return nextIP;
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         final int actionId = Heap.get(0x85).read();
         final MapData.Square square = i.mapDecoder().getSquare(loc.pos());
         final Optional<Action> action = i.mapDecoder().findAction(actionId, square.eventId());

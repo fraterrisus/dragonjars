@@ -2,7 +2,7 @@ package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
-import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.Heap;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -348,7 +348,7 @@ public class MapWindow {
     }
 
     private void drawAvatar(Graphics2D gfx, MapData mapData) {
-        final GridCoordinate pos = Interpreter.getPartyLocation().pos();
+        final GridCoordinate pos = Heap.getPartyLocation().pos();
         final int x, y;
         if (mapData.isWrapping()) {
             final GridCoordinate temp = pos.modulus(mapData.getMaxX(), mapData.getMaxY());

@@ -3,11 +3,9 @@ package com.hitchhikerprod.dragonjars.exec;
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
-import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
@@ -360,8 +358,7 @@ public class Interpreter {
         for (int y = 0; y < yMax; y++) {
             for (int x = 0; x < xMax; x++) {
                 if ((value & mask) > 0) {
-                    final int rawData = mapDecoder().getSquare(x, y).rawData();
-                    mapDecoder().setSquare(x, y, rawData | 0x000800);
+                    mapDecoder().setStepped(new GridCoordinate(x, y));
                 }
                 mask = mask >> 1;
                 if (mask == 0) {
@@ -1061,14 +1058,6 @@ public class Interpreter {
             fg().drawGrid(region.x0() + dx, region.y0() + y, color);
             fg().drawGrid(region.x0() + dx, region.y0() + y + 1, color);
         }
-    }
-
-    public static PartyLocation getPartyLocation() {
-        return new PartyLocation(
-            Heap.get(Heap.BOARD_ID).read(),
-            new GridCoordinate(Heap.get(Heap.PARTY_X).read(), Heap.get(Heap.PARTY_Y).read()),
-            Facing.valueOf(Heap.get(Heap.PARTY_FACING).read())
-        );
     }
 
     private String getMapTitle() {

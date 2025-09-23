@@ -42,7 +42,7 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     private void draw() {
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
 //        System.out.format("drawCurrentViewport(%s)\n", loc);
 
         i.decodeMap(loc.mapId());
@@ -72,7 +72,7 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     public void drawFloorTexture() {
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         for (int index = 8; index >= 0; index--) {
             final int squareId = FLOOR_SQUARE_ORDER.get(index);
             final GridCoordinate rotated = loc.translate(squareId);
@@ -108,7 +108,7 @@ public class DrawCurrentViewport implements Instruction {
     }
 
     public void drawWallTextures() {
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         for (WallTexture data : WALL_SQUARE_ORDER) {
             final GridCoordinate farSquare = loc.translate(data.squareId());
             final Facing newFacing = data.facingDelta().apply(loc.facing());

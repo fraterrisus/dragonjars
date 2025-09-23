@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 public class RunBoardEvent implements Instruction {
     @Override
     public Address exec(Interpreter i) {
-        final PartyLocation location = i.getPartyLocation();
+        final PartyLocation location = Heap.getPartyLocation();
         final Address nextIP = i.getIP().incr();
 
         if (location.mapId() != (Heap.get(Heap.DECODED_BOARD_ID).read() & 0x7f)) return nextIP;

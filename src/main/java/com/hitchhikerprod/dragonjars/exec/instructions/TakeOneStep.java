@@ -16,7 +16,7 @@ public class TakeOneStep implements Instruction {
 
     @Override
     public Address exec(Interpreter i) {
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         final Facing direction = backwards ? loc.facing().reverse() : loc.facing();
         moveOneStep(i, loc.pos(), direction);
         return i.getIP().incr();

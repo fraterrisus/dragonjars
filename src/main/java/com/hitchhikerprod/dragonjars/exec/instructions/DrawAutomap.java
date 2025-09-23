@@ -37,7 +37,7 @@ public class DrawAutomap implements Instruction {
         i.setBackground();
         i.printFooter(0);
 
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         return displayAutomapPage(loc.pos().x(), loc.pos().y());
     }
 
@@ -69,7 +69,7 @@ public class DrawAutomap implements Instruction {
     private Address displayAutomapPage(final int x0, final int y0) { // 0x16f0
         final Address ip = i.getIP();
         final Address nextIP = ip.incr(OPCODE);
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
 
         // Note that we iterate (boxx,boxy) over one extra square (10x8 instead of 9x7) so that we can use the square
         // 1E of the viewport to draw the easternmost walls (i.e. the west wall of square x+1), and similarly for the

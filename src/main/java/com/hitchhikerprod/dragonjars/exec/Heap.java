@@ -1,5 +1,9 @@
 package com.hitchhikerprod.dragonjars.exec;
 
+import com.hitchhikerprod.dragonjars.data.Facing;
+import com.hitchhikerprod.dragonjars.data.GridCoordinate;
+import com.hitchhikerprod.dragonjars.data.PartyLocation;
+
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
@@ -68,8 +72,23 @@ public class Heap {
         return value;
     }
 
+    // Mostly for testing, since having a static Heap gets messy
     public static void reset() {
         for (int i = 0; i < 256; i++) INSTANCE.storage[i] = 0x00;
+    }
+
+    // Moved from the Interpreter because it's all static access now
+    public static PartyLocation getPartyLocation() {
+        LOCK.lock();
+        try {
+            return new PartyLocation(
+                    get(BOARD_ID).lockedRead(),
+                    new GridCoordinate(get(PARTY_X).lockedRead(), get(PARTY_Y).lockedRead()),
+                    Facing.valueOf(get(PARTY_FACING).lockedRead())
+            );
+        } finally {
+            LOCK.unlock();
+        }
     }
 
     public static Access get(int index) {

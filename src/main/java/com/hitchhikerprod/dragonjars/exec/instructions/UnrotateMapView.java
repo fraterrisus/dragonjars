@@ -14,7 +14,7 @@ public class UnrotateMapView implements Instruction {
         final int heapIndex = i.memory().read(ip.incr(), 1);
         final int wallByte = Heap.get(heapIndex).read();
 
-        final PartyLocation loc = i.getPartyLocation();
+        final PartyLocation loc = Heap.getPartyLocation();
         final int x;
         final int y;
         final int shiftDistance;
