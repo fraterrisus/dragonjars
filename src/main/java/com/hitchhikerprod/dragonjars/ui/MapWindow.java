@@ -1,7 +1,8 @@
 package com.hitchhikerprod.dragonjars.ui;
 
+import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
-import com.hitchhikerprod.dragonjars.exec.Heap;
+import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -116,7 +117,7 @@ public class MapWindow {
         drawFloors(gfx, mapData);
         drawWalls(gfx, mapData);
         drawFog(gfx, mapData);
-        drawAvatar(gfx);
+        drawAvatar(gfx, mapData);
 
         final WritableImage map = new WritableImage(xDim, yDim);
         final PixelWriter out = map.getPixelWriter();
@@ -346,9 +347,18 @@ public class MapWindow {
         }
     }
 
-    private void drawAvatar(Graphics2D gfx) {
-        final int x = Heap.get(Heap.PARTY_X).read();
-        final int y = Heap.get(Heap.PARTY_Y).read();
+    private void drawAvatar(Graphics2D gfx, MapData mapData) {
+        final GridCoordinate pos = Interpreter.getPartyLocation().pos();
+        final int x, y;
+        if (mapData.isWrapping()) {
+            final GridCoordinate temp = pos.modulus(mapData.getMaxX(), mapData.getMaxY());
+            x = temp.x();
+            y = temp.y();
+        } else {
+            if (pos.isOutside(mapData.getMaxX(), mapData.getMaxY())) return;
+            x = pos.x();
+            y = pos.y();
+        }
         final AffineTransform translation = AffineTransform.getTranslateInstance(
                 ((x + 1) * GRID_SIZE),
                 ((yMax - y) * GRID_SIZE)

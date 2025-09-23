@@ -1063,7 +1063,7 @@ public class Interpreter {
         }
     }
 
-    public PartyLocation getPartyLocation() {
+    public static PartyLocation getPartyLocation() {
         return new PartyLocation(
             Heap.get(Heap.BOARD_ID).read(),
             new GridCoordinate(Heap.get(Heap.PARTY_X).read(), Heap.get(Heap.PARTY_Y).read()),

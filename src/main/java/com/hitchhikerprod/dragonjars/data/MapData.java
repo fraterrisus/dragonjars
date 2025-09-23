@@ -167,9 +167,15 @@ public class MapData {
         return (flags() & FLAG_WRAPPING) != 0;
     }
 
-    public void setStepped(int x, int y) {
-        if (x < 0 || y < 0 || x >= xMax || y >= yMax) return;
-        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+    public void setStepped(GridCoordinate loc) {
+        final GridCoordinate temp;
+        if (isWrapping()) {
+            temp = loc.modulus(xMax, yMax);
+        } else {
+            if (loc.isOutside(xMax, yMax)) return;
+            temp = loc;
+        }
+        final int offset = rowPointers57e4.get(temp.y() + 1) + (3 * temp.x());
         final int rawData = primaryData.getUnsignedByte(offset+1);
         primaryData.write(offset+1, 1, rawData | 0x08);
     }
@@ -218,37 +224,35 @@ public class MapData {
         primaryData.write(offset+2, 1, 0x00);
     }
 
-    public Square getSquare(GridCoordinate position) {
-        return getSquare(position.x(), position.y());
+    public Square getSquare(int xin, int yin) {
+        return getSquare(new GridCoordinate(xin, yin));
     }
 
-    public Square getSquare(int xin, int yin) {
+    public Square getSquare(GridCoordinate position) {
         if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
 
-        int x, y;
+        final int x, y;
         if (isWrapping()) {
-            x = xin % xMax;
-            y = yin % yMax;
-            if (x < 0) x += xMax;
-            if (y < 0) y += yMax;
-//            System.out.format("getSquare(%d,%d) -> (%d,%d)\n", xin, yin, x, y);
+            final GridCoordinate temp = position.modulus(xMax, yMax);
+            x = temp.x();
+            y = temp.y();
         } else {
+            int xin = position.x();
+            int yin = position.y();
             // Map coordinates *should* be bytes, but if we tried to do math they might be negative ints.
-            if (xin < 0 || xin > 0x80) x = 0;
-            else if (xin >= xMax) x = xMax - 1;
-            else x = xin;
+            if (xin < 0 || xin > 0x80) xin = 0;
+            else if (xin >= xMax) xin = xMax - 1;
 
-            if (yin < 0 || yin > 0x80) y = 0;
-            else if (yin >= yMax) y = yMax - 1;
-            else y = yin;
+            if (yin < 0 || yin > 0x80) yin = 0;
+            else if (yin >= yMax) yin = yMax - 1;
 
-            if (x != xin || y != yin) {
-//                System.out.format("getSquare(%d,%d) -> stripSquare(%d,%d)\n", xin, yin, x, y);
-                return stripSquare(x, y);
+            if (xin != position.x() || yin != position.y()) {
+                return stripSquare(xin, yin);
+            } else {
+                x = xin;
+                y = yin;
             }
         }
-
-        if ((x < 0) || (y < 0)) throw new RuntimeException("Error: illegal coordinates (" + x + "," + y + ")");
 
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer

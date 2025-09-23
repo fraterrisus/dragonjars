@@ -41,7 +41,7 @@ public class DrawAutomap implements Instruction {
         return displayAutomapPage(loc.pos().x(), loc.pos().y());
     }
 
-    private static final List<Integer> TEXTURES_WALL = List.of(0x63, 0x73, 0x7a, 0x7d, 0x7e);
+    private static final List<Integer> TEXTURES_WALL = List.of(0x6e, 0x73, 0x7a, 0x7d, 0x7e);
     private static final List<Integer> TEXTURES_FLOOR = List.of(0x70, 0x75, 0x7c, 0x85);
     private static final List<Integer> TEXTURES_DECO = List.of(0x71, 0x72, 0x74, 0x77, 0x77, 0x78, 0x79, 0x7f, 0x80, 0x81);
 
@@ -92,6 +92,11 @@ public class DrawAutomap implements Instruction {
                 final int yOffset = 0x18 * boxy;
 
                 final MapData.Square square = i.mapDecoder().getSquare((mapx % 256), (mapy % 256));
+
+//                System.out.format("(%d,%d) floor=%02x west=%02x north=%02x\n", mapx, mapy,
+//                        square.floorTextureChunk(),
+//                        square.westWallTextureChunk().orElse(0xff),
+//                        square.northWallTextureChunk().orElse(0xff));
 
                 // Floor (texture offset 0)
                 if (square.touched() && TEXTURES_FLOOR.contains(square.floorTextureChunk())) {

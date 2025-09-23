@@ -54,7 +54,7 @@ public class DrawCurrentViewport implements Instruction {
         Heap.get(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
-        i.mapDecoder().setStepped(loc.pos().x(), loc.pos().y());
+        i.mapDecoder().setStepped(loc.pos());
 
         i.fg().drawRectangle(gameplayArea, (byte)0);
         if (i.mapDecoder().isLit() || (Heap.get(Heap.LIGHT_RANGE).read() != 0)) {
