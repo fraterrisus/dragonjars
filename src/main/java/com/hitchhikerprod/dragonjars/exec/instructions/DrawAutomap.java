@@ -12,6 +12,8 @@ import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import javafx.scene.input.KeyCode;
 
+import java.util.List;
+
 public class DrawAutomap implements Instruction {
     private VideoHelper automap;
     private Interpreter i;
@@ -38,6 +40,31 @@ public class DrawAutomap implements Instruction {
         final PartyLocation loc = i.getPartyLocation();
         return displayAutomapPage(loc.pos().x(), loc.pos().y());
     }
+
+    private static final List<Integer> TEXTURES_WALL = List.of(0x63, 0x73, 0x7a, 0x7d, 0x7e);
+    private static final List<Integer> TEXTURES_FLOOR = List.of(0x70, 0x75, 0x7c, 0x85);
+    private static final List<Integer> TEXTURES_DECO = List.of(0x71, 0x72, 0x74, 0x77, 0x77, 0x78, 0x79, 0x7f, 0x80, 0x81);
+
+    // Textures:
+    //   0x6e 110  wall   blue stone
+    //   0x6f 111  sky    blue sky
+    //   0x70 112  floor  red
+    //   0x71 113  deco   tree
+    //   0x72 114  deco   rock
+    //   0x73 115  wall   blue stone with door
+    //   0x74 116  deco   puddle
+    //   0x75 117  floor  water / ocean
+    //   0x77 119  deco   rubble
+    //   0x78 120  deco   bush
+    //   0x79 121  deco   firepit
+    //   0x7a 122  wall   fence
+    //   0x7c 124  floor  stone
+    //   0x7d 125  wall   grey stone
+    //   0x7e 126  wall   grey stone with door
+    //   0x7f 127  deco   statue (broken)
+    //   0x80 128  deco   green hut
+    //   0x81 129  deco   statue (complete)
+    //   0x85 133  floor  abyss
 
     private Address displayAutomapPage(final int x0, final int y0) { // 0x16f0
         final Address ip = i.getIP();
@@ -67,20 +94,24 @@ public class DrawAutomap implements Instruction {
                 final MapData.Square square = i.mapDecoder().getSquare((mapx % 256), (mapy % 256));
 
                 // Floor (texture offset 0)
-                if (square.touched()) {
+                if (square.touched() && TEXTURES_FLOOR.contains(square.floorTextureChunk())) {
                     drawChunk(square.floorTextureChunk(), 0, xOffset, yOffset);
                 }
 
                 // West wall (texture offset 2)
                 final MapData.Square squareLeft = i.mapDecoder().getSquare(mapx - 1, mapy);
                 if (square.touched() || squareLeft.touched()) {
-                    square.westWallTextureChunk().ifPresent(id -> drawChunk(id, 2, xOffset-8, yOffset-8));
+                    square.westWallTextureChunk().ifPresent(id -> {
+                        if (TEXTURES_WALL.contains(id)) drawChunk(id, 2, xOffset-8, yOffset-8);
+                    });
                 }
 
                 // North wall (texture offset 0)
                 final MapData.Square squareUp = i.mapDecoder().getSquare(mapx, mapy + 1);
                 if (square.touched() || squareUp.touched()) {
-                    square.northWallTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset-8, yOffset-8));
+                    square.northWallTextureChunk().ifPresent(id -> {
+                        if (TEXTURES_WALL.contains(id)) drawChunk(id, 0, xOffset-8, yOffset-8);
+                    });
                 }
 
                 // Party avatar, or Deco (texture offset 0)
@@ -88,7 +119,9 @@ public class DrawAutomap implements Instruction {
                     automap.drawTextureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
                             xOffset, yOffset, 0, automapRectangle);
                 } else if (square.touched()) {
-                    square.otherTextureChunk().ifPresent(id -> drawChunk(id, 0, xOffset, yOffset));
+                    square.otherTextureChunk().ifPresent(id -> {
+                        if (TEXTURES_DECO.contains(id)) drawChunk(id, 0, xOffset, yOffset);
+                    });
                 }
             }
         }
