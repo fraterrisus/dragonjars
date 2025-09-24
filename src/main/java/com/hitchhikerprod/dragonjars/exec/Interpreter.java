@@ -240,8 +240,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x00d;
-    private static final int BREAKPOINT_ADR = 0x0356;
+    private static final int BREAKPOINT_CHUNK = 0x059;
+    private static final int BREAKPOINT_ADR = 0x06b1;
 
     private void mainLoop(Address startPoint) {
         final AppPreferences prefs = AppPreferences.getInstance();

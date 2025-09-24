@@ -7,8 +7,6 @@
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
-- The code in the Slave Mines default action that removes summoned creatures also deletes the rearmost member of 
-  your party. This isn't my bug, it's in the original code.
 
 # Implementation Differences
 
