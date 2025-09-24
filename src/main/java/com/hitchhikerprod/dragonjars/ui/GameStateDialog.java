@@ -3,13 +3,7 @@ package com.hitchhikerprod.dragonjars.ui;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Parent;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
 
@@ -78,6 +72,9 @@ public class GameStateDialog extends Dialog<Void> {
         scroll.getStyleClass().add("state-scroll");
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        // applies to contents
+        scroll.setFitToHeight(true);
+        scroll.setFitToWidth(true);
         return scroll;
     }
 

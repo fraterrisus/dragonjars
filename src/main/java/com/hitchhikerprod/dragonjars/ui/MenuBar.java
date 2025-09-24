@@ -2,9 +2,7 @@ package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import javafx.scene.Node;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 

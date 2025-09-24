@@ -1,3 +1,11 @@
+.bold {
+    -fx-font-weight: bold;
+}
+
+.easter-egg {
+    -fx-text-fill: blue;
+}
+
 .about-dialog {
     -fx-background-color: antiquewhite;
 }
@@ -65,6 +73,43 @@
 
 .prefs-window > .hbox {
     -fx-spacing: 10;
+}
+
+.party-dialog {
+    -fx-pref-height: 400;
+    -fx-pref-width: 600;
+    -fx-background-color: antiquewhite;
+}
+
+.party-grid {
+    -fx-background-color: antiquewhite;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-padding: 10px;
+}
+
+.party-list-cell {
+    -fx-background-color: antiquewhite;
+    -fx-font-size: 18px;
+    -fx-text-fill: black;
+}
+
+.party-list-cell:even {
+    -fx-background-color: #e1ceb6;
+}
+
+.party-list-cell:selected {
+    -fx-background-color: #ff4c4c;
+}
+
+.party-label-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.party-label-section-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
 }
 
 .state-dialog, .state-scroll, .state-grid {

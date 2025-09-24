@@ -1,9 +1,6 @@
 package com.hitchhikerprod.dragonjars.ui;
 
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 

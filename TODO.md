@@ -6,8 +6,6 @@
 
 # Known Bugs
 
-- There's an automap bug on wrapping maps when you go from Y=0 to Y=max. (Try it in the Underworld; it affects the 
-  spoiler map, too.)
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 

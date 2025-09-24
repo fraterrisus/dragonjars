@@ -139,13 +139,29 @@ public class DragonWarsApp extends Application {
         return musicService;
     }
 
+    private void withInterpreterPause(Runnable fn) {
+        final boolean wasPaused;
+        if (Objects.nonNull(interpreter)) {
+            wasPaused = interpreter.isPaused();
+            interpreter.pause();
+        } else {
+            wasPaused = true;
+        }
+
+        fn.run();
+
+        if (Objects.nonNull(interpreter) && !wasPaused) {
+            interpreter.unpause();
+        }
+    }
+
     public void openAboutDialog() {
-        new AboutDialog(stage).showAndWait();
+        withInterpreterPause(() -> new AboutDialog(stage).showAndWait());
     }
 
     public void openGameStateWindow() {
         if (Objects.isNull(interpreter)) return;
-        new GameStateDialog(stage).showAndWait();
+        withInterpreterPause(() -> new GameStateDialog(stage).showAndWait());
     }
 
     public void openMapWindow() {
@@ -163,7 +179,7 @@ public class DragonWarsApp extends Application {
 
     public void openPartyStateDialog() {
         if (Objects.isNull(interpreter)) return;
-        new PartyStateDialog(stage, interpreter.memory()).showAndWait();
+        withInterpreterPause(() -> new PartyStateDialog(stage, interpreter.memory()).showAndWait());
     }
 
     public void openPreferencesDialog() {
