@@ -136,7 +136,7 @@ public class Monster {
 
     @Override
     public String toString() {
-        return toHTML();
+        return longString();
     }
 
     public String shortString() {

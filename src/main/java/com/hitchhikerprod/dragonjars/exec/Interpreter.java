@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -48,7 +49,6 @@ public class Interpreter {
     private final StringDecoder stringDecoder;
     private final VideoHelper videoHelper;
     private MapData mapDecoder;
-    private boolean redrawMapWindow = false;
 
     /* Memory space */
 
@@ -240,11 +240,10 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x059;
-    private static final int BREAKPOINT_ADR = 0x06b1;
+    private static final int BREAKPOINT_CHUNK = 0x003;
+    private static final int BREAKPOINT_ADR = 0x0fce;
 
     private void mainLoop(Address startPoint) {
-        final AppPreferences prefs = AppPreferences.getInstance();
         Address nextIP = startPoint;
         while (Objects.nonNull(nextIP)) {
             this.cs = nextIP.segment();
@@ -256,9 +255,7 @@ public class Interpreter {
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
             }
-            if (csChunk == 0x08 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
-                app().openParagraphsWindow(ax);
-            }
+            runPatches(csChunk, ip);
             final Instruction ins = decodeOpcode(opcode);
             try {
                 nextIP = ins.exec(this);
@@ -267,6 +264,30 @@ public class Interpreter {
                 throw(e);
             }
             this.instructionsExecuted++;
+        }
+    }
+
+    private void runPatches(int chunkId, int ip) {
+        final AppPreferences prefs = AppPreferences.getInstance();
+        if (chunkId == 0x008 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
+            app().openParagraphsWindow(ax);
+        }
+        if (chunkId == 0x012 && ip == 0x00f8) {
+            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
+            decodeOpponents(combatSegmentId);
+        }
+        if (chunkId == 0x003 && ip == 0x0760) {
+            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
+            decodeInitiative(combatSegmentId);
+        }
+        if (chunkId == 0x003 && ip == 0x0ffc) {
+            System.out.println("Monster confidence: " + getAL());
+        }
+        if (chunkId == 0x003 && ip == 0x1023) {
+            System.out.format("Monster bravery: 0x%02x\n", getBL());
+        }
+        if (chunkId == 0x003 && ip == 0x0108d) {
+            System.out.format("Monster action: 0x%02x\n", getAL());
         }
     }
 
@@ -288,6 +309,99 @@ public class Interpreter {
 
     public MapData mapDecoder() {
         return this.mapDecoder;
+    }
+
+    private record Opponent(int groupId, int hp, int status, int initiative) { }
+
+    private void decodeOpponents(int combatSegmentId) {
+        final Chunk monsterData = memory().getSegment(combatSegmentId);
+        final List<Opponent> opponents = new ArrayList<>();
+        for (int monsterId = 0; monsterId < 50; monsterId++) {
+            final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
+            final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
+            if (hp == 0) continue;
+            final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
+            final boolean attacked = (status & 0x80) > 0;
+            final boolean damaged = (status & 0x20) > 0;
+/*
+                final int action = memory().read(combatSegmentId, 0x030e + monsterId, 1);
+                final int attackValue = memory().read(combatSegmentId, 0x0340 + monsterId, 1);
+                final int defenseValue = memory().read(combatSegmentId, 0x0372 + monsterId, 1);
+*/
+            opponents.add(new Opponent(group, hp, status, 0));
+        }
+        System.out.println("Live enemies:");
+        for (int groupId = 0; groupId < 4; groupId++) {
+            final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
+            final int groupSize = monsterData.read(groupOffset + 0x0a, 1);
+            if (groupSize == 0) continue;
+
+            stringDecoder().decodeString(monsterData, groupOffset + 0x29);
+            final int id = groupId;
+            final List<Opponent> groupMembers = opponents.stream().filter(opp -> opp.groupId() == id).toList();
+            System.out.print("  Group " + (groupId+1) + ": " + stringDecoder().getDecodedString() + " HP:");
+            System.out.println(groupMembers.subList(0, groupSize).stream()
+                    .map(opp -> String.format("%d%s", opp.hp(), (opp.status() & 0x80) > 0 ? "'" : ""))
+                    .collect(Collectors.joining(",")));
+        }
+    }
+
+    private void decodeInitiative(int combatSegmentId) {
+        final Chunk monsterData = memory().getSegment(combatSegmentId);
+        final Chunk partyData = memory().getSegment(PARTY_SEGMENT);
+
+        final List<String> groupNames = new ArrayList<>();
+        for (int groupId = 0; groupId < 4; groupId++) {
+            final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
+            final int groupSize = monsterData.read(groupOffset + 0x0a, 1);
+            if (groupSize == 0) {
+                groupNames.add(null);
+                continue;
+            }
+            stringDecoder().decodeString(monsterData, groupOffset + 0x29);
+            groupNames.add(stringDecoder().getDecodedString());
+        }
+
+        final List<Opponent> opponents = new ArrayList<>();
+        for (int monsterId = 0; monsterId < 50; monsterId++) {
+            final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
+            final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
+            if (hp == 0) continue;
+            final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
+            final boolean damaged = (status & 0x20) > 0;
+            final int initiative = memory().read(combatSegmentId, 0x02dc + monsterId, 1);
+            opponents.add(new Opponent(group, hp, status, initiative));
+        }
+
+        final List<Integer> partyInitiatives = new ArrayList<>();
+        for (int pcid = 0; pcid < Heap.get(Heap.PARTY_SIZE).read(); pcid++) {
+            partyInitiatives.add(memory().read(combatSegmentId, 0x4ea + pcid, 1));
+        }
+
+        final int maxInit = Integer.max(
+                opponents.stream().map(Opponent::initiative).reduce(Integer::max).orElse(0),
+                partyInitiatives.stream().max(Integer::compareTo).orElse(0)
+        );
+        System.out.println("Initiative order:");
+        for (int init = maxInit; init > 0; init--) {
+            final int finalInit = init;
+            final List<String> combatants = new ArrayList<>();
+            opponents.stream()
+                    .filter(opp -> opp.initiative() == finalInit)
+                    .map(opp -> String.format("%s(%d,0x%02x)", groupNames.get(opp.groupId()), opp.hp(), opp.status()))
+                    .forEach(combatants::add);
+            for (int i = 0; i < partyInitiatives.size(); i++) {
+                if (partyInitiatives.get(i) != init) continue;
+                final int partyMemberOffset = Heap.get(Heap.MARCHING_ORDER + i).read() << 8;
+                final StringBuilder nameBuffer = new StringBuilder();
+                for (Byte b : partyData.getBytes(partyMemberOffset, 12)) {
+                    nameBuffer.append(Character.toChars(b & 0x7f));
+                    if ((b & 0x80) == 0) break;
+                }
+                combatants.add(nameBuffer.toString());
+            }
+            if (!combatants.isEmpty()) System.out.println("  " + init + ": " + String.join(", ", combatants));
+        }
     }
 
     public void decodeMap(int mapId) {

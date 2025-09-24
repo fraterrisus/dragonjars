@@ -32,23 +32,26 @@ public class ALU {
     }
 
     public static Result subWord(int op1, int op2) {
-        final int value = (op1 & 0xffff) - (op2 & 0xffff);
+        final int a = signExtend(op1 & 0xffff, 2);
+        final int b = signExtend(op2 & 0xffff, 2);
+        final int value = (a - b) & 0xffff;
         return new Result(
-                value & 0xffff,
-                // Borrow = we started with a positive number and ended with a negative one
-                ((op1 & 0x8000) == 0) && ((value & 0x8000) > 0),
+                value,
+                (op1 & 0xffff) < (op2 & 0xffff),
                 (value & 0x8000) > 0,
-                (value & 0xffff) == 0
+                value == 0
         );
     }
 
     public static Result subByte(int op1, int op2) {
-        final int value = (op1 & 0xff) - (op2 & 0xff);
+        final int a = signExtend(op1 & 0xff, 1);
+        final int b = signExtend(op2 & 0xff, 1);
+        final int value = (a - b) & 0xff;
         return new Result(
-                value & 0xff,
-                (value < 0),
+                value,
+                (op1 & 0xff) < (op2 & 0xff),
                 (value & 0x80) > 0,
-                (value & 0xff) == 0
+                value == 0
         );
     }
 

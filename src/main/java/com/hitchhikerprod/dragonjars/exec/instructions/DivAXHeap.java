@@ -18,6 +18,7 @@ public class DivAXHeap implements Instruction {
         final int modResult = op1 % op2;
 //        i.setMulResult(divResult);
 //        i.setDivResult(modResult);
+        i.setAX(divResult); // side effect, used by [03/0fd5]
         Heap.get(0x37).write(divResult, 4);
         Heap.get(0x3b).write(modResult, 2);
         return ip.incr(OPCODE + IMMEDIATE);
