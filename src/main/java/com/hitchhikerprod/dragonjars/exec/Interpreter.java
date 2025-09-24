@@ -1000,7 +1000,7 @@ public class Interpreter {
             x++;
         }
 
-        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + 0x4c, 2);
+        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PARTY_STATUS, 2);
         for (int i = 3; i >= 0; i--) {
             final int mask = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_BITMASKS + i);
             if ((statuses & mask) > 0) {
@@ -1010,9 +1010,9 @@ public class Interpreter {
             }
         }
 
-        drawBarHelper(statusRegion, 0x00, charBaseAddress + 0x14, 12);
-        drawBarHelper(statusRegion, 0x03, charBaseAddress + 0x18, 10);
-        drawBarHelper(statusRegion, 0x06, charBaseAddress + 0x1c, 9);
+        drawBarHelper(statusRegion, 0x00, charBaseAddress + Memory.PARTY_HEALTH_CURRENT, 12);
+        drawBarHelper(statusRegion, 0x03, charBaseAddress + Memory.PARTY_STUN_CURRENT, 10);
+        drawBarHelper(statusRegion, 0x06, charBaseAddress + Memory.PARTY_POWER_CURRENT, 9);
 
         setBackground();
     }

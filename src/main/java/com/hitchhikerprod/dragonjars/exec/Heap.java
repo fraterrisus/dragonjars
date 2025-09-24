@@ -95,6 +95,14 @@ public class Heap {
         return new Access(INSTANCE, index);
     }
 
+    public static void lock() {
+        LOCK.lock();
+    }
+
+    public static void unlock() {
+        LOCK.unlock();
+    }
+
     public static class Access {
         private final Heap heap;
         private final int index;

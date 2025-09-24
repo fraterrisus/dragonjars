@@ -1,6 +1,5 @@
 # TODO
 
-- Add a timer countdown on summons. (Summoned party members have their own internal counter at 0x66.)
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
 
@@ -8,6 +7,8 @@
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
+- The code in the Slave Mines default action that removes summoned creatures also deletes the rearmost member of 
+  your party. This isn't my bug, it's in the original code.
 
 # Implementation Differences
 

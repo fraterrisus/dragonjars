@@ -133,8 +133,6 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02bf, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c1, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c2, (byte)0x14, (byte)0x15),
-            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12),
-            // Slave Estate: move the Statue of Mog flag from [9f:10] to [a5:80]
-            new Patch(0x06b, 0x041b, (byte)0x33, (byte)0x60)
+            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12)
     );
 }

@@ -6,6 +6,7 @@ import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.Memory;
+import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -113,7 +114,11 @@ public class PartyStateDialog extends Dialog<Void> {
         }
 
         if (member.summonedLifespan != 0) {
-            memberGrid.addRow(row++, new Label("Lifespan"), new Label(member.summonedLifespan + " min"));
+            final long seconds = Math.round(60.0 * member.summonedLifespan);
+            final long min = seconds / 60;
+            final long sec = seconds % 60;
+            final Label lifespanLabel = new Label(String.format("%dm %02ds", min, sec));
+            memberGrid.addRow(row++, new Label("Lifespan"), lifespanLabel);
         }
 
         memberGrid.addRow(row++, new Label("Gender"), new Label(member.gender.toString()));
@@ -248,7 +253,7 @@ public class PartyStateDialog extends Dialog<Void> {
             String name,
             Gender gender,
             int npcID,
-            int summonedLifespan,
+            double summonedLifespan,
             int level,
             int experience,
             int unspentAP,
@@ -358,7 +363,10 @@ public class PartyStateDialog extends Dialog<Void> {
             final int armorClass = data.getUnsignedByte(offset + 0x5b);
             final int flags = data.getUnsignedByte(offset + 0x5c);
 
-            final int summonedLifespan = data.getUnsignedByte(offset + 0x66);
+            // See SpellDecayTask for notes
+            final int summonedMinutes = data.getWord(offset + 0x66);
+            final int summonedTicks = data.getWord(offset + 0x68);
+            final double summonedLifespan = summonedMinutes + ((double)summonedTicks / SpellDecayTask.CYCLES_PER_POINT);
 
             return new PartyMember(
                     nameBuffer.toString(), gender, npcID, summonedLifespan,
@@ -385,7 +393,7 @@ public class PartyStateDialog extends Dialog<Void> {
                     } else if (member.npcID() != 0) {
                         setText(member.name() + " (NPC)");
                     } else if (member.summonedLifespan != 0) {
-                        setText(" (summoned)");
+                        setText(member.name() + " (summoned)");
                     } else {
                         setText(member.name());
                     }
