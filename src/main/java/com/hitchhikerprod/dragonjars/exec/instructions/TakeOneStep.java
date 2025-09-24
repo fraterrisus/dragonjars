@@ -31,9 +31,8 @@ public class TakeOneStep implements Instruction {
             case SOUTH -> y--;
             case WEST -> x--;
         }
-        // TODO: make sure we get the weird wrapping behavior on some maps right
-        // (it's probably just incrementing past 0xff)
         if (i.mapDecoder().isWrapping()) {
+            // FIXME modulus doesn't handle negatives, although we appear to have compensated for that elsewhere
             x = x % Heap.get(Heap.BOARD_MAX_X).read();
             y = y % Heap.get(Heap.BOARD_MAX_Y).read();
         }

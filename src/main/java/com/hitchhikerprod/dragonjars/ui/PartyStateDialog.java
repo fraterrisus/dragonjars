@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Gender;
+import com.hitchhikerprod.dragonjars.data.Item;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
@@ -211,6 +212,17 @@ public class PartyStateDialog extends Dialog<Void> {
                     new TextFlow(new Text(String.join(", ", spells))));
         }
 
+        final Label inventoryLabel = new Label("Inventory");
+        inventoryLabel.getStyleClass().add("party-label-section-header");
+        memberGrid.addRow(row++, inventoryLabel);
+
+        for (Item item : member.inventory) {
+            // FIXME: You can do better than toString() here.
+            final Label itemLabel = new Label("  " + item.toString());
+            memberGrid.addRow(row++, itemLabel);
+            GridPane.setColumnSpan(itemLabel, 2);
+        }
+
         final ColumnConstraints col0 = new ColumnConstraints();
         col0.setMinWidth(Region.USE_PREF_SIZE);
         col0.setHgrow(Priority.NEVER);
@@ -277,6 +289,7 @@ public class PartyStateDialog extends Dialog<Void> {
             int armorClass,
             Map<String, Integer> skills,
             Map<String, List<String>> spells,
+            List<Item> inventory,
             int flags,
             int status
     ) {
@@ -368,6 +381,18 @@ public class PartyStateDialog extends Dialog<Void> {
             final int summonedTicks = data.getWord(offset + 0x68);
             final double summonedLifespan = summonedMinutes + ((double)summonedTicks / SpellDecayTask.CYCLES_PER_POINT);
 
+            final List<Item> inventory = new ArrayList<>();
+            int itemOffset = offset + 0xec;
+            while (inventory.size() < 12) {
+                final int firstCh = data.getUnsignedByte(itemOffset + 0x0b);
+                if (firstCh == 0) break;
+
+                final Item newItem = new Item(data);
+                newItem.decode(itemOffset);
+                inventory.add(newItem);
+                itemOffset += 0x17;
+            }
+
             return new PartyMember(
                     nameBuffer.toString(), gender, npcID, summonedLifespan,
                     level, experience, unspentAP, gold,
@@ -379,7 +404,8 @@ public class PartyStateDialog extends Dialog<Void> {
                     currentStun, maximumStun,
                     currentPower, maximumPower,
                     attackValue, defenseValue, armorClass,
-                    skills, spells, flags, status
+                    skills, spells, inventory,
+                    flags, status
             );
         }
 
