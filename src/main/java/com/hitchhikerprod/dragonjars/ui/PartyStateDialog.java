@@ -218,7 +218,7 @@ public class PartyStateDialog extends Dialog<Void> {
 
         for (Item item : member.inventory) {
             // FIXME: You can do better than toString() here.
-            final Label itemLabel = new Label("  " + item.toString());
+            final TextFlow itemLabel = new TextFlow(new Text(item.toString()));
             memberGrid.addRow(row++, itemLabel);
             GridPane.setColumnSpan(itemLabel, 2);
         }

@@ -94,7 +94,7 @@ NPC ID 5 (—) is in the party
 NPC ID 6 (—) is in the party
 NPC ID 7 (—) is in the party
 NPC ID 8 (—) is in the party
-Slave Estate: Found the ugly statue of Mog (BUGFIX)
+unused
 Slave Estate: Killed the Gaze Demon with a mirror
 Purgatory: Defeated the Gladiators in the Arena
 Dilmun: Found the cache on Forlorn

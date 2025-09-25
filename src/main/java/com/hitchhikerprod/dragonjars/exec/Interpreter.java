@@ -241,7 +241,7 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x000;
+    private static final int BREAKPOINT_CHUNK = 0x003;
     private static final int BREAKPOINT_ADR = 0x0000;
 
     private void mainLoop(Address startPoint) {
@@ -277,6 +277,7 @@ public class Interpreter {
         if (chunkId == 0x008 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
             app().openParagraphsWindow(ax);
         }
+        // FIXME: do something more interesting than printing to console
         if (chunkId == 0x012 && ip == 0x00f8) {
             final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
             decodeOpponents(combatSegmentId);
@@ -297,28 +298,35 @@ public class Interpreter {
             } + ") ");
         }
         if (chunkId == 0x003 && ip == 0x0108f) {
-            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-            System.out.println(switch (getAL()) {
-                case 0,1,2,3,4 -> {
-                    final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-                    final int attPerRnd = 1 + memory().read(combatSegmentId, Heap.get(0x41).read(2) + 0x26, 1);
-                    final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-                    final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-                    yield("attacks(" + attPerRnd + "," + dmg + "," + range + "')");
-                }
-                case 5 -> "blocks";
-                case 6 -> "dodges";
-                case 7 -> "flees";
-                case 8 -> "casts";
-                case 9 -> {
-                    final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-                    final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-                    final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-                    yield("breathes(" + dmg + "," + range + "')");
-                }
-                case 10 -> "calls for help";
-                default -> "passes";
-            });
+            decodeMonsterAction();
+        }
+        if (chunkId == 0x003 && ip == 0x00cfb) {
+            decodePartyAttack();
+        }
+        if (chunkId == 0x003 && ip == 0x00f76) {
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final List<Integer> chars = memory().readList(new Address(PARTY_SEGMENT, pcBaseAddress), 12)
+                    .stream().filter(b -> b != 0).map(b -> (int)b).toList();
+            System.out.print(StringDecoder.decodeString(chars));
+
+            final int attackRoll = getAL();
+            if (attackRoll == 0)
+                System.out.println(": 1d15+3 = 3, automatic hit");
+            else if (attackRoll == 15)
+                System.out.println(": 1d15+3 = 18, automatic miss");
+        }
+        if (chunkId == 0x003 && ip == 0x00fa5) {
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final int attackerAV = memory().read(PARTY_SEGMENT, pcBaseAddress + 0x59, 1);
+            final int weaponSkill = Heap.get(0x79).read();
+            final int defenderDV = Heap.get(0x7a).read();
+            final int attackRoll = Heap.get(0x7b).read();
+            final int target = 13 + attackerAV + weaponSkill - defenderDV;
+            System.out.print(": 13 + AV(" + attackerAV + ") + WS(" + weaponSkill + ") - DV("
+                    + defenderDV + ") = " + target + " >= 1d15+3 = " + attackRoll);
+            System.out.println((attackRoll <= target) ? ", hit" : ", miss");
         }
     }
 
@@ -346,21 +354,6 @@ public class Interpreter {
 
     private void decodeOpponents(int combatSegmentId) {
         final Chunk monsterData = memory().getSegment(combatSegmentId);
-        final List<Opponent> opponents = new ArrayList<>();
-        for (int monsterId = 0; monsterId < 50; monsterId++) {
-            final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
-            final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
-            if (hp == 0) continue;
-            final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
-            final boolean attacked = (status & 0x80) > 0;
-            final boolean damaged = (status & 0x20) > 0;
-/*
-                final int action = memory().read(combatSegmentId, 0x030e + monsterId, 1);
-                final int attackValue = memory().read(combatSegmentId, 0x0340 + monsterId, 1);
-                final int defenseValue = memory().read(combatSegmentId, 0x0372 + monsterId, 1);
-*/
-            opponents.add(new Opponent(group, hp, status, 0));
-        }
         System.out.println("Live enemies:");
         for (int groupId = 0; groupId < 4; groupId++) {
             final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
@@ -368,9 +361,22 @@ public class Interpreter {
             if (groupSize == 0) continue;
 
             stringDecoder().decodeString(monsterData, groupOffset + 0x29);
-            final int id = groupId;
-            final List<Opponent> groupMembers = opponents.stream().filter(opp -> opp.groupId() == id).toList();
-            System.out.print("  Group " + (groupId+1) + ": " + stringDecoder().getDecodedString() + " HP:");
+            final String groupName = StringDecoder.decodeString(
+                    DecodeStringFrom.pluralize(stringDecoder().getDecodedChars(), groupSize > 1));
+
+            final List<Opponent> groupMembers = new ArrayList<>();
+            int monsterId = 0;
+            while (monsterId < 50 && groupMembers.size() < groupSize) {
+                final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
+                if (group == groupId) {
+                    final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
+                    final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
+                    groupMembers.add(new Opponent(group, hp, status, 0));
+                }
+                monsterId++;
+            }
+
+            System.out.print("  Group " + (groupId+1) + ": " + groupName + "  HP:");
             System.out.println(groupMembers.subList(0, groupSize).stream()
                     .map(opp -> String.format("%d%s", opp.hp(), (opp.status() & 0x80) > 0 ? "'" : ""))
                     .collect(Collectors.joining(",")));
@@ -381,6 +387,7 @@ public class Interpreter {
         final Chunk monsterData = memory().getSegment(combatSegmentId);
         final Chunk partyData = memory().getSegment(PARTY_SEGMENT);
 
+        final List<Opponent> opponents = new ArrayList<>();
         final List<String> groupNames = new ArrayList<>();
         for (int groupId = 0; groupId < 4; groupId++) {
             final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
@@ -390,18 +397,23 @@ public class Interpreter {
                 continue;
             }
             stringDecoder().decodeString(monsterData, groupOffset + 0x29);
-            groupNames.add(stringDecoder().getDecodedString());
-        }
+            final String groupName = StringDecoder.decodeString(
+                    DecodeStringFrom.pluralize(stringDecoder().getDecodedChars(), false));
+            groupNames.add(groupName);
 
-        final List<Opponent> opponents = new ArrayList<>();
-        for (int monsterId = 0; monsterId < 50; monsterId++) {
-            final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
-            final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
-            if (hp == 0) continue;
-            final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
-            final boolean damaged = (status & 0x20) > 0;
-            final int initiative = memory().read(combatSegmentId, 0x02dc + monsterId, 1);
-            opponents.add(new Opponent(group, hp, status, initiative));
+            int monsterId = 0;
+            int groupMembers = 0;
+            while (monsterId < 50 && groupMembers < groupSize) {
+                final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
+                if (group == groupId) {
+                    final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
+                    final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
+                    final int initiative = memory().read(combatSegmentId, 0x02dc + monsterId, 1);
+                    opponents.add(new Opponent(group, hp, status, initiative));
+                    groupMembers++;
+                }
+                monsterId++;
+            }
         }
 
         final List<Integer> partyInitiatives = new ArrayList<>();
@@ -424,15 +436,51 @@ public class Interpreter {
             for (int i = 0; i < partyInitiatives.size(); i++) {
                 if (partyInitiatives.get(i) != init) continue;
                 final int partyMemberOffset = Heap.get(Heap.MARCHING_ORDER + i).read() << 8;
-                final StringBuilder nameBuffer = new StringBuilder();
-                for (Byte b : partyData.getBytes(partyMemberOffset, 12)) {
-                    nameBuffer.append(Character.toChars(b & 0x7f));
-                    if ((b & 0x80) == 0) break;
-                }
-                combatants.add(nameBuffer.toString());
+                final String name = StringDecoder.decodeString(
+                        partyData.getBytes(partyMemberOffset, 12).stream()
+                                .filter(b -> b != 0).map(b -> (int)b).toList());
+                combatants.add(name);
             }
             if (!combatants.isEmpty()) System.out.println("  " + init + ": " + String.join(", ", combatants));
         }
+    }
+
+    private void decodeMonsterAction() {
+        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
+        System.out.println(switch (getAL()) {
+            case 0,1,2,3,4 -> {
+                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
+                final int attPerRnd = 1 + memory().read(combatSegmentId, Heap.get(0x41).read(2) + 0x26, 1);
+                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
+                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
+                yield("attacks(" + attPerRnd + "," + dmg + "," + range + "')");
+            }
+            case 5 -> "blocks";
+            case 6 -> "dodges";
+            case 7 -> "flees";
+            case 8 -> "casts";
+            case 9 -> {
+                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
+                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
+                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
+                yield("breathes(" + dmg + "," + range + "')");
+            }
+            case 10 -> "calls for help";
+            default -> "passes";
+        });
+    }
+
+    private void decodePartyAttack() {
+        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
+        final int targetMonsterId = Heap.get(0x84).read(1);
+
+        final int weaponType = Heap.get(0x66).read(1);
+        final boolean weaponIsMelee = (weaponType < 0x08);
+
+        final int targetStatus = memory().read(combatSegmentId, 0x030e + targetMonsterId, 1);
+        final boolean monsterIsBlocking = (targetStatus & 0x40) > 0;
+
+        if (weaponIsMelee & monsterIsBlocking) return;
     }
 
     public void decodeMap(int mapId) {

@@ -81,7 +81,7 @@ public class Item {
         final List<String> attributes = new ArrayList<>();
         final StringBuilder sb = new StringBuilder();
 
-        sb.append("    ");
+//        sb.append("    ");
         if (this.equipped) { sb.append("*"); }
         sb.append(this.name);
         if (this.uses > 0 | chargeable) {

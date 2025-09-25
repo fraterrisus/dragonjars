@@ -12,6 +12,21 @@
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 
+# Bugs in the original that are fixed in this version
+
+- On the Dwarf Ruins map, there's a chest that contains the Dwarf Hammer. The game state bit that determines whether 
+  you can see this chest is the same as the one for the chest behind the wizard's house in the Slave Camp. There's 
+  no reason finding that chest should prevent you from finding the Dwarf Hammer, so I moved it to another unused bit 
+  in the game state.
+- Thrown Weapons can't be used from the back rank (slots 5-7). It's probably controversial of me to say this, but I 
+  think this is a bug caused by a pair of off-by-one errors, and the patch to fix them is tiny.
+- The automap doesn't draw walls along its eastern edge, due to the way the wall data is stored in adjacent squares.
+- There are a handful of places where leaving a map drops you on Dilmun at a place that doesn't make any sense. For 
+  example, leaving Purgatory on foot to the North should drop you at (13,5) but you wind up at (15,5). The Pilgrim 
+  Dock's exits are also messed up.
+- There's an occasional display bug based on a set of hardcoded "regions" in the display. The region for the party 
+  space has its Y offset set to the wrong value. You probably won't even notice I fixed this.
+
 # Implementation Differences
 
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 

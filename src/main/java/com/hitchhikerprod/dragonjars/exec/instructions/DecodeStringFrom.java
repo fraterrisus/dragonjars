@@ -111,6 +111,11 @@ public class DecodeStringFrom implements Instruction {
             Heap.get(0x08).write(chars.getFirst() | 0x80);
         }
 
+        outputFn.accept(i, pluralize(chars, Heap.get(0x09).read() != 0x00));
+        return getNextIp.apply(i);
+    }
+
+    public static List<Integer> pluralize(List<Integer> chars, boolean usePlural) {
         boolean writeSingular = true;
         final List<Integer> singular = new ArrayList<>();
         boolean writePlural = true;
@@ -131,8 +136,6 @@ public class DecodeStringFrom implements Instruction {
                 }
             }
         }
-
-        outputFn.accept(i, (Heap.get(0x09).read() == 0x00) ? singular : plural);
-        return getNextIp.apply(i);
+        return usePlural ? plural : singular;
     }
 }

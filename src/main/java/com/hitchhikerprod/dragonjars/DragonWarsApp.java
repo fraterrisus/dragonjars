@@ -69,6 +69,7 @@ public class DragonWarsApp extends Application {
         this.stage.setScene(scene);
         this.stage.setResizable(false);
         this.stage.show();
+        this.stage.setOnCloseRequest(ev -> this.close());
 
         this.musicService = new MusicService();
 

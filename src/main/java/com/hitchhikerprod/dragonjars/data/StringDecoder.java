@@ -26,9 +26,9 @@ public class StringDecoder {
         return this.decodedChars;
     }
 
-    public String getDecodedString() {
+    public static String decodeString(List<Integer> chars) {
         StringBuilder builder = new StringBuilder();
-        for (int i : decodedChars) {
+        for (int i : chars) {
             final int codePoint = i & 0x7f;
             if (codePoint == 0x0a || codePoint == 0x0d) {
                 builder.append("\\n");
@@ -37,6 +37,10 @@ public class StringDecoder {
             }
         }
         return builder.toString();
+    }
+
+    public String getDecodedString() {
+        return decodeString(decodedChars);
     }
 
     public void decodeString(Chunk chunk, int pointer) {

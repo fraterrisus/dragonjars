@@ -125,6 +125,9 @@ public class LoadDataTask extends Task<List<Chunk>> {
 
     // BUGFIX
     private static final List<Patch> PATCHES = List.of(
+            // The Big One: enable Thrown Weapons from the back rank
+            new Patch(0x012, 0x0156, (byte)0x0b, (byte)0x0c), // enable Attack action
+            new Patch(0x003, 0x0d29, (byte)0x0b, (byte)0x0c), // enable weapon skill check
             // Purgatory: if you leave to the north, it drops you 2E of where you should be
             new Patch(0x047, 0x1696, (byte)0x0f, (byte)0x0d),
             // Dwarf Ruins: move the Dwarven Hammer chest flag from [9e:80] to [9a:08]
