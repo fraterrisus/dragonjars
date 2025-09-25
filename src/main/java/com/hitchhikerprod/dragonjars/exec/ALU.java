@@ -1,6 +1,8 @@
 package com.hitchhikerprod.dragonjars.exec;
 
 public class ALU {
+    // Note: any flip of the carry flag (cmc in assembly) occurs in the instruction processing. This class is intended
+    // to return the "pure" unadulterated values that are appropriate to the actual x86 instruction.
     public record Result(int value, boolean carry, boolean sign, boolean zero) {}
 
     public static Result addWord(int op1, int op2) {

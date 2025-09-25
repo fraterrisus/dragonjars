@@ -8,6 +8,7 @@ import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
+import com.hitchhikerprod.dragonjars.data.WeaponDamage;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
@@ -240,8 +241,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x003;
-    private static final int BREAKPOINT_ADR = 0x0fce;
+    private static final int BREAKPOINT_CHUNK = 0x000;
+    private static final int BREAKPOINT_ADR = 0x0000;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -251,6 +252,10 @@ public class Interpreter {
             this.ip = nextIP.offset();
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
+            if (memory().getSegmentFrob(cs) != Frob.IN_USE) {
+                System.err.println("instruction read from segment " + cs + " (chunk " + csChunk + ") with frob " +
+                        memory().getSegmentFrob(cs));
+            }
 //            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
                 System.out.println("breakpoint");
@@ -281,13 +286,39 @@ public class Interpreter {
             decodeInitiative(combatSegmentId);
         }
         if (chunkId == 0x003 && ip == 0x0ffc) {
-            System.out.println("Monster confidence: " + getAL());
+            System.out.print("Monster(conf:" + getAL());
         }
         if (chunkId == 0x003 && ip == 0x1023) {
-            System.out.format("Monster bravery: 0x%02x\n", getBL());
+            System.out.print(",brav:" + switch (getBL()) {
+                case 0xc0 -> "HALP";
+                case 0x80 -> "Edgy";
+                case 0x40 -> "Okay";
+                default -> "Good";
+            } + ") ");
         }
-        if (chunkId == 0x003 && ip == 0x0108d) {
-            System.out.format("Monster action: 0x%02x\n", getAL());
+        if (chunkId == 0x003 && ip == 0x0108f) {
+            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
+            System.out.println(switch (getAL()) {
+                case 0,1,2,3,4 -> {
+                    final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
+                    final int attPerRnd = 1 + memory().read(combatSegmentId, Heap.get(0x41).read(2) + 0x26, 1);
+                    final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
+                    final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
+                    yield("attacks(" + attPerRnd + "," + dmg + "," + range + "')");
+                }
+                case 5 -> "blocks";
+                case 6 -> "dodges";
+                case 7 -> "flees";
+                case 8 -> "casts";
+                case 9 -> {
+                    final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
+                    final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
+                    final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
+                    yield("breathes(" + dmg + "," + range + "')");
+                }
+                case 10 -> "calls for help";
+                default -> "passes";
+            });
         }
     }
 

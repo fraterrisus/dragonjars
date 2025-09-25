@@ -3,8 +3,6 @@ package com.hitchhikerprod.dragonjars.exec;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ALUTest {
     @Test
@@ -23,41 +21,40 @@ public class ALUTest {
         assertEquals(0x80000000, ALU.signExtend(0x80000000, 4));
     }
 
-    // These four test cases have been confirmed in the emulator, ignoring the CF flip.
-
-    @Test
-    public void emulateSubtract1() {
-        ALU.Result result = ALU.subByte(0x05, 0x08);
-        assertEquals(0xfd, result.value());
-        assertTrue(result.carry());
-        assertFalse(result.zero());
-        assertTrue(result.sign());
+    private void subHelper(boolean wide, int a, int b, int expected, boolean carry, boolean zero, boolean sign) {
+        ALU.Result result = (wide) ? ALU.subWord(a, b) : ALU.subByte(a, b);
+        assertEquals(expected, result.value(), "Result doesn't match");
+        assertEquals(carry, result.carry(), "Carry flag doesn't match");
+        assertEquals(zero, result.zero(), "Zero flag doesn't match");
+        assertEquals(sign, result.sign(), "Sign flag doesn't match");
     }
 
-    @Test
-    public void emulateSubtract2() {
-        ALU.Result result = ALU.subByte(0x03, 0x03);
-        assertEquals(0x00, result.value());
-        assertFalse(result.carry());
-        assertTrue(result.zero());
-        assertFalse(result.sign());
-    }
+    // These test cases have been confirmed in the emulator.
 
-    @Test
-    public void emulateSubtract3() {
-        ALU.Result result = ALU.subByte(0x90, 0x80);
-        assertEquals(0x10, result.value());
-        assertFalse(result.carry());
-        assertFalse(result.zero());
-        assertFalse(result.sign());
+    @Test public void emulateSubtract1() {
+        subHelper(false, 0x05, 0x08, 0xfd, true, false, true);
+        subHelper(true, 0x05, 0x08, 0xfffd, true, false, true);
     }
-
-    @Test
-    public void emulateSubtract4() {
-        ALU.Result result = ALU.subByte(0x01, 0xff);
-        assertEquals(0x02, result.value());
-        assertTrue(result.carry());
-        assertFalse(result.zero());
-        assertFalse(result.sign());
+    @Test public void emulateSubtract2() {
+        subHelper(false, 0x03, 0x03, 0x00, false, true, false);
+    }
+    @Test public void emulateSubtract3() {
+        subHelper(false, 0x90, 0x80, 0x10, false, false, false);
+    }
+    @Test public void emulateSubtract4() {
+        subHelper(false, 0x01, 0xff, 0x02, true, false, false);
+        subHelper(true, 0x01, 0xffff, 0x02, true, false, false);
+    }
+    @Test public void emulateSubtract5() {
+        subHelper(false, 0xfa, 0xfc, 0xfe, true, false, true);
+        subHelper(true, 0xfffa, 0xfffc, 0xfffe, true, false, true);
+    }
+    @Test public void emulateSubtract6() {
+        subHelper(false, 0xfc, 0xfc, 0x00, false, true, false);
+        subHelper(true, 0xfffc, 0xfffc, 0x00, false, true, false);
+    }
+    @Test public void emulateSubtract7() {
+        subHelper(false, 0xfe, 0xfc, 0x02, false, false, false);
+        subHelper(true, 0xfffe, 0xfffc, 0x02, false, false, false);
     }
 }
