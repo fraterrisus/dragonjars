@@ -1,21 +1,44 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
+import com.hitchhikerprod.dragonjars.data.PartyLocation;
+import com.hitchhikerprod.dragonjars.data.RawData;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
 public class RotateMapView implements Instruction {
-    // This is a bit of a cheat. The assembly reuses adjustForFacing() to load 4b of wall metadata into the target heap
-    // slot (indexed by the 1b immediate). But in practice, the only time it's ever used is 06/03eb (the handler for
-    // D:Create Wall) and 06/0409 (the handler for D:Soften Stone), and even then the actual check logic is based on
-    // heap[26], where we've already loaded the wall metadata for whatever's right in front of us. So what the assembly
-    // is trying to do is modify that metadata -- and ONLY that first byte! -- and then write it back (the job of
-    // UnrotateMapView). So, long story short, all we do here is copy [26] to the target heap slot.
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(), 1);
-        Heap.get(heapIndex).write(Heap.get(Heap.WALL_METADATA).read());
+
+        final PartyLocation loc = Heap.getPartyLocation();
+
+        // The four edges surrounding us are:
+        //   N: the North wall of this square
+        //   E: the West wall of the square at (+1,0)
+        //   S: the North wall of the square at (0,-1)
+        //   w: the West wall of this square
+        final RawData thisSquare = RawData.from(i.mapDecoder().getSquare(loc.pos()));
+        final RawData eastSquare = RawData.from(i.mapDecoder().getSquare(loc.pos().translate(1, 0)));
+        final RawData southSquare = RawData.from(i.mapDecoder().getSquare(loc.pos().translate(0, -1)));
+
+        final int northEdge = thisSquare.getNorthEdge();
+        final int westEdge = thisSquare.getWestEdge();
+        final int southEdge = southSquare.getNorthEdge();
+        final int eastEdge = eastSquare.getWestEdge();
+
+        // The goal is to set the "north" wall to the wall we're facing, and the "west" wall to the wall to our left.
+        // If we're facing north, no action is needed.
+        final RawData newData = switch (loc.facing()) {
+            case NORTH -> thisSquare;
+            case EAST -> thisSquare.setNorthEdge(eastEdge).setWestEdge(northEdge);
+            case SOUTH -> thisSquare.setNorthEdge(southEdge).setWestEdge(eastEdge);
+            case WEST -> thisSquare.setNorthEdge(westEdge).setWestEdge(southEdge);
+        };
+
+        Heap.get(heapIndex).write(newData.value(), 3);
         return ip.incr(OPCODE + IMMEDIATE);
     }
+
 }

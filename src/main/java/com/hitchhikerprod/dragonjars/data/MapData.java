@@ -167,6 +167,12 @@ public class MapData {
         return (flags() & FLAG_WRAPPING) != 0;
     }
 
+    /**
+     * Updates the "have I stepped on this square" flag (raw data 0x000800) for the given square. If the provided
+     * coordinate is outside the board's dimensions but the map is marked as "wrapping", a modulus operator is applied.
+     * If the board is not marked "wrapping", the update is silently ignored.
+     * @param loc The coordinates of the square to update.
+     */
     public void setStepped(GridCoordinate loc) {
         final GridCoordinate temp;
         if (isWrapping()) {
@@ -180,8 +186,25 @@ public class MapData {
         primaryData.write(offset+1, 1, rawData | 0x08);
     }
 
+    /**
+     * Updates the 'raw' three-byte data for the given square. If the provided coordinates are outside the map's
+     * dimensions (less than zero or greater than the map size), the update is silently ignored.
+     * @param loc The coordinates of the square to update.
+     * @param newData The new raw data value.
+     */
+    public void setSquare(GridCoordinate loc, int newData) {
+        setSquare(loc.x(), loc.y(), newData);
+    }
+
+    /**
+     * Updates the 'raw' three-byte data for the given square. If the provided coordinates are outside the map's
+     * dimensions (less than zero or greater than the map size), the update is silently ignored.
+     * @param x The X coordinate of the square to update.
+     * @param y The Y coordinate of the square to update.
+     * @param newData The new raw data value.
+     */
     public void setSquare(int x, int y, int newData) {
-        // FIXME check?
+        if (x < 0 || y < 0 || x >= xMax || y >= yMax) return;
         final int offset = rowPointers57e4.get(y + 1) + (3 * x);
         primaryData.write(offset, 3, newData);
     }

@@ -14,4 +14,8 @@ public record GridCoordinate(int x, int y) {
     public boolean isOutside(int maxx, int maxy) {
         return (x < 0 || x >= maxx || y < 0 || y >= maxy);
     }
+
+    public GridCoordinate translate(int dx, int dy) {
+        return new GridCoordinate(x + dx, y + dy);
+    }
 }

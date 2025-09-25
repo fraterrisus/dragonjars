@@ -7,6 +7,7 @@
 
 # Known Bugs
 
+- The range attribute on light spells isn't currently respected. *L:Mage Fire* is supposed to only show one square.
 - Monsters are making weird combat decisions, like calling for help against a level 5 party and dodging instead of 
   advancing and attacking.
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
