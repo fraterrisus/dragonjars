@@ -162,7 +162,7 @@ who seems to lead the group. "Any enemy of Purgatory is a friend of
 ours. C'mon in and sit by the fire."
 -----
 17. This is the temple of the Yellow Mud Toad, dedicated to the patron
-beast of this city. The temple is a run down and depressing as the rest
+beast of this city. The temple is as run down and depressing as the rest
 of the city. The center of the temple is dominated by a huge statue of
 the Yellow Mud Toad, sunk fully a third of its height into the muddy
 floor of the building. "Everything sinks these days," a priest of the
@@ -515,9 +515,9 @@ An ugly little woman with a cluster of purple eyes enthusiastically
 greets you. "Welcome to Quag, Isle of Luxury!" she says. "I'm so glad
 you're here. We don't get so much business since the war." You learn that
 Quag's only city - the City of the Yellow Mud Toad - is sinking into the
-swamp and the priests of the Yellow Mud Toad are powerless to stop it."But
-it's really quite safe for travelers," the woman is hasty to add. "Quag
-remains an isle of wonders, and many still dream of taking the vapors!" 
+swamp and the priests of the Yellow Mud Toad are powerless to stop it.
+"But it's really quite safe for travelers," the woman is hasty to add.
+"Quag remains an isle of wonders, and many still dream of taking the vapors!"
 
 You judge the woman quite mad. Saying good-bye, you depart.
 -----
@@ -748,7 +748,7 @@ your behavior since entering my city has been intolerable." Mystalvision
 snaps his fingers, and several cruel gentlemen dressed all in black
 appear out of nowhere. "Namtar's Stosstrupen would like to ask you some
 questions," Mystalvision sneers. "I should ask you to come along quietly,
-but it will be more fun to do this the hard way "
+but it will be more fun to do this the hard way."
 -----
 67. This is an open-air slave market, filled with the cry of flesh
 mongers and the laughter of a perfumed crowd. Here men and women are for
@@ -1417,7 +1417,7 @@ the temple. "Truly you are people of the Toad," says a priest. "Please
 accept these boots as our gift." You are provided with several sets
 of oversized golden boots. The boots are fashioned so as to resemble
 the flipper feet of a toad. It will be difficult to walk wearing
-such thing. "The owner of Magic Golden Toad Boots can leap great
+such things. "The owner of Magic Golden Toad Boots can leap great
 distances!" the priest says with pride.
 -----
 114. In the darkest heart of this palace of the dead you find an

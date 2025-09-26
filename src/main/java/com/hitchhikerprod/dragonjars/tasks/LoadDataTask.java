@@ -138,4 +138,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02c2, (byte)0x14, (byte)0x15),
             new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12)
     );
+
+    // the Snake Pit items list (SMD chunk 0x36) is missing the Jade Eyes at location 9, which you could show to a sad
+    // dwarf in order to get a hint about the clan hall
 }

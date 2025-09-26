@@ -17,13 +17,13 @@ public class RunBoardEvent implements Instruction {
         if (location.mapId() != (Heap.get(Heap.DECODED_BOARD_ID).read() & 0x7f)) return nextIP;
 
         final MapData.Square square = i.mapDecoder().getSquare(location.pos());
-        if (square.eventId() != Heap.get(Heap.RECENT_EVENT).read()) {
-            Heap.get(Heap.RECENT_EVENT).write(0);
-            if (square.eventId() != 0) {
-                Heap.get(Heap.NEXT_EVENT).write(square.eventId(), 1);
+        if (square.specialId() != Heap.get(Heap.RECENT_SPECIAL).read()) {
+            Heap.get(Heap.RECENT_SPECIAL).write(0);
+            if (square.specialId() != 0) {
+                Heap.get(Heap.NEXT_SPECIAL).write(square.specialId(), 1);
                 final Address target = new Address(
                         Heap.get(Heap.BOARD_1_SEGIDX).read(),
-                        i.mapDecoder().getEventPointer(square.eventId() + 1)
+                        i.mapDecoder().getEventPointer(square.specialId() + 1)
                 );
                 final After after = new After(i, location, nextIP);
                 i.reenter(target, after);

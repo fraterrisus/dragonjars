@@ -21,12 +21,15 @@ public class Memory {
         }
     }
 
-    public static final int PARTY_HEALTH_CURRENT = 0x14;
-    public static final int PARTY_STUN_CURRENT = 0x18;
-    public static final int PARTY_POWER_CURRENT = 0x1c;
-    public static final int PARTY_STATUS = 0x4c;
-    public static final int PARTY_SUMMONED_LIFESPAN = 0x66;
-    public static final int PARTY_SUMMONED_TICKS = 0x68;
+    public static final int PC_INT_CURRENT = 0x10;
+    public static final int PC_HEALTH_CURRENT = 0x14;
+    public static final int PC_STUN_CURRENT = 0x18;
+    public static final int PC_POWER_CURRENT = 0x1c;
+    public static final int PC_STATUS = 0x4c;
+    public static final int PC_AV = 0x59;
+    public static final int PC_SUMMONED_LIFESPAN = 0x66;
+    public static final int PC_SUMMONED_TICKS = 0x68;
+    public static final int PC_INVENTORY = 0xec;
 
     private final Chunk codeChunk; // contents of DRAGON.COM binary
     private final ModifiableChunk automapChunk; // 0xd1b0

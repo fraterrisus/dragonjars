@@ -241,8 +241,8 @@ public class MapWindow {
     private void drawDoor(Graphics2D gfx, Rectangle door, int texture, int metadata) {
         if ((metadata & 0x40) == 0) {
             if (texture == 0x7a) return;
-            if (texture == 0x73) gfx.setColor(Color.WHITE);
-            else gfx.setColor(Color.LIGHT_GRAY);
+            if (texture == 0x73 || texture == 0x7e) gfx.setColor(Color.WHITE);
+            else gfx.setColor(WALL); // secret door
             gfx.fill(door);
             gfx.setColor(WALL);
             gfx.draw(door);

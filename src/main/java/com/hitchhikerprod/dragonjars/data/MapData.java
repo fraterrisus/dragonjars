@@ -210,6 +210,7 @@ public class MapData {
     }
 
     public Item getItem(int index) {
+        if (index >= items.size()) return null;
         return items.get(index);
     }
 
@@ -387,6 +388,10 @@ public class MapData {
         }
     }
 
+    public List<Action> getActions() {
+        return actions;
+    }
+
     public Optional<Action> findAction(int header, int specialId) {
         return actions.stream()
                 .filter(a -> a.special() == 0 || a.special() == specialId)
@@ -514,6 +519,6 @@ public class MapData {
             int floorTextureChunk,
             Optional<Integer> otherTextureChunk,
             boolean touched,
-            int eventId
+            int specialId
     ) {}
 }

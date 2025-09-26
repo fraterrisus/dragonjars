@@ -1,10 +1,13 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
+import com.hitchhikerprod.dragonjars.tasks.SleepTask;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 
@@ -17,6 +20,16 @@ public class ShowMonsterImage implements Instruction {
         if (monsterId == i.activeMonster()) return nextIP;
 
         i.disableMonsterAnimation();
+        if (monsterId == 0xff) {
+            // Covers [4c/078e], which otherwise is probably expecting to draw straight to the screen
+            i.drawStringBuffer();
+            final PixelRectangle gameplayArea = i.fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
+            i.fg().drawRectangle(gameplayArea, (byte)0);
+            final SleepTask sleepTask = new SleepTask(1000);
+            sleepTask.setOnSucceeded(event -> i.start(nextIP));
+            Thread.ofPlatform().daemon().start(sleepTask);
+            return null;
+        }
 
         final int priChunkId = 0x8a + (2 * monsterId);
         final int priSegment = i.getSegmentForChunk(priChunkId, Frob.IN_USE);

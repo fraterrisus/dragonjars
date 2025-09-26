@@ -101,21 +101,21 @@ public class SpellDecayTask extends Task<Void> {
             final int base = Heap.get(Heap.MARCHING_ORDER + pcid).lockedRead() << 8;
 
             // If summon is already dead, don't bother decrementing its life counter.
-            final Address status = new Address(partySeg, base + Memory.PARTY_STATUS);
+            final Address status = new Address(partySeg, base + Memory.PC_STATUS);
             final int statusValue = i.memory().read(status, 1);
             if ((statusValue & 0x01) > 0) continue;
 
             // This is written by [06:0b86] when the spell is cast
-            final Address lifespanMacro = new Address(partySeg, base + Memory.PARTY_SUMMONED_LIFESPAN);
+            final Address lifespanMacro = new Address(partySeg, base + Memory.PC_SUMMONED_LIFESPAN);
             // This isn't in the code; I'm stealing an otherwise unused byte of party data.
-            final Address lifespanMicro = new Address(partySeg, base + Memory.PARTY_SUMMONED_TICKS);
+            final Address lifespanMicro = new Address(partySeg, base + Memory.PC_SUMMONED_TICKS);
 
             final int bigCounter = i.memory().read(lifespanMacro, 2);
             final int littleCounter = i.memory().read(lifespanMicro, 2);
             if (littleCounter > 0) {
                 if (littleCounter == 1 && bigCounter == 0) {
-                    i.memory().write(partySeg, base + Memory.PARTY_HEALTH_CURRENT, 4, 0);
-                    i.memory().write(partySeg, base + Memory.PARTY_STUN_CURRENT, 4, 0);
+                    i.memory().write(partySeg, base + Memory.PC_HEALTH_CURRENT, 4, 0);
+                    i.memory().write(partySeg, base + Memory.PC_STUN_CURRENT, 4, 0);
                     i.memory().write(status, 1, statusValue | 0x01); // mark Dead
                     Heap.get(Heap.PC_DIRTY + pcid).lockedWrite(0);
                     updates = true;

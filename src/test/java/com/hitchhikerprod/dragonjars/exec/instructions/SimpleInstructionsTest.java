@@ -10,7 +10,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimpleInstructionsTest {
@@ -18,12 +17,12 @@ public class SimpleInstructionsTest {
     @Test
     public void copyHeap3E3F() {
         final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY));
-        Heap.get(Heap.RECENT_EVENT).write(0x00);
-        Heap.get(Heap.NEXT_EVENT).write(0xff);
+        Heap.get(Heap.RECENT_SPECIAL).write(0x00);
+        Heap.get(Heap.NEXT_SPECIAL).write(0xff);
 
         Instructions.COPY_HEAP_3F_3E.exec(i);
 
-        assertEquals(0xff, Heap.get(Heap.RECENT_EVENT).read());
+        assertEquals(0xff, Heap.get(Heap.RECENT_SPECIAL).read());
     }
     
     @Test

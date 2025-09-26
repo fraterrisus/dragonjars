@@ -77,6 +77,17 @@ public class Item {
         return chunk.getBytes(this.offset, 10);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Item that) {
+            final List<Byte> myBytes = toBytes();
+            final List<Byte> theirBytes = that.toBytes();
+            myBytes.set(0x07, (byte)0);
+            theirBytes.set(0x07, (byte)0);
+            return (myBytes.equals(theirBytes) && this.name.equals(that.name));
+        } else return false;
+    }
+
     public String toString() {
         final List<String> attributes = new ArrayList<>();
         final StringBuilder sb = new StringBuilder();

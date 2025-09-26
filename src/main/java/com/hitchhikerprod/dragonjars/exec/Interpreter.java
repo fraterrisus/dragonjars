@@ -241,8 +241,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x06c;
-    private static final int BREAKPOINT_ADR = 0x0881;
+    private static final int BREAKPOINT_CHUNK = 0x04c;
+    private static final int BREAKPOINT_ADR = 0x00789;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -303,7 +303,7 @@ public class Interpreter {
         if (chunkId == 0x003 && ip == 0x00cfb) {
             decodePartyAttack();
         }
-        if (chunkId == 0x003 && ip == 0x00f76) {
+        if (chunkId == 0x003 && ip == 0x00f76) { // party attack roll (top)
             final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
             final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
             final List<Integer> chars = memory().readList(new Address(PARTY_SEGMENT, pcBaseAddress), 12)
@@ -316,10 +316,10 @@ public class Interpreter {
             else if (attackRoll == 15)
                 System.out.println(": 1d15+3 = 18, automatic miss");
         }
-        if (chunkId == 0x003 && ip == 0x00fa5) {
+        if (chunkId == 0x003 && ip == 0x00fa5) { // party attack roll (bottom)
             final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
             final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final int attackerAV = memory().read(PARTY_SEGMENT, pcBaseAddress + 0x59, 1);
+            final int attackerAV = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_AV, 1);
             final int weaponSkill = Heap.get(0x79).read();
             final int defenderDV = Heap.get(0x7a).read();
             final int attackRoll = Heap.get(0x7b).read();
@@ -327,6 +327,40 @@ public class Interpreter {
             System.out.print(": 13 + AV(" + attackerAV + ") + WS(" + weaponSkill + ") - DV("
                     + defenderDV + ") = " + target + " >= 1d15+3 = " + attackRoll);
             System.out.println((attackRoll <= target) ? ", hit" : ", miss");
+        }
+        if (chunkId == 0x006 && ip == 0x00ae1) { // party spell attack roll
+            final int attackRoll = getAL();
+            if (attackRoll == 0)
+                System.out.println("  1d15+3 = 3, automatic hit");
+            else if (attackRoll == 15)
+                System.out.println("  1d15+3 = 18, automatic miss");
+        }
+        if (chunkId == 0x006 && ip == 0x00631) {
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final List<Integer> chars = memory().readList(new Address(PARTY_SEGMENT, pcBaseAddress), 12)
+                    .stream().filter(b -> b != 0).map(b -> (int) b).toList();
+            System.out.print(StringDecoder.decodeString(chars));
+
+            final boolean variablePower = Heap.get(0x47).read() != 0;
+            final int powerCost = Heap.get(0x86).read(2);
+            final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
+            final int totalDamage = Heap.get(0x61).read(2);
+            System.out.print(": spell damage ");
+            if (variablePower) System.out.print(powerCost + " x ");
+            System.out.println(damageDie + " = " + totalDamage);
+        }
+        if (chunkId == 0x006 && ip == 0x0067d) {
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final int attackerInt = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_INT_CURRENT, 1);
+            final int magicSkill = Heap.get(0x79).read();
+            final int defenderDV = Heap.get(0x7a).read();
+            final int attackRoll = Heap.get(0x7b).read();
+            final int target = 13 + (attackerInt / 4) + magicSkill - defenderDV;
+            System.out.print("  13 + Int(" + (attackerInt/4) + ") + MS(" + magicSkill + ") - DV("
+                    + defenderDV + ") = " + target + " >= 1d15+3 = " + attackRoll);
+            System.out.println((attackRoll <= target) ? ", hit" : ", half-damage");
         }
     }
 
@@ -1193,7 +1227,7 @@ public class Interpreter {
             x++;
         }
 
-        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PARTY_STATUS, 2);
+        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PC_STATUS, 2);
         for (int i = 3; i >= 0; i--) {
             final int mask = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_BITMASKS + i);
             if ((statuses & mask) > 0) {
@@ -1203,9 +1237,9 @@ public class Interpreter {
             }
         }
 
-        drawBarHelper(statusRegion, 0x00, charBaseAddress + Memory.PARTY_HEALTH_CURRENT, 12);
-        drawBarHelper(statusRegion, 0x03, charBaseAddress + Memory.PARTY_STUN_CURRENT, 10);
-        drawBarHelper(statusRegion, 0x06, charBaseAddress + Memory.PARTY_POWER_CURRENT, 9);
+        drawBarHelper(statusRegion, 0x00, charBaseAddress + Memory.PC_HEALTH_CURRENT, 12);
+        drawBarHelper(statusRegion, 0x03, charBaseAddress + Memory.PC_STUN_CURRENT, 10);
+        drawBarHelper(statusRegion, 0x06, charBaseAddress + Memory.PC_POWER_CURRENT, 9);
 
         setBackground();
     }
