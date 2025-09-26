@@ -5,6 +5,7 @@ module com.hitchhikerprod.dragonjars {
     requires javafx.graphics;
     requires javafx.base;
     requires java.prefs;
+    requires com.fasterxml.jackson.jr.ob;
 
     exports com.hitchhikerprod.dragonjars;
     opens com.hitchhikerprod.dragonjars to javafx.fxml;
@@ -12,5 +13,5 @@ module com.hitchhikerprod.dragonjars {
     exports com.hitchhikerprod.dragonjars.exec;
     exports com.hitchhikerprod.dragonjars.tasks;
     exports com.hitchhikerprod.dragonjars.ui;
-    opens com.hitchhikerprod.dragonjars.ui to javafx.fxml;
+    opens com.hitchhikerprod.dragonjars.ui to javafx.fxml, com.fasterxml.jackson.jr.ob;
 }

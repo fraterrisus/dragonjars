@@ -1,0 +1,634 @@
+[
+  {
+    "school": "Low",
+    "name": "Charm",
+    "power": "3",
+    "targets": "1",
+    "range": "",
+    "type": "Buff",
+    "effect": "heal 1d4 hp, +1 AV for duration of battle"
+  },
+  {
+    "school": "Low",
+    "name": "Lesser Heal",
+    "power": "2",
+    "targets": "1",
+    "range": "",
+    "type": "Heal",
+    "effect": "1d4 hp"
+  },
+  {
+    "school": "Low",
+    "name": "Luck",
+    "power": "3",
+    "targets": "1",
+    "range": "",
+    "type": "Buff",
+    "effect": "+2 DV for duration of battle"
+  },
+  {
+    "school": "Low",
+    "name": "Mage Fire",
+    "power": "2",
+    "targets": "1",
+    "range": "30’",
+    "type": "Zap",
+    "effect": "1–8 dmg (makes a nice ‘missile weapon’ for front line PCs"
+  },
+  {
+    "school": "Low",
+    "name": "Disarm",
+    "power": "4",
+    "targets": "1",
+    "range": "30’",
+    "type": "Debuff",
+    "effect": "Disarms target; not all monsters can be Disarmed"
+  },
+  {
+    "school": "Low",
+    "name": "Mage Light",
+    "power": "var.",
+    "targets": "",
+    "range": "20’",
+    "type": "Misc.",
+    "effect": "Light, 3m/pt, 30' range"
+  },
+  {
+    "school": "High",
+    "name": "Healing",
+    "power": "3",
+    "targets": "1",
+    "range": "",
+    "type": "Heal",
+    "where": "Slave Camp",
+    "effect": "1d6 hp"
+  },
+  {
+    "school": "High",
+    "name": "Group Heal",
+    "power": "6",
+    "targets": "party",
+    "range": "",
+    "type": "Heal",
+    "where": "Magic College",
+    "effect": "1d6 hp"
+  },
+  {
+    "school": "High",
+    "name": "Mystic Might",
+    "power": "4",
+    "targets": "1",
+    "range": "",
+    "type": "Buff",
+    "where": "Freeport, Dwarf Clan Hall",
+    "effect": "+15 STR for duration of battle"
+  },
+  {
+    "school": "High",
+    "name": "Sala’s Swift",
+    "power": "8",
+    "targets": "1",
+    "range": "",
+    "type": "Buff",
+    "where": "Freeport, Dragon Valley",
+    "effect": "+8 DEX for duration of battle"
+  },
+  {
+    "school": "High",
+    "name": "Vorn’s Guard",
+    "power": "6",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Freeport, Dragon Valley",
+    "effect": "+2 AC for duration of battle"
+  },
+  {
+    "school": "High",
+    "name": "Cloak Arcane",
+    "power": "var.",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Slave Camp",
+    "effect": "+2 AC, lasts 1m/pt"
+  },
+  {
+    "school": "High",
+    "name": "Fire Light",
+    "power": "var.",
+    "targets": "1",
+    "range": "30’",
+    "type": "Zap",
+    "where": "Slave Camp, Necropolis, Tars Underground, Magic College",
+    "effect": "1d6 hp/pt"
+  },
+  {
+    "school": "High",
+    "name": "Ice Chill",
+    "power": "var.",
+    "targets": "1",
+    "range": "50’",
+    "type": "Zap",
+    "w": "Lansk Guard Bridge, Magic College",
+    "effect": "1d4 hp/pt"
+  },
+  {
+    "school": "High",
+    "name": "Elvar’s Fire",
+    "power": "6",
+    "targets": "group",
+    "range": "30’",
+    "type": "Zap",
+    "where": "Tars Ruins, Magic College",
+    "effect": "2d6 hp"
+  },
+  {
+    "school": "High",
+    "name": "Poog’s Vortex",
+    "power": "11",
+    "targets": "group",
+    "range": "20’",
+    "type": "Zap",
+    "where": "Phoebus, Magic College",
+    "effect": "4d6 hp"
+  },
+  {
+    "school": "High",
+    "name": "Big Chill",
+    "power": "15",
+    "targets": "all",
+    "range": "30’",
+    "type": "Zap",
+    "where": "Necropolis, Magic College, Byzanople Dungeon",
+    "effect": "4d6 hp"
+  },
+  {
+    "school": "High",
+    "name": "Reveal Glamour",
+    "aliases": [
+      "Rev. Glamour"
+    ],
+    "power": "2",
+    "targets": "",
+    "range": "40’",
+    "type": "Misc.",
+    "where": "Mud Toad, Freeport",
+    "effect": "Dispels illusions"
+  },
+  {
+    "school": "High",
+    "name": "Sense Traps",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Slave Camp",
+    "effect": "Ignore traps, lasts 2m/pt"
+  },
+  {
+    "school": "High",
+    "name": "Dazzle",
+    "power": "3",
+    "targets": "1",
+    "range": "30’",
+    "type": "Debuff",
+    "where": "Byzanople Dungeon, Freeport, Magic College",
+    "effect": "Enemy misses next turn"
+  },
+  {
+    "school": "High",
+    "name": "Cowardice",
+    "power": "8",
+    "targets": "group",
+    "range": "60’",
+    "type": "Debuff",
+    "where": "Freeport, Dragon Valley",
+    "effect": "Group runs away"
+  },
+  {
+    "school": "High",
+    "name": "Air Summon",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Tars Ruins, Sunken Ruins",
+    "effect": "Can also be used to cross the Nisir"
+  },
+  {
+    "school": "High",
+    "name": "Water Summon",
+    "aliases": [
+      "Water Sum."
+    ],
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Mud Toad, Sunken Ruins",
+    "effect": ""
+  },
+  {
+    "school": "High",
+    "name": "Earth Summon",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Sunken Ruins, Pilgrim Dock",
+    "effect": ""
+  },
+  {
+    "school": "High",
+    "name": "Fire Summon",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Magic College",
+    "effect": ""
+  },
+  {
+    "school": "Druid",
+    "name": "Greater Healing",
+    "power": "4",
+    "targets": "1",
+    "range": "",
+    "type": "Heal",
+    "where": "Slave Camp, Mystic Wood",
+    "effect": "1d6 hp"
+  },
+  {
+    "school": "Druid",
+    "name": "Cure All",
+    "power": "6",
+    "targets": "party",
+    "range": "",
+    "type": "Heal",
+    "where": "Lansk Undercity, Mystic Wood",
+    "effect": "1d8 hp (best group-heal spell)"
+  },
+  {
+    "school": "Druid",
+    "name": "Scare",
+    "power": "4",
+    "targets": "party",
+    "range": "20’",
+    "type": "Buff",
+    "where": "Slave Camp, Necropolis, Mystic Wood",
+    "effect": "+2 AV for duration of combat"
+  },
+  {
+    "school": "Druid",
+    "name": "Death Curse",
+    "power": "6",
+    "targets": "1",
+    "range": "40’",
+    "type": "Zap",
+    "where": "Tars Underground, Mystic Wood, Phoebus",
+    "effect": "3d6 hp"
+  },
+  {
+    "school": "Druid",
+    "name": "Fire Blast",
+    "power": "12",
+    "targets": "group",
+    "range": "30’",
+    "type": "Zap",
+    "where": "Mystic Wood",
+    "effect": "4d6 hp"
+  },
+  {
+    "school": "Druid",
+    "name": "Insect Plague",
+    "aliases": [
+      "Insect Plag.",
+      "Insct.Plague"
+    ],
+    "power": "4",
+    "targets": "group",
+    "range": "60’",
+    "type": "Debuff",
+    "where": "Mystic Wood, Necropolis",
+    "effect": "-2 AV, -2 DV for duration of combat"
+  },
+  {
+    "school": "Druid",
+    "name": "Whirl Wind",
+    "power": "4",
+    "targets": "group",
+    "range": "40’",
+    "type": "Debuff",
+    "where": "Mystic Wood",
+    "effect": "Pushes the group back 30’"
+  },
+  {
+    "school": "Druid",
+    "name": "Brambles",
+    "power": "5",
+    "targets": "group",
+    "range": "60’",
+    "type": "Debuff",
+    "where": "Mystic Wood",
+    "effect": "Enemies miss next turn"
+  },
+  {
+    "school": "Druid",
+    "name": "Create Wall",
+    "power": "5",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Phoebus, Mystic Wood, Lansk Undercity",
+    "effect": "Use to repair the Mud God’s temple"
+  },
+  {
+    "school": "Druid",
+    "name": "Soften Stone",
+    "power": "6",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Freeport (x2",
+    "effect": "Useful for getting around dungeons"
+  },
+  {
+    "school": "Druid",
+    "name": "Beast Call",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Mystic Wood, Snake Pit",
+    "effect": ""
+  },
+  {
+    "school": "Druid",
+    "name": "Wood Spirit",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Mystic Wood Phoebus Dungeon",
+    "effect": ""
+  },
+  {
+    "school": "Druid",
+    "name": "Invoke Spirit",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Mystic Wood",
+    "effect": ""
+  },
+  {
+    "school": "Sun",
+    "name": "Sun Light",
+    "power": "3",
+    "targets": "1",
+    "range": "",
+    "type": "Heal",
+    "where": "Forlorn Guard Bridge",
+    "effect": "1d6 hp"
+  },
+  {
+    "school": "Sun",
+    "name": "Heal",
+    "power": "4",
+    "targets": "1",
+    "range": "",
+    "type": "Heal",
+    "where": "never, but Valar comes with it",
+    "effect": "1d8 hp"
+  },
+  {
+    "school": "Sun",
+    "name": "Major Healing",
+    "aliases": [
+      "Major Heal"
+    ],
+    "power": "6",
+    "targets": "party",
+    "range": "",
+    "type": "Heal",
+    "where": "Phoebus Dungeon, Mud Toad",
+    "effect": "1d6 hp"
+  },
+  {
+    "school": "Sun",
+    "name": "Holy Aim",
+    "power": "5",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Phoebus Dungeon, Mud Toad",
+    "effect": "+2 AV for duration of battle"
+  },
+  {
+    "school": "Sun",
+    "name": "Battle Power",
+    "power": "8",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Game Preserve",
+    "effect": "+10 STR for duration of battle"
+  },
+  {
+    "school": "Sun",
+    "name": "Mithras’ Bless",
+    "aliases": [
+      "Mit. Bless"
+    ],
+    "power": "5",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Phoebus",
+    "effect": "+3 DV for duration of battle"
+  },
+  {
+    "school": "Sun",
+    "name": "Armor of Light",
+    "aliases": [
+      "Armor of Lt."
+    ],
+    "power": "6",
+    "targets": "1",
+    "range": "",
+    "type": "Buff",
+    "where": "Phoebus Dungon, Mud Toad",
+    "effect": "+2 DV for duration of battle"
+  },
+  {
+    "school": "Sun",
+    "name": "Sun Stroke",
+    "power": "var",
+    "targets": "1",
+    "range": "20’",
+    "type": "Zap",
+    "where": "Slave Camp, Tars Underground, Phoebus",
+    "effect": "1d8 hp/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Rage of Mithras",
+    "aliases": [
+      "Rage of Mit."
+    ],
+    "power": "var",
+    "targets": "1",
+    "range": "70’",
+    "type": "Zap",
+    "where": "Mud Toad",
+    "effect": "1d6 hp/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Exorcism",
+    "power": "5",
+    "targets": "group",
+    "range": "50’",
+    "type": "Zap",
+    "where": "Tars Ruins",
+    "effect": "6d6 hp, Undead only"
+  },
+  {
+    "school": "Sun",
+    "name": "Inferno",
+    "power": "var.",
+    "targets": "all",
+    "range": "40’",
+    "type": "Zap",
+    "where": "Necropolis",
+    "effect": "1d4 hp/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Wrath of Mithras",
+    "power": "var.",
+    "targets": "group",
+    "range": "90’",
+    "type": "Zap",
+    "where": "never, but monsters will use it against you!",
+    "effect": "1d4 hp/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Fire Storm",
+    "power": "20",
+    "targets": "all",
+    "range": "60’",
+    "type": "Zap",
+    "where": "Lanac’toor’s Laboratory",
+    "effect": "6d6 hp"
+  },
+  {
+    "school": "Sun",
+    "name": "Charger",
+    "power": "8",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Freeport",
+    "effect": "Adds 1 charge to a magic item"
+  },
+  {
+    "school": "Sun",
+    "name": "Disarm Trap",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Phoebus Dungeon, Lansk Guard Bridge",
+    "effect": "Ignore traps, lasts 2m/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Guidance",
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Misc.",
+    "where": "Tars Ruins",
+    "effect": "Adds a compass to the UI, 3m/pt"
+  },
+  {
+    "school": "Sun",
+    "name": "Radiance",
+    "power": "var.",
+    "targets": "",
+    "range": "40’",
+    "type": "Misc.",
+    "where": "Lansk Guard Bridge",
+    "effect": "Light, 2m/pt, 40' range"
+  },
+  {
+    "school": "Sun",
+    "name": "Column of Fire",
+    "aliases": [
+      "Fire Column"
+    ],
+    "power": "5",
+    "targets": "group",
+    "range": "40’",
+    "type": "Debuff",
+    "where": "Game Preserve",
+    "effect": "Prevents group from Advancing for one round"
+  },
+  {
+    "school": "Sun",
+    "name": "Light Flash",
+    "power": "6",
+    "targets": "group",
+    "range": "50’",
+    "type": "Debuff",
+    "where": "easter egg",
+    "effect": "Enemies miss next turn"
+  },
+  {
+    "school": "Sun",
+    "name": "Summon Salamander",
+    "aliases": [
+      "Sum. Salam."
+    ],
+    "power": "var.",
+    "targets": "",
+    "range": "",
+    "type": "Summon",
+    "where": "Mud Toad",
+    "effect": ""
+  },
+  {
+    "school": "Misc",
+    "name": "Zak’s Speed",
+    "power": "10",
+    "targets": "party",
+    "range": "",
+    "type": "Buff",
+    "where": "Lanac’toor’s Lab",
+    "effect": "+15 DEX for duration of combat"
+  },
+  {
+    "school": "Misc",
+    "name": "Kill Ray",
+    "power": "15",
+    "targets": "1",
+    "range": "50’",
+    "type": "Zap",
+    "where": "Lanac’toor’s Lab",
+    "effect": "10d8 hp"
+  },
+  {
+    "school": "Misc",
+    "name": "Prison",
+    "power": "8",
+    "targets": "group",
+    "range": "60’",
+    "type": "Debuff",
+    "where": "easter egg",
+    "effect": "Prevents targets from Advancing for duration of combat"
+  }
+]

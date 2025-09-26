@@ -17,6 +17,7 @@ import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
 import com.hitchhikerprod.dragonjars.ui.PartyStateDialog;
 import com.hitchhikerprod.dragonjars.ui.PreferencesWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
+import com.hitchhikerprod.dragonjars.ui.SpellWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -185,6 +186,10 @@ public class DragonWarsApp extends Application {
 
     public void openPreferencesDialog() {
         PreferencesWindow.getInstance().show();
+    }
+
+    public void openSpellsWindow() {
+        SpellWindow.getInstance().show();
     }
 
     public String runOpenFileDialog(String header) {

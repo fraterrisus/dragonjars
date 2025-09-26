@@ -58,6 +58,9 @@ public class MenuBar {
         final MenuItem paraMI = new MenuItem("Paragraphs");
         items.put("help.paragraphs", paraMI);
 
+        final MenuItem spellsMI = new MenuItem("Spells");
+        items.put("help.spells", spellsMI);
+
         final MenuItem mapMI = new MenuItem("Map");
         items.put("help.map", mapMI);
 
@@ -70,8 +73,8 @@ public class MenuBar {
         final MenuItem aboutMI = new MenuItem("About DragonJars");
         items.put("help.about", aboutMI);
 
-        helpMenu.getItems().setAll(paraMI, mapMI,
-                new SeparatorMenuItem(), partyMI, stateMI,
+        helpMenu.getItems().setAll(paraMI, spellsMI,
+                new SeparatorMenuItem(), mapMI, partyMI, stateMI,
                 new SeparatorMenuItem(), aboutMI);
         return helpMenu;
     }
@@ -82,6 +85,7 @@ public class MenuBar {
         items.get("help.paragraphs").setOnAction(ev -> app.openParagraphsWindow());
         items.get("help.party").setOnAction(ev -> app.openPartyStateDialog());
         items.get("help.state").setOnAction(ev -> app.openGameStateWindow());
+        items.get("help.spells").setOnAction(ev -> app.openSpellsWindow());
     }
 
     public Node asNode() { return menuBar; }

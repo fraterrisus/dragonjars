@@ -13,6 +13,7 @@ repositories {
     mavenCentral()
 }
 
+val jacksonVersion = "2.20.0"
 val junitVersion = "5.10.2"
 
 java {
@@ -43,6 +44,7 @@ javafx {
 }
 
 dependencies {
+    implementation("com.fasterxml.jackson.jr:jackson-jr-objects:${jacksonVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.mockito:mockito-core:5.+")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
