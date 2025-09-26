@@ -14,65 +14,83 @@ import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.Memory;
 
-import java.util.Objects;
+import java.util.List;
 
 public class FindBoardAction implements Instruction {
+    Interpreter i;
+    List<Action> actions;
+    boolean foundOne = false;
+
     @Override
     public Address exec(Interpreter i) {
         // The assembly for this is a lot more complicated; this is a major candidate for bug fixes.
         final Address nextIP = i.getIP().incr();
         if (Heap.get(Heap.BOARD_ID).read() != Heap.get(Heap.DECODED_BOARD_ID).read()) return nextIP;
+        this.i = i;
+        this.actions = i.mapDecoder().getActions();
+        return searchForActions(nextIP);
+    }
 
-        final PartyLocation loc = Heap.getPartyLocation();
-        final MapData.Square square = i.mapDecoder().getSquare(loc.pos());
+    private Address searchForActions(Address nextIP) {
+        while (!actions.isEmpty()) {
+            final Action action = actions.removeFirst();
 
-        final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-        final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-        final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
-        final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
-        final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
-        final int itemUsed = Heap.get(0x88).read();
-        final int skillUsed = Heap.get(0x85).read();
+            final PartyLocation loc = Heap.getPartyLocation();
+            final MapData.Square square = i.mapDecoder().getSquare(loc.pos());
 
-        Action matchingAction = null;
-        for (Action action : i.mapDecoder().getActions()) {
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
+            final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
+            final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
+            final int itemUsed = Heap.get(0x88).read();
+            final int skillUsed = Heap.get(0x85).read();
+
+            boolean found = false;
 
             switch (action) {
                 case ItemAction a -> {
                     if (itemUsed == 0) continue;
-                    if (square.specialId() != action.special()) continue;
+                    if (!matchingSpecial(action, square)) continue;
                     final Item matchItem = i.mapDecoder().getItem(a.getItemIndex());
                     final Item usedItem = new Item(partyData).decode(itemBaseAddress);
-                    if (usedItem.equals(matchItem)) matchingAction = action;
+                    if (usedItem.equals(matchItem)) found = true;
                 }
                 case SkillAction a -> {
-                    if (square.specialId() != action.special()) continue;
-                    if (a.header() == skillUsed) matchingAction = action;
+                    if (!matchingSpecial(action, square)) continue;
+                    if (a.header() == skillUsed) found = true;
                 }
                 case SpellAction a -> {
-                    if (square.specialId() != action.special()) continue;
-                    if (a.header() == skillUsed) matchingAction = action;
+                    if (!matchingSpecial(action, square)) continue;
+                    if (a.header() == skillUsed) found = true;
                 }
                 case MatchAction a -> {
-                    if (a.header() == 0xfe) matchingAction = action;
-                    if (square.specialId() != action.special()) continue;
-                    if (a.header() == 0xfd) matchingAction = action;
+                    if (a.header() == 0xfe) {
+                        found = true;
+                    } else {
+                        if (!matchingSpecial(action, square)) continue;
+                        if (a.header() == 0xfd) found = true;
+                    }
                 }
                 default -> throw new RuntimeException();
             }
-            if (Objects.nonNull(matchingAction)) break;
+
+            if (found) {
+                foundOne = true;
+                final Address target = new Address(
+                        Heap.get(Heap.BOARD_1_SEGIDX).read(),
+                        i.mapDecoder().getEventPointer(action.event() + 1)
+                );
+                i.reenter(target, () -> searchForActions(nextIP));
+                return null;
+            }
         }
 
-        if (Objects.nonNull(matchingAction)) {
-            final Address target = new Address(
-                    Heap.get(Heap.BOARD_1_SEGIDX).read(),
-                    i.mapDecoder().getEventPointer(matchingAction.event() + 1)
-            );
-            i.reenter(target, () -> { i.setCarryFlag(true); return nextIP; });
-            return null;
-        } else {
-            i.setCarryFlag(false);
-            return nextIP;
-        }
+        i.setCarryFlag(foundOne);
+        return nextIP;
+    }
+
+    private boolean matchingSpecial(Action action, MapData.Square square) {
+        return (action.special() == 0 || action.special() == square.specialId());
     }
 }
