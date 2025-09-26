@@ -3,7 +3,7 @@
     "school": "Low",
     "name": "Charm",
     "power": "3",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Buff",
     "effect": "heal 1d4 hp, +1 AV for duration of battle"
@@ -12,7 +12,7 @@
     "school": "Low",
     "name": "Lesser Heal",
     "power": "2",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Heal",
     "effect": "1d4 hp"
@@ -21,7 +21,7 @@
     "school": "Low",
     "name": "Luck",
     "power": "3",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Buff",
     "effect": "+2 DV for duration of battle"
@@ -30,16 +30,16 @@
     "school": "Low",
     "name": "Mage Fire",
     "power": "2",
-    "targets": "1",
+    "targets": "single",
     "range": "30’",
     "type": "Zap",
-    "effect": "1–8 dmg (makes a nice ‘missile weapon’ for front line PCs"
+    "effect": "1–8 hp"
   },
   {
     "school": "Low",
     "name": "Disarm",
     "power": "4",
-    "targets": "1",
+    "targets": "single",
     "range": "30’",
     "type": "Debuff",
     "effect": "Disarms target; not all monsters can be Disarmed"
@@ -47,17 +47,17 @@
   {
     "school": "Low",
     "name": "Mage Light",
-    "power": "var.",
+    "power": "var",
     "targets": "",
-    "range": "20’",
+    "range": "30’",
     "type": "Misc.",
-    "effect": "Light, 3m/pt, 30' range"
+    "effect": "Light, 3m/pt"
   },
   {
     "school": "High",
     "name": "Healing",
     "power": "3",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Heal",
     "where": "Slave Camp",
@@ -77,7 +77,7 @@
     "school": "High",
     "name": "Mystic Might",
     "power": "4",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Buff",
     "where": "Freeport, Dwarf Clan Hall",
@@ -87,7 +87,7 @@
     "school": "High",
     "name": "Sala’s Swift",
     "power": "8",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Buff",
     "where": "Freeport, Dragon Valley",
@@ -106,18 +106,18 @@
   {
     "school": "High",
     "name": "Cloak Arcane",
-    "power": "var.",
+    "power": "var",
     "targets": "party",
     "range": "",
     "type": "Buff",
     "where": "Slave Camp",
-    "effect": "+2 AC, lasts 1m/pt"
+    "effect": "+2 AC, 1m/pt"
   },
   {
     "school": "High",
     "name": "Fire Light",
-    "power": "var.",
-    "targets": "1",
+    "power": "var",
+    "targets": "single",
     "range": "30’",
     "type": "Zap",
     "where": "Slave Camp, Necropolis, Tars Underground, Magic College",
@@ -126,8 +126,8 @@
   {
     "school": "High",
     "name": "Ice Chill",
-    "power": "var.",
-    "targets": "1",
+    "power": "var",
+    "targets": "single",
     "range": "50’",
     "type": "Zap",
     "w": "Lansk Guard Bridge, Magic College",
@@ -179,18 +179,18 @@
   {
     "school": "High",
     "name": "Sense Traps",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Misc.",
     "where": "Slave Camp",
-    "effect": "Ignore traps, lasts 2m/pt"
+    "effect": "Ignore traps, 2m/pt"
   },
   {
     "school": "High",
     "name": "Dazzle",
     "power": "3",
-    "targets": "1",
+    "targets": "single",
     "range": "30’",
     "type": "Debuff",
     "where": "Byzanople Dungeon, Freeport, Magic College",
@@ -209,12 +209,12 @@
   {
     "school": "High",
     "name": "Air Summon",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Tars Ruins, Sunken Ruins",
-    "effect": "Can also be used to cross the Nisir"
+    "effect": "12HP 12DX 8AC 1d10 dmg, 4m/pt"
   },
   {
     "school": "High",
@@ -222,38 +222,38 @@
     "aliases": [
       "Water Sum."
     ],
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Mud Toad, Sunken Ruins",
-    "effect": ""
+    "effect": "25HP 15DX 11AC 1d20 dmg, 4m/pt"
   },
   {
     "school": "High",
     "name": "Earth Summon",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Sunken Ruins, Pilgrim Dock",
-    "effect": ""
+    "effect": "15HP 14DX 10AC 1d20 dmg, 4m/pt"
   },
   {
     "school": "High",
     "name": "Fire Summon",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Magic College",
-    "effect": ""
+    "effect": "35HP 18DX 15AC 2d20 dmg, 4m/pt"
   },
   {
     "school": "Druid",
     "name": "Greater Healing",
     "power": "4",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Heal",
     "where": "Slave Camp, Mystic Wood",
@@ -283,7 +283,7 @@
     "school": "Druid",
     "name": "Death Curse",
     "power": "6",
-    "targets": "1",
+    "targets": "single",
     "range": "40’",
     "type": "Zap",
     "where": "Tars Underground, Mystic Wood, Phoebus",
@@ -350,44 +350,44 @@
     "targets": "",
     "range": "",
     "type": "Misc.",
-    "where": "Freeport (x2",
-    "effect": "Useful for getting around dungeons"
+    "where": "Freeport (x2)",
+    "effect": "Removes a wall (on most maps)"
   },
   {
     "school": "Druid",
     "name": "Beast Call",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Mystic Wood, Snake Pit",
-    "effect": ""
+    "effect": "13HP 16DX 7AC 1d12 dmg, 4m/pt"
   },
   {
     "school": "Druid",
     "name": "Wood Spirit",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
-    "where": "Mystic Wood Phoebus Dungeon",
-    "effect": ""
+    "where": "Mystic Wood, Phoebus Dungeon",
+    "effect": "19HP 16DX 9AC 1d12 dmg, 4m/pt"
   },
   {
     "school": "Druid",
     "name": "Invoke Spirit",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Mystic Wood",
-    "effect": ""
+    "effect": "13HP 18DX 12AC 3d10 dmg, 4m/pt"
   },
   {
     "school": "Sun",
     "name": "Sun Light",
     "power": "3",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Heal",
     "where": "Forlorn Guard Bridge",
@@ -397,7 +397,7 @@
     "school": "Sun",
     "name": "Heal",
     "power": "4",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Heal",
     "where": "never, but Valar comes with it",
@@ -456,7 +456,7 @@
       "Armor of Lt."
     ],
     "power": "6",
-    "targets": "1",
+    "targets": "single",
     "range": "",
     "type": "Buff",
     "where": "Phoebus Dungon, Mud Toad",
@@ -466,7 +466,7 @@
     "school": "Sun",
     "name": "Sun Stroke",
     "power": "var",
-    "targets": "1",
+    "targets": "single",
     "range": "20’",
     "type": "Zap",
     "where": "Slave Camp, Tars Underground, Phoebus",
@@ -479,7 +479,7 @@
       "Rage of Mit."
     ],
     "power": "var",
-    "targets": "1",
+    "targets": "single",
     "range": "70’",
     "type": "Zap",
     "where": "Mud Toad",
@@ -498,7 +498,7 @@
   {
     "school": "Sun",
     "name": "Inferno",
-    "power": "var.",
+    "power": "var",
     "targets": "all",
     "range": "40’",
     "type": "Zap",
@@ -508,7 +508,7 @@
   {
     "school": "Sun",
     "name": "Wrath of Mithras",
-    "power": "var.",
+    "power": "var",
     "targets": "group",
     "range": "90’",
     "type": "Zap",
@@ -538,17 +538,17 @@
   {
     "school": "Sun",
     "name": "Disarm Trap",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Misc.",
     "where": "Phoebus Dungeon, Lansk Guard Bridge",
-    "effect": "Ignore traps, lasts 2m/pt"
+    "effect": "Ignore traps, 2m/pt"
   },
   {
     "school": "Sun",
     "name": "Guidance",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Misc.",
@@ -558,12 +558,12 @@
   {
     "school": "Sun",
     "name": "Radiance",
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "40’",
     "type": "Misc.",
     "where": "Lansk Guard Bridge",
-    "effect": "Light, 2m/pt, 40' range"
+    "effect": "Light, 2m/pt"
   },
   {
     "school": "Sun",
@@ -594,12 +594,12 @@
     "aliases": [
       "Sum. Salam."
     ],
-    "power": "var.",
+    "power": "var",
     "targets": "",
     "range": "",
     "type": "Summon",
     "where": "Mud Toad",
-    "effect": ""
+    "effect": "23HP 24DX 10AC 1d20 dmg, 4m/pt"
   },
   {
     "school": "Misc",
@@ -615,7 +615,7 @@
     "school": "Misc",
     "name": "Kill Ray",
     "power": "15",
-    "targets": "1",
+    "targets": "single",
     "range": "50’",
     "type": "Zap",
     "where": "Lanac’toor’s Lab",

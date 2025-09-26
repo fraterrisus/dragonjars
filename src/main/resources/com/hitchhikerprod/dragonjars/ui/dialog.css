@@ -125,6 +125,16 @@
     -fx-vgap: 10;
 }
 
+.spell-cell {
+    -fx-background-color: antiquewhite;
+    -fx-font-size: 14px;
+    -fx-text-fill: black;
+}
+
+.spell-cell:even {
+    -fx-background-color: #e1ceb6;
+}
+
 .debug {
     -fx-border-color: red;
     -fx-border-width: 1;

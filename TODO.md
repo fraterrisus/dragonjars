@@ -2,16 +2,13 @@
 
 - Add a menu item with documentation, including this list, BUGFIXes, design choices, and other places where this
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
-- Present the combat information in a more useful format.
+- Keep adding more combat information; improve the presentation layer.
 - Check for TODOs and FIXMEs in the comments.
 - Find other places where the string "Read paragraph <x>" exists and plug into the auto-paragraph. (See Snake Pit, 
   Kingshome)
 
 # Known Bugs
 
-- The range attribute on light spells isn't currently respected. *L:Mage Fire* is supposed to only show one square.
-- Monsters are making weird combat decisions, like calling for help against a level 5 party and dodging instead of 
-  advancing and attacking.
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 
