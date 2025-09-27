@@ -17,9 +17,11 @@ import com.hitchhikerprod.dragonjars.exec.Memory;
 import java.util.List;
 
 public class FindBoardAction implements Instruction {
+    // A good place to test this is the Byzanople death run.
+
     Interpreter i;
     List<Action> actions;
-    boolean foundOne = false;
+    int actionIndex;
 
     @Override
     public Address exec(Interpreter i) {
@@ -28,23 +30,28 @@ public class FindBoardAction implements Instruction {
         if (Heap.get(Heap.BOARD_ID).read() != Heap.get(Heap.DECODED_BOARD_ID).read()) return nextIP;
         this.i = i;
         this.actions = i.mapDecoder().getActions();
+        this.actionIndex = 0;
+//        System.out.println("FindBoardActions");
+        i.setCarryFlag(false);
         return searchForActions(nextIP);
     }
 
     private Address searchForActions(Address nextIP) {
-        while (!actions.isEmpty()) {
-            final Action action = actions.removeFirst();
+        final PartyLocation loc = Heap.getPartyLocation();
+        final MapData.Square square = i.mapDecoder().getSquare(loc.pos());
+//        System.out.println("  square: " + square);
 
-            final PartyLocation loc = Heap.getPartyLocation();
-            final MapData.Square square = i.mapDecoder().getSquare(loc.pos());
+        final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+        final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
+        final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
+        final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
+        final int itemUsed = Heap.get(0x88).read();
+        final int skillUsed = Heap.get(0x85).read();
 
-            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
-            final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
-            final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
-            final int itemUsed = Heap.get(0x88).read();
-            final int skillUsed = Heap.get(0x85).read();
+        while (actionIndex < actions.size()) {
+            final Action action = actions.get(actionIndex++);
+//            System.out.println("  action: " + action);
 
             boolean found = false;
 
@@ -76,17 +83,21 @@ public class FindBoardAction implements Instruction {
             }
 
             if (found) {
-                foundOne = true;
+//                System.out.println("  match found");
                 final Address target = new Address(
                         Heap.get(Heap.BOARD_1_SEGIDX).read(),
                         i.mapDecoder().getEventPointer(action.event() + 1)
                 );
-                i.reenter(target, () -> searchForActions(nextIP));
+                i.reenter(target, () -> {
+//                    System.out.println("  return; carry = " + i.getCarryFlag());
+                    if (i.getCarryFlag()) return nextIP;
+                    else return searchForActions(nextIP);
+                });
                 return null;
             }
         }
 
-        i.setCarryFlag(foundOne);
+        i.setCarryFlag(false);
         return nextIP;
     }
 

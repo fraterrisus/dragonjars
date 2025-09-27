@@ -392,13 +392,6 @@ public class MapData {
         return actions;
     }
 
-    public Optional<Action> findAction(int header, int specialId) {
-        return actions.stream()
-                .filter(a -> a.special() == 0 || a.special() == specialId)
-                .filter(a -> a.header() == header)
-                .findFirst();
-    }
-
     private void byteReader(Consumer<Byte> consumer) {
         byte f = 0;
         while ((f & 0x80) == 0) {
