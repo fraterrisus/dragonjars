@@ -26,8 +26,6 @@ public class MusicService {
     private static final float FREQUENCY = 44100 * 4;
     private static final AudioFormat FORMAT = new AudioFormat(FREQUENCY, 8, 1, true, false);
 
-
-
     private SourceDataLine sdl;
 
     private final AppPreferences prefs = AppPreferences.getInstance();

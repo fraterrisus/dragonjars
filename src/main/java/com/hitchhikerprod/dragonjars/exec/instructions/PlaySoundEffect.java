@@ -17,6 +17,7 @@ public class PlaySoundEffect implements Instruction {
             final int chunkId = 0xfc + soundId;
             final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
             final Chunk data = i.memory().getSegment(segmentId);
+            i.memory().setSegmentFrob(segmentId, Frob.FREE);
             i.app().musicService().playChunkSound(data);
         }
 

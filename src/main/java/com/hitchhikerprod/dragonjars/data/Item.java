@@ -82,6 +82,10 @@ public class Item {
         if (obj instanceof Item that) {
             final List<Byte> myBytes = new ArrayList<>(toBytes());
             final List<Byte> theirBytes = new ArrayList<>(that.toBytes());
+            // Byte 0: equipped (0x80), disposable (0x40), charges (0x3f)
+            myBytes.set(0x00, (byte)(myBytes.get(0x00) & 0x40));
+            theirBytes.set(0x00, (byte)(theirBytes.get(0x00) & 0x40));
+            // Byte 7: secondary magic info (usually power)
             myBytes.set(0x07, (byte)0);
             theirBytes.set(0x07, (byte)0);
             return (myBytes.equals(theirBytes) && this.name.equals(that.name));

@@ -62,7 +62,7 @@ public class SpellWindow {
     }
 
     public void show() {
-        for (Spell spell : spells) System.out.println(spell);
+//        for (Spell spell : spells) System.out.println(spell);
         this.stage.show();
     }
 

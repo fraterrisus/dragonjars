@@ -24,7 +24,7 @@ public class PlayChunkSound extends Task<Void> {
         final int numPhases = soundChunk.getWord(0);
         final int delay = soundChunk.getWord(2);
 
-        int numWrites = Math.round(delay / 7.5f);
+        int numWrites = Math.round(delay / 6f); // was 7.5
 
         // Any higher than this starts to clip
         double volumeFactor = 1.8 * volume.get() / 100.0;
