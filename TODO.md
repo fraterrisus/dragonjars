@@ -30,6 +30,8 @@
 
 # Implementation Differences
 
+- I added an "auto-Bandage" routine that tries to hew closely to having your 'medic' use Bandage on everyone in the 
+  party. Hit Ctrl-B in travel mode.
 - The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
   idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
   as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.

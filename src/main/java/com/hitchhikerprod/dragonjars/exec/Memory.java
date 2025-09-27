@@ -23,9 +23,12 @@ public class Memory {
 
     public static final int PC_INT_CURRENT = 0x10;
     public static final int PC_HEALTH_CURRENT = 0x14;
+    public static final int PC_HEALTH_MAX = 0x15;
     public static final int PC_STUN_CURRENT = 0x18;
     public static final int PC_POWER_CURRENT = 0x1c;
+    public static final int PC_SKILL_BANDAGE = 0x25;
     public static final int PC_STATUS = 0x4c;
+    public static final int PC_STATUS_DEAD = 0x01; // bitmask
     public static final int PC_AV = 0x59;
     public static final int PC_SUMMONED_LIFESPAN = 0x66;
     public static final int PC_SUMMONED_TICKS = 0x68;

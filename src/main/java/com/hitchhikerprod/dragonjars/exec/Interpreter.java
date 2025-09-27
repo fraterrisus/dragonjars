@@ -1227,7 +1227,7 @@ public class Interpreter {
             x++;
         }
 
-        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PC_STATUS, 2);
+        final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PC_STATUS, 1);
         for (int i = 3; i >= 0; i--) {
             final int mask = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_BITMASKS + i);
             if ((statuses & mask) > 0) {
@@ -1373,9 +1373,57 @@ public class Interpreter {
         draw_borders = 0xff;
     }
 
+    private void withHeapLock(Runnable fn) {
+        Heap.lock();
+        try { fn.run(); }
+        finally { Heap.unlock(); }
+    }
+
+    private void autoBandage() {
+        // This basically emulates the Bandage handler at [06/0171]
+        withHeapLock(() -> {
+            // This should only work in travel mode
+            if (isPaused()) return;
+            if (Heap.get(Heap.COMBAT_MODE).lockedRead() != 0) return;
+
+            final int partySize = Heap.get(Heap.PARTY_SIZE).lockedRead();
+
+            // Find the best bandager in the party
+            int bandageAbility = 0;
+            for (int charId = 0; charId < partySize; charId++) {
+                final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + charId).lockedRead() << 8;
+                final int pcStatus = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_STATUS, 1);
+                if ((pcStatus & Memory.PC_STATUS_DEAD) > 0) continue;
+
+                final int bandageRanks = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_SKILL_BANDAGE, 1);
+                bandageAbility = Integer.max(bandageAbility, bandageRanks);
+            }
+            if (bandageAbility == 0) return;
+
+            bandageAbility += 10;
+            for (int charId = 0; charId < partySize; charId++) {
+                final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + charId).lockedRead() << 8;
+                final int pcStatus = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_STATUS, 1);
+                if ((pcStatus & Memory.PC_STATUS_DEAD) > 0) continue;
+
+                final int currentHealth = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_CURRENT, 2);
+                final int maxHealth = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_MAX, 2);
+                if (currentHealth >= bandageAbility) continue;
+                final int newHealth = Integer.min(maxHealth, bandageAbility);
+                memory().write(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_CURRENT, 2, newHealth);
+                Heap.get(Heap.PC_DIRTY + charId).lockedWrite(0);
+            }
+        });
+        drawPartyInfoArea();
+    }
+
     public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
         final EventHandler<KeyEvent> keyHandler = event -> {
             if (event.getCode().isModifierKey()) return;
+            if (event.getCode() == KeyCode.B && event.isControlDown()) {
+                autoBandage();
+                return;
+            }
             if (event.getCode() == KeyCode.S && event.isControlDown()) {
                 final BooleanProperty soundEnabled = AppPreferences.getInstance().soundEnabledProperty();
                 soundEnabled.set(!soundEnabled.get());

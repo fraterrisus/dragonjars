@@ -103,7 +103,7 @@ public class SpellDecayTask extends Task<Void> {
             // If summon is already dead, don't bother decrementing its life counter.
             final Address status = new Address(partySeg, base + Memory.PC_STATUS);
             final int statusValue = i.memory().read(status, 1);
-            if ((statusValue & 0x01) > 0) continue;
+            if ((statusValue & Memory.PC_STATUS_DEAD) > 0) continue;
 
             // This is written by [06:0b86] when the spell is cast
             final Address lifespanMacro = new Address(partySeg, base + Memory.PC_SUMMONED_LIFESPAN);
