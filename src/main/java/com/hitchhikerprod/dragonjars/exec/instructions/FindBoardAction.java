@@ -32,7 +32,6 @@ public class FindBoardAction implements Instruction {
         this.actions = i.mapDecoder().getActions();
         this.actionIndex = 0;
 //        System.out.println("FindBoardActions");
-        i.setCarryFlag(false);
         return searchForActions(nextIP);
     }
 
@@ -46,7 +45,7 @@ public class FindBoardAction implements Instruction {
         final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
         final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
         final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
-        final int itemUsed = Heap.get(0x88).read();
+        final int itemUsed = Heap.get(0x88).read(); // 0x40: item used, 0x0f: item index (== h[07]?)
         final int skillUsed = Heap.get(0x85).read();
 
         while (actionIndex < actions.size()) {

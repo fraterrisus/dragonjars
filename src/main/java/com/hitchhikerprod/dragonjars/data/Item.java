@@ -80,8 +80,8 @@ public class Item {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Item that) {
-            final List<Byte> myBytes = toBytes();
-            final List<Byte> theirBytes = that.toBytes();
+            final List<Byte> myBytes = new ArrayList<>(toBytes());
+            final List<Byte> theirBytes = new ArrayList<>(that.toBytes());
             myBytes.set(0x07, (byte)0);
             theirBytes.set(0x07, (byte)0);
             return (myBytes.equals(theirBytes) && this.name.equals(that.name));
