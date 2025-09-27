@@ -4,8 +4,7 @@
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
 - Keep adding more combat information; improve the presentation layer.
 - Check for TODOs and FIXMEs in the comments.
-- Find other places where the string "Read paragraph <x>" exists and plug into the auto-paragraph. (See Snake Pit, 
-  Kingshome)
+- Find other places where the string "Read paragraph <x>" exists and plug into the auto-paragraph. (Got most?)
 
 # Known Bugs
 

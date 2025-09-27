@@ -272,36 +272,33 @@ public class Interpreter {
         }
     }
 
-    private void runPatches(int chunkId, int ip) {
+    private record Patch(int chunkId, int ip, Consumer<Interpreter> fn) {}
+
+    private static final List<Patch> PATCHES = List.of(
+            new Patch(0x008, 0x02f1, (i) -> i.openParagraph(i.getAX())),
+            new Patch(0x046 + 0x08, 0x03aa, (i) -> i.openParagraph(30)),
+            new Patch(0x046 + 0x12, 0x10ff, (i) -> i.openParagraph(138)),
+            new Patch(0x046 + 0x18, 0x06c5, (i) -> i.openParagraph(80)),
+            new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
+            new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
+            // FIXME: do something more interesting than printing to console
+            new Patch(0x012, 0x00f8, Interpreter::decodeOpponents),
+            new Patch(0x003, 0x0760, Interpreter::decodeInitiative),
+            new Patch(0x003, 0x0ffc, (i) -> System.out.print("Monster(conf:" + i.getAL())),
+            new Patch(0x003, 0x1023, Interpreter::decodeMonsterBravery),
+            new Patch(0x003, 0x108f, Interpreter::decodeMonsterAction),
+            new Patch(0x003, 0x0cfb, Interpreter::decodePartyAttack)
+    );
+
+    private void openParagraph(int id) {
         final AppPreferences prefs = AppPreferences.getInstance();
-        if (chunkId == 0x008 && ip == 0x02f1 && prefs.autoOpenParagraphsProperty().get()) {
-            app().openParagraphsWindow(ax);
-        }
-        // FIXME: do something more interesting than printing to console
-        if (chunkId == 0x012 && ip == 0x00f8) {
-            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-            decodeOpponents(combatSegmentId);
-        }
-        if (chunkId == 0x003 && ip == 0x0760) {
-            final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-            decodeInitiative(combatSegmentId);
-        }
-        if (chunkId == 0x003 && ip == 0x0ffc) {
-            System.out.print("Monster(conf:" + getAL());
-        }
-        if (chunkId == 0x003 && ip == 0x1023) {
-            System.out.print(",brav:" + switch (getBL()) {
-                case 0xc0 -> "HALP";
-                case 0x80 -> "Edgy";
-                case 0x40 -> "Okay";
-                default -> "Good";
-            } + ") ");
-        }
-        if (chunkId == 0x003 && ip == 0x0108f) {
-            decodeMonsterAction();
-        }
-        if (chunkId == 0x003 && ip == 0x00cfb) {
-            decodePartyAttack();
+        if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
+    }
+
+    private void runPatches(int chunkId, int ip) {
+        for (Patch patch : PATCHES) {
+            if (chunkId == patch.chunkId() && ip == patch.ip())
+                patch.fn().accept(this);
         }
         if (chunkId == 0x003 && ip == 0x00f76) { // party attack roll (top)
             final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
@@ -386,7 +383,8 @@ public class Interpreter {
 
     private record Opponent(int groupId, int hp, int status, int initiative) { }
 
-    private void decodeOpponents(int combatSegmentId) {
+    private void decodeOpponents() {
+        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = memory().getSegment(combatSegmentId);
         System.out.println("Live enemies:");
         for (int groupId = 0; groupId < 4; groupId++) {
@@ -417,7 +415,8 @@ public class Interpreter {
         }
     }
 
-    private void decodeInitiative(int combatSegmentId) {
+    private void decodeInitiative() {
+        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = memory().getSegment(combatSegmentId);
         final Chunk partyData = memory().getSegment(PARTY_SEGMENT);
 
@@ -477,6 +476,15 @@ public class Interpreter {
             }
             if (!combatants.isEmpty()) System.out.println("  " + init + ": " + String.join(", ", combatants));
         }
+    }
+
+    private void decodeMonsterBravery() {
+        System.out.print(",brav:" + switch (getBL()) {
+            case 0xc0 -> "HALP";
+            case 0x80 -> "Edgy";
+            case 0x40 -> "Okay";
+            default -> "Good";
+        } + ") ");
     }
 
     private void decodeMonsterAction() {
