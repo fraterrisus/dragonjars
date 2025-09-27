@@ -125,6 +125,11 @@
     -fx-vgap: 10;
 }
 
+.state-grid .text-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
 .spell-cell {
     -fx-background-color: antiquewhite;
     -fx-font-size: 14px;

@@ -1,3 +1,232 @@
+-- Bridge of Exiles
+Entered the map
+Touched the west side of the map
+-- Byzanople
+Entered the map
+Dealt with the giant boulder
+-- Byzanople Dungeon
+unused
+unused
+unused
+unused
+Gained access to the crypt treasure
+Gained access to the dungeon vault
+-- Depths of Nisir
+unused
+Dispelled the invisible maze
+Killed Namtar three times
+unused
+unused
+unused
+unused
+The Dragon Queen torched Namtar
+Summoned the Dragon Queen
+-- Dilmun
+Made Phoebus exist (or not)
+Gained access to the cache on Forlorn
+-- Dragon Valley
+unused
+Meeting the Dragon Queen
+unused
+unused
+Gained access to the chest in the SW
+Dealt with the Dragon Queen
+-- Dwarf Clan Hall
+unused
+Automata are armed to attack
+Automata warning has been shown
+Gained access to Bomb cache
+unused
+unused
+Gained access to Dragon Horn cache
+Gained access to Potion cache
+-- Dwarf Ruins
+Tunnel is closed
+-- Freeport
+Entered the map
+Freeport is deserted
+-- Game Preserve
+unused
+Tracked the Stag
+Caught in a snare trap
+Freed yourself from a snare trap
+unused
+Jack left his bow behind
+Gained access to the Bandits' chest
+-- Guard Bridge #1
+Dealt with the guards
+Bribed the guards
+Entered the bridge
+unused
+Gained access to the cache
+-- Guard Bridge #2
+Entered the bridge
+Passed Customs inspection
+Swore fealty to Lansk
+Gained access to the Barracks chest
+Throw out of the Armory once
+Woke up the guards in the Barracks
+Stole the key from the Barracks guards
+Gained access to the Armory chest
+Defeated the first set of Armory guards
+-- Kingshome
+unused
+Showed the Signet Ring to the guards
+Gained access to the weapons cache
+Met Namtar and exited his room
+-- Kingshome Dungeon
+unused
+unused
+unused
+Gained access to the treasury
+Gained access to Drake's throne
+-- Lanac'toor's Lab
+unused
+Sealed off the Underworld stairs
+unused
+unused
+Gained access to the Spectacles
+Gained access to the Misc Magic scrolls
+-- Lansk
+Entered the map
+Opened the Undercity stairs
+-- Lansk Undercity
+Entered the map
+Healed the dragon
+Moved the statue of Irkalla
+-- Magan Underworld
+unused
+Paid the fairies' toll
+Gained access to the Water Potion
+unused
+Defeated Namtar the second time
+-- Magic College
+-- Mud Toad
+Entered the city
+unused
+Gained access to the Golden Boots
+unused
+Gained access to the militia's cache
+Met Berengaria
+-- Mystic Wood
+Entered the map
+Following tracks
+Shed blood on Enkidu's shrine
+Gained access to Zaton's scrolls
+Gained access to the Beast Horn
+Awakened the lake guardians
+Gained access to The Ring
+-- Necropolis
+unused
+unused
+unused
+unused
+Have access to the chest
+unused
+Have access to Nergal's boon
+-- Old Dock
+unused
+Moved the statue
+-- Phoebus
+Met the handshake machine
+Met Buck Ironhead
+-- Phoebus Dungeon
+Entered the map
+Killed the Jailer
+Killed the Guard Captains
+Gained access to the treasure chest
+Gained access to the basic arms cache
+Jailer threw you back in your cell
+Defeated Mystalvision
+Gained access to Mystalvision's scrolls
+-- Pilgrim Dock
+Entered the map
+Got thrown in jail
+-- Purgatory
+unused
+Found the statue of Irkalla
+Entered the Arena
+Entered the Magic Shoppe
+Dived into the harbor
+Found the Slave Market
+-- Salvation
+Entered Salvation
+Gained access to the mountain pass
+-- Scorpion Bridge
+Entered the map
+Dealt with the Scorpions
+Scorpions block your way
+unused
+Gained access to the chest
+-- Siege Camp
+Checked if the war is over yet
+Killed the guards at the entrance
+Talked to Buck Ironhead
+unused
+Gained access to the soldier's cache
+-- Slave Camp
+Entered the camp
+Noticed the Nature Axe
+Gained access to sick man's scrolls
+unused
+Gained access to wizard's cache
+-- Slave Estate
+Entered the map
+Gained access to the chest
+Ripped up the floorboards
+unused
+unused
+Following tracks
+-- Slave Mines
+Entered the map
+Party has been Chained
+Gained access to the Tin Cup
+Gained access to the Rocks
+Gained access to the Pick Handle
+Gained access to the Shoelaces
+-- Smugglers Cove
+Entered the map
+Bribed the pirates
+unused
+Thrown out of the Den
+unused
+Found the statue of Irkalla
+-- Snake Pit
+Entered the map
+Met the mad artist
+Showed the Signet Ring to the boathouse guard
+unused
+Gained access to Drake's throne
+Gained access to the Stone Head
+-- Sunken Ruins Above
+Entered the map
+unused
+unused
+Gained access to the chest
+-- Sunken Ruins Below
+Entered the map
+Acquired the Clam
+unused
+Unlocked the locker
+Gained access to the locker
+-- Tars Dungeon
+Entered the map
+Gained access to the Healing Potion
+unused
+unused
+Gained access to the Stone Arms
+-- Tars Ruins
+Following tracks
+Found the slab
+unused
+unused
+Gained access to the scrolls
+Gained access to the Firesword
+-- War Bridge
+Smelled the curious odor
+Killed the Visitors Bureau staff
+Dealt with the bridge guards
+-- Global
 Slave Camp: Slaughtered the camp residents
 Slave Camp: Appeased the camp
 Slave Camp: Dealt with the sick man
@@ -54,7 +283,7 @@ Slave Estate: Killed the Gaze Demon
 Purgatory, Slave Mines: Sold yourself into slavery
 Slave Mines: Gave water to the dying old man
 Slave Mines: Unlocked the hidden chest
-Phoebus, Mud Toad: Tried to meet Berengaria at the Icarus
+Phoebus, Mud Toad: Allowed to meet Berengaria in Mud Toad
 Mud Toad: Gained access to the militia's cache
 Smuggler's Cove: Unlocked the pirates' treasure chest
 Lansk: Unlocked the chest

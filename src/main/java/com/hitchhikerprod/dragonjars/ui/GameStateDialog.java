@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.ui;
 
+import com.hitchhikerprod.dragonjars.data.Lists;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Parent;
@@ -46,20 +47,59 @@ public class GameStateDialog extends Dialog<Void> {
         }
     }
 
+    private enum FlagType { IGNORE, GLOBAL, BOARD }
+
     private Parent buildGrid() {
         final GridPane grid = new GridPane();
         grid.getStyleClass().add("state-grid");
 
+        final String thisBoard = Lists.MAP_NAMES[Heap.get(Heap.BOARD_ID).read()];
+
+        FlagType flagType = FlagType.IGNORE;
         final String[] flagNames = getFlagNames();
         int heapIndex = 0x99;
         int mask = 0x80;
 
         int rowIndex = 0;
         for (String flagName : flagNames) {
-            final CheckBox cbox = new CheckBox();
-            cbox.setSelected((Heap.get(heapIndex).read() & mask) > 0);
-            cbox.selectedProperty().addListener(checkBoxListener(heapIndex, mask));
-            grid.addRow(rowIndex++, cbox, new Label(flagName));
+            if (flagName.startsWith("-- ")) {
+                final String thatBoard = flagName.substring(3);
+                if (thatBoard.equalsIgnoreCase(thisBoard)) {
+                    flagType = FlagType.BOARD;
+                    heapIndex = 0xb9;
+                    mask = 0x80;
+
+                    final Label headerLabel = new Label(thisBoard + " (transient)");
+                    headerLabel.getStyleClass().add("text-header");
+                    grid.addRow(rowIndex++, headerLabel);
+                    GridPane.setColumnSpan(headerLabel, 2);
+
+                    continue;
+                } else if (thatBoard.equalsIgnoreCase("Global")) {
+                    flagType = FlagType.GLOBAL;
+                    heapIndex = 0x99;
+                    mask = 0x80;
+
+                    final Label headerLabel = new Label("Global (permanent)");
+                    headerLabel.getStyleClass().add("text-header");
+                    grid.addRow(rowIndex++, headerLabel);
+                    GridPane.setColumnSpan(headerLabel, 2);
+
+                    continue;
+                } else {
+                    flagType = FlagType.IGNORE;
+                    continue;
+                }
+            }
+
+            if (flagType == FlagType.IGNORE) continue;
+
+            if (!flagName.equalsIgnoreCase("unused")) {
+                final CheckBox cbox = new CheckBox();
+                cbox.setSelected((Heap.get(heapIndex).read() & mask) > 0);
+                cbox.selectedProperty().addListener(checkBoxListener(heapIndex, mask));
+                grid.addRow(rowIndex++, cbox, new Label(flagName));
+            }
 
             mask = mask >> 1;
             if (mask == 0) {
