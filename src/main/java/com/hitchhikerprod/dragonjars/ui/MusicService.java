@@ -37,15 +37,19 @@ public class MusicService {
     public MusicService() {
         volume = prefs.volumeProperty();
 
-        prefs.soundEnabledProperty().addListener((obs, oVal, nVal) -> {
-            System.out.println("music service received update (" + nVal + ")");
-            if (nVal) enable();
-            else disable();
-        });
+        prefs.soundEnabledProperty().addListener((obs, oVal, nVal) -> soundEnabledListener(nVal));
+        soundEnabledListener(prefs.soundEnabledProperty().get());
         enabled.addListener((obs, oVal, nVal) -> {
-            System.out.println("music service set enabled property (" + nVal + ")");
+//            System.out.println("music service set enabled property (" + nVal + ")");
             prefs.soundEnabledProperty().set(nVal);
         });
+    }
+
+    private void soundEnabledListener(boolean nVal) {
+//        System.out.println("music service received update (" + nVal + ")");
+        enabled.set(nVal);
+        if (nVal) enable();
+        else disable();
     }
 
     private static SourceDataLine openLine() {
@@ -60,7 +64,6 @@ public class MusicService {
     }
 
     private void enable() {
-        enabled.set(true);
         if (Objects.isNull(sdl)) sdl = openLine();
         if (Objects.isNull(sdl)) {
             final Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to initialize sound system.");
@@ -79,7 +82,6 @@ public class MusicService {
     }
 
     private void disable() {
-        enabled.set(false);
         if (Objects.nonNull(sdl)) {
             stop();
             sdl.stop();

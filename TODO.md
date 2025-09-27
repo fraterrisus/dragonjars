@@ -9,7 +9,6 @@
 
 # Known Bugs
 
-- Sound always seems to be disabled at startup.
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 - The 'dragon roar' noise (sound 7, see the Phoebus Dungeon board) doesn't sound quite right (too fast?)

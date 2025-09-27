@@ -59,7 +59,7 @@ public class AppPreferences {
 
         soundEnabled.set(onDiskPrefs.getBoolean(PREF_AUDIO_ENABLED, true));
         soundEnabled.addListener((obs, oVal, nVal) -> {
-            System.out.println("soundEnabled pref updated (" + nVal + ")");
+//            System.out.println("soundEnabled pref updated (" + nVal + ")");
             onDiskPrefs.putBoolean(PREF_AUDIO_ENABLED, nVal);
         });
 
