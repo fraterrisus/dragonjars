@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
+import com.hitchhikerprod.dragonjars.data.Lists;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import javafx.scene.Scene;
@@ -69,12 +70,12 @@ public class MapWindow {
         this.stage.show();
     }
 
-    public void setTitle(String title) {
-        stage.setTitle(title);
-    }
-
     public void setMap(MapData mapData) {
+        Objects.requireNonNull(mapData);
         imageView.setImage(buildMap(mapData));
+        final String mapName = Lists.MAP_NAMES[mapData.mapId()];
+//        final String mapName = mapData.getTitleString();
+        stage.setTitle(mapName);
         this.stage.sizeToScene();
     }
 

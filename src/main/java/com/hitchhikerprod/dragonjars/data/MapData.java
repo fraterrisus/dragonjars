@@ -31,8 +31,8 @@ public class MapData {
     // private List<Integer> secondaryPointers;
     // private List<Integer> itemPointers;
 
-    private int titleStringPtr;
-    private int defaultEventPtr;
+//    private int titleStringPtr;
+//    private int defaultEventPtr;
     private int actionsPtr;
     private int itemListPtr;
     private int monsterDataPtr;
@@ -61,6 +61,10 @@ public class MapData {
 
     public MapData(StringDecoder stringDecoder) {
         this.stringDecoder = stringDecoder;
+    }
+
+    public int mapId() {
+        return mapId;
     }
 
     public List<Integer> chunkIds() {
@@ -114,7 +118,7 @@ public class MapData {
         Collections.reverse(rowPointers57e4);
 
         primaryPointers = discoverPointers(primaryData, rowPointers57e4.get(0));
-        defaultEventPtr = primaryPointers.get(0);
+        // defaultEventPtr = primaryPointers.get(0);
         actionsPtr = primaryPointers.get(1);
 
         monsterDataPtr = secondaryData.getWord(0);
@@ -138,6 +142,15 @@ public class MapData {
     public List<Integer> getTitleChars() {
         return titleChars;
     }
+
+    public String getTitleString() {
+        final StringBuilder sb = new StringBuilder();
+        for (int ch : this.titleChars) {
+            sb.append(Character.toChars(ch & 0x7f));
+        }
+        return sb.toString();
+    }
+
 
     public int getMaxX() {
         return xMax;
@@ -402,7 +415,7 @@ public class MapData {
     }
 
     private void decodeTitleString() {
-        titleStringPtr = primaryData.getWord(chunkPointer);
+        final int titleStringPtr = primaryData.getWord(chunkPointer);
         chunkPointer += 2;
 
         stringDecoder.decodeString(primaryData, titleStringPtr);

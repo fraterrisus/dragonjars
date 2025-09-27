@@ -1287,14 +1287,6 @@ public class Interpreter {
         }
     }
 
-    private String getMapTitle() {
-        final StringBuilder sb = new StringBuilder();
-        for (int ch : this.titleString) {
-            sb.append(Character.toChars(ch & 0x7f));
-        }
-        return sb.toString();
-    }
-
     public void setTitleString(List<Integer> chars) {
         if (chars.size() > 16) {
             this.titleString = List.copyOf(chars.subList(0, 16));
@@ -1302,7 +1294,6 @@ public class Interpreter {
             this.titleString = List.copyOf(chars);
         }
         drawMapTitle();
-        MapWindow.getInstance().setTitle(getMapTitle());
     }
 
     private void drawMapTitle() { // 0x2cd4
