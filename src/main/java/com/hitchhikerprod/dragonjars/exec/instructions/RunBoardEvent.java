@@ -21,13 +21,13 @@ public class RunBoardEvent implements Instruction {
             Heap.get(Heap.RECENT_SPECIAL).write(0);
             if (square.specialId() != 0) {
                 Heap.get(Heap.NEXT_SPECIAL).write(square.specialId(), 1);
-                final Address target = new Address(
-                        Heap.get(Heap.BOARD_1_SEGIDX).read(),
-                        i.mapDecoder().getEventPointer(square.specialId() + 1)
-                );
-                final After after = new After(i, location, nextIP);
-                i.reenter(target, after);
-                return null;
+                final int eventPointer = i.mapDecoder().getEventPointer(square.specialId() + 1);
+                if (eventPointer != 0) { // event was disabled dynamically
+                    final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
+                    final After after = new After(i, location, nextIP);
+                    i.reenter(target, after);
+                    return null;
+                }
             }
         }
 

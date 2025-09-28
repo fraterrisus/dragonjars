@@ -117,7 +117,7 @@ public class MapData {
         // 55bb:parseMapData() builds this array backwards, from yMax down to 0, so it can include an "end" pointer(?)
         Collections.reverse(rowPointers57e4);
 
-        primaryPointers = discoverPointers(primaryData, rowPointers57e4.get(0));
+        primaryPointers = discoverPointers(primaryData, rowPointers57e4.getFirst());
         // defaultEventPtr = primaryPointers.get(0);
         actionsPtr = primaryPointers.get(1);
 
@@ -222,13 +222,16 @@ public class MapData {
         primaryData.write(offset, 3, newData);
     }
 
+    // FIXME: should this be dynamic?
     public Item getItem(int index) {
         if (index >= items.size()) return null;
         return items.get(index);
     }
 
     public int getEventPointer(int eventId) {
-        return primaryPointers.get(eventId);
+        // fetch dynamically to allow overwrites
+        final int ptr = rowPointers57e4.getFirst() + (2 * eventId);
+        return primaryData.getWord(ptr);
     }
 
     public int getRandomEncounters() {

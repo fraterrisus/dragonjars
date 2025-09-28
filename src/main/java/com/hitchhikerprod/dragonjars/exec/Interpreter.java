@@ -15,7 +15,6 @@ import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
-import com.hitchhikerprod.dragonjars.ui.MapWindow;
 import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
@@ -241,8 +240,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x00c;
-    private static final int BREAKPOINT_ADR = 0x00030;
+    private static final int BREAKPOINT_CHUNK = 0x063;
+    private static final int BREAKPOINT_ADR = 0x0098b;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;

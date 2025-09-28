@@ -83,16 +83,16 @@ public class FindBoardAction implements Instruction {
 
             if (found) {
 //                System.out.println("  match found");
-                final Address target = new Address(
-                        Heap.get(Heap.BOARD_1_SEGIDX).read(),
-                        i.mapDecoder().getEventPointer(action.event() + 1)
-                );
-                i.reenter(target, () -> {
-//                    System.out.println("  return; carry = " + i.getCarryFlag());
-                    if (i.getCarryFlag()) return nextIP;
-                    else return searchForActions(nextIP);
-                });
-                return null;
+                final int eventPointer = i.mapDecoder().getEventPointer(action.event() + 1);
+                if (eventPointer != 0) { // disabled dynamically
+                    final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
+                    i.reenter(target, () -> {
+//                        System.out.println("  return; carry = " + i.getCarryFlag());
+                        if (i.getCarryFlag()) return nextIP;
+                        else return searchForActions(nextIP);
+                    });
+                    return null;
+                }
             }
         }
 
