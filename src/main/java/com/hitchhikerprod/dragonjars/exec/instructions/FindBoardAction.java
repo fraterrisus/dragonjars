@@ -17,8 +17,6 @@ import com.hitchhikerprod.dragonjars.exec.Memory;
 import java.util.List;
 
 public class FindBoardAction implements Instruction {
-    // A good place to test this is the Byzanople death run.
-
     Interpreter i;
     List<Action> actions;
     int actionIndex;
@@ -58,9 +56,13 @@ public class FindBoardAction implements Instruction {
                 case ItemAction a -> {
                     if (itemUsed == 0) continue;
                     if (!matchingSpecial(action, square)) continue;
-                    final Item matchItem = i.mapDecoder().getItem(a.getItemIndex());
-                    final Item usedItem = new Item(partyData).decode(itemBaseAddress);
-                    if (usedItem.equals(matchItem)) found = true;
+                    if (a.getItemIndex() == 0xff) {
+                        found = true;
+                    } else {
+                        final Item matchItem = i.mapDecoder().getItem(a.getItemIndex());
+                        final Item usedItem = new Item(partyData).decode(itemBaseAddress);
+                        if (usedItem.equals(matchItem)) found = true;
+                    }
                 }
                 case SkillAction a -> {
                     if (!matchingSpecial(action, square)) continue;
