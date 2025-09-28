@@ -35,7 +35,7 @@ hold a weapon. Why not haul your butt into the arena and make yourself
 useful?" Why fight for another man's pleasure when life in Purgatory is
 a daily struggle for survival? You're about to turn away when the guard
 lays a heavy hand on your shoulder and adds,"You'll get your choice of
-arms...and if you defeat your foe, which I doubt, you might win Papers of
+arms... and if you defeat your foe, which I doubt, you might win Papers of
 Citizenship. Namtar help me - heathen dogs like you living in Dilmun! I
 don't like it, but the law is the law."
 -----
@@ -108,7 +108,7 @@ leading you to wonder if a similar fate awaits you in the months to come.
 10. This back-alley building is in remarkably good repair. Curious, you
 enter, and recognize the interior of a modestly-appointed magic shop. A
 wizened gnome of a man springs from behind the counter and scurries up
-to you. "Mercy, mercy me...customers! Bless me, customers at last!" 
+to you. "Mercy, mercy me... customers! Bless me, customers at last!"
 
 The old man is insane but friendly. He explains all high magic has been
 outlawed by order of Namtar, but instruction in the low arts is still
@@ -137,7 +137,7 @@ a city as a prison. The streets are unpaved and evidently double as an
 open-air sewer system. Many of the city's structures are buildings only
 in the loosest sense of the word - several have holes in the roof (or
 no roof at all), others have been gutted by fire. Everything is damp,
-showing this city is little different from any other on Oceana...the
+showing this city is little different from any other on Oceana... the
 rising sea level is eroding the land upon which the city is located, and
 it is slowly sinking. Doubtless those buildings that have basements will
 be at least hip-deep in water. Graffiti is scrawled on walls everywhere,
@@ -148,9 +148,9 @@ do well to leave as soon as possible.
 15. The guards retire a few steps and converse in low tones when you
 show them the ring. One of them approaches nervously. "We're King's men,
 you know. We don't want any trouble." He shuffles his feet and won't
-look you in the eye. "We just went along with...with everyone else. You
+look you in the eye. "We just went along with... with everyone else. You
 have seen the King?" He frowns when you answer. "That ring means you're
-on King's business, so you can pass...but if anyone asks, we never saw
+on King's business, so you can pass... but if anyone asks, we never saw
 you. Understand?" 
 
 You pass into the city. The guards still won't look you in the eye.
@@ -238,7 +238,7 @@ a purely defensive weapon. Furthermore, the ruins surrounding this square
 offer mute testimony to the effectiveness of a dragon for city defense.
 -----
 24. You board the ship as soon as the last of the pirates drops dead,
-eager to see what it was the thieves were so deter-mined to defend. You
+eager to see what it was the thieves were so determined to defend. You
 see the ship's name is the PRAIRIE MADNESS, and that it seems to be fitted
 out for fast raiding missions. There isn't much of a cargo hold, so the
 ship won't serve for long journeys, but it looks very fast and dangerous.
@@ -298,7 +298,7 @@ an offensively sour note as you swing open the door to the shop. Inside
 you find a remarkable selection of Lanac'toor souvenirs. Images of the
 mad sorcerer are inscribed on mugs, bowls, plates, bookends, trophies,
 boxes, candles, and lanterns. Lanac'toor's grinning face or family crest
-is embroidered on hats, ties, underwear, capes, and belts...a store clerk
+is embroidered on hats, ties, underwear, capes, and belts... a store clerk
 even offers to personalize any item you select, sewing or engraving
 your name on your purchase. A very small portion of the shop is given
 over to items unrelated to Lanac'toor. Most of it seems like junk -
@@ -389,7 +389,7 @@ with you."
 
 Myrilla leads you through a secret passage into the heart of
 Byzanople. It's odd this girl has so abruptly taken you into her
-confidence. You decide to play along...if she can't make you a better
+confidence. You decide to play along... if she can't make you a better
 offer than the Kingshomers, this is certainly an easier way into the
 city than storming the gate.
 -----
@@ -426,7 +426,7 @@ enchantment. Within the room is exactly reproduced a hot and swampy
 environment not unlike the Isle of Quag. The floor is a deep and bubbling
 mud bog, wide-leaf palms grow here and there, and in the underbrush
 you think you see small reptiles warming themselves on hot rocks. a
-most unusual sight to find in a dungeon....all the comforts of home
+most unusual sight to find in a dungeon... all the comforts of home
 (if you're a reptile).
 -----
 41. The pirates are friendly enough when you pay them their gold. They
@@ -545,11 +545,11 @@ to drive a person mad!
 -----
 51. You walk beside a clean and stylish harbor. Although you are near the
 sea, this place has none of the stink associated with Oceana's coastal
-places...either Freeport is not sinking, or the port is engineered such
+places... either Freeport is not sinking, or the port is engineered such
 that seepage is not the problem here that it is elsewhere in the world. 
 
 The construction here is simple but attractive. There's rustic feeling
-associated with the unfinished wood railings foliage, and crisp scent
+associated with the unfinished wood railings, foliage, and crisp scent
 to the air. The people of this place are dressed in effective leather
 and cloth, and seem healthy and energetic. Everyone is armed, and you
 judge the citizens of this place know how to defend themselves. You
@@ -558,7 +558,7 @@ tarry to speak. Everyone seems engaged in a mission of great industry.
 -----
 52. To the south is a little island in the harbor. Standing in the center
 of the island is an anvil, plunged to the hilt within the anvil is a
-brilliantly gleaming magic sword. There seems no way to the island...the
+brilliantly gleaming magic sword. There seems no way to the island... the
 water here seethes and boils with magical energy. It doesn't take much
 imagination to surmise a swim to the island would be fatal. 
 
@@ -599,7 +599,7 @@ I guess I'll get used to it. Having my elbows bend the wrong way will
 make it easier for me to scratch my back!"
 -----
 55. A yawning chasm stretches before you. A violent gust of hot wind rises
-from the chasm...the void must reach to the very roots of the world,
+from the chasm... the void must reach to the very roots of the world,
 below even the Underworld. Out of the chasm, starting an unknowable
 distance beneath you and stretching as far as the eye can see, you view
 a vomitous mass of irregular black stone. The tower stands piled atop
@@ -625,17 +625,17 @@ chambers beneath the city - they might still contain fabulous treasures.
 Tarkas is bitter when he recalls the ruin of his city. "We were betrayed,"
 he says. "We relied on our dragon to defend us. We didn't dream Kingshome
 would be so bold to assault us when our dragon was healthy and awake. When
-they lay siege to our city, we released our dragon...and the beast did
+they lay siege to our city, we released our dragon... and the beast did
 nothing! A hundred years of blood sacrifice to that terrible dragon,
 and what good did it do us in our hour of need?" 
 
 Tarkas grows animated as he speaks, accidentally smashing a table as
 he excitedly flails his arms. "I tell you, Namtar found a way to usurp
 control of our dragon! Since Namtar rose Kingshome against all of Dilmun,
-dragons have all but vanished! Namtar controls them somehow...but no man
+dragons have all but vanished! Namtar controls them somehow... but no man
 can control the saurians without paying a terrible price. If someone
 could learn what he's done with the dragons - and learn how to wrest
-their control from Namtar...then Kingshome would learn a thing or two!!"
+their control from Namtar... then Kingshome would learn a thing or two!"
 -----
 57. This simple hall serves as the community meeting place for the
 citizens of Freeport. You are greeted by minor city officials who welcome
@@ -721,13 +721,13 @@ and good will. When you awaken, you feel as if you've been reborn.
 clean, the people are orderly, and while the city is walled, there is
 no gate. None of the busy citizens you spy carries a weapon. The city
 shows no sign of war or occupation. However, it does seem like a very
-rich place, and you can detect a faint smell of dragon in the air....
+rich place, and you can detect a faint smell of dragon in the air...
 -----
 65. This guard room is occupied by several menacing men who stand when
-you enter. "Well...look at this," one of them sneers. "Our prisoners have
+you enter. "Well... look at this," one of them sneers. "Our prisoners have
 'escaped'. We have to 'recapture' them - perhaps several times." The
 guards begin to close in. "Remember, men, these prisoners were trying to
-escape...we won't be accused of beating prisoners in their cells again!"
+escape... we won't be accused of beating prisoners in their cells again!"
 -----
 66. This is Phoebus' incredible Temple of the Sun, renown all across the
 world of Oceana. The sun's warm rays shine into an open atrium, bathing
@@ -758,7 +758,7 @@ interior.
 From the gate of the slave market you watch as several young men are
 auctioned off. They seem less healthy than yourselves - maybe they've
 been in the city longer than you. It seems a sad way out of this place,
-to make yourself a slave...but isn't anything better than a life of
+to make yourself a slave... but isn't anything better than a life of
 misery and slow death in the streets of Purgatory? 
 
 You scan the crowd, anxious to measure the character of citizens of the
@@ -772,7 +772,7 @@ There is a long line of lost souls waiting for the auction block. Nothing
 will stop you should you decide to join them.
 -----
 68. The door to this hut is open, and from within you hear someone
-singing. Entering the hut, you see a simple room...a pile of straw
+singing. Entering the hut, you see a simple room... a pile of straw
 serves as a bed, while a candle bums on a large rock that passes as a
 table. Behind the rock you see a sad man who seems very old. His eyes are
 empty sockets and both his hands have been amputated at the wrist. You
@@ -781,7 +781,7 @@ wonder why a blind man burns candles when he's alone.
 The man stops singing and swings his head in your direction when you
 enter. "You must be the outsiders everyone's so excited about," he says
 with a firm voice. "I can smell Purgatory on you. Please come in. I'd
-like to see some new faces...provided I could see." 
+like to see some new faces... provided I could see."
 
 You learn the man's name is Carson. He was a sorcerer at the Temple of the
 Sun, in Phoebus. "That was before Namtar rose from the Pit," says Carson,
@@ -798,12 +798,12 @@ magical war ensued, which Namtar and the Stosstrupen won handily.
 
 "Now sorcery is all but dead in Dilmun," Carson continues. "Take a
 look at me. Ten years learning Sun Magic and it leads to this! All the
-old Masters are gone...Lanac'toor was finally driven over the edge and
+old Masters are gone... Lanac'toor was finally driven over the edge and
 shattered into a score of pieces; Zaton exiled to the deep wilderness;
 and Mystalvision..." Carson is silent for a long time, then says, "I
 can't prove it, but I always thought Mystalvision was wrapped up with
 Namtar. He's the High Priest at the Temple of the Sun. Our Order fell to
-Namtar so quickly...we must have been betrayed. Beware of Mystalvision!" 
+Namtar so quickly... we must have been betrayed. Beware of Mystalvision!"
 
 You talk with Carson late into the night, but learn little else of
 value. He is either unwilling or unable to teach you any magic. Heeding
@@ -845,7 +845,7 @@ the commander of the Kingshomer siege camp, appears from the chaos. "I've
 got to hand it to you," he says, "you really did a job on these Byzanople
 jerks! Now Namtar's control of Dilmun is complete. I'm sure the Beast
 From The Pit will want to thank you personally." Ironhead smiles when
-you remind him of your bargain. "I haven't forgotten, I assure you...but
+you remind him of your bargain. "I haven't forgotten, I assure you... but
 seeing as how you threw in with me so easily, I doubt you have any real
 sense of honor. I wouldn't trust you clowns as far as I could throw
 you!" Buck stands back as several of his soldiers gather around. "Put
@@ -872,22 +872,22 @@ stands and regards you.
 -----
 74. Old Jack's eyes grow bright when you show him the signet ring. "His
 majesty..." Jack whispers. You sadly shake your head, indicating Drake
-is dead. Tears form in Jack's eyes as he sighs. "Me poor, poor king...I
-knew ye'd come to no good with that demon Namtar!" 
+is dead. Tears form in Jack's eyes as he sighs. "Me poor, poor king...
+I knew ye'd come to no good with that demon Namtar!"
 
 After showing him your ring, Jack treats you like an honored guest,
 forgiving all your misdeeds in the forest. "I'm a King's man, ye got ta
 believe that," he says. "I love me King an' I never disobeyed him. But I
 never like the looks o' that Namtar - he's a very devil, he is! It must
 have been 'im wot killed old Drake." Old Jack pauses to spit. "Someone's
-gotto bring Namtar down, and clear the way for young Prince Jordan to
+got to bring Namtar down, and clear the way for young Prince Jordan to
 take the throne. You've got the ring, so you're it!" 
 
 Old Jack solemnly hands you his bow. "This here's me bow, I call her
 Nevermiss! Drake gave her to me when we were both boys, and she's never
 failed me. Now I give her to you, to shoot down that foul Namtar!" Jack
 is hesitant to release the bow, and even as you hold it his eyes linger
-on the weapon. "She's like a lady, she is...you treat her kind. You
+on the weapon. "She's like a lady, she is... you treat her kind. You
 treat her kind." 
 
 Jack is abruptly eager to leave. He refuses to leave the forest, saying
@@ -959,7 +959,7 @@ to fall in relentless sheets, threatening to flood the stone, the forest,
 the entire world. 
 
 A supernatural hush falls over the glade. Even the pelting rain seems
-to fall silent. Suddenly you arc surrounded by animals - bears, dogs,
+to fall silent. Suddenly you are surrounded by animals - bears, dogs,
 deer, ducks, and even a penguin. You turn and see still more animals
 crowding outside the door to the shrine. You see a lion lay down beside
 a lamb. The animals are waiting for something. 
@@ -972,7 +972,7 @@ and beast may again live in harmony."
 The animals begin to excitedly roar, bark, and bray. "My time in this
 world is done," Zaton says. "But for you brave adventurers the task is
 just beginning. Namtar is evil! He must be destroyed! To you I grant
-the boon of knowledge...use it well!"
+the boon of knowledge... use it well!"
 -----
 80. The center post of these communal huts shelters a secret chamber. A
 skeleton dressed in the royal colors of Kingshome sits on a makeshift
@@ -983,7 +983,7 @@ important.
 81. A dwarf springs up as you enter the room. He eagerly scans your
 party, then collapses in disappointment. "No dwarves," he weeps. "Never
 are there any dwarves. Poor Josephina is all alone." The dwarf has a
-woman's name, but it's bearded and it smells and...well, no matter,
+woman's name, but it's bearded and it smells and... well, no matter,
 Josephina is probably just as crazy as everyone else in this silly town. 
 
 "The kingdom is broken," cries Josephina. "The great clan hall is sealed,
@@ -1097,10 +1097,10 @@ Gethtrude must eat!" he mumbles. The dragon's thrashing intensifies,
 and the great beast begins beating its head against the side of its
 pit, setting up a great rumbling through the dungeon. ''Now thuh manue
 hath hit thuth windmill!" the hunchback howls, trying to flee down the
-narrow causeway to the edge of the pit. He doesn't make it...with a
+narrow causeway to the edge of the pit. He doesn't make it... with a
 great booming, the dragon lurches from his chains, bumping against the
 platform on which you stand. The hunchback is hurled screaming into the
-maw of the dragon...but now that beast is free of its chains, no mere
+maw of the dragon... but now that beast is free of its chains, no mere
 morsel can satisfy it! 
 
 You flee the scene as the dragon smashes at the supports of the dungeon,
@@ -1156,14 +1156,14 @@ yet another arrow at you.
 
 "This is the private preserve of King Drake," the old man says. "An' you
 have been poachin'." He glances over your party before continuing. "These
-bein' hard times, I imagine ye gots to eat...but that was a prize animal
+bein' hard times, I imagine ye gots to eat... but that was a prize animal
 ye just killed, and I've gots to do me job." 
 
 The man keeps his bow half-cocked and watches you closely. He seems
 to be waiting for you to make the first move. Maybe it would be worth
 winning his trust.
 -----
-93. "BRAAAAAP!" Nergal is crude. "That was delicious...I will hallucinate
+93. "BRAAAAAP!" Nergal is crude. "That was delicious... I will hallucinate
 later, and imagine Irkalla working for a living." Nergal shifts his
 ponderous mass on his throne, leans forward, and leers. "And now you
 will serve Nergal!" 
@@ -1178,7 +1178,7 @@ All is silent. Nergal smiles.
 -----
 94. You recall learning of waters like this during your mystic
 studies. The pool of water ahead fits the description of Apsu
-Waters...waters of the world ocean that underlies the surface of
+Waters... waters of the world ocean that underlies the surface of
 Oceana. Apsu Waters are coterminous with the world of Oceana, the mystical
 Magan Underworld, and dark dimensions where gods and devils reside.
 -----
@@ -1206,7 +1206,7 @@ order beneath its own roof.
 
 Looking up into the faceless face of the god, you feel the hand of
 destiny upon you. Namtar has not yet attempted to supplant Oceana's
-primary religion...but can that day be far away? The gods risk disaster
+primary religion... but can that day be far away? The gods risk disaster
 when they come to the world in person - they must work through champions
 to see their will is done. The Universal God seems to need a champion,
 a legendary hero to serve the cause of Freedom. Roba of Freeport was
@@ -1216,7 +1216,7 @@ The God requires a sign.
 -----
 98. You climb the Mountain of Salvation for several hours, but the
 summit seems to draw no closer. Several pilgrims drop from exhaustion
-along the path...the road to salvation is not for the weak of heart. 
+along the path... the road to salvation is not for the weak of heart.
 
 But a fraction of the way up the mountain, the path abruptly cuts into the
 rock. A level plain has been cleared in the side of the mountain. This
@@ -1267,7 +1267,7 @@ drunk. If you are cautious, you should be able to sneak past him and
 escape. The jailor's room adjoins the cell block. Look for the secret
 door in the south wall of the jailor's room - beyond is a passage
 that leads to people who will help you. I regret I cannot give you
-a weapon...just doing this much has placed me in great jeopardy.
+a weapon... just doing this much has placed me in great jeopardy.
 
 'Should you escape, meet me at the Icarian Triumph tavern in the
 northeast quarter of the city. I'll have something for you. For
@@ -1284,11 +1284,11 @@ but turn-keys are notoriously light sleepers.
 103. These are the private chambers of the master of the house. The
 curtains are drawn across the windows permitting little light to enter
 the room. In the murk, you can see that this room, like the others in
-the house, is strangely devoid of wall hangings...and that no mirrors
+the house, is strangely devoid of wall hangings... and that no mirrors
 are present. 
 
 The Master is in, sitting in his favorite chair. He wears the garb of
-an artist - specifically of a sculptor...and he wants you to be his next
+an artist - specifically of a sculptor... and he wants you to be his next
 masterpiece!
 -----
 104. In the dark shadows of the dungeon you find a pit, at the bottom
@@ -1317,7 +1317,7 @@ instruments. In the corner is a hole into which are hurled the grisly
 remains of stubborn heretics. 
 
 A dying druid is stretched on the rack. You have rescued him from his
-torture...at the same time, it is evident he will soon die. There is
+torture... at the same time, it is evident he will soon die. There is
 nothing you can do to save his life, but perhaps you can ease his final
 moments?
 -----
@@ -1334,11 +1334,11 @@ Yellow Mud Toad. You surmise the journal was maintained by Lanac'toor.
 
 'The chicken remains animate, not that it matters any longer. That pinhead
 Mystalvision has changed the rules again. Where will I find a vole in
-this weather?...Have resumed expansion of my tower's basement, using
+this weather...? Have resumed expansion of my tower's basement, using
 Soften Stone and Create Wall spells to clear rock, but this whole damn
 building is sinking. I keep running into pockets of water. Furthermore,
 I uncovered an entrance to Magan, and all manner of berserk Underworld
-denizens are running amok in my tunnels...The hell of it is that I've
+denizens are running amok in my tunnels... The hell of it is that I've
 lost my spectacles that Utnapishtim the Faraway gave me. I'll never
 see the entrance to the College of Magic without them. They're buried
 somewhere in the rock. I don't know if I can locate them at this late
@@ -1358,14 +1358,14 @@ Prince Jordan recovers his composure and listens with interest to his
 sister's story. He is very interested to learn you are infiltrators
 recently pressed into service with the Kingshomer army. "You are not
 native to Dilmun, I can see that," Jordan says. "This isn't your war. No
-Outlander reaches the interior without going through Purgatory...and
+Outlander reaches the interior without going through Purgatory... and
 Purgatory is administered by Kingshome. I know because my sister was
 formerly Governor of Purgatory." 
 
 Jordan invites you to sit and offers you wine. "My father is King Drake
 of Kingshome," Jordan says. "I haven't seen my father in over a year -
 not since Namtar rose from the Pit. My father is a peaceful man, and he
-loves his children...but he has recently dismissed my sister from her
+loves his children... but he has recently dismissed my sister from her
 post at Purgatory, and then layed siege to me here at Byzanople. My
 father loves me and the succession is not disputed. I want to see my
 father die in bed - I do not covet his throne. There is no reason for
@@ -1421,21 +1421,21 @@ such things. "The owner of Magic Golden Toad Boots can leap great
 distances!" the priest says with pride.
 -----
 114. In the darkest heart of this palace of the dead you find an
-incredible sight...the court of Nergal, consort to Irkalla and King of
+incredible sight... the court of Nergal, consort to Irkalla and King of
 the Underworld. The bloated white mass of Nergal slouches on a throne of
 skulls, attended by a score of pallid goblins. Worms squirm in his hair,
 bats nestle in his loins, and rodents peer at you from within Nergal's
 mouth. About his neck, on a silver chain, you see a large and ornate
 key. 
 
-"Topsiders...in my Court!" Nergal roars. "Bad enough I am in exile without
+"Topsiders... in my Court!" Nergal roars. "Bad enough I am in exile without
 fool clodhoppers barging in on me. Goblins! Ghoulies! Bring them here!!"
 -----
 115. "Haw! Most entertaining," Nergal laughs. The hideous god raises one
 fist and his court of freaks - though you just hacked them to pieces -
 lurch to their feet like puppets on invisible strings. The goblins and
-ghoulies look ready to fight again...it's evident the undead monsters will
-eventually wear you down. "You have entertained me...but you must also
+ghoulies look ready to fight again... it's evident the undead monsters will
+eventually wear you down. "You have entertained me... but you must also
 feed Nergal and serve Nergal before you can ask a boon of Nergal. That
 is the law!" 
 
@@ -1443,7 +1443,7 @@ Nergal looks at you expectantly. A ghoul titters.
 -----
 116. Just as advertised by the blind juggler, there was indeed a secret
 tunnel out of Purgatory. Beneath the rock marked with the secret sign
-you find fresh armor and weapons...thus armed, you are ready to seek
+you find fresh armor and weapons... thus armed, you are ready to seek
 revenge for your imprisonment.
 -----
 117. Here in the open garden you find an unusual statue. It is of an
@@ -1456,7 +1456,7 @@ this chamber. It is a flawless piece of engineering, massive yet agile,
 and heavily armed and armored from head to toe. It would not do to run
 into this thing in a dark hallway.
 -----
-119. This vault is filled with slumbering dwarves...but if they sleep, it
+119. This vault is filled with slumbering dwarves... but if they sleep, it
 is the sleep of the dead, for the dwarves have been turned to stone. The
 dwarves are frozen in all variety of poses - sleeping, eating, working,
 and just a few while fighting. It seems the dwarves were surprised by
@@ -1466,7 +1466,7 @@ something terrible that turned them to stone.
 you!" she hisses. "The Dragon Gem marks you as friend of dragons,
 and binds me to your will." The Dragon Queen looms above you, seeming
 impossibly large. "I grant you your life, and I dismiss you from my
-presence. When next you use the Dragon Gem, I will respond...but the
+presence. When next you use the Dragon Gem, I will respond... but the
 sacrifice you offer must be sweet, or I will turn on you, and the Dragon
 Gem be damned!!" 
 
@@ -1544,7 +1544,7 @@ depths.
 
 You stand back as a ghostly apparition rises from the well. At first
 the form is a shade, then a ghost, then a spectre, then a living
-corpse. Gradually the shape takes corporeal form...blood, bone, muscle,
+corpse. Gradually the shape takes corporeal form... blood, bone, muscle,
 teeth, hair is restored. 
 
 The ashes are restored to life!
@@ -1562,7 +1562,7 @@ campaign army. This is not the court of a king in residence.
 -----
 131. This is a private bed chamber. A man wearing a simple robe lays on
 a divan. He seems neither old nor young. He has no distinguishing marks
-or characteristics...there is no evil air to him, his eyes do not piece
+or characteristics... there is no evil air to him, his eyes do not piece
 to your soul, his brow has no spark of mad genius. He sits up lazily
 as you enter, swings his feet to the floor, walks across the room,
 and shakes your hand. 
@@ -1582,7 +1582,7 @@ yourselves. You don't have to like it - I sense you do not - but that is
 the way of things. I have some grand plans, but I can't begin until this
 futile resistance is quelled. It's just a matter of time. You know that as
 well as I. Why don't you pack it off to the Isle of the Damned - it worked
-for old Drake. You're not even native to Dilmun...there's little reason
+for old Drake. You're not even native to Dilmun... there's little reason
 for you to oppose me. Granted, that episode in Purgatory was nasty, but
 into everyone's life a little reign must fall. Ha ha. That was a pun." 
 
@@ -1593,7 +1593,7 @@ you then. In the meantime consider yourselves to be living on borrowed
 time. It's the least I can give you in gratitude for the entertainment
 you've provided thus far. 
 
-"Oh...by the way. You can move again." Namtar's sorcery was so complete,
+"Oh... by the way. You can move again." Namtar's sorcery was so complete,
 you did not notice you were under his compulsion until he brought it
 up. "I wish you the worst of luck, my friends." Suddenly Namtar is gone -
 no flash of light, no peal of thunder - just gone.
@@ -1617,7 +1617,7 @@ fixes you with a fierce glare.
 
 "You carve your way through my valley," she hisses, "destroying my
 creatures, and now enter the presence of the Mother Dragon. You will die
-for what you have done, but you will die slowly...as food for my brood." 
+for what you have done, but you will die slowly... as food for my brood."
 
 The Dragon Queen rears up and prepares to breathe a blast of poisonous
 fire.
@@ -1625,7 +1625,7 @@ fire.
 135. "I trust you have read Poe " Namtar laughs. "The best place to hide
 something is in plain sight. You paranoid dolts would never consider that,
 would you?" Namtar slides another rod into his arcane box. "Soon my work
-will be complete...soon I will fulfill my destiny - and then you will
+will be complete... soon I will fulfill my destiny - and then you will
 rue the day you laughed at me!!"
 -----
 136. The galleries are crammed with fools, each exiled here for their
@@ -1644,7 +1644,7 @@ and gave the key to the one creature who owes me no favors."
 
 Irkalla regards you. "Perhaps you could be of some use," she says, her
 tone suddenly becoming incredibly seductive."Find the Silver Key and set
-me free...you will be richly rewarded. Namtar is our mutual enemy. Serve
+me free... you will be richly rewarded. Namtar is our mutual enemy. Serve
 me, and I shall serve you to defeat him!"
 -----
 138. You stand at the edge of the Isle of Woe looking out across the
@@ -1683,7 +1683,7 @@ gaze is fixed on the door through which you must exit the room. "To be
 seen by the gargoyle is to know death," says the voice. "Yet the gargoyle
 sees the exit. What to do, what to do...?"
 -----
-143. "Now you have learned to listen. Excellent...you are half-way home,"
+143. "Now you have learned to listen. Excellent... you are half-way home,"
 says the voice. You detect genuine admiration in its tone. "This college
 exists in the rarified atmosphere of the true academic, but not everyone
 you will encounter appreciates the Art. You must learn to deal with such
@@ -1691,9 +1691,9 @@ ruffians." Out of thin air, a huge warrior appears, wielding a sword in
 both hands. "I'm gonna split yer lobe, highbrow!" he snarls.
 -----
 144. "I'm sorry that was so brutal, but I had to prove a point," the voice
-explains. "Some people can't appreciate Art...in such times, you must
+explains. "Some people can't appreciate Art... in such times, you must
 rely on more direct measures." You find yourself in a chamber over which
-is suspended a huge block of granite. The block is hung by a cable...the
+is suspended a huge block of granite. The block is hung by a cable... the
 cable trails to a wall and down to the floor, where it stretches across
 the floor as a trip-wire. It doesn't take much intelligence to figure it
 would be unhealthful to trip on the wire. The voice is strangely silent.
@@ -1702,7 +1702,7 @@ would be unhealthful to trip on the wire. The voice is strangely silent.
 before." Across the room you see your mysterious host. "I am Utnapishtim,
 also called the Faraway. I have been your teacher, now you must teach
 me something. I want to see something novel and new. Give me your best
-shot...you go first." The wizard waits for you to act.
+shot... you go first." The wizard waits for you to act.
 -----
 146. This time it is Utnapishtim in the flesh who greets you. "Well
 done!" he says. "Having learned to listen to me, you've learned you don't
@@ -1720,7 +1720,7 @@ the Soul Bowl.
 147. You emerge from a narrow pass and look out on a hidden valley. The
 valley is narrow and wet and confined on three sides by mountains and
 by the sea on the fourth. The swampy mass of the valley floor at first
-appears to be moving...until you look closer, when you realize the
+appears to be moving... until you look closer, when you realize the
 valley floor is covered with a mass of living creatures, crawling one
 atop another as far as the eye can see. 
 

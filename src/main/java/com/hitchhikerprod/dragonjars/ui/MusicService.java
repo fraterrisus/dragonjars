@@ -107,6 +107,7 @@ public class MusicService {
         runTaskHelper(() -> new PlayChunkSound(sdl, volume, soundChunk));
     }
 
+    // FIXME: save tasks in a list and run them one at a time, rather than piling them on top of each other.
     private void runTaskHelper(Supplier<Task<Void>> taskGetter) {
         if (!prefs.soundEnabledProperty().get()) return;
         final Task<Void> task = taskGetter.get();

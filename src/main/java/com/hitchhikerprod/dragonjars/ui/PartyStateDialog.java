@@ -314,7 +314,7 @@ public class PartyStateDialog extends Dialog<Void> {
                         "Fire Storm", "Inferno", "Holy Aim", "Battle Power", "Column of Fire", "Mithras's Bless",
                         "Light Flash", "Armor of Light", "Sun Light", "Heal", "Major Healing", "Disarm Trap",
                         "Guidance", "Radiance", "Summon Salamander", "Charger")),
-                new MagicSchool("Misc. Magic", List.of("Zak's Speek", "Kill Ray", "Prison"))
+                new MagicSchool("Misc. Magic", List.of("Zak's Speed", "Kill Ray", "Prison"))
         );
 
         public static PartyMember parse(Chunk data, int offset) {

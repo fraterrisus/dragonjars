@@ -5,6 +5,9 @@
 - Keep adding more combat information; improve the presentation layer.
 - Check for TODOs and FIXMEs in the comments.
 - Find other places where the string "Read paragraph <x>" exists and plug into the auto-paragraph. (Got most?)
+- Fix the MusicService so it queues sequential sound effects (or cancels the running one when a new one starts).
+- Patch the Freeport $100 large shields.
+- "... and the party  misses an attack!" [sic]
 
 # Known Bugs
 
