@@ -64,7 +64,7 @@ public class Interpreter {
     private MonsterAnimationTask monsterAnimationTask;
     private EyeAnimationTask eyeAnimationTask;
     private TorchAnimationTask torchAnimationTask;
-//    private SpellDecayTask spellDecayTask;
+    private SpellDecayTask spellDecayTask;
 
 //    private int mul_result; // 0x1166:4
 //    private int div_result; // 0x116a:4
@@ -155,7 +155,7 @@ public class Interpreter {
             videoHelper.drawRectangle(mask, (byte)0);
 //            videoForeground.writeTo("video-foreground.png", AppPreferences.getInstance().scaleProperty().get());
 
-            Thread.ofPlatform().daemon().start(new SpellDecayTask(this));
+            startSpellDecayTask();
         }
 
         // cs:0150  ax <- 0x0000
@@ -963,6 +963,31 @@ public class Interpreter {
         bitBlast(fg(), fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel());
     }
 
+    public void stopAllThreads() {
+        pause();
+        stopMonsterAnimation();
+        spellDecayTask.cancel();
+        torchAnimationTask.cancel();
+        eyeAnimationTask.cancel();
+        while (Objects.nonNull(monsterAnimationTask) ||
+                Objects.nonNull(spellDecayTask) ||
+                Objects.nonNull(torchAnimationTask) ||
+                Objects.nonNull(eyeAnimationTask)) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {}
+        }
+        videoHelper.setVideoBuffer(null);
+    }
+
+    private void startSpellDecayTask() {
+        spellDecayTask = new SpellDecayTask(this);
+        spellDecayTask.setOnSucceeded(ev -> spellDecayTask = null);
+        spellDecayTask.setOnFailed(ev -> spellDecayTask = null);
+        spellDecayTask.setOnCancelled(ev -> spellDecayTask = null);
+        Thread.ofPlatform().daemon().start(spellDecayTask);
+    }
+
     public void startTorchAnimation() {
         torchAnimationTask = new TorchAnimationTask(this);
         torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
@@ -1158,8 +1183,12 @@ public class Interpreter {
         }
     }
 
+    public void bitBlast(VideoHelper helper, PixelRectangle mask, boolean respectChroma) {
+        getImageWriter(w -> helper.writeTo(w, mask, respectChroma));
+    }
+
     public void bitBlast(VideoHelper helper, PixelRectangle mask) {
-        getImageWriter(w -> helper.writeTo(w, mask, true));
+        bitBlast(helper, mask, true);
     }
 
     public void bitBlast(VideoBuffer buffer, PixelRectangle mask, boolean respectChroma) {
