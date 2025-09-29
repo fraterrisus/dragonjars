@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class StringDecoder {
+    private static final boolean DEBUG = false;
+
     private final Chunk executable;
 
     private List<Byte> lut;
@@ -53,7 +55,9 @@ public class StringDecoder {
         boolean capitalize = false;
         while (true) {
             int value = shiftBits(5);
+            if (DEBUG) System.out.format(" %02x", value);
             if (value == 0x00) {
+                System.out.println();
                 return;
             }
             if (value == 0x1e) {
@@ -62,6 +66,7 @@ public class StringDecoder {
             }
             if (value > 0x1e) {
                 value = shiftBits(6) + 0x1e;
+                if (DEBUG) System.out.format(" %02x", value - 0x1e);
             }
             value &= 0xff;
             int ascii = lookUp(value);
@@ -71,7 +76,12 @@ public class StringDecoder {
             capitalize = false;
             decodedChars.add(ascii);
 
-            // other, much more complicated logic in decode_string()
+            if (DEBUG) {
+                System.out.print(" (");
+                if ((ascii == 0x8a) || (ascii == 0x8d)) System.out.print("\\n");
+                else System.out.print((char) (ascii & 0x7f));
+                System.out.print(")");
+            }
         }
     }
 
