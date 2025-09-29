@@ -18,8 +18,13 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MusicService {
@@ -32,7 +37,9 @@ public class MusicService {
     private final BooleanProperty enabled = new SimpleBooleanProperty(false);
     private final IntegerProperty volume;
 
-    private final List<Task<Void>> runningTasks = new ArrayList<>();
+    private final ReentrantLock taskLock = new ReentrantLock();
+    private final Queue<Supplier<Task<Void>>> taskQueue = new LinkedList<>();
+    private Task<Void> runningTask = null;
 
     public MusicService() {
         volume = prefs.volumeProperty();
@@ -76,9 +83,9 @@ public class MusicService {
     }
 
     public void stop() {
-        // Copying the list prevents reentry errors, because when we cancel a task it immediately
-        // tries to remove itself from `runningTasks`.
-        new ArrayList<>(runningTasks).forEach(Task::cancel);
+        withTaskLock(svc -> {
+            if (svc.runningTask != null) svc.runningTask.cancel();
+        });
     }
 
     private void disable() {
@@ -107,18 +114,38 @@ public class MusicService {
         runTaskHelper(() -> new PlayChunkSound(sdl, volume, soundChunk));
     }
 
-    // FIXME: save tasks in a list and run them one at a time, rather than piling them on top of each other.
+    private void withTaskLock(Consumer<MusicService> fn) {
+        taskLock.lock();
+        try {
+            fn.accept(this);
+        } finally {
+            taskLock.unlock();
+        }
+    }
+
+    // TODO: Maybe we want this to cancel earlier sounds, rather than queueing?
     private void runTaskHelper(Supplier<Task<Void>> taskGetter) {
         if (!prefs.soundEnabledProperty().get()) return;
-        final Task<Void> task = taskGetter.get();
-        task.setOnSucceeded(removeThisTaskHelper(task));
-        task.setOnFailed(removeThisTaskHelper(task));
-        task.setOnCancelled(removeThisTaskHelper(task));
-        Thread.ofPlatform().daemon().start(task);
-        runningTasks.add(task);
+        withTaskLock(svc -> svc.taskQueue.add(taskGetter));
+        runNextTask();
+    }
+
+    private void runNextTask() {
+        withTaskLock(svc -> {
+            if (Objects.nonNull(svc.runningTask) || svc.taskQueue.isEmpty()) return;
+            final Task<Void> task = taskQueue.remove().get();
+            task.setOnSucceeded(removeThisTaskHelper(task));
+            task.setOnFailed(removeThisTaskHelper(task));
+            task.setOnCancelled(removeThisTaskHelper(task));
+            Thread.ofPlatform().daemon().start(task);
+            svc.runningTask = task;
+        });
     }
 
     private EventHandler<WorkerStateEvent> removeThisTaskHelper(Task<Void> me) {
-        return event -> runningTasks.remove(me);
+        return event -> {
+            withTaskLock(svc -> svc.runningTask = null);
+            runNextTask();
+        };
     }
 }
