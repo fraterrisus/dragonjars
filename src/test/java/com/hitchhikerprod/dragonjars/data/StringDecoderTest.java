@@ -49,8 +49,8 @@ class StringDecoderTest {
 
     @Test
     public void encode() {
-        final String text1 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which namtar will march against Oceana when Dilmun is finally conquered.";
-        final String text2 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which Namtar will march against Oceana when Dilmun is finally conquered.";
+        final String text1 = "the party ";
+        final String text2 = "the party";
         final StringEncoder enc = new StringEncoder();
         final List<Byte> result1 = enc.encodeString(text1);
         final List<Byte> result2 = enc.encodeString(text2);

@@ -187,6 +187,13 @@ public class LoadDataTask extends Task<List<Chunk>> {
             (byte) 0x3b, (byte) 0xd0, (byte) 0x00
     ));
 
+    // Spell handlers: "lose a turn" spell has an extra space after "the party"
+    private static final Patch SPELL_MISS_TURN_EFFECT_TYPO_1 =
+            new Patch(0x06, 0x0584 + 0x06,
+                    List.of((byte)0x01, (byte)0x00),
+                    List.of((byte)0x00, (byte)0x1f)  // add NOP instruction after string
+            );
+
     // the Snake Pit items list (SMD chunk 0x36) is missing the Jade Eyes at location 9, which you could show to a sad
     // dwarf in order to get a hint about the clan hall
 
@@ -199,6 +206,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
             NISIR_SPINNER_19_23, NISIR_SPINNER_20_23,
             FREEPORT_TYPO_1,
-            PILGRIM_DOCK_TYPO_1, PILGRIM_DOCK_TYPO_2
+            PILGRIM_DOCK_TYPO_1, PILGRIM_DOCK_TYPO_2,
+            SPELL_MISS_TURN_EFFECT_TYPO_1
     );
 }

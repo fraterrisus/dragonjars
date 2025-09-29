@@ -6,7 +6,6 @@
 - Check for TODOs and FIXMEs in the comments.
 - Fix the MusicService so it queues sequential sound effects (or cancels the running one when a new one starts).
 - Patch the Freeport $100 large shields.
-- "... and the party  misses an attack!" [sic]
 - Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
   character into the packed string.
 
@@ -14,7 +13,8 @@
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
-- The 'dragon roar' noise (sound 7, see the Phoebus Dungeon board) doesn't sound quite right (too fast?)
+- I slowed down sounds to make the 'dragon roar' noise (sound 7, see Dragon Valley or Phoebus Dungeon) sound better. 
+  Is everything else off now?
 
 # Bugs in the original that are fixed in this version
 
