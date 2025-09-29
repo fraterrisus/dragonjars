@@ -4,10 +4,11 @@
   diverges from the original. (Note the use of data patches in the LoadDataTask.)
 - Keep adding more combat information; improve the presentation layer.
 - Check for TODOs and FIXMEs in the comments.
-- Find other places where the string "Read paragraph <x>" exists and plug into the auto-paragraph. (Got most?)
 - Fix the MusicService so it queues sequential sound effects (or cancels the running one when a new one starts).
 - Patch the Freeport $100 large shields.
 - "... and the party  misses an attack!" [sic]
+- Pilgrim dock: "The lock in only accessible" [sic]
+- Depths of Nisir: "...which namtar will march against" [sic]
 
 # Known Bugs
 
@@ -27,6 +28,8 @@
 - There are a handful of places where leaving a map drops you on Dilmun at a place that doesn't make any sense. For 
   example, leaving Purgatory on foot to the North should drop you at (13,5) but you wind up at (15,5). The Pilgrim 
   Dock's exits are also messed up.
+- Near where you enter the Depths of Nisir there's an area of icy winds. In the NE corner of that region, the 
+  spinner at (19,23) has been moved to (20,23) to match the other three corners.
 - There's an occasional display bug based on a set of hardcoded "regions" in the display. The region for the party 
   space has its Y offset set to the wrong value. You probably won't even notice I fixed this.
 

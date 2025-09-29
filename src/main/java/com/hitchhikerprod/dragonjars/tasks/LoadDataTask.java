@@ -136,7 +136,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02bf, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c1, (byte)0x13, (byte)0x12),
             new Patch(0x060, 0x02c2, (byte)0x14, (byte)0x15),
-            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12)
+            new Patch(0x060, 0x02c5, (byte)0x11, (byte)0x12),
+            // Fix the misaligned spinner in the Nisir Wind Tunnel
+            new Patch(0x061, 0x0357, (byte)0x05, (byte)0x04),
+            new Patch(0x061, 0x035a, (byte)0x00, (byte)0x05)
     );
 
     // the Snake Pit items list (SMD chunk 0x36) is missing the Jade Eyes at location 9, which you could show to a sad

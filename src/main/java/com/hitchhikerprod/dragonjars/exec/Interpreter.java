@@ -240,8 +240,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x063;
-    private static final int BREAKPOINT_ADR = 0x0098b;
+    private static final int BREAKPOINT_CHUNK = 0x003;
+    private static final int BREAKPOINT_ADR = 0x00ca3;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -1404,12 +1404,15 @@ public class Interpreter {
                 final int pcStatus = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_STATUS, 1);
                 if ((pcStatus & Memory.PC_STATUS_DEAD) > 0) continue;
 
-                final int currentHealth = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_CURRENT, 2);
-                final int maxHealth = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_MAX, 2);
-                if (currentHealth >= bandageAbility) continue;
-                final int newHealth = Integer.min(maxHealth, bandageAbility);
-                memory().write(PARTY_SEGMENT, pcBaseAddress + Memory.PC_HEALTH_CURRENT, 2, newHealth);
-                Heap.get(Heap.PC_DIRTY + charId).lockedWrite(0);
+                for (Integer offset : List.of(Memory.PC_HEALTH_CURRENT, Memory.PC_STUN_CURRENT)) {
+                    final int cur = memory().read(PARTY_SEGMENT, pcBaseAddress + offset, 2);
+                    final int max = memory().read(PARTY_SEGMENT, pcBaseAddress + offset + 2, 2);
+                    if (cur < bandageAbility) {
+                        final int newHealth = Integer.min(max, bandageAbility);
+                        memory().write(PARTY_SEGMENT, pcBaseAddress + offset, 2, newHealth);
+                        Heap.get(Heap.PC_DIRTY + charId).lockedWrite(0);
+                    }
+                }
             }
         });
         drawPartyInfoArea();
