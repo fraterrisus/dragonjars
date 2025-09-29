@@ -47,35 +47,17 @@ class StringDecoderTest {
         assertEquals(b, result);
     }
 
-    List<Byte> was = List.of(
-            (byte) 0xf4, (byte) 0xd2, (byte) 0x60, (byte) 0xfa, (byte) 0x56, (byte) 0x7c, (byte) 0x4a, (byte) 0x17,
-            (byte) 0x9c, (byte) 0x3e, (byte) 0x3c, (byte) 0x4c, (byte) 0x62, (byte) 0xbd, (byte) 0xa1, (byte) 0x54,
-            (byte) 0x83, (byte) 0x77, (byte) 0xd2, (byte) 0x3a, (byte) 0x90, (byte) 0x4e, (byte) 0xf8, (byte) 0x86,
-            (byte) 0x69, (byte) 0x30, (byte) 0x66, (byte) 0x25, (byte) 0xa9, (byte) 0xc8, (byte) 0xc7, (byte) 0x7b,
-            (byte) 0xeb, (byte) 0x25, (byte) 0xe1, (byte) 0xb2, (byte) 0x98, (byte) 0xc0, (byte) 0xcc, (byte) 0x4b,
-            (byte) 0x30, (byte) 0x66, (byte) 0x93, (byte) 0x07, (byte) 0xd2, (byte) 0xb3, (byte) 0xe2, (byte) 0x5f,
-            (byte) 0xf1, (byte) 0xde, (byte) 0x80
-    );
-
-    List<Byte> is = List.of(
-            (byte) 0xf4, (byte) 0xd2, (byte) 0x60, (byte) 0xfa, (byte) 0x56, (byte) 0x7c, (byte) 0x4a, (byte) 0x17,
-            (byte) 0x9c, (byte) 0x3e, (byte) 0x3c, (byte) 0x4c, (byte) 0x62, (byte) 0xbd, (byte) 0xa1, (byte) 0x54,
-            (byte) 0x83, (byte) 0x77, (byte) 0xd2, (byte) 0x32, (byte) 0x09, (byte) 0xdf, (byte) 0x10, (byte) 0xcd,
-            (byte) 0x26, (byte) 0x0c, (byte) 0xc4, (byte) 0xb5, (byte) 0x39, (byte) 0x18, (byte) 0xef, (byte) 0x7d,
-            (byte) 0x64, (byte) 0xbc, (byte) 0x36, (byte) 0x53, (byte) 0x18, (byte) 0x19, (byte) 0x89, (byte) 0x66,
-            (byte) 0x0c, (byte) 0xd2, (byte) 0x60, (byte) 0xfa, (byte) 0x56, (byte) 0x7c, (byte) 0x4b, (byte) 0xfe,
-            (byte) 0x3b, (byte) 0xd0, (byte) 0x00
-    );
-
-    // "The Sword of Freedom is your's for the taking.\n\nWho will take the Sword?\n\n"
-    //  f4 d2 60 fa 56 7c 4a 17 9c 3e 3c 4c 62 bd a1 54 83 77 d2 3a 90 4e f8 86 69 30 66 25 a9 c8 c7 7b eb 25 e1 b2 98 c0 cc 4b 30 66 93 07 d2 b3 e2 5f f1 de 80
-    //  f4 d2 60 fa 56 7c 4a 17 9c 3e 3c 4c 62 bd a1 54 83 77 d2 32 09 df 10 cd 26 0c c4 b5 39 18 ef 7d 64 bc 36 53 18 19 89 66 0c d2 60 fa 56 7c 4b fe 3b d0 00
     @Test
     public void encode() {
-        final String text = "The Sword of Freedom is yours for the taking.\n\nWho will take the Sword?\n\n";
+        final String text1 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which namtar will march against Oceana when Dilmun is finally conquered.";
+        final String text2 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which Namtar will march against Oceana when Dilmun is finally conquered.";
         final StringEncoder enc = new StringEncoder();
-        final List<Byte> result = enc.encodeString(text);
-        result.forEach(b -> System.out.format(" %02x", b));
-        System.out.println();
+        final List<Byte> result1 = enc.encodeString(text1);
+        final List<Byte> result2 = enc.encodeString(text2);
+        for (int i = 0; i < result1.size(); i++) {
+            if (!result1.get(i).equals(result2.get(i))) {
+                System.out.format("[0x%03x] old:%02x new:%02x\n", i, result1.get(i), result2.get(i));
+            }
+        }
     }
 }

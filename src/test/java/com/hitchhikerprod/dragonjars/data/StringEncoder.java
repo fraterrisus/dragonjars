@@ -115,7 +115,7 @@ public class StringEncoder {
         System.out.println(" 00");
 
         final List<Byte> packed = pack(unpacked);
-        System.out.format("remaining mask: %02x\n", outMask);
+        if (outMask == 0x04) throw new RuntimeException("Added an extra byte?");
         return packed;
     }
 

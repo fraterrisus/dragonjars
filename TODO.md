@@ -7,8 +7,8 @@
 - Fix the MusicService so it queues sequential sound effects (or cancels the running one when a new one starts).
 - Patch the Freeport $100 large shields.
 - "... and the party  misses an attack!" [sic]
-- Pilgrim dock: "The lock in only accessible" [sic]
-- Depths of Nisir: "...which namtar will march against" [sic]
+- Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
+  character into the packed string.
 
 # Known Bugs
 
