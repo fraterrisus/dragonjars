@@ -209,14 +209,14 @@ public class MapWindow {
             }
 
             for (int x = 0; x < xMax; x++) {
-                final MapData.Square sq = mapData.getSquare(x, 0);
+                final MapData.Square sq = mapData.getSquare(x, yMax - 1);
                 final Point topLeft = new Point(
                         ((x + 1) * GRID_SIZE) - 1,
-                        (yMax * GRID_SIZE) - 1
+                        ((yMax + 1) * GRID_SIZE) - 1
                 );
                 final Rectangle northDoor = new Rectangle(
                         ((x + 1) * GRID_SIZE) + (GRID_SIZE / 2) - (2 * GRID_SCALE),
-                        (yMax * GRID_SIZE) - GRID_SCALE,
+                        ((yMax + 1) * GRID_SIZE) - GRID_SCALE,
                         4 * GRID_SCALE,
                         2 * GRID_SCALE
                 );
