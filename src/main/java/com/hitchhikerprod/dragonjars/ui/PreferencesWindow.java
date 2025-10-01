@@ -30,6 +30,7 @@ public class PreferencesWindow {
     private final Button execButton = new Button();
     private final Button data1Button = new Button();
     private final Button data2Button = new Button();
+    private CheckBox backRowThrown;
 
     private PreferencesWindow() {
         final Parent root = buildGrid();
@@ -61,6 +62,9 @@ public class PreferencesWindow {
         });
         data2Button.setOnAction(ev -> {
             prefs.data2PathProperty().set(app.runOpenFileDialog("DATA2"));
+            app.loadDataFiles();
+        });
+        Objects.requireNonNull(backRowThrown).setOnAction(ev -> {
             app.loadDataFiles();
         });
     }
@@ -124,6 +128,21 @@ public class PreferencesWindow {
         GridPane.setHgrow(sep1Box, Priority.ALWAYS);
         GridPane.setColumnSpan(sep1Box, 2);
 
+        final Label bugFixesLabel = new Label("Bug Fixes");
+        final Label restartLabel = new Label("Changes require restart");
+        bugFixesLabel.getStyleClass().add("text-header");
+        grid.addRow(rowCounter++, bugFixesLabel, restartLabel);
+
+        backRowThrown = new CheckBox();
+        backRowThrown.selectedProperty().bindBidirectional(appPreferences.backRowThrownProperty());
+        grid.addRow(rowCounter++, new Label("Allow Thrown Weapons from\nthe back rank (5-7)"), backRowThrown);
+
+        final HBox sep2Box = new HBox();
+        sep2Box.getStyleClass().add("separator");
+        grid.addRow(rowCounter++, sep2Box);
+        GridPane.setHgrow(sep2Box, Priority.ALWAYS);
+        GridPane.setColumnSpan(sep2Box, 2);
+
         soundEnabled = new CheckBox();
         soundEnabled.selectedProperty().bindBidirectional(appPreferences.soundEnabledProperty());
         grid.addRow(rowCounter++, new Label("Sound Enabled"), soundEnabled);
@@ -139,11 +158,11 @@ public class PreferencesWindow {
         volumeSlider.valueProperty().bindBidirectional(appPreferences.volumeProperty());
         grid.addRow(rowCounter++, new Label("Volume"), volumeSlider);
 
-        final HBox sep2Box = new HBox();
-        sep2Box.getStyleClass().add("separator");
-        grid.addRow(rowCounter++, sep2Box);
-        GridPane.setHgrow(sep2Box, Priority.ALWAYS);
-        GridPane.setColumnSpan(sep2Box, 2);
+        final HBox sep3Box = new HBox();
+        sep3Box.getStyleClass().add("separator");
+        grid.addRow(rowCounter++, sep3Box);
+        GridPane.setHgrow(sep3Box, Priority.ALWAYS);
+        GridPane.setColumnSpan(sep3Box, 2);
 
         delaySlider = new Slider(0, 10, 5);
         delaySlider.setShowTickMarks(true);

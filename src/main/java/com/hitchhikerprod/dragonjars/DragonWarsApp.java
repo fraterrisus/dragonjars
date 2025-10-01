@@ -100,7 +100,7 @@ public class DragonWarsApp extends Application {
 
         musicService.stop();
         RootWindow.getInstance().setLoading();
-        final LoadDataTask task = new LoadDataTask(executablePath, data1Path, data2Path);
+        final LoadDataTask task = new LoadDataTask(AppPreferences.getFrozen());
 
         final StringProperty label = LoadingWindow.getInstance().getLabel().textProperty();
         final DoubleProperty progress = LoadingWindow.getInstance().getProgressBar().progressProperty();

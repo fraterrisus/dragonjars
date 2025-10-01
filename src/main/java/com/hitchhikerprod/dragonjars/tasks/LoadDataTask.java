@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
+import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import javafx.concurrent.Task;
 
 import java.io.RandomAccessFile;
@@ -13,23 +14,19 @@ import java.util.List;
 public class LoadDataTask extends Task<List<Chunk>> {
     public static final String MAGIC_STRING = "Created on an Apple ][ GS. Apple ][ Forever!";
 
-    private final String executablePath;
-    private final String data1Path;
-    private final String data2Path;
+    private final AppPreferences.Frozen prefs;
 
-    public LoadDataTask(String executablePath, String data1Path, String data2Path) {
-        this.executablePath = executablePath;
-        this.data1Path = data1Path;
-        this.data2Path = data2Path;
+    public LoadDataTask(AppPreferences.Frozen prefs) {
+        this.prefs = prefs;
     }
 
     @Override
     protected List<Chunk> call() throws Exception {
         final List<Chunk> chunks = new ArrayList<>();
         try (
-            final RandomAccessFile exec = new RandomAccessFile(executablePath, "r");
-            final RandomAccessFile data1 = new RandomAccessFile(data1Path, "r");
-            final RandomAccessFile data2 = new RandomAccessFile(data2Path, "r")
+            final RandomAccessFile exec = new RandomAccessFile(prefs.executablePath(), "r");
+            final RandomAccessFile data1 = new RandomAccessFile(prefs.data1Path(), "r");
+            final RandomAccessFile data2 = new RandomAccessFile(prefs.data2Path(), "r")
         ) {
             final ChunkTable table = new ChunkTable(data1, data2);
             final int count = table.getChunkCount();
@@ -59,7 +56,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
                     }
                 }
 
-                for (Patch p : PATCHES) {
+                for (Patch p : getPatches()) {
                     if (p.chunkId() == chunkId) {
                         final List<Byte> oldValue = newChunk.getBytes(p.address(), p.oldValue().size());
                         if (p.oldValue().equals(oldValue)) {
@@ -198,15 +195,19 @@ public class LoadDataTask extends Task<List<Chunk>> {
     // dwarf in order to get a hint about the clan hall
 
     // BUGFIX
-    private static final List<Patch> PATCHES = List.of(
-            ENABLE_THROWN_WEAPONS_FROM_REAR,
-            ENABLE_THROWN_WEAPON_SKILL_CHECK,
-            PURGATORY_DEPARTURE_N,
-            DWARF_HAMMER_CHEST_FLAG,
-            PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
-            NISIR_SPINNER_19_23, NISIR_SPINNER_20_23,
-            FREEPORT_TYPO_1,
-            PILGRIM_DOCK_TYPO_1, PILGRIM_DOCK_TYPO_2,
-            SPELL_MISS_TURN_EFFECT_TYPO_1
-    );
+    private List<Patch> getPatches() {
+        final List<Patch> patches = new ArrayList<>();
+        if (prefs.backRowThrown()) patches.add(ENABLE_THROWN_WEAPONS_FROM_REAR);
+        patches.addAll(List.of(
+                ENABLE_THROWN_WEAPON_SKILL_CHECK,
+                PURGATORY_DEPARTURE_N,
+                DWARF_HAMMER_CHEST_FLAG,
+                PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
+                NISIR_SPINNER_19_23, NISIR_SPINNER_20_23,
+                FREEPORT_TYPO_1,
+                PILGRIM_DOCK_TYPO_1, PILGRIM_DOCK_TYPO_2,
+                SPELL_MISS_TURN_EFFECT_TYPO_1
+        ));
+        return patches;
+    }
 }

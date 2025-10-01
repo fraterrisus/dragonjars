@@ -17,10 +17,25 @@ public class AppPreferences {
 
     public static AppPreferences getInstance() { return INSTANCE; }
 
+    public static Frozen getFrozen() {
+        return new Frozen(
+                INSTANCE.executablePathProperty().get(),
+                INSTANCE.data1PathProperty().get(),
+                INSTANCE.data2PathProperty().get(),
+                INSTANCE.soundEnabledProperty().get(),
+                INSTANCE.volumeProperty().get(),
+                INSTANCE.scaleProperty().get(),
+                INSTANCE.combatDelayProperty().get(),
+                INSTANCE.autoOpenParagraphsProperty().get(),
+                INSTANCE.backRowThrownProperty().get()
+        );
+    }
+
     private static final String NODE_NAME = "com.hitchhikerprod.dragonjars";
     private static final String PREF_AUTO_OPEN_PARAGRAPHS = "help.autoparagraph";
     private static final String PREF_AUDIO_ENABLED = "audio.enable";
     private static final String PREF_AUDIO_VOLUME = "audio.volume";
+    private static final String PREF_BACK_ROW_THROWN = "bugs.thrown";
     private static final String PREF_COMBAT_DELAY = "game.delay";
     private static final String PREF_FILE_DATA1 = "file.data1";
     private static final String PREF_FILE_DATA2 = "file.data2";
@@ -35,6 +50,7 @@ public class AppPreferences {
     private final IntegerProperty scale = new SimpleIntegerProperty();
     private final DoubleProperty combatDelay = new SimpleDoubleProperty();
     private final BooleanProperty autoOpenParagraphs = new SimpleBooleanProperty();
+    private final BooleanProperty backRowThrown = new SimpleBooleanProperty();
 
     private final Preferences onDiskPrefs = Preferences.userRoot().node(NODE_NAME);
 
@@ -55,6 +71,11 @@ public class AppPreferences {
         data2Path.addListener((obs, oVal, nVal) -> {
             if (Objects.isNull(nVal)) onDiskPrefs.remove(PREF_FILE_DATA2);
             else onDiskPrefs.put(PREF_FILE_DATA2, nVal);
+        });
+
+        backRowThrown.set(onDiskPrefs.getBoolean(PREF_BACK_ROW_THROWN, true));
+        backRowThrown.addListener((obs, oVal, nVal) -> {
+            onDiskPrefs.putBoolean(PREF_BACK_ROW_THROWN, nVal);
         });
 
         soundEnabled.set(onDiskPrefs.getBoolean(PREF_AUDIO_ENABLED, true));
@@ -88,6 +109,22 @@ public class AppPreferences {
         return data2Path;
     }
 
+    public BooleanProperty autoOpenParagraphsProperty() {
+        return autoOpenParagraphs;
+    }
+
+    public BooleanProperty backRowThrownProperty() {
+        return backRowThrown;
+    }
+
+    public DoubleProperty combatDelayProperty() {
+        return combatDelay;
+    }
+
+    public IntegerProperty scaleProperty() {
+        return scale;
+    }
+
     public BooleanProperty soundEnabledProperty() {
         return soundEnabled;
     }
@@ -96,15 +133,15 @@ public class AppPreferences {
         return volume;
     }
 
-    public IntegerProperty scaleProperty() {
-        return scale;
-    }
-
-    public DoubleProperty combatDelayProperty() {
-        return combatDelay;
-    }
-
-    public BooleanProperty autoOpenParagraphsProperty() {
-        return autoOpenParagraphs;
-    }
+    public record Frozen(
+            String executablePath,
+            String data1Path,
+            String data2Path,
+            boolean soundEnabled,
+            int volume,
+            int scale,
+            double combatDelay,
+            boolean autoOpenParagraphs,
+            boolean backRowThrown
+    ) { }
 }
