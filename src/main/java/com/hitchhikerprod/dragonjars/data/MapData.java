@@ -1,10 +1,8 @@
 package com.hitchhikerprod.dragonjars.data;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class MapData {
     private static final int FLAG_UNK_5 = 0x20;
@@ -20,42 +18,7 @@ public class MapData {
     private ModifiableChunk primaryData;
     private Chunk secondaryData;
 
-    private int chunkPointer;
-
-    private int xMax;
-    private int yMax;
-    // private int flags; we're reading this live now
-    // private int randomEncounters;
-
-    private List<Integer> primaryPointers;
-    // private List<Integer> secondaryPointers;
-    // private List<Integer> itemPointers;
-
-//    private int titleStringPtr;
-//    private int defaultEventPtr;
-    private int actionsPtr;
-    private int itemListPtr;
-    private int monsterDataPtr;
-    private int encountersPtr;
-    private int tagLinesPtr;
-
-    private List<Integer> titleChars;
-
-    private final List<Byte> wallTextures54a7 = new ArrayList<>();
-    // 54b5: translates map square bits [0:3]
-    private final List<Byte> wallMetadata54b6 = new ArrayList<>();
-    // 54c5: texture array? maxlen 4, values are indexes into 5677
-    private final List<Byte> roofTextures54c5 = new ArrayList<>();
-    private final List<Byte> floorTextures54c9 = new ArrayList<>();
-    private final List<Byte> otherTextures54cd = new ArrayList<>();
-    // 5677: list of texture chunks (+0x6e); see 0x5786()
-    // 57c4: list of texture? segments
-    private final List<Byte> textureChunks5677 = new ArrayList<>();
-    // 5734: list of pointers to square data rows
-    private final List<Integer> rowPointers57e4 = new ArrayList<>();
-
     private final List<Action> actions = new ArrayList<>();
-    private final List<Item> items = new ArrayList<>();
     private final List<Encounter> encounters = new ArrayList<>();
     private final List<Monster> monsters = new ArrayList<>();
 
@@ -67,101 +30,72 @@ public class MapData {
         return mapId;
     }
 
-    public List<Integer> chunkIds() {
-        if (this.mapId == -1) return List.of();
-        final List<Integer> ids = new ArrayList<>();
-        // loadMapChunks [cs/5544] does seem to unload the previous value of heap[5a]
-        ids.add(0x46 + mapId); // primary map segment
-        ids.add(0x1e + mapId); // secondary map segment
-        ids.addAll(textureChunks5677.stream()
-                .map(t -> 0x6e + (0x7f & t))
-                .toList());
-        return ids;
-    }
+    // primary map data pointers
+    private static final int PTR_X_MAX = 0;
+    private static final int PTR_Y_MAX = 1;
+    private static final int PTR_FLAGS = 2;
+    private static final int PTR_RANDOM_ENCOUNTERS = 3;
+    private static final int PTR_TEXTURE_CHUNKS = 4;
+    private int PTR_WALL_DATA;
+    private int PTR_ROOF_TEXTURES;
+    private int PTR_FLOOR_TEXTURES;
+    private int PTR_DECO_TEXTURES;
+    private int PTR_TITLE_STRING;
+    private int PTR_SQUARE_DATA;
+    private int PTR_DEFAULT_EVENT;
+    private int PTR_ACTIONS;
+    private int PTR_EVENTS;
+
+    // secondary map data pointers
+    private int PTR_ITEMS;
+    private int PTR_MONSTERS;
+    private int PTR_ENCOUNTERS;
+    private int PTR_TAGLINES;
 
     public void parse(int mapId, ModifiableChunk primary, Chunk secondary) {
         this.mapId = mapId;
         this.primaryData = primary;      // primary = mapId + 0x46
         this.secondaryData = secondary;  // secondary = mapId + 0x1e
 
-        chunkPointer = 0;
+        int xMax = xMax();
+        int yMax = yMax();
 
-        this.xMax = primaryData.getByte(chunkPointer);
-        // for some reason this is one larger than it should be; see below
-        this.yMax = primaryData.getByte(chunkPointer + 1);
-        // this.randomEncounters = primaryData.getUnsignedByte(chunkPointer + 3);
-        chunkPointer += 4;
+        PTR_WALL_DATA = skipArray(PTR_TEXTURE_CHUNKS, 1);
+        PTR_ROOF_TEXTURES = skipArray(PTR_WALL_DATA, 2);
+        PTR_FLOOR_TEXTURES = skipArray(PTR_ROOF_TEXTURES, 1);
+        PTR_DECO_TEXTURES = skipArray(PTR_FLOOR_TEXTURES, 1);
 
-        byteReader(textureChunks5677::add);
+        int ptr = skipArray(PTR_DECO_TEXTURES, 1);
+        PTR_TITLE_STRING = primaryData.getWord(ptr);
+        PTR_SQUARE_DATA = ptr + 2;
+        ptr = PTR_SQUARE_DATA + (yMax * xMax * 3);
+        PTR_DEFAULT_EVENT = primaryData.getWord(ptr);
+        PTR_ACTIONS = primaryData.getWord(ptr + 2);
+        PTR_EVENTS = ptr + 4;
 
-        byte f = 0;
-        while ((f & 0x80) == 0) {
-            f = primaryData.getByte(chunkPointer);
-            wallTextures54a7.add((byte)(f & 0x7f));
-            wallMetadata54b6.add(primaryData.getByte(chunkPointer+1));
-            chunkPointer += 2;
-        }
+        PTR_MONSTERS = secondaryData.getWord(0);
+        PTR_ENCOUNTERS = secondaryData.getWord(2);
+        PTR_TAGLINES = secondaryData.getWord(4);
+        PTR_ITEMS = secondaryData.getWord(6);
 
-        byteReader((b) -> roofTextures54c5.add((byte)(b & 0x7f)));
-        byteReader((b) -> floorTextures54c9.add((byte)(b & 0x7f)));
-        byteReader((b) -> otherTextures54cd.add((byte)(b & 0x7f)));
-
-        decodeTitleString();
-
-        int ptr = chunkPointer;
-        int xInc = xMax * 3;
-        for (int y = 0; y <= yMax; y++) {
-            rowPointers57e4.add(ptr);
-            ptr += xInc;
-        }
-        // 55bb:parseMapData() builds this array backwards, from yMax down to 0, so it can include an "end" pointer(?)
-        Collections.reverse(rowPointers57e4);
-
-        primaryPointers = discoverPointers(primaryData, rowPointers57e4.getFirst());
-        // defaultEventPtr = primaryPointers.get(0);
-        actionsPtr = primaryPointers.get(1);
-
-        monsterDataPtr = secondaryData.getWord(0);
-        encountersPtr = secondaryData.getWord(2);
-        tagLinesPtr = secondaryData.getWord(4);
-        itemListPtr = secondaryData.getWord(6);
-
-        parseEncounters();
-        parseItems();
         parseActions();
+//        parseEncounters();
     }
 
-    public boolean isDirty() {
-        return primaryData.isDirty();
+    public int xMax() {
+        return primaryData.getUnsignedByte(PTR_X_MAX);
     }
 
-    public void clean() {
-        primaryData.clean();
-    }
-
-    public List<Integer> getTitleChars() {
-        return titleChars;
-    }
-
-    public String getTitleString() {
-        final StringBuilder sb = new StringBuilder();
-        for (int ch : this.titleChars) {
-            sb.append(Character.toChars(ch & 0x7f));
-        }
-        return sb.toString();
-    }
-
-
-    public int getMaxX() {
-        return xMax;
-    }
-
-    public int getMaxY() {
-        return yMax;
+    public int yMax() {
+        return primaryData.getUnsignedByte(PTR_Y_MAX);
     }
 
     public int flags() {
-        return primaryData.getUnsignedByte(2);
+        return primaryData.getUnsignedByte(PTR_FLAGS);
+    }
+
+    public int randomEncounters() {
+        return primaryData.getUnsignedByte(PTR_RANDOM_ENCOUNTERS);
     }
 
     public boolean allowsCreateWall() {
@@ -180,6 +114,88 @@ public class MapData {
         return (flags() & FLAG_WRAPPING) != 0;
     }
 
+    public List<Integer> chunkIds() {
+        if (this.mapId == -1) return List.of();
+        final List<Integer> ids = new ArrayList<>();
+        // loadMapChunks [cs/5544] does seem to unload the previous value of heap[5a]
+        ids.add(0x46 + mapId); // primary map segment
+        ids.add(0x1e + mapId); // secondary map segment
+        ids.addAll(textureChunks().stream()
+                .map(t -> 0x6e + t)
+                .toList());
+        return ids;
+    }
+
+    private int skipArray(int pointer, int width) {
+        int b = 0;
+        while ((b & 0x80) == 0) {
+            b = primaryData.getUnsignedByte(pointer);
+            pointer += width;
+        }
+        return pointer;
+    }
+
+    private int getArrayValue(int basePointer, int index) {
+        return 0x7f & primaryData.getByte(basePointer + index);
+    }
+
+    private int getTextureChunk(int index) {
+        return getTextureNumber(index) + 0x6e;
+    }
+
+    private int getTextureNumber(int index) {
+        return getArrayValue(PTR_TEXTURE_CHUNKS, index);
+    }
+
+    private List<Byte> textureChunks() {
+        final List<Byte> chunks = new ArrayList<>();
+        int ptr = PTR_TEXTURE_CHUNKS;
+        byte b = 0;
+        while ((b & 0x80) == 0) {
+            b = primaryData.getByte(ptr++);
+            chunks.add((byte)(0x7f & b));
+        }
+        return List.copyOf(chunks);
+    }
+
+    private int getWallTextureIndex(int index) {
+        final int ptr = PTR_WALL_DATA + (2 * index);
+        return 0x7f & primaryData.getByte(ptr);
+    }
+
+    private int getWallMetadata(int index) {
+        final int ptr = PTR_WALL_DATA + (2 * index) + 1;
+        return primaryData.getUnsignedByte(ptr);
+    }
+
+    private int getFloorTextureIndex(int index) {
+        return getArrayValue(PTR_FLOOR_TEXTURES, index);
+    }
+
+    private int getRoofTextureIndex(int index) {
+        return getArrayValue(PTR_ROOF_TEXTURES, index);
+    }
+
+    private int getDecoTextureIndex(int index) {
+        return getArrayValue(PTR_DECO_TEXTURES, index);
+    }
+
+    public List<Integer> getTitleChars() {
+        stringDecoder.decodeString(primaryData, PTR_TITLE_STRING);
+        return stringDecoder.getDecodedChars();
+    }
+
+    public String getTitleString() {
+        stringDecoder.decodeString(primaryData, PTR_TITLE_STRING);
+        return stringDecoder.getDecodedString();
+    }
+
+    private int getSquareOffset(int x, int y) {
+        final int rowOffset = (yMax() - (y + 1)) * xMax() * 3;
+        final int colOffset = x * 3;
+        return PTR_SQUARE_DATA + rowOffset + colOffset;
+    }
+
     /**
      * Updates the "have I stepped on this square" flag (raw data 0x000800) for the given square. If the provided
      * coordinate is outside the board's dimensions but the map is marked as "wrapping", a modulus operator is applied.
@@ -189,12 +205,12 @@ public class MapData {
     public void setStepped(GridCoordinate loc) {
         final GridCoordinate temp;
         if (isWrapping()) {
-            temp = loc.modulus(xMax, yMax);
+            temp = loc.modulus(xMax(), yMax());
         } else {
-            if (loc.isOutside(xMax, yMax)) return;
+            if (loc.isOutside(xMax(), yMax())) return;
             temp = loc;
         }
-        final int offset = rowPointers57e4.get(temp.y() + 1) + (3 * temp.x());
+        final int offset = getSquareOffset(temp.x(), temp.y());
         final int rawData = primaryData.getUnsignedByte(offset+1);
         primaryData.write(offset+1, 1, rawData | 0x08);
     }
@@ -217,25 +233,38 @@ public class MapData {
      * @param newData The new raw data value.
      */
     public void setSquare(int x, int y, int newData) {
-        if (x < 0 || y < 0 || x >= xMax || y >= yMax) return;
-        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        if (x < 0 || y < 0 || x >= xMax() || y >= yMax()) return;
+        final int offset = getSquareOffset(x, y);
         primaryData.write(offset, 3, newData);
     }
 
-    // FIXME: should this be dynamic?
+    /**
+     * Sets the 'special ID' field of a map square to zero, i.e. no special event exists here.
+     * @param position The coordinates of the square to update.
+     */
+    public void eraseSquareSpecial(GridCoordinate position) {
+        eraseSquareSpecial(position.x(), position.y());
+    }
+
+    /**
+     * Sets the 'special ID' field of a map square to zero, i.e. no special event exists here.
+     * @param x The X coordinate of the square to update.
+     * @param y The Y coordinate of the square to update.
+     */
+    public void eraseSquareSpecial(int x, int y) {
+        final int offset = getSquareOffset(x, y);
+        primaryData.write(offset+2, 1, 0x00);
+    }
+
     public Item getItem(int index) {
-        if (index >= items.size()) return null;
-        return items.get(index);
+        final int pointer = secondaryData.getWord(PTR_ITEMS + (2 * index));
+        return new Item(secondaryData).decode(pointer);
     }
 
     public int getEventPointer(int eventId) {
-        // fetch dynamically to allow overwrites
-        final int ptr = rowPointers57e4.getFirst() + (2 * eventId);
-        return primaryData.getWord(ptr);
-    }
-
-    public int getRandomEncounters() {
-        return primaryData.getUnsignedByte(0x03);
+        if (eventId == 0) return PTR_DEFAULT_EVENT;
+        final int pointer = PTR_EVENTS + (2 * (eventId - 1));
+        return primaryData.getWord(pointer);
     }
 
     private Square stripSquare(int x, int y) {
@@ -255,22 +284,15 @@ public class MapData {
         );
     }
 
-    public void eraseSquareSpecial(GridCoordinate position) {
-        eraseSquareSpecial(position.x(), position.y());
-    }
-
-    public void eraseSquareSpecial(int x, int y) {
-        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
-        primaryData.write(offset+2, 1, 0x00);
-    }
-
     public Square getSquare(int xin, int yin) {
         return getSquare(new GridCoordinate(xin, yin));
     }
 
     public Square getSquare(GridCoordinate position) {
-        if (rowPointers57e4.isEmpty()) { throw new RuntimeException("parse() hasn't been called"); }
+        if (mapId == -1) { throw new RuntimeException("parse() hasn't been called"); }
 
+        final int xMax = xMax();
+        final int yMax = yMax();
         final int x, y;
         if (isWrapping()) {
             final GridCoordinate temp = position.modulus(xMax, yMax);
@@ -296,7 +318,7 @@ public class MapData {
 
         // The list of row pointers has one-too-many, and the "extra" is at the START
         // So 52b8:fetchMapSquare() starts at 0x57e6 i.e. [0x5734+2] i.e. it skips the extra pointer
-        final int offset = rowPointers57e4.get(y + 1) + (3 * x);
+        final int offset = getSquareOffset(x, y);
 
         final int rawData = primaryData.getQuadWord(offset) & 0x00ffffff;
 
@@ -307,13 +329,9 @@ public class MapData {
             northWallTextureId = Optional.empty();
             northWallTextureMetadata = Optional.empty();
         } else {
-            final int textureIndex = 0xff & wallTextures54a7.get(northWallTextureIndex - 1);
-            if (textureIndex > 0x6e) {
-                northWallTextureId = Optional.of(textureIndex);
-            } else {
-                northWallTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(textureIndex)));
-            }
-            northWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(northWallTextureIndex - 1));
+            final int textureIndex = getWallTextureIndex(northWallTextureIndex - 1);
+            northWallTextureId = Optional.of((textureIndex > 0x6e) ? textureIndex : getTextureChunk(textureIndex));
+            northWallTextureMetadata = Optional.of(getWallMetadata(northWallTextureIndex - 1));
         }
 
         final int westWallTextureIndex = (rawData) & 0xf;
@@ -323,33 +341,29 @@ public class MapData {
             westWallTextureId = Optional.empty();
             westWallTextureMetadata = Optional.empty();
         } else {
-            final int textureIndex = 0xff & wallTextures54a7.get(westWallTextureIndex - 1);
-            if (textureIndex > 0x6e) {
-                westWallTextureId = Optional.of(textureIndex);
-            } else {
-                westWallTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(textureIndex)));
-            }
-            westWallTextureMetadata = Optional.of(0xff & wallMetadata54b6.get(westWallTextureIndex - 1));
+            final int textureIndex = getWallTextureIndex(westWallTextureIndex - 1);
+            westWallTextureId = Optional.of((textureIndex > 0x6e) ? textureIndex : getTextureChunk(textureIndex));
+            westWallTextureMetadata = Optional.of(getWallMetadata(westWallTextureIndex - 1));
         }
 
-        // Note that we look up the texture index on the master texture list but DO NOT add 0x6e for chunk id
+        // Note that we look up the texture number on the master texture list but DO NOT add 0x6e for chunk id
         final int roofTextureIndex0 = (rawData >> 14) & 0x3;
-        final int roofTextureIndex1 = 0xff & roofTextures54c5.get(roofTextureIndex0);
-        final int roofTextureId = 0x7f & textureChunks5677.get(roofTextureIndex1);
+        final int roofTextureIndex1 = getRoofTextureIndex(roofTextureIndex0);
+        final int roofTextureId = getTextureNumber(roofTextureIndex1);
 
         final int floorTextureIndex0 = (rawData >> 12) & 0x3;
-        final int floorTextureIndex1 = 0xff & floorTextures54c9.get(floorTextureIndex0);
-        final int floorTextureId = 0x6e + (0x7f & textureChunks5677.get(floorTextureIndex1));
+        final int floorTextureIndex1 = getFloorTextureIndex(floorTextureIndex0);
+        final int floorTextureId = getTextureChunk(floorTextureIndex1);
 
         final boolean touched = (rawData & 0x000800) > 0;
 
-        final int otherTextureIndex = (rawData >> 8) & 0x7;
-        final Optional<Integer> otherTextureId;
-        if (otherTextureIndex == 0) {
-            otherTextureId = Optional.empty();
+        final int decoTextureIndex = (rawData >> 8) & 0x7;
+        final Optional<Integer> decoTextureId;
+        if (decoTextureIndex == 0) {
+            decoTextureId = Optional.empty();
         } else {
-            final int overallTextureIndex = 0xff & otherTextures54cd.get(otherTextureIndex - 1);
-            otherTextureId = Optional.of(0x6e + (0x7f & textureChunks5677.get(overallTextureIndex)));
+            final int textureIndex = getDecoTextureIndex(decoTextureIndex - 1);
+            decoTextureId = Optional.of(getTextureChunk(textureIndex));
         }
 
         final int eventId = (rawData >> 16) & 0xff;
@@ -362,88 +376,17 @@ public class MapData {
                 westWallTextureMetadata,
                 roofTextureId,
                 floorTextureId,
-                otherTextureId,
+                decoTextureId,
                 touched,
                 eventId
         );
     }
 
-    public Square[][] getView(int x, int y, int facing) {
-        final Square[][] view = new Square[4][3];
-        switch (facing) {
-            case 0: // North
-                for (int d = 0; d < 4; d++) {
-                    view[3 - d][0] = getSquare(x - 1, y + d);
-                    view[3 - d][1] = getSquare(x, y + d);
-                    view[3 - d][2] = getSquare(x + 1, y + d);
-                }
-                return view;
-            case 1: // East
-                for (int d = 0; d < 4; d++) {
-                    view[3 - d][0] = getSquare(x + d, y + 1);
-                    view[3 - d][1] = getSquare(x + d, y);
-                    view[3 - d][2] = getSquare(x + d, y - 1);
-                }
-                return view;
-            case 2: // South
-                for (int d = 0; d < 4; d++) {
-                    view[3 - d][0] = getSquare(x + 1, y - d);
-                    view[3 - d][1] = getSquare(x, y - d);
-                    view[3 - d][2] = getSquare(x - 1, y - d);
-                }
-                return view;
-            case 3: // West
-                for (int d = 0; d < 4; d++) {
-                    view[3 - d][0] = getSquare(x - d, y - 1);
-                    view[3 - d][1] = getSquare(x - d, y);
-                    view[3 - d][2] = getSquare(x - d, y + 1);
-                }
-                return view;
-            default:
-                throw new IllegalArgumentException("Unexpected facing: " + facing);
-        }
-    }
-
-    public List<Action> getActions() {
-        return actions;
-    }
-
-    private void byteReader(Consumer<Byte> consumer) {
-        byte f = 0;
-        while ((f & 0x80) == 0) {
-            f = primaryData.getByte(chunkPointer);
-            chunkPointer++;
-            consumer.accept(f);
-        }
-    }
-
-    private void decodeTitleString() {
-        final int titleStringPtr = primaryData.getWord(chunkPointer);
-        chunkPointer += 2;
-
-        stringDecoder.decodeString(primaryData, titleStringPtr);
-        titleChars = stringDecoder.getDecodedChars();
-    }
-
-    private List<Integer> discoverPointers(Chunk chunk, int basePtr) {
-        final List<Integer> pointers = new ArrayList<>();
-        int thisPtr = basePtr;
-        int firstPtr = chunk.getWord(basePtr);
-        while (thisPtr < firstPtr) {
-            int nextPtr = chunk.getWord(thisPtr);
-            // if (nextPtr > chunk.getSize()) { return pointers; }
-            pointers.add(nextPtr);
-            if ((nextPtr != 0) && (nextPtr < firstPtr)) { firstPtr = nextPtr; }
-            thisPtr += 2;
-        }
-        return pointers;
-    }
-
     // See mfn.72()
     private void parseActions() {
-        if (actionsPtr == 0) return;
+        if (PTR_ACTIONS == 0) return;
 
-        int pointer = actionsPtr;
+        int pointer = PTR_ACTIONS;
         while (true) {
             final int header = primaryData.getUnsignedByte(pointer);
             if (header == 0xff) {
@@ -488,34 +431,47 @@ public class MapData {
         }
     }
 
-    private void parseItems() {
-        if (itemListPtr == 0) return;
-
-        for (int offset : discoverPointers(secondaryData, itemListPtr)) {
-            this.items.add(new Item(secondaryData).decode(offset));
-        }
+    public List<Action> actions() {
+        // It seems like the actions themselves never get modified, so it's okay to parse them statically.
+        // We can't even do a simple getAction(int index), because actions are different sizes so you _have_ to
+        // iterate over the raw list from the beginning each time.
+        return actions;
     }
 
     private void parseEncounters() {
-        if ((monsterDataPtr == 0) ||
-                (monsterDataPtr == tagLinesPtr) ||
-                (monsterDataPtr == encountersPtr)) { return; }
+        if ((PTR_MONSTERS == 0) ||
+                (PTR_MONSTERS == PTR_TAGLINES) ||
+                (PTR_MONSTERS == PTR_ENCOUNTERS)) { return; }
 
-        for (int offset : discoverPointers(secondaryData, monsterDataPtr + 1)) {
+        for (int offset : discoverPointers(secondaryData, PTR_MONSTERS + 1)) {
             monsters.add(new Monster(secondaryData, stringDecoder).decode(offset));
         }
 
         final List<String> taglines = new ArrayList<>();
-        for (int offset : discoverPointers(secondaryData, tagLinesPtr)) {
+        for (int offset : discoverPointers(secondaryData, PTR_TAGLINES)) {
             stringDecoder.decodeString(secondaryData, offset);
             taglines.add(stringDecoder.getDecodedString());
         }
 
-        for (int offset : discoverPointers(secondaryData, encountersPtr + 1)) {
+        for (int offset : discoverPointers(secondaryData, PTR_ENCOUNTERS + 1)) {
             final Encounter enc = new Encounter(secondaryData).decode(offset);
             enc.setTagline(taglines.get(enc.getTaglineIndex()));
             this.encounters.add(enc);
         }
+    }
+
+    private List<Integer> discoverPointers(Chunk chunk, int basePtr) {
+        final List<Integer> pointers = new ArrayList<>();
+        int thisPtr = basePtr;
+        int firstPtr = chunk.getWord(basePtr);
+        while (thisPtr < firstPtr) {
+            int nextPtr = chunk.getWord(thisPtr);
+            // if (nextPtr > chunk.getSize()) { return pointers; }
+            pointers.add(nextPtr);
+            if ((nextPtr != 0) && (nextPtr < firstPtr)) { firstPtr = nextPtr; }
+            thisPtr += 2;
+        }
+        return pointers;
     }
 
     public record Square(
@@ -526,7 +482,7 @@ public class MapData {
             Optional<Integer> westWallTextureMetadata,
             int roofTexture,
             int floorTextureChunk,
-            Optional<Integer> otherTextureChunk,
+            Optional<Integer> decoTextureChunk,
             boolean touched,
             int specialId
     ) {}

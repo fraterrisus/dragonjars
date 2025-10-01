@@ -99,8 +99,8 @@ public class MapWindow {
     private int yMax;
 
     private Image buildMap(MapData mapData) {
-        xMax = mapData.getMaxX();
-        yMax = mapData.getMaxY();
+        xMax = mapData.xMax();
+        yMax = mapData.yMax();
         final int xDim = GRID_SIZE * (xMax + 2);
         final int yDim = GRID_SIZE * (yMax + 2);
 
@@ -293,8 +293,8 @@ public class MapWindow {
                 }
 
                 gfx.fill(floor);
-                if (sq.otherTextureChunk().isPresent()) {
-                    switch (sq.otherTextureChunk().get()) {
+                if (sq.decoTextureChunk().isPresent()) {
+                    switch (sq.decoTextureChunk().get()) {
                         case 0x71 -> { // tree
                             gfx.setColor(TREE);
                             gfx.fill(cluster1);
@@ -352,11 +352,11 @@ public class MapWindow {
         final GridCoordinate pos = Heap.getPartyLocation().pos();
         final int x, y;
         if (mapData.isWrapping()) {
-            final GridCoordinate temp = pos.modulus(mapData.getMaxX(), mapData.getMaxY());
+            final GridCoordinate temp = pos.modulus(mapData.xMax(), mapData.yMax());
             x = temp.x();
             y = temp.y();
         } else {
-            if (pos.isOutside(mapData.getMaxX(), mapData.getMaxY())) return;
+            if (pos.isOutside(mapData.xMax(), mapData.yMax())) return;
             x = pos.x();
             y = pos.y();
         }

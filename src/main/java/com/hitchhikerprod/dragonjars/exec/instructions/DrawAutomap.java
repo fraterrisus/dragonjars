@@ -124,7 +124,7 @@ public class DrawAutomap implements Instruction {
                     automap.drawTextureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
                             xOffset, yOffset, 0, automapRectangle);
                 } else if (square.touched()) {
-                    square.otherTextureChunk().ifPresent(id -> {
+                    square.decoTextureChunk().ifPresent(id -> {
                         if (TEXTURES_DECO.contains(id)) drawChunk(id, 0, xOffset, yOffset);
                     });
                 }

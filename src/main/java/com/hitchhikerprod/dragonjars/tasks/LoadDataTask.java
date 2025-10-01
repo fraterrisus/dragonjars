@@ -128,6 +128,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
     }
 
     private record Patch(int chunkId, int address, List<Byte> oldValue, List<Byte> newValue) {
+        @Override
+        public String toString() {
+            return String.format("Patch[chunkId=0x%02x, address=0x%04x]", chunkId, address);
+        }
     }
 
     // The "Attack" action is disabled if you're in the back ranks and have a Thrown Weapon readied
@@ -157,6 +161,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02c5, List.of((byte) 0x11), List.of((byte) 0x12));
 
     // Pilgrim dock: typos "lock in only accessable"
+    // FIXME
     private static final Patch PILGRIM_DOCK_TYPO_1 =
             new Patch(0x060, 0x0206 + 0x1c, List.of((byte)0x4e), List.of((byte)0x52));
     private static final Patch PILGRIM_DOCK_TYPO_2 =
@@ -188,6 +193,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
     ));
 
     // Spell handlers: "lose a turn" spell has an extra space after "the party"
+    // FIXME
     private static final Patch SPELL_MISS_TURN_EFFECT_TYPO_1 =
             new Patch(0x06, 0x0584 + 0x06,
                     List.of((byte)0x01, (byte)0x00),

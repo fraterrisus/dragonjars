@@ -21,7 +21,7 @@ public class RunBoardEvent implements Instruction {
             Heap.get(Heap.RECENT_SPECIAL).write(0);
             if (square.specialId() != 0) {
                 Heap.get(Heap.NEXT_SPECIAL).write(square.specialId(), 1);
-                final int eventPointer = i.mapDecoder().getEventPointer(square.specialId() + 1);
+                final int eventPointer = i.mapDecoder().getEventPointer(square.specialId());
                 if (eventPointer != 0) { // event was disabled dynamically
                     final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
                     final After after = new After(i, location, nextIP);

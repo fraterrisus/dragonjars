@@ -47,10 +47,10 @@ public class DrawCurrentViewport implements Instruction {
 
         i.decodeMap(loc.mapId());
 
-        Heap.get(Heap.BOARD_MAX_X).write(i.mapDecoder().getMaxX());
-        Heap.get(Heap.BOARD_MAX_Y).write(i.mapDecoder().getMaxY());
+        Heap.get(Heap.BOARD_MAX_X).write(i.mapDecoder().xMax());
+        Heap.get(Heap.BOARD_MAX_Y).write(i.mapDecoder().yMax());
         Heap.get(Heap.BOARD_FLAGS).write(i.mapDecoder().flags());
-        Heap.get(Heap.RANDOM_ENCOUNTERS).write(i.mapDecoder().getRandomEncounters());
+        Heap.get(Heap.RANDOM_ENCOUNTERS).write(i.mapDecoder().randomEncounters());
         Heap.get(Heap.WALL_METADATA).write(getWallMetadata(loc.pos(), loc.facing()));
         i.setTitleString(i.mapDecoder().getTitleChars());
 
@@ -130,8 +130,8 @@ public class DrawCurrentViewport implements Instruction {
             // 'Other' decor texture; try to only run each square once
             if (data.facingDelta() == Facing.Delta.NONE) {
                 final MapData.Square sq = i.mapDecoder().getSquare(farSquare);
-                if (sq.otherTextureChunk().isPresent()) {
-                    final Integer otherChunkId = sq.otherTextureChunk().get();
+                if (sq.decoTextureChunk().isPresent()) {
+                    final Integer otherChunkId = sq.decoTextureChunk().get();
                     final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.IN_USE);
                     final Chunk textureChunk = i.memory().getSegment(segmentId);
                     i.fg().drawTexture(textureChunk, textureOffset, x0, y0, 0, gameplayArea);

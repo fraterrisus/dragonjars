@@ -57,7 +57,7 @@ public class StringDecoder {
             int value = shiftBits(5);
             if (DEBUG) System.out.format(" %02x", value);
             if (value == 0x00) {
-                System.out.println();
+                if (DEBUG) System.out.println();
                 return;
             }
             if (value == 0x1e) {

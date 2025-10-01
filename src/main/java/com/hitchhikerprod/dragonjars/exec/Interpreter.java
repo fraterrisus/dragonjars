@@ -558,8 +558,8 @@ public class Interpreter {
 
     private void packAutomapData(int mapId) { // 0x4e00 and 0x4e5a
         final ModifiableChunk automap = memory().automapChunk();
-        final int xMax = mapDecoder().getMaxX();
-        final int yMax = mapDecoder().getMaxY();
+        final int xMax = mapDecoder().xMax();
+        final int yMax = mapDecoder().yMax();
         int flagMask = automap.getWord(2 * mapId);
         int address = 0x050 + (flagMask >> 3);
         int mask = 0x80 >> (flagMask & 0x7);
@@ -583,8 +583,8 @@ public class Interpreter {
 
     private void unpackAutomapData(int mapId) { // 0x4e00 and 0x4e6b
         final ModifiableChunk automap = memory().automapChunk();
-        final int xMax = mapDecoder().getMaxX();
-        final int yMax = mapDecoder().getMaxY();
+        final int xMax = mapDecoder().xMax();
+        final int yMax = mapDecoder().yMax();
         int flagMask = automap.getWord(2 * mapId);
         int address = 0x050 + (flagMask >> 3);
         int mask = 0x80 >> (flagMask & 0x7);

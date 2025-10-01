@@ -27,7 +27,7 @@ public class FindBoardAction implements Instruction {
         final Address nextIP = i.getIP().incr();
         if (Heap.get(Heap.BOARD_ID).read() != Heap.get(Heap.DECODED_BOARD_ID).read()) return nextIP;
         this.i = i;
-        this.actions = i.mapDecoder().getActions();
+        this.actions = i.mapDecoder().actions();
         this.actionIndex = 0;
 //        System.out.println("FindBoardActions");
         return searchForActions(nextIP);
@@ -85,7 +85,7 @@ public class FindBoardAction implements Instruction {
 
             if (found) {
 //                System.out.println("  match found");
-                final int eventPointer = i.mapDecoder().getEventPointer(action.event() + 1);
+                final int eventPointer = i.mapDecoder().getEventPointer(action.event());
                 if (eventPointer != 0) { // disabled dynamically
                     final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
                     i.reenter(target, () -> {
