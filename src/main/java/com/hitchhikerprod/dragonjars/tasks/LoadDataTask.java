@@ -27,9 +27,9 @@ public class LoadDataTask extends Task<List<Chunk>> {
     protected List<Chunk> call() throws Exception {
         final List<Chunk> chunks = new ArrayList<>();
         try (
-                final RandomAccessFile exec = new RandomAccessFile(executablePath, "r");
-                final RandomAccessFile data1 = new RandomAccessFile(data1Path, "r");
-                final RandomAccessFile data2 = new RandomAccessFile(data2Path, "r")
+            final RandomAccessFile exec = new RandomAccessFile(executablePath, "r");
+            final RandomAccessFile data1 = new RandomAccessFile(data1Path, "r");
+            final RandomAccessFile data2 = new RandomAccessFile(data2Path, "r")
         ) {
             final ChunkTable table = new ChunkTable(data1, data2);
             final int count = table.getChunkCount();
@@ -120,7 +120,6 @@ public class LoadDataTask extends Task<List<Chunk>> {
         while (writeAddress < chunk.getSize()) {
             final int b0 = chunk.getQuadWord(readAddress);
             final int b1 = chunk.getQuadWord(writeAddress);
-//            System.out.format("%04x\n", writeAddress);
             chunk.write(writeAddress, 4, b0 ^ b1);
             readAddress += 4;
             writeAddress += 4;
@@ -161,11 +160,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02c5, List.of((byte) 0x11), List.of((byte) 0x12));
 
     // Pilgrim dock: typos "lock in only accessable"
-    // FIXME
     private static final Patch PILGRIM_DOCK_TYPO_1 =
-            new Patch(0x060, 0x0206 + 0x1c, List.of((byte)0x4e), List.of((byte)0x52));
+            new Patch(0x060, 0x0206 + 0x1d, List.of((byte)0x4e), List.of((byte)0x52));
     private static final Patch PILGRIM_DOCK_TYPO_2 =
-            new Patch(0x060, 0x0206 + 0x24, List.of((byte)0x21), List.of((byte)0x25));
+            new Patch(0x060, 0x0206 + 0x25, List.of((byte)0x21), List.of((byte)0x25));
 
     // Nisir: Fix the misaligned spinner in the Wind Tunnel
     private static final Patch NISIR_SPINNER_19_23 =
@@ -193,12 +191,8 @@ public class LoadDataTask extends Task<List<Chunk>> {
     ));
 
     // Spell handlers: "lose a turn" spell has an extra space after "the party"
-    // FIXME
     private static final Patch SPELL_MISS_TURN_EFFECT_TYPO_1 =
-            new Patch(0x06, 0x0584 + 0x06,
-                    List.of((byte)0x01, (byte)0x00),
-                    List.of((byte)0x00, (byte)0x1f)  // add NOP instruction after string
-            );
+            new Patch(0x06, 0x0584 + 0x06, List.of((byte)0x40), List.of((byte)0x00));
 
     // the Snake Pit items list (SMD chunk 0x36) is missing the Jade Eyes at location 9, which you could show to a sad
     // dwarf in order to get a hint about the clan hall

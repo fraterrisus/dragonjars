@@ -64,7 +64,6 @@ public class MapData {
         PTR_ROOF_TEXTURES = skipArray(PTR_WALL_DATA, 2);
         PTR_FLOOR_TEXTURES = skipArray(PTR_ROOF_TEXTURES, 1);
         PTR_DECO_TEXTURES = skipArray(PTR_FLOOR_TEXTURES, 1);
-
         int ptr = skipArray(PTR_DECO_TEXTURES, 1);
         PTR_TITLE_STRING = primaryData.getWord(ptr);
         PTR_SQUARE_DATA = ptr + 2;

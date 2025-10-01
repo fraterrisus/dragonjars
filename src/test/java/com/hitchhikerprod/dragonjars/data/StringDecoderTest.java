@@ -49,8 +49,8 @@ class StringDecoderTest {
 
     @Test
     public void encode() {
-        final String text1 = "the party ";
-        final String text2 = "the party";
+        final String text1 = "You wake up in a small, cold cell. The lock in only accessable on the outside of the door.";
+        final String text2 = "You wake up in a small, cold cell. The lock is only accessible on the outside of the door.";
         final StringEncoder enc = new StringEncoder();
         final List<Byte> result1 = enc.encodeString(text1);
         final List<Byte> result2 = enc.encodeString(text2);

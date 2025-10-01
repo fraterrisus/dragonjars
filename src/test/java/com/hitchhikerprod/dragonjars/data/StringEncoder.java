@@ -107,12 +107,12 @@ public class StringEncoder {
             if (Objects.isNull(pieces)) {
                 throw new RuntimeException("Can't translate character " + ch);
             }
-            for (Byte p : pieces) System.out.format(" %02x", p);
-            System.out.print(" (" + (ch == '\n' ? "\\n" : ch) + ")");
+//            for (Byte p : pieces) System.out.format(" %02x", p);
+//            System.out.print(" (" + (ch == '\n' ? "\\n" : ch) + ")");
             unpacked.addAll(pieces);
         }
         unpacked.add((byte)0);
-        System.out.println(" 00");
+//        System.out.println(" 00");
 
         final List<Byte> packed = pack(unpacked);
         if (outMask == 0x04) throw new RuntimeException("Added an extra byte?");
