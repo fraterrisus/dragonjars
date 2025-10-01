@@ -36,7 +36,15 @@ reimplementation of the game's engine.
 
 ## Quick Start
 
+You'll need a Java runtime that supports at least Java 22, with Java 24 recommended. I use [OpenJDK](https://openjdk.org);
+other versions should also work.
 
+1. Download the latest release from the [Releases page](https://github.com/fraterrisus/dragonjars/releases) (.zip or 
+   .tar.bz2, your choice, they're the same)
+2. Uncompress the archive somewhere useful.
+3. (Recommended) Copy `DRAGON.COM`, `DATA1`, and `DATA2` into the `dragonjars` directory.
+4. Run `bin/dragonjars` (Linux, MacOS) or `bin/dragonjars.bat` (Windows)
+5. Open File > Preferences and point the game at the three data files.
 
 ## Future Work
 

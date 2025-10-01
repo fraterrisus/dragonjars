@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.hitchhikerprod"
-version = "1.0"
+version = "0.9-beta"
 
 repositories {
     mavenCentral()
