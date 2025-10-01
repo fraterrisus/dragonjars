@@ -2,7 +2,6 @@
 
 - Keep adding more combat information; improve the presentation layer.
 - Check for TODOs and FIXMEs in the comments.
-- Patch the Freeport $100 large shields.
 - Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
   character into the packed string.
 
