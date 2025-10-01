@@ -54,23 +54,23 @@ other versions should also work.
 
 ## Bugs I Fixed
 
-- Fixed some typos in the game's text (misplaced apostrophes, misspelled words, etc.)
 - If you attacked with a Thrown Weapon, the original used your Fistfighting skill when determining your combat skill.
   This was clearly a bug, because the Thrown Weapons skill is _right there!_
 - **Thrown Weapons can now be used from the back row** (slots 5-7). This one might be controversial, but I genuinely
   think this was a mistake by the developers rather than an intentional design choice. Regardless, if you don't like it,
   there's an in-app preference to disable it!
-- On the Dwarf Ruins map, there's a chest that contains the Dwarf Hammer. The game state bit that determines whether
-  you can see this chest is the same as the one for the chest behind the wizard's house in the Slave Camp. There's
-  no reason finding that chest should prevent you from finding the Dwarf Hammer, so I moved it to another unused bit
-  in the game state.
-- The original's automap doesn't draw walls along its eastern edge, due to the way the wall data is stored in adjacent
-  squares. Mine does.
-- There are a handful of places where leaving a map drops you on Dilmun at a place that doesn't make any sense. For
-  example, leaving Purgatory on foot to the North should drop you at (13,5) but you wind up at (15,5). The Pilgrim
-  Dock's exits are also messed up.
-- Near where you enter the Depths of Nisir there's an area of icy winds. In the NE corner of that region, the
-  spinner at (19,23) has been moved to (20,23) to match the other three corners.
+- Most players have never heard of the Dwarf Hammer, because the game state bit that determines whether you 
+  can see it (it's in the Dwarf Ruins) is the same as the bit for the chest behind the wizard's house in the Slave 
+  Camp. I can't think of a reason why the two would be mutually exclusive, so now the Dwarf Hammer chest is on a 
+  different bit.
+- I patched some places where leaving a map moves you to a space on the Dilmun map that doesn't make sense. Leaving 
+  Purgatory to the North should drop you at (13,5) but you end up at (15,5). Likewise, the Pilgrim Dock's exits were 
+  all off by a couple squares.
+- Large Shields at Ryan's Armor in Freeport now cost the normal $1000 instead of an inexplicable $100. Sorry not sorry.
+- Fixed some typos in the game's text (misplaced apostrophes, misspelled words, etc.)
+- If you look closely, the automap doesn't draws walls along its eastern edge. Mine does.
+- The "icy winds" region just outside your starting spot in the Depths of Nisir had a couple of mistakes, including 
+  a misplaced spinner and a square that doesn't have the right special code. Those are fixed.
 - There's an occasional display bug based on a set of hardcoded "regions" in the display. The region for the party
   space has its Y offset set to the wrong value. You probably won't even notice I fixed this.
  

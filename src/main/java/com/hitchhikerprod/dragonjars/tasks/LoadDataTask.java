@@ -168,6 +168,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
     private static final Patch NISIR_SPINNER_20_23 =
             new Patch(0x061, 0x035a, List.of((byte) 0x00), List.of((byte) 0x05));
 
+    // Freeport: Large Shields should be $1000, not $100
+    private static final Patch FREEPORT_LARGE_SHIELD_PRICE =
+            new Patch(0x02f, 0x02c1, List.of((byte) 0x41), List.of((byte) 0x61));
+
     // Freeport: typo "is your's for the taking"
     private static final Patch FREEPORT_TYPO_1 = new Patch(0x057, 0x0700, List.of(
             (byte) 0xf4, (byte) 0xd2, (byte) 0x60, (byte) 0xfa, (byte) 0x56, (byte) 0x7c, (byte) 0x4a, (byte) 0x17,
@@ -204,7 +208,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
                 DWARF_HAMMER_CHEST_FLAG,
                 PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
                 NISIR_SPINNER_19_23, NISIR_SPINNER_20_23,
-                FREEPORT_TYPO_1,
+                FREEPORT_LARGE_SHIELD_PRICE, FREEPORT_TYPO_1,
                 PILGRIM_DOCK_TYPO_1, PILGRIM_DOCK_TYPO_2,
                 SPELL_MISS_TURN_EFFECT_TYPO_1
         ));
