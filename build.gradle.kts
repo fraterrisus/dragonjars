@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.hitchhikerprod"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -58,9 +58,9 @@ tasks.withType<Test> {
 }
 
 jlink {
-    imageZip.set(layout.buildDirectory.file("/distributions/app-${javafx.platform.classifier}.zip"))
+    imageZip.set(layout.buildDirectory.file("distributions/dragonjars-${version}-${javafx.platform.classifier}.zip"))
     options.set(listOf("--strip-debug", "--no-header-files", "--no-man-pages"))
     launcher {
-        name = "app"
+        name = "dragonjars"
     }
 }
