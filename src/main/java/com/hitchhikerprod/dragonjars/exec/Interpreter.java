@@ -30,10 +30,10 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Interpreter {
     private static final int MASK_LOW = 0x000000ff;
@@ -241,7 +241,7 @@ public class Interpreter {
     }
 
     private static final int BREAKPOINT_CHUNK = 0x003;
-    private static final int BREAKPOINT_ADR = 0x00ca3;
+    private static final int BREAKPOINT_ADR = 0x00d68;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -271,6 +271,10 @@ public class Interpreter {
         }
     }
 
+    public Optional<CombatData> combatData() {
+        return Optional.ofNullable(combatData);
+    }
+
     private record Patch(int chunkId, int ip, Consumer<Interpreter> fn) {}
 
     private static final List<Patch> PATCHES = List.of(
@@ -281,12 +285,37 @@ public class Interpreter {
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
             // FIXME: do something more interesting than printing to console
-            new Patch(0x012, 0x00f8, Interpreter::decodeOpponents),
-            new Patch(0x003, 0x0760, Interpreter::decodeInitiative),
-            new Patch(0x003, 0x0ffc, (i) -> System.out.print("Monster(conf:" + i.getAL())),
-            new Patch(0x003, 0x1023, Interpreter::decodeMonsterBravery),
-            new Patch(0x003, 0x108f, Interpreter::decodeMonsterAction),
-            new Patch(0x003, 0x0cfb, Interpreter::decodePartyAttack)
+            new Patch(0x012, 0x00f8, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
+//            new Patch(0x003, 0x0760, Interpreter::decodeInitiative),
+            new Patch(0x003, 0x0075, (i) -> i.combatData = new CombatData(i)),
+
+            new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
+            new Patch(0x003, 0x0b55, (i) -> i.combatData().ifPresent(c -> c.partyAdvances())),
+            new Patch(0x003, 0x0b68, (i) -> i.combatData().ifPresent(c -> c.partyFlees())),
+            new Patch(0x003, 0x0b98, (i) -> i.combatData().ifPresent(c -> c.partyEquip())),
+            new Patch(0x003, 0x0c06, (i) -> i.combatData().ifPresent(c -> c.partyMove(i.getAL()))),
+            new Patch(0x003, 0x0c22, (i) -> i.combatData().ifPresent(c -> c.partySpell())),
+
+            new Patch(0x006, 0x03e4, (i) -> i.combatData().ifPresent(c -> c.partyHeal())),
+            new Patch(0x006, 0x0631, (i) -> i.combatData().ifPresent(c -> c.partySpellDamage())),
+            new Patch(0x006, 0x0678, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
+            new Patch(0x006, 0x067d, (i) -> i.combatData().ifPresent(c -> c.partySpellTarget())),
+
+            new Patch(0x003, 0x0cdc, (i) -> i.combatData().ifPresent(c -> c.partyAttackTarget())),
+            new Patch(0x003, 0x0e66, (i) -> i.combatData().ifPresent(c -> c.partyAttackBlocked())),
+            new Patch(0x003, 0x0d3d, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
+            new Patch(0x003, 0x0d41, (i) -> i.combatData().ifPresent(c -> c.partyAttackHits())),
+            new Patch(0x003, 0x0d81, (i) -> i.combatData().ifPresent(c -> c.partyDamageBonus(i.getAL()))),
+            new Patch(0x003, 0x0d94, (i) -> i.combatData().ifPresent(c -> c.partyDamageMighty(i.getAL()))),
+            new Patch(0x003, 0x0dd5, (i) -> i.combatData().ifPresent(c -> c.partyDamage())),
+
+            new Patch(0x003, 0x0fb8, (i) -> i.combatData().ifPresent(c -> c.monsterTurn())),
+            new Patch(0x003, 0x0ffc, (i) -> i.combatData().ifPresent(c -> c.monsterConfidence(i.getAL()))),
+            new Patch(0x003, 0x1023, (i) -> i.combatData().ifPresent(c -> c.monsterBravery(i.getBL()))),
+            new Patch(0x003, 0x108f, (i) -> i.combatData().ifPresent(c -> c.monsterAction(i.getAL()))),
+            new Patch(0x003, 0x10e2, (i) -> i.combatData().ifPresent(c -> c.monsterFlees(true))),
+            new Patch(0x003, 0x10f2, (i) -> i.combatData().ifPresent(c -> c.monsterFlees(false)))
+//            new Patch(0x003, 0x0cfb, Interpreter::decodePartyAttack)
     );
 
     private void openParagraph(int id) {
@@ -298,65 +327,6 @@ public class Interpreter {
         for (Patch patch : PATCHES) {
             if (chunkId == patch.chunkId() && ip == patch.ip())
                 patch.fn().accept(this);
-        }
-        if (chunkId == 0x003 && ip == 0x00f76) { // party attack roll (top)
-            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final List<Integer> chars = memory().readList(new Address(PARTY_SEGMENT, pcBaseAddress), 12)
-                    .stream().filter(b -> b != 0).map(b -> (int)b).toList();
-            System.out.print(StringDecoder.decodeString(chars));
-
-            final int attackRoll = getAL();
-            if (attackRoll == 0)
-                System.out.println(": 1d15+3 = 3, automatic hit");
-            else if (attackRoll == 15)
-                System.out.println(": 1d15+3 = 18, automatic miss");
-        }
-        if (chunkId == 0x003 && ip == 0x00fa5) { // party attack roll (bottom)
-            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final int attackerAV = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_AV, 1);
-            final int weaponSkill = Heap.get(0x79).read();
-            final int defenderDV = Heap.get(0x7a).read();
-            final int attackRoll = Heap.get(0x7b).read();
-            final int target = 13 + attackerAV + weaponSkill - defenderDV;
-            System.out.print(": 13 + AV(" + attackerAV + ") + WS(" + weaponSkill + ") - DV("
-                    + defenderDV + ") = " + target + " >= 1d15+3 = " + attackRoll);
-            System.out.println((attackRoll <= target) ? ", hit" : ", miss");
-        }
-        if (chunkId == 0x006 && ip == 0x00ae1) { // party spell attack roll
-            final int attackRoll = getAL();
-            if (attackRoll == 0)
-                System.out.println("  1d15+3 = 3, automatic hit");
-            else if (attackRoll == 15)
-                System.out.println("  1d15+3 = 18, automatic miss");
-        }
-        if (chunkId == 0x006 && ip == 0x00631) {
-            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final List<Integer> chars = memory().readList(new Address(PARTY_SEGMENT, pcBaseAddress), 12)
-                    .stream().filter(b -> b != 0).map(b -> (int) b).toList();
-            System.out.print(StringDecoder.decodeString(chars));
-
-            final boolean variablePower = Heap.get(0x47).read() != 0;
-            final int powerCost = Heap.get(0x86).read(2);
-            final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
-            final int totalDamage = Heap.get(0x61).read(2);
-            System.out.print(": spell damage ");
-            if (variablePower) System.out.print(powerCost + " x ");
-            System.out.println(damageDie + " = " + totalDamage);
-        }
-        if (chunkId == 0x006 && ip == 0x0067d) {
-            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
-            final int attackerInt = memory().read(PARTY_SEGMENT, pcBaseAddress + Memory.PC_INT_CURRENT, 1);
-            final int magicSkill = Heap.get(0x79).read();
-            final int defenderDV = Heap.get(0x7a).read();
-            final int attackRoll = Heap.get(0x7b).read();
-            final int target = 13 + (attackerInt / 4) + magicSkill - defenderDV;
-            System.out.print("  13 + Int(" + (attackerInt/4) + ") + MS(" + magicSkill + ") - DV("
-                    + defenderDV + ") = " + target + " >= 1d15+3 = " + attackRoll);
-            System.out.println((attackRoll <= target) ? ", hit" : ", half-damage");
         }
     }
 
@@ -380,136 +350,7 @@ public class Interpreter {
         return this.mapDecoder;
     }
 
-    private record Opponent(int groupId, int hp, int status, int initiative) { }
-
-    private void decodeOpponents() {
-        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-        final Chunk monsterData = memory().getSegment(combatSegmentId);
-        System.out.println("Live enemies:");
-        for (int groupId = 0; groupId < 4; groupId++) {
-            final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
-            final int groupSize = monsterData.read(groupOffset + 0x0a, 1);
-            if (groupSize == 0) continue;
-
-            stringDecoder().decodeString(monsterData, groupOffset + 0x29);
-            final String groupName = StringDecoder.decodeString(
-                    DecodeStringFrom.pluralize(stringDecoder().getDecodedChars(), groupSize > 1));
-
-            final List<Opponent> groupMembers = new ArrayList<>();
-            int monsterId = 0;
-            while (monsterId < 50 && groupMembers.size() < groupSize) {
-                final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
-                if (group == groupId) {
-                    final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
-                    final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
-                    groupMembers.add(new Opponent(group, hp, status, 0));
-                }
-                monsterId++;
-            }
-
-            System.out.print("  Group " + (groupId+1) + ": " + groupName + "  HP:");
-            System.out.println(groupMembers.subList(0, groupSize).stream()
-                    .map(opp -> String.format("%d%s", opp.hp(), (opp.status() & 0x80) > 0 ? "'" : ""))
-                    .collect(Collectors.joining(",")));
-        }
-    }
-
-    private void decodeInitiative() {
-        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-        final Chunk monsterData = memory().getSegment(combatSegmentId);
-        final Chunk partyData = memory().getSegment(PARTY_SEGMENT);
-
-        final List<Opponent> opponents = new ArrayList<>();
-        final List<String> groupNames = new ArrayList<>();
-        for (int groupId = 0; groupId < 4; groupId++) {
-            final int groupOffset = monsterData.read(0x04c6 + (2 * groupId), 2);
-            final int groupSize = monsterData.read(groupOffset + 0x0a, 1);
-            if (groupSize == 0) {
-                groupNames.add(null);
-                continue;
-            }
-            stringDecoder().decodeString(monsterData, groupOffset + 0x29);
-            final String groupName = StringDecoder.decodeString(
-                    DecodeStringFrom.pluralize(stringDecoder().getDecodedChars(), false));
-            groupNames.add(groupName);
-
-            int monsterId = 0;
-            int groupMembers = 0;
-            while (monsterId < 50 && groupMembers < groupSize) {
-                final int group = memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
-                if (group == groupId) {
-                    final int hp = memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
-                    final int status = memory().read(combatSegmentId, 0x030e + monsterId, 1);
-                    final int initiative = memory().read(combatSegmentId, 0x02dc + monsterId, 1);
-                    opponents.add(new Opponent(group, hp, status, initiative));
-                    groupMembers++;
-                }
-                monsterId++;
-            }
-        }
-
-        final List<Integer> partyInitiatives = new ArrayList<>();
-        for (int pcid = 0; pcid < Heap.get(Heap.PARTY_SIZE).read(); pcid++) {
-            partyInitiatives.add(memory().read(combatSegmentId, 0x4ea + pcid, 1));
-        }
-
-        final int maxInit = Integer.max(
-                opponents.stream().map(Opponent::initiative).reduce(Integer::max).orElse(0),
-                partyInitiatives.stream().max(Integer::compareTo).orElse(0)
-        );
-        System.out.println("Initiative order:");
-        for (int init = maxInit; init > 0; init--) {
-            final int finalInit = init;
-            final List<String> combatants = new ArrayList<>();
-            opponents.stream()
-                    .filter(opp -> opp.initiative() == finalInit)
-                    .map(opp -> String.format("%s(%d,0x%02x)", groupNames.get(opp.groupId()), opp.hp(), opp.status()))
-                    .forEach(combatants::add);
-            for (int i = 0; i < partyInitiatives.size(); i++) {
-                if (partyInitiatives.get(i) != init) continue;
-                final int partyMemberOffset = Heap.get(Heap.MARCHING_ORDER + i).read() << 8;
-                final String name = StringDecoder.decodeString(
-                        partyData.getBytes(partyMemberOffset, 12).stream()
-                                .filter(b -> b != 0).map(b -> (int)b).toList());
-                combatants.add(name);
-            }
-            if (!combatants.isEmpty()) System.out.println("  " + init + ": " + String.join(", ", combatants));
-        }
-    }
-
-    private void decodeMonsterBravery() {
-        System.out.print(",brav:" + switch (getBL()) {
-            case 0xc0 -> "HALP";
-            case 0x80 -> "Edgy";
-            case 0x40 -> "Okay";
-            default -> "Good";
-        } + ") ");
-    }
-
-    private void decodeMonsterAction() {
-        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-        System.out.println(switch (getAL()) {
-            case 0,1,2,3,4 -> {
-                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-                final int attPerRnd = 1 + memory().read(combatSegmentId, Heap.get(0x41).read(2) + 0x26, 1);
-                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-                yield("attacks(" + attPerRnd + "," + dmg + "," + range + "')");
-            }
-            case 5 -> "blocks";
-            case 6 -> "dodges";
-            case 7 -> "flees";
-            case 8 -> "casts";
-            case 9 -> {
-                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-                yield("breathes(" + dmg + "," + range + "')");
-            }
-            case 10 -> "calls for help";
-            default -> "passes";
-        });
-    }
+    private CombatData combatData = null;
 
     private void decodePartyAttack() {
         final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);

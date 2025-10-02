@@ -49,6 +49,7 @@ other versions should also work.
 ## Future Work
 
 - Mouse support.
+- Support for multiple, quicker save game slots.
 - A combat log that shows hidden information about your opponents, attack rolls, etc.
 - Better threading safety.
 

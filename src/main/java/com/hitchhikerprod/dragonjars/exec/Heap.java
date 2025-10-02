@@ -91,6 +91,16 @@ public class Heap {
         }
     }
 
+    public static int getPCBaseAddress() {
+        LOCK.lock();
+        try {
+            final int marchingOrder = get(SELECTED_PC).lockedRead();
+            return get(MARCHING_ORDER + marchingOrder).lockedRead() << 8;
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
     public static Access get(int index) {
         return new Access(INSTANCE, index);
     }
