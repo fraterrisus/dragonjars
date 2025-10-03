@@ -91,11 +91,18 @@ public class Heap {
         }
     }
 
-    public static int getPCBaseAddress() {
+    public static Address getPCBaseAddress() {
+        return getPCBaseAddress(SELECTED_PC);
+    }
+
+    public static Address getPCBaseAddress(int heapIndex) {
         LOCK.lock();
         try {
-            final int marchingOrder = get(SELECTED_PC).lockedRead();
-            return get(MARCHING_ORDER + marchingOrder).lockedRead() << 8;
+            final int marchingOrder = get(heapIndex).lockedRead();
+            return new Address(
+                    Interpreter.PARTY_SEGMENT,
+                    get(MARCHING_ORDER + marchingOrder).lockedRead() << 8
+            );
         } finally {
             LOCK.unlock();
         }

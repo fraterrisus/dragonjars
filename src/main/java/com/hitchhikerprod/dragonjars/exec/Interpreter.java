@@ -239,8 +239,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x012;
-    private static final int BREAKPOINT_ADR = 0x00097;
+    private static final int BREAKPOINT_CHUNK = 0x006;
+    private static final int BREAKPOINT_ADR = 0x007a4;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -320,12 +320,15 @@ public class Interpreter {
             new Patch(0x003, 0x1196, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(true))),
             new Patch(0x003, 0x11a3, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(false))),
             new Patch(0x003, 0x11f8, (i) -> i.combatData().ifPresent(c -> c.monsterAttackHits())),
+            new Patch(0x003, 0x1292, (i) -> i.combatData().ifPresent(c -> c.monsterDamage())),
             new Patch(0x003, 0x1305, (i) -> i.combatData().ifPresent(c -> c.monsterAttackBlocked())),
             new Patch(0x003, 0x1326, (i) -> i.combatData().ifPresent(c -> c.monsterAttackTarget())),
             new Patch(0x003, 0x1379, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
             new Patch(0x003, 0x142e, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(true))),
             new Patch(0x003, 0x1453, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(false))),
-            new Patch(0x003, 0x1292, (i) -> i.combatData().ifPresent(c -> c.monsterDamage()))
+
+            new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.monsterBreathDamage())),
+            new Patch(0x006, 0x07ca, (i) -> i.combatData().ifPresent(c -> c.monsterBreathHits()))
             // TODO: monster breath weapons, monster spells
     );
 

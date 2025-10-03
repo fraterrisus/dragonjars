@@ -9,6 +9,7 @@ import com.hitchhikerprod.dragonjars.exec.instructions.DecodeStringFrom;
 import com.hitchhikerprod.dragonjars.ui.CombatLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,6 @@ public class CombatData {
     private String pcName;
 
     private int monsterId;
-    private int monsterGroupId;
     private int monsterBaseAddress;
     private int monsterAction;
     private int confidence;
@@ -97,7 +97,7 @@ public class CombatData {
     }
 
     public void partyFlees() {
-        sb.append(" flees");
+//        sb.append(" flees");
     }
 
     public void partyEquip() {
@@ -127,9 +127,8 @@ public class CombatData {
 
     public void partyHeal() {
         // the selected PC is currently the target, not the caster
-        final int pcBaseAddress = Heap.getPCBaseAddress();
-        final Address pcNameAddress = new Address(Interpreter.PARTY_SEGMENT, pcBaseAddress);
-        final String pcName = StringDecoder.decodeString(i.memory().readList(pcNameAddress, 12).stream()
+        final Address pcBaseAddress = Heap.getPCBaseAddress();
+        final String pcName = StringDecoder.decodeString(i.memory().readList(pcBaseAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
 
         final int spellId = Heap.get(0x85).read();
@@ -258,11 +257,10 @@ public class CombatData {
         sb = new StringBuffer();
 
         monsterId = Heap.get(0x77).read();
-        monsterGroupId = Heap.get(0x78).read();
+        final int monsterGroupId = Heap.get(0x78).read();
 
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
-        monsterBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
-//        final int groupSize = i.memory().read(combatCodeSegment, monsterBaseAddress + GROUP_SIZE, 1);
+        final int monsterBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
         i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
         final String monsterName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
@@ -337,14 +335,13 @@ public class CombatData {
     }
 
     public void monsterAttackTarget() {
-        final int targetBaseAddress = Heap.getPCBaseAddress();
-        final Address pcNameAddress = new Address(Interpreter.PARTY_SEGMENT, targetBaseAddress);
-        final String pcName = StringDecoder.decodeString(i.memory().readList(pcNameAddress, 12).stream()
+        final Address targetAddress = Heap.getPCBaseAddress();
+        final String pcName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
         sb.append(" attacks ").append(pcName);
 
-        final int defenderDV = i.memory().read(pcNameAddress.incr(Memory.PC_DV), 1);
-        final int defenderAC = i.memory().read(pcNameAddress.incr(Memory.PC_AC), 1);
+        final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
+        final int defenderAC = i.memory().read(targetAddress.incr(Memory.PC_AC), 1);
         sb.append(String.format(" AC%d DV%+d target=%d", defenderAC, defenderDV, 6 + defenderDV));
     }
 
@@ -353,7 +350,7 @@ public class CombatData {
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
 
         final int groupAV = i.memory().read(combatCodeSegment, Heap.get(0x41).read(2) + GROUP_AV, 1);
-        final int attackerAV = i.memory().read(combatCodeSegment, 0x0340 + monsterId, 1);
+        final int attackerAV = i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
@@ -388,6 +385,48 @@ public class CombatData {
             default -> " -> ";
         });
         sb.append(String.format("H:%d S:%d", healthDamage, stunDamage));
+    }
+
+    public void monsterBreathDamage() {
+        final boolean variablePower = Heap.get(0x47).read() != 0;
+        final int powerCost = Heap.get(0x86).read(2);
+        final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
+        final int totalDamage = Heap.get(0x61).read(2);
+        sb.append(" breathes\n\tfor ");
+        if (variablePower) sb.append(powerCost).append(" x ");
+        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage each");
+    }
+
+    public void monsterBreathHits() {
+        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+
+        final Address targetAddress = Heap.getPCBaseAddress(0x83);
+        final String targetName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
+                .filter(b -> b != 0).map(b -> (int)b).toList());
+        final int defenderDV = Heap.get(0x7a).read(); // includes actions like Dodge
+
+        sb.append("\n\t").append(targetName)
+            .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, 6 + defenderDV));
+
+        final int monsterId = Heap.get(0x82).read();
+        final int monsterGroupId = 0x3 & Heap.get(0x81).read();
+        final int monsterGroupAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
+        final int groupAV = i.memory().read(combatCodeSegment, monsterGroupAddress + GROUP_AV, 1);
+        final int attackerAV = i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1);
+        final int attackRoll = Heap.get(0x7b).read();
+
+        if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
+            sb.append(i.getCarryFlag() ? "=1" : "=16");
+            sb.append(", automatic ");
+        } else {
+            final int bonus = attackerAV + groupAV;
+            sb.append(String.format("%+d=%d, ", bonus, 19 + bonus - attackRoll));
+        }
+        sb.append(i.getCarryFlag() ? "miss (half-damage)" : "hit");
+
+        final int healthDamage = Heap.get(0x5d).read(2);
+        final int stunDamage = Heap.get(0x5f).read(2);
+        sb.append(String.format(" -> H:%d S:%d", healthDamage, stunDamage));
     }
 
     private String decodePartyAction(int action) {
