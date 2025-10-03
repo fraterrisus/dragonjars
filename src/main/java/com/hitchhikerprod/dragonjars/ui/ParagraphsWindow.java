@@ -26,14 +26,13 @@ public class ParagraphsWindow {
     record Paragraph(int index, String body) {}
 
     private final Stage stage;
-    private final Scene scene;
 
     private ListView<Paragraph> listView;
     private TextArea textView;
 
     private ParagraphsWindow() {
         final Parent root = buildElements();
-        this.scene = new Scene(root);
+        final Scene scene = new Scene(root);
 
         final URL cssUrl = getClass().getResource("dialog.css");
         if (cssUrl == null) {
@@ -52,6 +51,7 @@ public class ParagraphsWindow {
         this.stage.setMinWidth(600);
         this.stage.setMinHeight(300);
 
+        populateParagraphList();
         populateParagraphList();
 
         stage.sizeToScene();

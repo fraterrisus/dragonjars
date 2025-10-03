@@ -28,6 +28,11 @@
     -fx-text-fill: darkblue;
 }
 
+.combat-log > * {
+    -fx-background-color: antiquewhite;
+    -fx-font-size: 16px;
+}
+
 .paragraphs-window {
     -fx-background-color: grey;
 }

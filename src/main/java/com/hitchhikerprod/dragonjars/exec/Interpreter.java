@@ -239,8 +239,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x003;
-    private static final int BREAKPOINT_ADR = 0x01379;
+    private static final int BREAKPOINT_CHUNK = 0x012;
+    private static final int BREAKPOINT_ADR = 0x00097;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -284,10 +284,9 @@ public class Interpreter {
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
 
-            // TODO: do something more interesting than printing to console
+            new Patch(0x003, 0x0000, (i) -> i.combatData = new CombatData(i)),
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
-//            new Patch(0x003, 0x0760, Interpreter::decodeInitiative),
-            new Patch(0x003, 0x0075, (i) -> i.combatData = new CombatData(i)),
+            new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
             new Patch(0x003, 0x0b55, (i) -> i.combatData().ifPresent(c -> c.partyAdvances())),

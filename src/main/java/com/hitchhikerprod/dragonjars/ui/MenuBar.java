@@ -61,6 +61,9 @@ public class MenuBar {
         final MenuItem spellsMI = new MenuItem("Spells");
         items.put("help.spells", spellsMI);
 
+        final MenuItem combatMI = new MenuItem("Combat Log");
+        items.put("help.combat", combatMI);
+
         final MenuItem mapMI = new MenuItem("Map");
         items.put("help.map", mapMI);
 
@@ -74,13 +77,14 @@ public class MenuBar {
         items.put("help.about", aboutMI);
 
         helpMenu.getItems().setAll(paraMI, spellsMI,
-                new SeparatorMenuItem(), mapMI, partyMI, stateMI,
+                new SeparatorMenuItem(), combatMI, mapMI, partyMI, stateMI,
                 new SeparatorMenuItem(), aboutMI);
         return helpMenu;
     }
 
     private void activateHelpMenu(DragonWarsApp app) {
         items.get("help.about").setOnAction(ev -> app.openAboutDialog());
+        items.get("help.combat").setOnAction(ev -> app.openCombatLog());
         items.get("help.map").setOnAction(ev -> app.openMapWindow());
         items.get("help.paragraphs").setOnAction(ev -> app.openParagraphsWindow());
         items.get("help.party").setOnAction(ev -> app.openPartyStateDialog());
