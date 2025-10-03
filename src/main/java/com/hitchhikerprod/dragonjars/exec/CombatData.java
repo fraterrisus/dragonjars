@@ -57,6 +57,7 @@ public class CombatData {
     private int monsterId;
     private int monsterGroupId;
     private int monsterBaseAddress;
+    private int monsterAction;
     private int confidence;
     private int bravery;
 
@@ -190,7 +191,7 @@ public class CombatData {
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
-        sb.append(String.format("\n... %s(gp%d", targetName, targetGroupId + 1));
+        sb.append(String.format(" %s(gp%d", targetName, targetGroupId));
 
         if (i.getAL() == 0) {
             sb.append("), no targets remaining");
@@ -203,11 +204,11 @@ public class CombatData {
     }
 
     public void partyAttackBlocked() {
-        sb.append(", blocked");
+        sb.append(", attack blocked");
     }
 
     public void partyAttackHits() {
-        sb.append("\n  ... 1d16");
+        sb.append("\n... 1d16");
 
         final int attackerAV = i.memory().read(Interpreter.PARTY_SEGMENT, pcBaseAddress + Memory.PC_AV, 1);
         final int weaponSkill = Heap.get(0x79).read();
@@ -240,7 +241,7 @@ public class CombatData {
         final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read());
         final int totalDamage = Heap.get(0x5d).read(2);
 
-        sb.append("\n  ... ");
+        sb.append("\n... ");
         sb.append(numHits).append(" hit");
         if (numHits > 1) sb.append("s");
         sb.append(" for ").append(damageDie);
@@ -263,7 +264,7 @@ public class CombatData {
         i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
         final String monsterName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
-        sb.append(String.format("%s (%d,%d)", monsterName, monsterGroupId, monsterId));
+        sb.append(String.format("%s (gp%d,id%d)", monsterName, monsterGroupId, monsterId));
 
         final int partySize = Heap.get(Heap.PARTY_SIZE).read();
         if (partySize == 0) {
@@ -283,6 +284,7 @@ public class CombatData {
 
     public void monsterAction(int action) {
         if (whoseTurn != WhoseTurn.ENEMIES) System.err.println("Turn is not ENEMIES");
+        this.monsterAction = action;
         // System.out.print(" " + decodeMonsterAction(action));
     }
 
@@ -294,6 +296,96 @@ public class CombatData {
         sb.append(" tries to flee (").append(odds).append("%) and ");
         if (successfully) sb.append("succeeds");
         else sb.append("fails");
+    }
+
+    public void monsterRearms() {
+        sb.append(" picks up their weapon");
+    }
+
+    public void monsterBlocks() {
+        sb.append(" blocks");
+    }
+
+    public void monsterAdvances(boolean successfully) {
+        if (successfully) {
+            final int range = i.memory().read(i.getDS(), Heap.get(0x41).read(2) + GROUP_DIST,  1);
+            sb.append(" advances to ").append(range).append("0'");
+        } else {
+            sb.append(" waits");
+        }
+    }
+
+    public void monsterCalls(boolean successfully) {
+        final int allies = i.memory().read(i.getDS(), Heap.get(0x68).read(2) + 0x02,  1);
+        final int chance = Heap.get(0x45).read(1);
+        final int odds;
+        if (chance == 0xff) odds = 100;
+        else odds = 100 - chance;
+        sb.append(" calls for help (").append(odds).append("%) ");
+        if (successfully) sb.append(" and succeeds");
+        else {
+            if (Heap.get(0x27).read() == 0x32) sb.append(" but there's no room");
+            else if (allies == 0) sb.append(" but no one is left to answer");
+            else sb.append(" and fails");
+        }
+    }
+
+    public void monsterAttackBlocked() {
+        sb.append(", attack blocked");
+    }
+
+    public void monsterAttackTarget() {
+        final int targetBaseAddress = Heap.getPCBaseAddress();
+        final Address pcNameAddress = new Address(Interpreter.PARTY_SEGMENT, targetBaseAddress);
+        final String pcName = StringDecoder.decodeString(i.memory().readList(pcNameAddress, 12).stream()
+                .filter(b -> b != 0).map(b -> (int)b).toList());
+        sb.append(" attacks ").append(pcName);
+
+        final int defenderDV = i.memory().read(pcNameAddress.incr(Memory.PC_DV), 1);
+        final int defenderAC = i.memory().read(pcNameAddress.incr(Memory.PC_AC), 1);
+        sb.append(String.format(" AC%d DV%+d target=%d", defenderAC, defenderDV, 6 + defenderDV));
+    }
+
+    public void monsterAttackHits() {
+        sb.append("\n... 1d16");
+        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+
+        final int groupAV = i.memory().read(combatCodeSegment, Heap.get(0x41).read(2) + GROUP_AV, 1);
+        final int attackerAV = i.memory().read(combatCodeSegment, 0x0340 + monsterId, 1);
+        final int attackRoll = Heap.get(0x7b).read();
+
+        if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
+            sb.append(i.getCarryFlag() ? "=1" : "=16");
+            sb.append(", automatic ");
+        } else {
+            final int bonus = attackerAV + groupAV;
+            sb.append(String.format("%+d=%d, ", bonus, 19 + bonus - attackRoll));
+        }
+        sb.append(i.getCarryFlag() ? "miss" : "hit");
+    }
+
+    public void monsterDamage() {
+        final int numHits = Heap.get(0x7e).read();
+        final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read());
+        final int totalDamage = Heap.get(0x61).read(2);
+        final int armor = Heap.get(0x45).read(2);
+        final int healthDamage = Heap.get(0x5d).read(2);
+        final int stunDamage = Heap.get(0x5f).read(2);
+
+        sb.append("\n... ");
+        sb.append(numHits).append(" hit");
+        if (numHits > 1) sb.append("s");
+        sb.append(" for ").append(damageDie);
+        if (armor > 0) sb.append(-1 * armor).append("(AC)");
+        sb.append(" = ").append(totalDamage);
+        sb.append(switch (monsterAction) {
+            case 1 -> " (piercing) ";
+            case 2 -> " (stun only) ";
+            case 3 -> " (x 1/4) ";
+            case 4 -> " (health only) ";
+            default -> " -> ";
+        });
+        sb.append(String.format("H:%d S:%d", healthDamage, stunDamage));
     }
 
     private String decodePartyAction(int action) {

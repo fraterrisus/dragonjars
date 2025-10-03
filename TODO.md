@@ -4,6 +4,7 @@
 - Check for TODOs and FIXMEs in the comments.
 - Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
   character into the packed string.
+- Figure out why the Magic Lamp's light has an infinite duration.
 
 # Known Bugs
 

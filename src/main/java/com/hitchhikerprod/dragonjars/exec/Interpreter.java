@@ -8,7 +8,6 @@ import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
-import com.hitchhikerprod.dragonjars.data.WeaponDamage;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
@@ -241,7 +240,7 @@ public class Interpreter {
     }
 
     private static final int BREAKPOINT_CHUNK = 0x003;
-    private static final int BREAKPOINT_ADR = 0x00d68;
+    private static final int BREAKPOINT_ADR = 0x01379;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -284,8 +283,9 @@ public class Interpreter {
             new Patch(0x046 + 0x18, 0x06c5, (i) -> i.openParagraph(80)),
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
-            // FIXME: do something more interesting than printing to console
-            new Patch(0x012, 0x00f8, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
+
+            // TODO: do something more interesting than printing to console
+            new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
 //            new Patch(0x003, 0x0760, Interpreter::decodeInitiative),
             new Patch(0x003, 0x0075, (i) -> i.combatData = new CombatData(i)),
 
@@ -312,22 +312,34 @@ public class Interpreter {
             new Patch(0x003, 0x0fb8, (i) -> i.combatData().ifPresent(c -> c.monsterTurn())),
             new Patch(0x003, 0x0ffc, (i) -> i.combatData().ifPresent(c -> c.monsterConfidence(i.getAL()))),
             new Patch(0x003, 0x1023, (i) -> i.combatData().ifPresent(c -> c.monsterBravery(i.getBL()))),
+
             new Patch(0x003, 0x108f, (i) -> i.combatData().ifPresent(c -> c.monsterAction(i.getAL()))),
             new Patch(0x003, 0x10e2, (i) -> i.combatData().ifPresent(c -> c.monsterFlees(true))),
-            new Patch(0x003, 0x10f2, (i) -> i.combatData().ifPresent(c -> c.monsterFlees(false)))
-//            new Patch(0x003, 0x0cfb, Interpreter::decodePartyAttack)
+            new Patch(0x003, 0x10f2, (i) -> i.combatData().ifPresent(c -> c.monsterFlees(false))),
+            new Patch(0x003, 0x13d6, (i) -> i.combatData().ifPresent(c -> c.monsterRearms())),
+            new Patch(0x003, 0x1113, (i) -> i.combatData().ifPresent(c -> c.monsterBlocks())),
+            new Patch(0x003, 0x1196, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(true))),
+            new Patch(0x003, 0x11a3, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(false))),
+            new Patch(0x003, 0x11f8, (i) -> i.combatData().ifPresent(c -> c.monsterAttackHits())),
+            new Patch(0x003, 0x1305, (i) -> i.combatData().ifPresent(c -> c.monsterAttackBlocked())),
+            new Patch(0x003, 0x1326, (i) -> i.combatData().ifPresent(c -> c.monsterAttackTarget())),
+            new Patch(0x003, 0x1379, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
+            new Patch(0x003, 0x142e, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(true))),
+            new Patch(0x003, 0x1453, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(false))),
+            new Patch(0x003, 0x1292, (i) -> i.combatData().ifPresent(c -> c.monsterDamage()))
+            // TODO: monster breath weapons, monster spells
     );
-
-    private void openParagraph(int id) {
-        final AppPreferences prefs = AppPreferences.getInstance();
-        if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
-    }
 
     private void runPatches(int chunkId, int ip) {
         for (Patch patch : PATCHES) {
             if (chunkId == patch.chunkId() && ip == patch.ip())
                 patch.fn().accept(this);
         }
+    }
+
+    private void openParagraph(int id) {
+        final AppPreferences prefs = AppPreferences.getInstance();
+        if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
     }
 
     public int instructionsExecuted() {

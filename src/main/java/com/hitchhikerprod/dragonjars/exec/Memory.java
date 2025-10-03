@@ -30,6 +30,8 @@ public class Memory {
     public static final int PC_STATUS = 0x4c;
     public static final int PC_STATUS_DEAD = 0x01; // bitmask
     public static final int PC_AV = 0x59;
+    public static final int PC_DV = 0x5a;
+    public static final int PC_AC = 0x5b;
     public static final int PC_SUMMONED_LIFESPAN = 0x66;
     public static final int PC_SUMMONED_TICKS = 0x68;
     public static final int PC_INVENTORY = 0xec;
