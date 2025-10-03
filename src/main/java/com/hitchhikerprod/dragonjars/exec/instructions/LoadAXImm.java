@@ -10,6 +10,6 @@ public class LoadAXImm implements Instruction {
         // in narrow mode, reading two bytes doesn't hurt and we just don't write AH
         final int value = i.memory().read(ip.incr(1), 2);
         i.setAX(value);
-        return ip.incr(OPCODE + wordSize(i));
+        return ip.incr(OPCODE + i.width());
     }
 }

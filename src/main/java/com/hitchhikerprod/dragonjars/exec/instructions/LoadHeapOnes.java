@@ -10,7 +10,7 @@ public class LoadHeapOnes implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        Heap.get(heapIndex).write(0xffff, i.isWide() ? 2 : 1);
+        Heap.get(heapIndex).write(0xffff, i.width());
 //        System.out.format("  heap[%02x] <- %s\n", heapIndex, (i.isWide()) ? "0xffff" : "0xff");
         return ip.incr(OPCODE + IMMEDIATE);
     }

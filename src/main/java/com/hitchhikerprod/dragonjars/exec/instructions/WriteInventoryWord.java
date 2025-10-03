@@ -17,7 +17,7 @@ public class WriteInventoryWord implements Instruction {
         i.memory().write(
                 Interpreter.PARTY_SEGMENT,
                 itemBaseAddress + byteOffset,
-                i.isWide() ? 2 : 1,
+                i.width(),
                 newValue
         );
         return ip.incr(OPCODE + IMMEDIATE);

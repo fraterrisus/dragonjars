@@ -91,21 +91,20 @@ public class Heap {
         }
     }
 
-    public static Address getPCBaseAddress() {
-        return getPCBaseAddress(SELECTED_PC);
+    public static Address getPCItemAddress() {
+        return getPCItemAddress(get(SELECTED_ITEM).read());
     }
 
-    public static Address getPCBaseAddress(int heapIndex) {
-        LOCK.lock();
-        try {
-            final int marchingOrder = get(heapIndex).lockedRead();
-            return new Address(
-                    Interpreter.PARTY_SEGMENT,
-                    get(MARCHING_ORDER + marchingOrder).lockedRead() << 8
-            );
-        } finally {
-            LOCK.unlock();
-        }
+    public static Address getPCItemAddress(int slotId) {
+        return getPCBaseAddress().incr(Memory.PC_INVENTORY + (0x17 * slotId));
+    }
+
+    public static Address getPCBaseAddress() {
+        return getPCBaseAddress(get(SELECTED_PC).read());
+    }
+
+    public static Address getPCBaseAddress(int pcId) {
+        return new Address(Interpreter.PARTY_SEGMENT, get(MARCHING_ORDER + pcId).read() << 8);
     }
 
     public static Access get(int index) {

@@ -10,7 +10,7 @@ public class StoreImm implements Instruction {
         final Address ip = i.getIP();
         final int address = i.memory().read(ip.incr(1), 2);
         final int value = i.memory().read(ip.incr(3), 2);
-        i.memory().write(i.getDS(), address, i.isWide() ? 2 : 1, value);
-        return ip.incr(OPCODE + ADDRESS + wordSize(i));
+        i.memory().write(i.getDS(), address, i.width(), value);
+        return ip.incr(OPCODE + ADDRESS + i.width());
     }
 }

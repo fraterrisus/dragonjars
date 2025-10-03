@@ -60,6 +60,10 @@ other versions should also work.
 - **Thrown Weapons can now be used from the back row** (slots 5-7). This one might be controversial, but I genuinely
   think this was a mistake by the developers rather than an intentional design choice. Regardless, if you don't like it,
   there's an in-app preference to disable it!
+- Each combat round, the game recalculates temporary AV/DV/AC values based on your combat action. However, it 
+  inexplicably doesn't check for spell actions (which are encoded strangely), which causes it to run _way_ off the 
+  end of some hardcoded arrays whose job is to translate your combat action into an AV/DV modifier. As a result, 
+  when a PC casts a spell, they wind up with a temporary AV/DV that doesn't make any sense.
 - Most players have never heard of the Dwarf Hammer, because the game state bit that determines whether you 
   can see it (it's in the Dwarf Ruins) is the same as the bit for the chest behind the wizard's house in the Slave 
   Camp. I can't think of a reason why the two would be mutually exclusive, so now the Dwarf Hammer chest is on a 

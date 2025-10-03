@@ -21,7 +21,10 @@ public class Memory {
         }
     }
 
+    public static final int PC_STR_CURRENT = 0x0c;
+    public static final int PC_DEX_CURRENT = 0x0e;
     public static final int PC_INT_CURRENT = 0x10;
+    public static final int PC_SPR_CURRENT = 0x10;
     public static final int PC_HEALTH_CURRENT = 0x14;
     public static final int PC_HEALTH_MAX = 0x16;
     public static final int PC_STUN_CURRENT = 0x18;

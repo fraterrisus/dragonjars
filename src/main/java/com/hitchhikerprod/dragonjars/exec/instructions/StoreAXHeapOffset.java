@@ -12,7 +12,7 @@ public class StoreAXHeapOffset implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1) + i.getBL();
         int val = i.getAX();
-        Heap.get(heapIndex).write(val, i.isWide() ? 2 : 1);
+        Heap.get(heapIndex).write(val, i.width());
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

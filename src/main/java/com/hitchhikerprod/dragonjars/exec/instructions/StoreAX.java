@@ -10,7 +10,7 @@ public class StoreAX implements Instruction {
         final Address ip = i.getIP();
         final int addr = i.memory().read(ip.incr(1), 2);
         final int value = i.getAX(true);
-        i.memory().write(i.getDS(), addr, i.isWide() ? 2 : 1, value);
+        i.memory().write(i.getDS(), addr, i.width(), value);
         return ip.incr(OPCODE + ADDRESS);
     }
 }

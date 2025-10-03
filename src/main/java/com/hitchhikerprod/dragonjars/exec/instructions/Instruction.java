@@ -10,8 +10,4 @@ public interface Instruction {
     int RECTANGLE = 4;
 
     Address exec(Interpreter i);
-
-    default int wordSize(Interpreter i) {
-        return (i.isWide()) ? 2 : 1;
-    }
 }

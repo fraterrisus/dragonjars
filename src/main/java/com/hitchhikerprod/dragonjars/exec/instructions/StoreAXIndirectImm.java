@@ -12,7 +12,7 @@ public class StoreAXIndirectImm implements Instruction {
         final int index = i.memory().read(ip.incr(1), 1);
         final int addr = Heap.get(index).read(2) + i.memory().read(ip.incr(2), 1);
         final int value = i.getAX(true);
-        i.memory().write(i.getDS(), addr, i.isWide() ? 2 : 1, value);
+        i.memory().write(i.getDS(), addr, i.width(), value);
         return ip.incr(OPCODE + IMMEDIATE + IMMEDIATE);
     }
 }

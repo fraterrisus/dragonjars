@@ -284,13 +284,23 @@ public class Interpreter {
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
 
+            new Patch(0x003, 0x0905, Interpreter::bugfixCastActionAvDvMod),
+
+            new Patch(0x003, 0x0937, (i) -> {
+                final Address pcAdr = Heap.getPCBaseAddress();
+                System.out.format("[0x0937] c[59/AV]=%02x c[5a/DV]=%02x, c[5b/AC]=%02x\n",
+                        i.memory().read(pcAdr.incr(Memory.PC_AV), 1),
+                        i.memory().read(pcAdr.incr(Memory.PC_DV), 1),
+                        i.memory().read(pcAdr.incr(Memory.PC_AC), 1));
+            }),
+
             new Patch(0x003, 0x0000, (i) -> i.combatData = new CombatData(i)),
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
-            new Patch(0x003, 0x0b55, (i) -> i.combatData().ifPresent(c -> c.partyAdvances())),
-            new Patch(0x003, 0x0b68, (i) -> i.combatData().ifPresent(c -> c.partyFlees())),
+//            new Patch(0x003, 0x0b55, (i) -> i.combatData().ifPresent(c -> c.partyAdvances())),
+//            new Patch(0x003, 0x0b68, (i) -> i.combatData().ifPresent(c -> c.partyFlees())),
             new Patch(0x003, 0x0b98, (i) -> i.combatData().ifPresent(c -> c.partyEquip())),
             new Patch(0x003, 0x0c06, (i) -> i.combatData().ifPresent(c -> c.partyMove(i.getAL()))),
             new Patch(0x003, 0x0c22, (i) -> i.combatData().ifPresent(c -> c.partySpell())),
@@ -307,7 +317,6 @@ public class Interpreter {
             new Patch(0x003, 0x0d81, (i) -> i.combatData().ifPresent(c -> c.partyDamageBonus(i.getAL()))),
             new Patch(0x003, 0x0d94, (i) -> i.combatData().ifPresent(c -> c.partyDamageMighty(i.getAL()))),
             new Patch(0x003, 0x0dd5, (i) -> i.combatData().ifPresent(c -> c.partyDamage())),
-
             new Patch(0x003, 0x0fb8, (i) -> i.combatData().ifPresent(c -> c.monsterTurn())),
             new Patch(0x003, 0x0ffc, (i) -> i.combatData().ifPresent(c -> c.monsterConfidence(i.getAL()))),
             new Patch(0x003, 0x1023, (i) -> i.combatData().ifPresent(c -> c.monsterBravery(i.getBL()))),
@@ -329,7 +338,7 @@ public class Interpreter {
 
             new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.monsterBreathDamage())),
             new Patch(0x006, 0x07ca, (i) -> i.combatData().ifPresent(c -> c.monsterBreathHits()))
-            // TODO: monster breath weapons, monster spells
+            // TODO: monster spells
     );
 
     private void runPatches(int chunkId, int ip) {
@@ -342,6 +351,16 @@ public class Interpreter {
     private void openParagraph(int id) {
         final AppPreferences prefs = AppPreferences.getInstance();
         if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
+    }
+
+    private void bugfixCastActionAvDvMod() {
+        // BUGFIX
+        // When calculating temporary AV/DV/AC values in a combat round, the game inexplicably doesn't check for
+        // spell-casting actions (0x80 | spellId) before referencing the action-to-AV array at [0966], so it pulls
+        // an AV mod from way off in the middle of the code. Confirmed this in an emulator. Action 0x0f is a no-op
+        // with no AV or DV mods, so it seems a safe replacement.
+        final int action = getAL();
+        if ((action & 0x80) > 0) setAL(0x0f);
     }
 
     public int instructionsExecuted() {
@@ -682,6 +701,10 @@ public class Interpreter {
         final int lo = byteToInt(this.stack.pop());
         final int hi = byteToInt(this.stack.pop());
         return hi << 8 | lo;
+    }
+
+    public int width() {
+        return isWide() ? 2 : 1;
     }
 
     public boolean isWide() {

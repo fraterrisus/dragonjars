@@ -11,7 +11,7 @@ public class MoveData implements Instruction {
         final int sourceAddress = i.memory().read(ip.incr(1), 2);
         final int destinationAddress = i.memory().read(ip.incr(3), 2);
         final int segmentId = i.getDS();
-        final int width = i.isWide() ? 2 : 1;
+        final int width = i.width();
         final int value = i.memory().read(segmentId, sourceAddress, width);
         i.memory().write(segmentId, destinationAddress, width, value);
         return ip.incr(OPCODE + ADDRESS + ADDRESS);

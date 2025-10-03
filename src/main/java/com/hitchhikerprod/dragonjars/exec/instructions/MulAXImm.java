@@ -9,12 +9,12 @@ public class MulAXImm implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
-        final int op1 = i.memory().read(ip.incr(1), i.isWide() ? 2 : 1);
+        final int op1 = i.memory().read(ip.incr(1), i.width());
         final int op2 = i.getAX(true);
         final int result = op1 * op2;
 //        i.setMulResult(result);
         Heap.get(0x37).write(result, 4);
         i.setAX(result);
-        return ip.incr(OPCODE + wordSize(i));
+        return ip.incr(OPCODE + i.width());
     }
 }

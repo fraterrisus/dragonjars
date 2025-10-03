@@ -10,7 +10,7 @@ public class LoadAXIndirect implements Instruction {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
         final int addr = Heap.get(heapIndex).read(2) + i.getBX(true);
-        final int value = i.memory().read(i.getDS(), addr, i.isWide() ? 2 : 1);
+        final int value = i.memory().read(i.getDS(), addr, i.width());
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + IMMEDIATE);

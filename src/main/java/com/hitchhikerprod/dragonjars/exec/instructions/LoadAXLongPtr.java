@@ -12,7 +12,7 @@ public class LoadAXLongPtr implements Instruction {
         final int offset = Heap.get(heapIndex).read(2) + i.getBX(true);
         final int segmentId = Heap.get(heapIndex + 2).read();
 //        System.out.format("  ax <- [s=%02x,a=%08x]\n", segmentId, offset);
-        final int value = i.memory().read(segmentId, offset, i.isWide() ? 2 : 1);
+        final int value = i.memory().read(segmentId, offset, i.width());
         i.setAX(value);
         if (!i.isWide()) i.setAH(0x00);
         return ip.incr(OPCODE + IMMEDIATE);

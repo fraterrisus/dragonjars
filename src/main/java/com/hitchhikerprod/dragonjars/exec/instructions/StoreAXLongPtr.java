@@ -15,7 +15,7 @@ public class StoreAXLongPtr implements Instruction {
         final int segmentId = Heap.get(index + 2).read();
         final int value = i.getAX(true);
 //        System.out.format("  [s=%02x,c=%03x,a=%08x] <- %04x\n", segmentId, i.memory().getSegmentChunk(segmentId), addr, value);
-        i.memory().write(segmentId, addr, i.isWide() ? 2 : 1, value);
+        i.memory().write(segmentId, addr, i.width(), value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

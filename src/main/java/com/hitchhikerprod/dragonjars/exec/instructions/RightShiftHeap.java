@@ -11,7 +11,7 @@ public class RightShiftHeap implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int heapIndex = i.memory().read(ip.incr(1), 1);
-        Heap.get(heapIndex).modify(i.isWide() ? 2 : 1, (val) -> val >> 1);
+        Heap.get(heapIndex).modify(i.width(), (val) -> val >> 1);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

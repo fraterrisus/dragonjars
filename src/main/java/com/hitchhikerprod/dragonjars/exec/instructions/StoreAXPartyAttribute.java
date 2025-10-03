@@ -9,11 +9,11 @@ public class StoreAXPartyAttribute implements Instruction {
     public Address exec(Interpreter i) {
         final Address ip = i.getIP();
         final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
-        Heap.get(Heap.PC_DIRTY + marchingOrder).write(0x0);
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+        Heap.get(Heap.PC_DIRTY + marchingOrder).write(0x0);
         final int attributeOffset = i.memory().read(ip.incr(1), 1);
         final int value = i.getAX();
-        i.memory().write(Interpreter.PARTY_SEGMENT, pcBaseAddress + attributeOffset, i.isWide() ? 2 : 1, value);
+        i.memory().write(Interpreter.PARTY_SEGMENT, pcBaseAddress + attributeOffset, i.width(), value);
         return ip.incr(OPCODE + IMMEDIATE);
     }
 }

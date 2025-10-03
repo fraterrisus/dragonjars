@@ -17,7 +17,7 @@ public class WritePCField implements Instruction {
         i.memory().write(
                 Interpreter.PARTY_SEGMENT,
                 pcBaseAddress + pcOffset,
-                i.isWide() ? 2 : 1,
+                i.width(),
                 newValue
         );
         return ip.incr(OPCODE + IMMEDIATE);

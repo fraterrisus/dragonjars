@@ -20,6 +20,6 @@ public class AddAXImm implements Instruction {
         i.setCarryFlag(result.carry());
         i.setSignFlag(result.sign());
         i.setZeroFlag(result.zero());
-        return ip.incr(OPCODE + wordSize(i));
+        return ip.incr(OPCODE + i.width());
     }
 }
