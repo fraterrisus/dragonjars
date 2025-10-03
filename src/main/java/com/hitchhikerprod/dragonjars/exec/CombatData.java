@@ -9,7 +9,6 @@ import com.hitchhikerprod.dragonjars.exec.instructions.DecodeStringFrom;
 import com.hitchhikerprod.dragonjars.ui.CombatLog;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,9 @@ public class CombatData {
 
     public CombatData(Interpreter i) {
         this.i = i;
+        this.whoseTurn = null;
+        this.sb = new StringBuffer();
+        CombatLog.clear();
     }
 
     private enum WhoseTurn { IDLE, PARTY, ENEMIES }
@@ -51,13 +53,12 @@ public class CombatData {
 
     private StringBuffer sb;
 
-    private WhoseTurn whoseTurn = WhoseTurn.IDLE;
+    private WhoseTurn whoseTurn;
     private int pcId;
     private int pcBaseAddress;
     private String pcName;
 
     private int monsterId;
-    private int monsterBaseAddress;
     private int monsterAction;
     private int confidence;
     private int bravery;
@@ -65,7 +66,7 @@ public class CombatData {
     public void turnDone() {
         //System.out.println(sb.toString());
         CombatLog.append(sb.toString());
-        whoseTurn = WhoseTurn.IDLE;
+        // whoseTurn = WhoseTurn.IDLE;
     }
 
     public void partyTurn() {
@@ -176,7 +177,8 @@ public class CombatData {
             sb.append(String.format("%+d=%d (IQ%+d Sk%+d), ",
                     bonus, 19 + bonus - attackRoll, attackerInt / 4, magicSkill));
         }
-        sb.append(i.getCarryFlag() ? "miss (half-damage)" : "hit");
+        sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
+        // TODO: add kill detection
     }
 
     public void partyAttackTarget() {
@@ -378,13 +380,15 @@ public class CombatData {
         if (armor > 0) sb.append(-1 * armor).append("(AC)");
         sb.append(" = ").append(totalDamage);
         sb.append(switch (monsterAction) {
-            case 1 -> " (piercing) ";
-            case 2 -> " (stun only) ";
-            case 3 -> " (x 1/4) ";
-            case 4 -> " (health only) ";
-            default -> " -> ";
+            case 1 -> " (piercing)";
+            case 2 -> " (stun only)";
+            case 3 -> " (x 1/4)";
+            case 4 -> " (health only)";
+            default -> " >";
         });
-        sb.append(String.format("H:%d S:%d", healthDamage, stunDamage));
+        if (healthDamage > 0) sb.append(" ").append(healthDamage).append("hp");
+        if (stunDamage > 0) sb.append(" ").append(stunDamage).append("sp");
+        if (healthDamage + stunDamage == 0) sb.append(" no damage");
     }
 
     public void monsterBreathDamage() {
@@ -403,8 +407,12 @@ public class CombatData {
         final Address targetAddress = Heap.getPCBaseAddress(0x83);
         final String targetName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
-        final int defenderDV = Heap.get(0x7a).read(); // includes actions like Dodge
+        final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
 
+        // FIXME: SOMETHING is fucked when I keep seeing this:
+        //   Valar DV+60 target=66...
+        //   Buffy DV+158 target=164...
+        //   and it's not like that going _into_ combat
         sb.append("\n\t").append(targetName)
             .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, 6 + defenderDV));
 
@@ -422,11 +430,14 @@ public class CombatData {
             final int bonus = attackerAV + groupAV;
             sb.append(String.format("%+d=%d, ", bonus, 19 + bonus - attackRoll));
         }
-        sb.append(i.getCarryFlag() ? "miss (half-damage)" : "hit");
+        sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
 
         final int healthDamage = Heap.get(0x5d).read(2);
         final int stunDamage = Heap.get(0x5f).read(2);
-        sb.append(String.format(" -> H:%d S:%d", healthDamage, stunDamage));
+        sb.append(" >");
+        if (healthDamage > 0) sb.append(" ").append(healthDamage).append("hp");
+        if (stunDamage > 0) sb.append(" ").append(stunDamage).append("sp");
+        if (healthDamage + stunDamage == 0) sb.append(" no damage");
     }
 
     private String decodePartyAction(int action) {
@@ -474,8 +485,7 @@ public class CombatData {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = i.memory().getSegment(combatSegmentId);
         sb = new StringBuffer();
-        sb.append("--- new round ---");
-        sb.append("\nLive enemies:");
+        sb.append("Live enemies:");
         for (int groupId = 0; groupId < 4; groupId++) {
             final int groupOffset = monsterData.read(GROUP_DATA_POINTERS + (2 * groupId), 2);
             final int groupSize = monsterData.read(groupOffset + GROUP_SIZE, 1);
@@ -515,7 +525,12 @@ public class CombatData {
                     .map(opp -> String.format("%d%s", opp.hp(), (opp.status() & 0x80) > 0 ? "'" : ""))
                     .collect(Collectors.joining(", ")));
         }
-        CombatLog.append(sb.toString());
+
+        if (whoseTurn != WhoseTurn.IDLE) {
+            CombatLog.append("New Round", "bold");
+            CombatLog.append(sb.toString());
+            whoseTurn = WhoseTurn.IDLE;
+        }
     }
 
 //    private void decodeMonsterAction() {

@@ -239,8 +239,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x006;
-    private static final int BREAKPOINT_ADR = 0x007a4;
+    private static final int BREAKPOINT_CHUNK = 0x000;
+    private static final int BREAKPOINT_ADR = 0x00000;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;

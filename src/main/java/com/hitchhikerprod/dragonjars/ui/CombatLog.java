@@ -1,6 +1,5 @@
 package com.hitchhikerprod.dragonjars.ui;
 
-import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -11,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.net.URL;
+import java.util.Objects;
 
 public class CombatLog {
     private static final CombatLog INSTANCE = new CombatLog();
@@ -22,6 +22,7 @@ public class CombatLog {
     private final Stage stage;
     private TextFlow textView;
     private ScrollPane scrollPane;
+    private ListView<Text> listView;
 
     private CombatLog() {
         final Parent root = buildElements();
@@ -51,24 +52,36 @@ public class CombatLog {
         this.stage.show();
     }
 
-    public static void append(String text) {
-        // TODO: allow rich text
-        INSTANCE.textView.getChildren().add(new Text(text + "\n"));
-        INSTANCE.scrollPane.setVvalue(1.0);
+    public static void append(String text, String... styleClass) {
+        final Text newText = new Text(text);
+        newText.getStyleClass().addAll(styleClass);
+        INSTANCE.listView.getItems().add(newText);
+        INSTANCE.listView.scrollTo(newText);
+    }
+
+    public static void clear() {
+        INSTANCE.listView.getItems().clear();
     }
 
     private Parent buildElements() {
-        textView = new TextFlow();
-        textView.setPrefWidth(640);
-        textView.setPrefHeight(480);
+        listView = new ListView<>();
+        listView.setPrefWidth(640);
+        listView.setPrefHeight(480);
 
-        // TODO: "scroll to bottom" checkbox
+        listView.setCellFactory(view ->
+            new ListCell<>() {
+                private final TextFlow flow = new TextFlow();
 
-        scrollPane = new ScrollPane(textView);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        return scrollPane;
+                @Override
+                protected void updateItem(Text item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setGraphic(flow);
+                    flow.getChildren().clear();
+                    if (Objects.nonNull(item) && !empty) flow.getChildren().setAll(item);
+                }
+            }
+        );
+
+        return listView;
     }
 }
