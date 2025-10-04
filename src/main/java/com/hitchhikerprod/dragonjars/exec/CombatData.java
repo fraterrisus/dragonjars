@@ -282,7 +282,7 @@ public class CombatData {
         final int chance = Heap.get(0x45).read(1);
         final int odds;
         if (chance == 0xff) odds = 100;
-        else odds = 100 - chance;
+        else odds = chance;
         sb.append(" tries to flee (").append(odds).append("%) and ");
         if (successfully) sb.append("succeeds");
         else sb.append("fails");
@@ -379,17 +379,28 @@ public class CombatData {
         if (healthDamage + stunDamage == 0) sb.append(" no damage");
     }
 
-    public void monsterBreathDamage() {
+    public void monsterSpell() {
+        final int spellId = Heap.get(0x85).read();
+        final String spellName = Lists.SPELL_NAMES[spellId / 0x08][spellId % 0x08];
+        final int power = Heap.get(0x86).read(2);
+        sb.append(" casts ").append(spellName).append(" (").append(power).append("pow)");
+    }
+
+    public void monsterBreath() {
+        sb.append(" breathes");
+    }
+
+    public void monsterSpellDamage() {
         final boolean variablePower = Heap.get(0x47).read() != 0;
         final int powerCost = Heap.get(0x86).read(2);
         final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
         final int totalDamage = Heap.get(0x61).read(2);
-        sb.append(" breathes\n\tfor ");
+        sb.append("\n\tfor ");
         if (variablePower) sb.append(powerCost).append(" x ");
-        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage each");
+        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage");
     }
 
-    public void monsterBreathHits() {
+    public void monsterSpellHits() {
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
 
         final Address targetAddress = Heap.getPCBaseAddress(Heap.get(0x83).read());
@@ -397,10 +408,6 @@ public class CombatData {
                 .filter(b -> b != 0).map(b -> (int)b).toList());
         final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
 
-        // FIXME: SOMETHING is fucked when I keep seeing this:
-        //   Valar DV+60 target=66...
-        //   Buffy DV+158 target=164...
-        //   and it's not like that going _into_ combat
         sb.append("\n\t").append(targetName)
             .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, 6 + defenderDV));
 
@@ -567,7 +574,7 @@ public class CombatData {
 //        });
 //    }
 
-    private void decodeInitiative() {
+    public void decodeInitiative() {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = i.memory().getSegment(combatSegmentId);
         final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
@@ -612,14 +619,11 @@ public class CombatData {
                 opponents.stream().map(Opponent::initiative).reduce(Integer::max).orElse(0),
                 partyInitiatives.stream().max(Integer::compareTo).orElse(0)
         );
-        System.out.println("Initiative order:");
+        final StringBuffer sb = new StringBuffer();
+        sb.append("Initiative order:");
         for (int init = maxInit; init > 0; init--) {
             final int finalInit = init;
             final List<String> combatants = new ArrayList<>();
-            opponents.stream()
-                    .filter(opp -> opp.initiative() == finalInit)
-                    .map(opp -> String.format("%s(%d,0x%02x)", groupNames.get(opp.groupId()), opp.hp(), opp.status()))
-                    .forEach(combatants::add);
             for (int i = 0; i < partyInitiatives.size(); i++) {
                 if (partyInitiatives.get(i) != init) continue;
                 final int partyMemberOffset = Heap.get(Heap.MARCHING_ORDER + i).read() << 8;
@@ -628,6 +632,11 @@ public class CombatData {
                                 .filter(b -> b != 0).map(b -> (int)b).toList());
                 combatants.add(name);
             }
-            if (!combatants.isEmpty()) System.out.println("  " + init + ": " + String.join(", ", combatants));
+            opponents.stream()
+                    .filter(opp -> opp.initiative() == finalInit)
+                    .map(opp -> String.format("%s(gp%d,id%d)", groupNames.get(opp.groupId()), opp.hp(), opp.status()))
+                    .forEach(combatants::add);
+            if (!combatants.isEmpty()) sb.append("\n\t" + init + ": " + String.join(", ", combatants));
         }
+        CombatLog.append(sb.toString());
     }}

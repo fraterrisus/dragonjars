@@ -286,30 +286,15 @@ public class Interpreter {
 
             new Patch(0x003, 0x0905, Interpreter::bugfixCastActionAvDvMod),
 
-            new Patch(0x003, 0x0937, (i) -> {
-                final Address pcAdr = Heap.getPCBaseAddress();
-                System.out.format("[0x0937] c[59/AV]=%02x c[5a/DV]=%02x, c[5b/AC]=%02x\n",
-                        i.memory().read(pcAdr.incr(Memory.PC_AV), 1),
-                        i.memory().read(pcAdr.incr(Memory.PC_DV), 1),
-                        i.memory().read(pcAdr.incr(Memory.PC_AC), 1));
-            }),
-
             new Patch(0x003, 0x0000, (i) -> i.combatData = new CombatData(i)),
+            new Patch(0x003, 0x006c, (i) -> i.combatData().ifPresent(c -> c.decodeInitiative())),
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
-//            new Patch(0x003, 0x0b55, (i) -> i.combatData().ifPresent(c -> c.partyAdvances())),
-//            new Patch(0x003, 0x0b68, (i) -> i.combatData().ifPresent(c -> c.partyFlees())),
             new Patch(0x003, 0x0b98, (i) -> i.combatData().ifPresent(c -> c.partyEquip())),
             new Patch(0x003, 0x0c06, (i) -> i.combatData().ifPresent(c -> c.partyMove(i.getAL()))),
-            new Patch(0x003, 0x0c22, (i) -> i.combatData().ifPresent(c -> c.partySpell())),
-
-            new Patch(0x006, 0x03e4, (i) -> i.combatData().ifPresent(c -> c.partyHeal())),
-            new Patch(0x006, 0x0631, (i) -> i.combatData().ifPresent(c -> c.partySpellDamage())),
-            new Patch(0x006, 0x0678, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
-            new Patch(0x006, 0x067d, (i) -> i.combatData().ifPresent(c -> c.partySpellTarget())),
-
+            new Patch(0x003, 0x0c2e, (i) -> i.combatData().ifPresent(c -> c.partySpell())),
             new Patch(0x003, 0x0cdc, (i) -> i.combatData().ifPresent(c -> c.partyAttackTarget())),
             new Patch(0x003, 0x0e66, (i) -> i.combatData().ifPresent(c -> c.partyAttackBlocked())),
             new Patch(0x003, 0x0d3d, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
@@ -329,16 +314,21 @@ public class Interpreter {
             new Patch(0x003, 0x1196, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(true))),
             new Patch(0x003, 0x11a3, (i) -> i.combatData().ifPresent(c -> c.monsterCalls(false))),
             new Patch(0x003, 0x11f8, (i) -> i.combatData().ifPresent(c -> c.monsterAttackHits())),
-            new Patch(0x003, 0x1292, (i) -> i.combatData().ifPresent(c -> c.monsterDamage())),
+            new Patch(0x003, 0x127f, (i) -> i.combatData().ifPresent(c -> c.monsterDamage())),
             new Patch(0x003, 0x1305, (i) -> i.combatData().ifPresent(c -> c.monsterAttackBlocked())),
             new Patch(0x003, 0x1326, (i) -> i.combatData().ifPresent(c -> c.monsterAttackTarget())),
             new Patch(0x003, 0x1379, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
             new Patch(0x003, 0x142e, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(true))),
             new Patch(0x003, 0x1453, (i) -> i.combatData().ifPresent(c -> c.monsterAdvances(false))),
+            new Patch(0x003, 0x14c3, (i) -> i.combatData().ifPresent(c -> c.monsterSpell())),
+            new Patch(0x003, 0x1508, (i) -> i.combatData().ifPresent(c -> c.monsterBreath())),
 
-            new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.monsterBreathDamage())),
-            new Patch(0x006, 0x07ca, (i) -> i.combatData().ifPresent(c -> c.monsterBreathHits()))
-            // TODO: monster spells
+            new Patch(0x006, 0x03e4, (i) -> i.combatData().ifPresent(c -> c.partyHeal())),
+            new Patch(0x006, 0x0631, (i) -> i.combatData().ifPresent(c -> c.partySpellDamage())),
+            new Patch(0x006, 0x0678, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
+            new Patch(0x006, 0x067d, (i) -> i.combatData().ifPresent(c -> c.partySpellTarget())),
+            new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.monsterSpellDamage())),
+            new Patch(0x006, 0x07ca, (i) -> i.combatData().ifPresent(c -> c.monsterSpellHits()))
     );
 
     private void runPatches(int chunkId, int ip) {
