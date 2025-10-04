@@ -17,26 +17,14 @@ public class AppPreferences {
 
     public static AppPreferences getInstance() { return INSTANCE; }
 
-    public static Frozen getFrozen() {
-        return new Frozen(
-                INSTANCE.executablePathProperty().get(),
-                INSTANCE.data1PathProperty().get(),
-                INSTANCE.data2PathProperty().get(),
-                INSTANCE.soundEnabledProperty().get(),
-                INSTANCE.volumeProperty().get(),
-                INSTANCE.scaleProperty().get(),
-                INSTANCE.combatDelayProperty().get(),
-                INSTANCE.autoOpenParagraphsProperty().get(),
-                INSTANCE.backRowThrownProperty().get()
-        );
-    }
-
     private static final String NODE_NAME = "com.hitchhikerprod.dragonjars";
     private static final String PREF_AUTO_OPEN_PARAGRAPHS = "help.autoparagraph";
     private static final String PREF_AUDIO_ENABLED = "audio.enable";
     private static final String PREF_AUDIO_VOLUME = "audio.volume";
     private static final String PREF_BACK_ROW_THROWN = "bugs.thrown";
+    private static final String PREF_CASTER_AV = "bugs.casterAV";
     private static final String PREF_COMBAT_DELAY = "game.delay";
+    private static final String PREF_DWARF_HAMMER = "bugs.dwarfHammer";
     private static final String PREF_FILE_DATA1 = "file.data1";
     private static final String PREF_FILE_DATA2 = "file.data2";
     private static final String PREF_FILE_EXEC = "file.executable";
@@ -51,6 +39,8 @@ public class AppPreferences {
     private final DoubleProperty combatDelay = new SimpleDoubleProperty();
     private final BooleanProperty autoOpenParagraphs = new SimpleBooleanProperty();
     private final BooleanProperty backRowThrown = new SimpleBooleanProperty();
+    private final BooleanProperty casterAVBugfix = new SimpleBooleanProperty();
+    private final BooleanProperty dwarfHammerBugfix = new SimpleBooleanProperty();
 
     private final Preferences onDiskPrefs = Preferences.userRoot().node(NODE_NAME);
 
@@ -76,6 +66,16 @@ public class AppPreferences {
         backRowThrown.set(onDiskPrefs.getBoolean(PREF_BACK_ROW_THROWN, true));
         backRowThrown.addListener((obs, oVal, nVal) -> {
             onDiskPrefs.putBoolean(PREF_BACK_ROW_THROWN, nVal);
+        });
+
+        casterAVBugfix.set(onDiskPrefs.getBoolean(PREF_CASTER_AV, true));
+        casterAVBugfix.addListener((obs, oVal, nVal) -> {
+            onDiskPrefs.putBoolean(PREF_CASTER_AV, nVal);
+        });
+
+        dwarfHammerBugfix.set(onDiskPrefs.getBoolean(PREF_DWARF_HAMMER, true));
+        dwarfHammerBugfix.addListener((obs, oVal, nVal) -> {
+            onDiskPrefs.putBoolean(PREF_DWARF_HAMMER, nVal);
         });
 
         soundEnabled.set(onDiskPrefs.getBoolean(PREF_AUDIO_ENABLED, true));
@@ -117,8 +117,16 @@ public class AppPreferences {
         return backRowThrown;
     }
 
+    public BooleanProperty casterAVBugfixProperty() {
+        return casterAVBugfix;
+    }
+
     public DoubleProperty combatDelayProperty() {
         return combatDelay;
+    }
+
+    public BooleanProperty dwarfHammerProperty() {
+        return dwarfHammerBugfix;
     }
 
     public IntegerProperty scaleProperty() {
@@ -142,6 +150,24 @@ public class AppPreferences {
             int scale,
             double combatDelay,
             boolean autoOpenParagraphs,
-            boolean backRowThrown
+            boolean backRowThrown,
+            boolean casterAVBugfix,
+            boolean dwarfHammerBugfix
     ) { }
+
+    public static Frozen getFrozen() {
+        return new Frozen(
+                INSTANCE.executablePathProperty().get(),
+                INSTANCE.data1PathProperty().get(),
+                INSTANCE.data2PathProperty().get(),
+                INSTANCE.soundEnabledProperty().get(),
+                INSTANCE.volumeProperty().get(),
+                INSTANCE.scaleProperty().get(),
+                INSTANCE.combatDelayProperty().get(),
+                INSTANCE.autoOpenParagraphsProperty().get(),
+                INSTANCE.backRowThrownProperty().get(),
+                INSTANCE.casterAVBugfixProperty().get(),
+                INSTANCE.dwarfHammerProperty().get()
+        );
+    }
 }

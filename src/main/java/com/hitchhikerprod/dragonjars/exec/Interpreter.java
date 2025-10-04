@@ -349,6 +349,9 @@ public class Interpreter {
         // spell-casting actions (0x80 | spellId) before referencing the action-to-AV array at [0966], so it pulls
         // an AV mod from way off in the middle of the code. Confirmed this in an emulator. Action 0x0f is a no-op
         // with no AV or DV mods, so it seems a safe replacement.
+        final AppPreferences prefs = AppPreferences.getInstance();
+        if (!prefs.casterAVBugfixProperty().get()) return;
+
         final int action = getAL();
         if ((action & 0x80) > 0) setAL(0x0f);
     }

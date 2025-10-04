@@ -50,24 +50,25 @@ other versions should also work.
 
 - Mouse support.
 - Support for multiple, quicker save game slots.
-- A combat log that shows hidden information about your opponents, attack rolls, etc.
 - Better threading safety.
 
 ## Bugs I Fixed
 
+Several of these can be toggled in the Preferences dialog window, if you're looking for a """more authentic""" 
+experience. (Although really, you can just go play in DOSBOX if you want that.)
+
 - If you attacked with a Thrown Weapon, the original used your Fistfighting skill when determining your combat skill.
   This was clearly a bug, because the Thrown Weapons skill is _right there!_
 - **Thrown Weapons can now be used from the back row** (slots 5-7). This one might be controversial, but I genuinely
-  think this was a mistake by the developers rather than an intentional design choice. Regardless, if you don't like it,
-  there's an in-app preference to disable it!
+  think this was a mistake by the developers rather than an intentional design choice. (Disable via preferences)
 - Each combat round, the game recalculates temporary AV/DV/AC values based on your combat action. However, it 
   inexplicably doesn't check for spell actions (which are encoded strangely), which causes it to run _way_ off the 
   end of some hardcoded arrays whose job is to translate your combat action into an AV/DV modifier. As a result, 
-  when a PC casts a spell, they wind up with a temporary AV/DV that doesn't make any sense.
+  when a PC casts a spell, they wind up with a temporary AV/DV that doesn't make any sense. (Disable via preferences)
 - Most players have never heard of the Dwarf Hammer, because the game state bit that determines whether you 
   can see it (it's in the Dwarf Ruins) is the same as the bit for the chest behind the wizard's house in the Slave 
   Camp. I can't think of a reason why the two would be mutually exclusive, so now the Dwarf Hammer chest is on a 
-  different bit.
+  different bit. (Disable via preferences)
 - I patched some places where leaving a map moves you to a space on the Dilmun map that doesn't make sense. Leaving 
   Purgatory to the North should drop you at (13,5) but you end up at (15,5). Likewise, the Pilgrim Dock's exits were 
   all off by a couple squares.

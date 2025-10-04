@@ -31,6 +31,7 @@ public class PreferencesWindow {
     private final Button data1Button = new Button();
     private final Button data2Button = new Button();
     private CheckBox backRowThrown;
+    private CheckBox dwarfHammer;
 
     private PreferencesWindow() {
         final Parent root = buildGrid();
@@ -64,9 +65,8 @@ public class PreferencesWindow {
             prefs.data2PathProperty().set(app.runOpenFileDialog("DATA2"));
             app.loadDataFiles();
         });
-        Objects.requireNonNull(backRowThrown).setOnAction(ev -> {
-            app.loadDataFiles();
-        });
+        Objects.requireNonNull(backRowThrown).setOnAction(ev -> app.loadDataFiles());
+        Objects.requireNonNull(dwarfHammer).setOnAction(ev -> app.loadDataFiles());
     }
 
     public void show() {
@@ -136,6 +136,14 @@ public class PreferencesWindow {
         backRowThrown = new CheckBox();
         backRowThrown.selectedProperty().bindBidirectional(appPreferences.backRowThrownProperty());
         grid.addRow(rowCounter++, new Label("Allow Thrown Weapons from\nthe back rank (5-7)"), backRowThrown);
+
+        final CheckBox casterAvCalc = new CheckBox();
+        casterAvCalc.selectedProperty().bindBidirectional(appPreferences.casterAVBugfixProperty());
+        grid.addRow(rowCounter++, new Label("Fix in-combat AV/DV calculation\nfor spell casters"), casterAvCalc);
+
+        dwarfHammer = new CheckBox();
+        dwarfHammer.selectedProperty().bindBidirectional(appPreferences.dwarfHammerProperty());
+        grid.addRow(rowCounter++, new Label("Move Dwarf Hammer chest\nto a separate state flag"), dwarfHammer);
 
         final HBox sep2Box = new HBox();
         sep2Box.getStyleClass().add("separator");

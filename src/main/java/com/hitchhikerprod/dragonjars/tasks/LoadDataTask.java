@@ -202,10 +202,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
     private List<Patch> getPatches() {
         final List<Patch> patches = new ArrayList<>();
         if (prefs.backRowThrown()) patches.add(ENABLE_THROWN_WEAPONS_FROM_REAR);
+        if (prefs.dwarfHammerBugfix()) patches.add(DWARF_HAMMER_CHEST_FLAG);
         patches.addAll(List.of(
                 ENABLE_THROWN_WEAPON_SKILL_CHECK,
                 PURGATORY_DEPARTURE_N,
-                DWARF_HAMMER_CHEST_FLAG,
                 PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
                 NISIR_SPINNER_19_23, NISIR_SPINNER_20_23,
                 FREEPORT_LARGE_SHIELD_PRICE, FREEPORT_TYPO_1,
