@@ -1,8 +1,10 @@
 package com.hitchhikerprod.dragonjars.ui;
 
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
@@ -20,9 +22,8 @@ public class CombatLog {
     }
 
     private final Stage stage;
-    private TextFlow textView;
-    private ScrollPane scrollPane;
     private ListView<Text> listView;
+    private CheckBox scrollEnabled;
 
     private CombatLog() {
         final Parent root = buildElements();
@@ -56,7 +57,7 @@ public class CombatLog {
         final Text newText = new Text(text);
         newText.getStyleClass().addAll(styleClass);
         INSTANCE.listView.getItems().add(newText);
-        INSTANCE.listView.scrollTo(newText);
+        if (INSTANCE.scrollEnabled.isSelected()) INSTANCE.listView.scrollTo(newText);
     }
 
     public static void clear() {
@@ -64,6 +65,8 @@ public class CombatLog {
     }
 
     private Parent buildElements() {
+        final BorderPane root = new BorderPane();
+
         listView = new ListView<>();
         listView.setPrefWidth(640);
         listView.setPrefHeight(480);
@@ -82,6 +85,12 @@ public class CombatLog {
             }
         );
 
-        return listView;
+        scrollEnabled = new CheckBox("Auto-scroll on new log lines");
+        scrollEnabled.setSelected(true);
+
+        root.setCenter(listView);
+        root.setBottom(scrollEnabled);
+        BorderPane.setAlignment(scrollEnabled, Pos.CENTER);
+        return root;
     }
 }
