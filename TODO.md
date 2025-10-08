@@ -1,10 +1,16 @@
 # TODO
 
-- Keep adding more combat information; improve the presentation layer.
-- Check for TODOs and FIXMEs in the comments.
+- Add more combat information to the Combat Log window, like target HP after a hit.
+- Do a better job listing inventory items in the Party window.
 - Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
   character into the packed string.
 - Figure out why the Magic Lamp's light has an infinite duration.
+- Make the MusicService interruptable such that if a second sound starts, the first one is cancelled (rather than 
+  queueing incoming sounds to play after the first one finishes)
+- Better multithreading, including (maybe) putting the interpreter on its own thread so it's not on the JavaFX
+  Application thread.
+- Add mouse support.
+- Add support for multiple save files (that are *just* chunks 0x07 and 0x10).
 
 # Known Bugs
 
@@ -15,47 +21,11 @@
 
 # Implementation Differences
 
-- The routine that decrements the spell counters seems to run out of 0f/032f, which *I think* gets triggered by an 
-  idle counter that runs while the game is waiting for you to press a key (and possibly increments once per keypress 
-  as well?). I'm not going to emulate that; I'm going to put my own timer thread on it.
-- My implementation of Frobs is definitely incomplete/different. It's possible that I'm freeing some segments too 
-  aggressively and that's causing bugs.
+- The routine that decrements the spell counters `[0f:032f]` gets triggered (I *think*) by an idle counter that runs
+  while the game is waiting for you to press a key (and possibly increments once per keypress as well?). I 
+  implemented this with a timer thread, so it won't be a perfect copy, but it should be more consistent.
+- My implementation of Frobs is definitely incomplete/different. Freeing segments too aggressively caused bugs. I'm 
+  currently erring on the side of not freeing segments, which is fine because the memory footprint is still fairly 
+  small.
 - Using JavaFX's `scale` function to scale the output `Image` doesn't actually result in integer scaling, and I 
   have no idea why not.
-
-# Future work: Threading the Interpreter
-
-The original relies on the fact that calling DrawCurrentViewport multiple times takes long enough that you get to see
-each screen draw before it executes the next one. So, for instance, running from combat actually draws three frames
-(turn R, turn R, step). Our video handler runs multiple frames on a single thread -- on the UI thread, no less -- so 
-that doesn't work. The simple solution, which I've already implemented, is just to insert a 100ms pause before
-DrawCurrentViewport does its work. It's inelegant, but effective.
-
-The other alternative is to split the Interpreter out into its own thread. The primary difficulty will be 
-separating out all the places where the Interpreter calls the App directly; in particular, the way that we "return 
-null" in order to wait for user input will be different, so we may have to rebuild the #reenter system (again). The 
-second difficulty will be rewriting the VideoHelper to push everything to the screen Image with Platform.runLater(); 
-we'll also want to run some sort of delay when we do it. But how will we know when we've pushed the "whole screen"? 
-
-Places where we try to talk to the DragonWarsApp object directly:
-- DragonWarsApp#startInterpreter gets a little more interesting because it's a Thread#start
-- Calls to app#setKeyHandler happen in a bunch of places; this requires re-architecting user input, but that might be 
-  *better*. I wonder if we can manage the thread communication with an actual Lock object.
-- Interpreter#mainLoop calls app#openParagraphsWindow. Trivial runLater.
-- app#close should be fine.
-- We talk to the MusicService via the app, which may be tricky given the way we currently play the title music. Or 
-  maybe this just works with runLater(); it's spawning off its own threads, after all.
-- YouWin probably needs some rewriting, although mostly it's playTitleMusic(), setKeyHandler(), and one call to 
-  setImage() (that's the tricky one).
-
-Uses of PixelBuffer#writeTo(PixelWriter):
-- app#showTitleScreen(), app#testPattern(), fine
-- YouWin#handler(), see above
-- Interpreter#bitBlast(), which gets used in a limited number of places:
-  - drawViewportCorners
-  - drawHUD, drawMapTitle, and spell icons, which could easily be refactored into a local buffer
-  - drawPartyInfoArea
-  - MonsterAnimationTask, which already uses Platform.runLater()
-
-It's also worth thinking clearly about the use of locks and cross-thread communication, which is currently kind of a 
-mess.
