@@ -34,6 +34,8 @@ ever written for this game, based not only on dozens of playthroughs but also a 
 and the data files to figure out what makes them all tick. Which is how we arrived here: with a complete
 reimplementation of the game's engine.
 
+If you'd like to toss me a tip for this work, you can [BuyMeACoffee](https://buymeacoffee.com/fraterrisus).
+
 ## Quick Start
 
 You'll need a Java runtime that supports at least Java 22, with Java 24 recommended. I use [OpenJDK](https://openjdk.org);
