@@ -239,8 +239,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private static final int BREAKPOINT_CHUNK = 0x000;
-    private static final int BREAKPOINT_ADR = 0x00000;
+    private int breakpointChunk = 0x000;
+    private int breakpointAdress = 0x01379;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -255,7 +255,7 @@ public class Interpreter {
                         memory().getSegmentFrob(cs));
             }
 //            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
-            if (csChunk == BREAKPOINT_CHUNK && ip == BREAKPOINT_ADR) {
+            if (csChunk == breakpointChunk && ip == breakpointAdress) {
                 System.out.println("breakpoint");
             }
             runPatches(csChunk, ip);

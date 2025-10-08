@@ -38,6 +38,15 @@
 
 .combat-log > * {
     -fx-font-size: 16px;
+    -fx-background-color: antiquewhite;
+}
+
+.combat-log .list-cell {
+    -fx-background-color: antiquewhite;
+}
+
+.combat-log .list-cell:even {
+    -fx-background-color: #e1ceb6;
 }
 
 .paragraphs-window {

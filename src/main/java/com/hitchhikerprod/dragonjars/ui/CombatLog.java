@@ -71,8 +71,8 @@ public class CombatLog {
         listView.setPrefWidth(640);
         listView.setPrefHeight(480);
 
-        listView.setCellFactory(view ->
-            new ListCell<>() {
+        listView.setCellFactory(view -> {
+            final ListCell<Text> cell = new ListCell<>() {
                 private final TextFlow flow = new TextFlow();
 
                 @Override
@@ -82,8 +82,10 @@ public class CombatLog {
                     flow.getChildren().clear();
                     if (Objects.nonNull(item) && !empty) flow.getChildren().setAll(item);
                 }
-            }
-        );
+            };
+            cell.getStyleClass().add("log-cell");
+            return cell;
+        });
 
         scrollEnabled = new CheckBox("Auto-scroll on new log lines");
         scrollEnabled.setSelected(true);

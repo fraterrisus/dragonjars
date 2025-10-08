@@ -43,15 +43,15 @@ public class CombatData {
     public CombatData(Interpreter i) {
         this.i = i;
         this.whoseTurn = null;
-        this.sb = new StringBuffer();
+        this.sb = new StringBuilder();
         CombatLog.clear();
     }
 
     private enum WhoseTurn { IDLE, PARTY, ENEMIES }
 
-    private record Opponent(int groupId, int hp, int status, int initiative) { }
+    private record Opponent(int id, int groupId, int hp, int status, int initiative) { }
 
-    private StringBuffer sb;
+    private StringBuilder sb;
 
     private WhoseTurn whoseTurn;
 
@@ -61,15 +61,16 @@ public class CombatData {
     private int bravery;
 
     public void turnDone() {
-        //System.out.println(sb.toString());
         CombatLog.append(sb.toString());
         whoseTurn = WhoseTurn.IDLE;
     }
 
     public void partyTurn() {
-        if (whoseTurn != WhoseTurn.IDLE) System.err.println("Turn is not IDLE");
+        if (whoseTurn != WhoseTurn.IDLE) {
+            System.err.println("Turn is not IDLE");
+        }
         whoseTurn = WhoseTurn.PARTY;
-        sb = new StringBuffer();
+        sb = new StringBuilder();
 
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
         final int pcId = Heap.get(Heap.SELECTED_PC).read();
@@ -87,6 +88,7 @@ public class CombatData {
 
         final int action = i.memory().read(combatCodeSegment, PC_ACTION + pcId, 1);
         sb.append(" ").append(decodePartyAction(action));
+        if (List.of(5, 6, 7, 11).contains(action)) turnDone();
     }
 
     public void partyEquip() {
@@ -154,7 +156,7 @@ public class CombatData {
         final int defenderDV = Heap.get(0x7a).read();
         final int attackRoll = Heap.get(0x7b).read();
 
-        sb.append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, 6 + defenderDV));
+        sb.append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, getTarget(defenderDV)));
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
             sb.append(i.getCarryFlag() ? "=1" : "=16");
@@ -162,7 +164,7 @@ public class CombatData {
         } else {
             final int bonus = (attackerInt / 4) + magicSkill;
             sb.append(String.format("%+d=%d (IQ%+d Sk%+d), ",
-                    bonus, 19 + bonus - attackRoll, attackerInt / 4, magicSkill));
+                    bonus, getToHit(bonus, attackRoll), attackerInt / 4, magicSkill));
         }
         sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
         // TODO: add kill detection
@@ -189,7 +191,7 @@ public class CombatData {
             sb.append("), out of range");
         } else {
             final int defenderDV = i.memory().read(combatCodeSegment, MONSTER_DV + targetId, 1);
-            sb.append(String.format(",id%d) DV%+d target=%d", targetId, defenderDV, 6 + defenderDV));
+            sb.append(String.format(",id%d) DV%+d target=%d", targetId, defenderDV, getTarget(defenderDV)));
         }
     }
 
@@ -211,7 +213,7 @@ public class CombatData {
         } else {
             final int bonus = attackerAV + weaponSkill;
             sb.append(String.format("%+d=%d (AV%+d Sk%+d), ",
-                    bonus, 19 + bonus - attackRoll, attackerAV, weaponSkill));
+                    bonus, getToHit(bonus, attackRoll), attackerAV, weaponSkill));
         }
         sb.append(i.getCarryFlag() ? "miss" : "hit");
     }
@@ -242,9 +244,11 @@ public class CombatData {
     }
 
     public void monsterTurn() {
-        if (whoseTurn != WhoseTurn.IDLE) System.err.println("Turn is not IDLE");
+        if (whoseTurn != WhoseTurn.IDLE) {
+            System.err.println("Turn is not IDLE");
+        }
         whoseTurn = WhoseTurn.ENEMIES;
-        sb = new StringBuffer();
+        sb = new StringBuilder();
 
         monsterId = Heap.get(0x77).read();
         final int monsterGroupId = Heap.get(0x78).read();
@@ -332,7 +336,7 @@ public class CombatData {
 
         final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
         final int defenderAC = i.memory().read(targetAddress.incr(Memory.PC_AC), 1);
-        sb.append(String.format(" AC%d DV%+d target=%d", defenderAC, defenderDV, 6 + defenderDV));
+        sb.append(String.format(" AC%d DV%+d target=%d", defenderAC, defenderDV, getTarget(defenderDV)));
     }
 
     public void monsterAttackHits() {
@@ -348,7 +352,7 @@ public class CombatData {
             sb.append(", automatic ");
         } else {
             final int bonus = attackerAV + groupAV;
-            sb.append(String.format("%+d=%d, ", bonus, 19 + bonus - attackRoll));
+            sb.append(String.format("%+d=%d, ", bonus, getToHit(bonus, attackRoll)));
         }
         sb.append(i.getCarryFlag() ? "miss" : "hit");
     }
@@ -409,10 +413,10 @@ public class CombatData {
         final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
 
         sb.append("\n\t").append(targetName)
-            .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, 6 + defenderDV));
+            .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, getTarget(defenderDV)));
 
         final int monsterId = Heap.get(0x82).read();
-        final int monsterGroupId = 0x3 & Heap.get(0x81).read();
+        final int monsterGroupId = 0x7f & Heap.get(0x81).read(); // 1 -> 03d6
         final int monsterGroupAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
         final int groupAV = i.memory().read(combatCodeSegment, monsterGroupAddress + GROUP_AV, 1);
         final int attackerAV = i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1);
@@ -423,7 +427,7 @@ public class CombatData {
             sb.append(", automatic ");
         } else {
             final int bonus = attackerAV + groupAV;
-            sb.append(String.format("%+d=%d, ", bonus, 19 + bonus - attackRoll));
+            sb.append(String.format("%+d=%d, ", bonus, getToHit(bonus, attackRoll)));
         }
         sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
 
@@ -433,6 +437,14 @@ public class CombatData {
         if (healthDamage > 0) sb.append(" ").append(healthDamage).append("hp");
         if (stunDamage > 0) sb.append(" ").append(stunDamage).append("sp");
         if (healthDamage + stunDamage == 0) sb.append(" no damage");
+    }
+
+    private static int getToHit(int bonus, int attackRoll) {
+        return 19 + bonus - attackRoll;
+    }
+
+    private static int getTarget(int defenderDV) {
+        return 8 + defenderDV;
     }
 
     private String decodePartyAction(int action) {
@@ -479,7 +491,7 @@ public class CombatData {
     public void getCombatants() {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = i.memory().getSegment(combatSegmentId);
-        sb = new StringBuffer();
+        sb = new StringBuilder();
 /*
         sb.append("Party:");
         final int partySize = Heap.get(Heap.PARTY_SIZE).read();
@@ -531,7 +543,7 @@ public class CombatData {
                 if (group == groupId) {
                     final int hp = i.memory().read(combatSegmentId, MONSTER_HP + (2 * monsterId), 2);
                     final int status = i.memory().read(combatSegmentId, MONSTER_ACTION + monsterId, 1);
-                    groupMembers.add(new Opponent(group, hp, status, 0));
+                    groupMembers.add(new Opponent(monsterId, group, hp, status, 0));
                 }
                 monsterId++;
             }
@@ -548,31 +560,6 @@ public class CombatData {
             whoseTurn = WhoseTurn.IDLE;
         }
     }
-
-//    private void decodeMonsterAction() {
-//        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-//        System.out.println(switch (getAL()) {
-//            case 0,1,2,3,4 -> { // 1:no armor, 2:stun only, 3:1/4, 4:health only
-//                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-//                final int attPerRnd = 1 + memory().read(combatSegmentId, Heap.get(0x41).read(2) + 0x26, 1);
-//                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-//                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-//                yield("attacks(" + attPerRnd + "," + dmg + "," + range + "')");
-//            }
-//            case 5 -> "blocks";
-//            case 6 -> "dodges";
-//            case 7 -> "flees";
-//            case 8 -> "casts";
-//            case 9 -> {
-//                final int params = memory().read(combatSegmentId, Heap.get(0x68).read(2) + 1, 2);
-//                final WeaponDamage dmg = new WeaponDamage((byte)(params & 0xff));
-//                final int range = Integer.max(1, (params & 0xf000) >> 12) * 10;
-//                yield("breathes(" + dmg + "," + range + "')");
-//            }
-//            case 10 -> "calls for help";
-//            default -> "passes";
-//        });
-//    }
 
     public void decodeInitiative() {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
@@ -603,7 +590,7 @@ public class CombatData {
                     final int hp = i.memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
                     final int status = i.memory().read(combatSegmentId, 0x030e + monsterId, 1);
                     final int initiative = i.memory().read(combatSegmentId, 0x02dc + monsterId, 1);
-                    opponents.add(new Opponent(group, hp, status, initiative));
+                    opponents.add(new Opponent(monsterId, group, hp, status, initiative));
                     groupMembers++;
                 }
                 monsterId++;
@@ -619,7 +606,7 @@ public class CombatData {
                 opponents.stream().map(Opponent::initiative).reduce(Integer::max).orElse(0),
                 partyInitiatives.stream().max(Integer::compareTo).orElse(0)
         );
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append("Initiative order:");
         for (int init = maxInit; init > 0; init--) {
             final int finalInit = init;
@@ -634,9 +621,9 @@ public class CombatData {
             }
             opponents.stream()
                     .filter(opp -> opp.initiative() == finalInit)
-                    .map(opp -> String.format("%s(gp%d,id%d)", groupNames.get(opp.groupId()), opp.hp(), opp.status()))
+                    .map(opp -> String.format("%s(gp%d,id%d)", groupNames.get(opp.groupId()), opp.groupId(), opp.id()))
                     .forEach(combatants::add);
-            if (!combatants.isEmpty()) sb.append("\n\t" + init + ": " + String.join(", ", combatants));
+            if (!combatants.isEmpty()) sb.append("\n\t").append(init).append(": ").append(String.join(", ", combatants));
         }
         CombatLog.append(sb.toString());
     }}
