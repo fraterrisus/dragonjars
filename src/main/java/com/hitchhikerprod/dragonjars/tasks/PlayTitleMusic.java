@@ -39,7 +39,6 @@ public class PlayTitleMusic extends Task<Void> {
     @Override
     protected Void call() throws LineUnavailableException {
         decodeTitleMusic();
-        if (isCancelled()) return null;
         playTitleMusic();
         sdl.drain();
         return null;

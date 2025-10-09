@@ -30,6 +30,7 @@ public class PlayChunkSound extends Task<Void> {
         double volumeFactor = 1.8 * volume.get() / 100.0;
 
         for (int b = 4; b < numPhases; b++) {
+            if (isCancelled()) break;
             buf[0] = (byte)(Math.round(soundChunk.getByte(b) * volumeFactor));
             for (int i = 0; i < numWrites; i++) {
                 sdl.write(buf, 0, 1);
