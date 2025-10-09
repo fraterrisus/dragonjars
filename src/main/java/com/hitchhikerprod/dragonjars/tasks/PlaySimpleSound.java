@@ -33,6 +33,7 @@ public class PlaySimpleSound extends Task<Void> {
         int i = timing.getValue();
         int j = 0;
         while (i > 0) {
+            if (isCancelled()) break;
             if (j == 0) {
                 j = timing.getKey();
                 toggle = !toggle;

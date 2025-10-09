@@ -5,8 +5,6 @@
 - Depths of Nisir: "...which namtar will march against" [sic] This one's tricky because you need to *insert* a 5b 
   character into the packed string.
 - Figure out why the Magic Lamp's light has an infinite duration.
-- Make the MusicService interruptable such that if a second sound starts, the first one is cancelled (rather than 
-  queueing incoming sounds to play after the first one finishes)
 - Better multithreading, including (maybe) putting the interpreter on its own thread so it's not on the JavaFX
   Application thread.
 - Add mouse support.

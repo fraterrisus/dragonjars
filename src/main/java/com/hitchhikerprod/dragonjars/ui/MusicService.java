@@ -83,9 +83,7 @@ public class MusicService {
     }
 
     public void stop() {
-        withTaskLock(svc -> {
-            if (svc.runningTask != null) svc.runningTask.cancel();
-        });
+        withTaskLock(MusicService::cancelCurrentSound);
     }
 
     private void disable() {
@@ -123,29 +121,40 @@ public class MusicService {
         }
     }
 
-    // TODO: Maybe we want this to cancel earlier sounds, rather than queueing?
     private void runTaskHelper(Supplier<Task<Void>> taskGetter) {
         if (!prefs.soundEnabledProperty().get()) return;
-        withTaskLock(svc -> svc.taskQueue.add(taskGetter));
-        runNextTask();
+        withTaskLock(svc -> {
+            svc.cancelCurrentSound();
+            svc.startNewSound(taskGetter.get());
+        });
     }
 
-    private void runNextTask() {
-        withTaskLock(svc -> {
-            if (Objects.nonNull(svc.runningTask) || svc.taskQueue.isEmpty()) return;
-            final Task<Void> task = taskQueue.remove().get();
-            task.setOnSucceeded(removeThisTaskHelper(task));
-            task.setOnFailed(removeThisTaskHelper(task));
-            task.setOnCancelled(removeThisTaskHelper(task));
-            Thread.ofPlatform().daemon().start(task);
-            svc.runningTask = task;
-        });
+    private void cancelCurrentSound() {
+        if (!taskLock.isHeldByCurrentThread()) {
+            System.err.println("[MusicService] cancelCurrentSound() called without lock");
+            return;
+        }
+        if (Objects.nonNull(runningTask)) runningTask.cancel();
+    }
+
+    private void startNewSound(Task<Void> task) {
+        if (!taskLock.isHeldByCurrentThread()) {
+            System.err.println("[MusicService] startNewSound() called without lock");
+            return;
+        }
+        task.setOnSucceeded(removeThisTaskHelper(task));
+        task.setOnFailed(removeThisTaskHelper(task));
+        task.setOnCancelled(removeThisTaskHelper(task));
+        Thread.ofPlatform().daemon().start(task);
+        runningTask = task;
     }
 
     private EventHandler<WorkerStateEvent> removeThisTaskHelper(Task<Void> me) {
         return event -> {
-            withTaskLock(svc -> svc.runningTask = null);
-            runNextTask();
+            withTaskLock(svc -> {
+                if (svc.runningTask == me) svc.runningTask = null;
+            });
         };
     }
+
 }
