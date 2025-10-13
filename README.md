@@ -8,6 +8,11 @@ someone operating the "Interplay Entertainment" license seems to be re-issuing t
 platforms (basically, a bundled version of DOSBOX plus the data files). In an effort to not violate their copyright, I
 will not distribute those data files. You can currently buy a copy of _Dragon Wars_ on Steam or GOG for around 10 USD.
 
+**REALLY important note:** Rebecca "Burger" Heineman, the original developer of _Dragon Wars_, is currently and suddenly
+sick with cancer and needs help with her medical bills. If you're a fan of this game and you're at all able to do so, I
+urge you to chip in a few bucks at [her GoFundMe](https://www.gofundme.com/f/help-rebecca-ann-heineman-fight-aggressive-cancer)
+instead of putting anything in my tip jar.
+
 ## Features
 
 - All the original EGA graphics and animation, with video scaling selectable as an in-app preference.
@@ -33,8 +38,6 @@ I'm also the author of what I think is [the most comprehensive walkthrough](http
 ever written for this game, based not only on dozens of playthroughs but also a year spent decompiling the source code
 and the data files to figure out what makes them all tick. Which is how we arrived here: with a complete
 reimplementation of the game's engine.
-
-If you'd like to toss me a tip for this work, you can [BuyMeACoffee](https://buymeacoffee.com/fraterrisus).
 
 ## Quick Start
 
