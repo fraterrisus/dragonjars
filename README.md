@@ -10,8 +10,7 @@ will not distribute those data files. You can currently buy a copy of _Dragon Wa
 
 **REALLY important note:** Rebecca "Burger" Heineman, the original developer of _Dragon Wars_, is currently and suddenly
 sick with cancer and needs help with her medical bills. If you're a fan of this game and you're at all able to do so, I
-urge you to chip in a few bucks at [her GoFundMe](https://www.gofundme.com/f/help-rebecca-ann-heineman-fight-aggressive-cancer)
-instead of putting anything in my tip jar.
+urge you to chip in a few bucks at [her GoFundMe](https://gofund.me/f56915039) instead of putting anything in my tip jar.
 
 ## Features
 
