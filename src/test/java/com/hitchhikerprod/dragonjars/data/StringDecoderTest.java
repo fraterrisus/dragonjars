@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.data;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,15 +50,22 @@ class StringDecoderTest {
 
     @Test
     public void encode() {
-        final String text1 = "You wake up in a small, cold cell. The lock in only accessable on the outside of the door.";
-        final String text2 = "You wake up in a small, cold cell. The lock is only accessible on the outside of the door.";
+        final String text1 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which namtar will march against Oceana when Dilmun is finally conquered.";
+        final String text2 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which Namtar will march against Oceana when Dilmun is finally conquered.";
         final StringEncoder enc = new StringEncoder();
         final List<Byte> result1 = enc.encodeString(text1);
         final List<Byte> result2 = enc.encodeString(text2);
+        if (result1.size() != result2.size()) System.out.format("Size changed: was %d, now %d\n", result1.size(), result2.size());
         for (int i = 0; i < result1.size(); i++) {
             if (!result1.get(i).equals(result2.get(i))) {
                 System.out.format("[0x%03x] old:%02x new:%02x\n", i, result1.get(i), result2.get(i));
             }
         }
+        System.out.println("List.of(" +
+                result1.stream().map(b -> String.format("(byte) 0x%02x", b)).collect(Collectors.joining(", ")) +
+                "),");
+        System.out.println("List.of(" +
+                result2.stream().map(b -> String.format("(byte) 0x%02x", b)).collect(Collectors.joining(", ")) +
+                ")");
     }
 }

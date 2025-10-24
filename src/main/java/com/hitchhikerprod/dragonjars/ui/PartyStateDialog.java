@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.ui;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Gender;
 import com.hitchhikerprod.dragonjars.data.Item;
+import com.hitchhikerprod.dragonjars.data.Lists;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
@@ -181,13 +182,13 @@ public class PartyStateDialog extends Dialog<Void> {
         buildBooleanRow(row++, member.swamFromPurgatory(), "Swam from Purgatory");
         buildBooleanRow(row++, member.blessedByIrkalla(), "Irkalla's blessing");
         buildBooleanRow(row++, member.blessedByEnkidu(), "Enkidu's Druid Magic");
-        buildBooleanRow(row++, member.blessedByUniversalGod(), "Universal God's +3AP");
+        buildBooleanRow(row++, member.blessedByUniversalGod(), "Universal God's blessing");
 
         final Label skillsLabel = new Label("Skills");
         skillsLabel.getStyleClass().add("party-label-section-header");
         memberGrid.addRow(row++, skillsLabel);
 
-        for (String skillName : PartyMember.SKILLS) {
+        for (String skillName : Lists.SKILL_NAMES) {
             if (member.skills.get(skillName) == 0) continue;
             final Label skillNameNode = new Label(skillName);
             final Label skillValueNode = new Label(String.valueOf(member.skills.get(skillName)));
@@ -295,11 +296,6 @@ public class PartyStateDialog extends Dialog<Void> {
     ) {
         private record MagicSchool(String name, List<String> spells) { }
 
-        public static final List<String> SKILLS = List.of("Arcane Lore", "Cave Lore", "Forest Lore", "Mountain Lore",
-                "Town Lore", "Bandage", "Climb", "Fistfighting", "Hiding", "Lockpick", "Pickpocket", "Swim", "Tracker",
-                "Bureaucracy", "Druid Magic", "High Magic", "Low Magic", "Merchant", "Sun Magic", "Axes", "Flails",
-                "Maces", "Swords", "Two-Handers", "Bows", "Crossbows", "Thrown Weapons");
-
         // This HAS to be a list because order matters, and Map.entrySet() (etc.) aren't guaranteed ordered
         public static final List<MagicSchool> MAGIC_SCHOOLS = List.of(
                 new MagicSchool("Low Magic", List.of("Mage Fire", "Disarm", "Charm", "Luck", "Lesser Heal", "Mage Light")),
@@ -341,7 +337,7 @@ public class PartyStateDialog extends Dialog<Void> {
 
             final Map<String, Integer> skills = new HashMap<>();
             int skillOffset = offset + 0x20;
-            for (String skill : SKILLS) {
+            for (String skill : Lists.SKILL_NAMES) {
                 skills.put(skill, data.getUnsignedByte(skillOffset++));
             }
 

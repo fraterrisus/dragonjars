@@ -11,7 +11,7 @@ public class Lists {
             "Slave Estate", "Lansk Undercity", "Tars Dungeon"
     };
 
-    static final String[] SKILL_NAMES = {
+    public static final String[] SKILL_NAMES = {
             "Arcane Lore", "Cave Lore", "Forest Lore", "Mountain Lore",
             "Town Lore", "Bandage", "Climb", "Fistfighting",
             "Hiding", "Lockpick", "Pickpocket", "Swim",
