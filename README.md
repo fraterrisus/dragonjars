@@ -1,16 +1,11 @@
 # DragonJars
 
-A full Java-based reimplementation of the engine for [Dragon Wars (1990)](https://homeoftheunderdogs.net/game.php?id=336),
+A full Java-based reimplementation ("superemulator") of the engine for [Dragon Wars (1990)](https://homeoftheunderdogs.net/game.php?id=336),
 with several bug fixes, improvements, and quality-of-life additions.
 
-**Note:** In order to use this program, you'll need a copy of the game's data files (PC version). As of this writing,
-someone operating the "Interplay Entertainment" license seems to be re-issuing the company's old IP on more modern
-platforms (basically, a bundled version of DOSBOX plus the data files). In an effort to not violate their copyright, I
-will not distribute those data files. You can currently buy a copy of _Dragon Wars_ on Steam or GOG for around 10 USD.
-
-**REALLY important note:** Rebecca "Burger" Heineman, the original developer of _Dragon Wars_, is currently and suddenly
-sick with cancer and needs help with her medical bills. If you're a fan of this game and you're at all able to do so, I
-urge you to chip in a few bucks at [her GoFundMe](https://gofund.me/f56915039) instead of putting anything in my tip jar.
+This project is dedicated to the memory of Rebecca "Burger Becky" Heineman, the original developer of _Dragon Wars_,
+who tragically died of lung cancer complications in November 2025. Her long history of reverse engineering, archiving, 
+preserving, and developing video game source code is a constant source of inspiration to me.
 
 ## Features
 
@@ -26,6 +21,13 @@ urge you to chip in a few bucks at [her GoFundMe](https://gofund.me/f56915039) i
 - Hit Ctrl-B in travel mode to "auto-Bandage" everyone in your party.
 - Fixed some bugs (see list below).
 
+**Note:** In order to use this program, you'll need a copy of the game's data files (PC version). As of this writing,
+someone operating the "Interplay Entertainment" license seems to be re-issuing the company's old IP on more modern
+platforms (basically, a bundled version of DOSBOX plus the data files). In an effort to not violate their copyright, I
+will not distribute those data files. You can currently buy a copy of _Dragon Wars_ on Steam or GOG for around 10 USD.
+Or, you can head over to the [Internet Archive](https://archive.org/details/msdos_Dragon_Wars_1990) and play a copy
+for free in your browser, although you won't be able to download it.
+
 ## Who are you?
 
 I'm Ben Cordes, aka FraterRisus. I'm a giant fan of _Dragon Wars_, and have been since 1990 or so when I bought a copy
@@ -34,9 +36,12 @@ annoy the rest of my family, which is why adding a _persistent_ sound preference
 after I got the music working.)
 
 I'm also the author of what I think is [the most comprehensive walkthrough](https://walkthroughs.hitchhikerprod.com/dragon-wars)
-ever written for this game, based not only on dozens of playthroughs but also a year spent decompiling the source code
-and the data files to figure out what makes them all tick. Which is how we arrived here: with a complete
-reimplementation of the game's engine.
+ever written for this game, based not only on dozens of playthroughs but also all the work that went into reverse
+engineering the source code and the data files to figure out what makes them tick. Which is how we arrived here:
+with a complete reimplementation of the game's engine.
+
+If you like what I'm doing here and want to encourage me to do more (or to fix bugs in this superemulator), you can
+drop a few bucks in my tip jar at [BuyMeACoffee](https://buymeacoffee.com/fraterrisus).
 
 ## Quick Start
 
