@@ -1,13 +1,13 @@
+group = "com.hitchhikerprod"
+version = "1.1"
+
 plugins {
     java
     application
-    id("org.javamodularity.moduleplugin") version "1.8.12"
-    id("org.openjfx.javafxplugin") version "0.0.13"
-    id("org.beryx.jlink") version "2.25.0"
+    id("org.javamodularity.moduleplugin") version "2.0.1"
+    id("org.openjfx.javafxplugin") version "0.1.0"
+    id("org.beryx.jlink") version "4.1.1"
 }
-
-group = "com.hitchhikerprod"
-version = "1.0"
 
 repositories {
     mavenCentral()
@@ -63,4 +63,8 @@ jlink {
     launcher {
         name = "dragonjars"
     }
+}
+
+jpackage {
+    imageName = "dragonjars-${version}"
 }
