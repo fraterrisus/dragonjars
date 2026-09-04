@@ -240,7 +240,7 @@ public class Interpreter {
     }
 
     private int breakpointChunk = 0x000;
-    private int breakpointAdress = 0x01379;
+    private int breakpointAddress = 0x01379;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -255,7 +255,7 @@ public class Interpreter {
                         memory().getSegmentFrob(cs));
             }
 //            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
-            if (csChunk == breakpointChunk && ip == breakpointAdress) {
+            if (csChunk == breakpointChunk && ip == breakpointAddress) {
                 System.out.println("breakpoint");
             }
             runPatches(csChunk, ip);
@@ -290,6 +290,8 @@ public class Interpreter {
             new Patch(0x003, 0x006c, (i) -> i.combatData().ifPresent(c -> c.decodeInitiative())),
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
+
+            new Patch(0x003, 0x0d68, Interpreter::selectDamageDie),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
             new Patch(0x003, 0x0b98, (i) -> i.combatData().ifPresent(c -> c.partyEquip())),
@@ -341,6 +343,31 @@ public class Interpreter {
     private void openParagraph(int id) {
         final AppPreferences prefs = AppPreferences.getInstance();
         if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
+    }
+
+    private void selectDamageDie() {
+        // BUGFIX
+        // The game engine never even looks at the secondary damage die; it has no code to check if the target monster
+        // group is greater than 10' away, much less any code to fetch byte 09 of the item data.
+        final AppPreferences prefs = AppPreferences.getInstance();
+        if (!prefs.fixSecondaryDamageProperty().get()) return;
+
+        // Read the target group's range from their data array
+        final int targetGroupId = (Heap.get(0x83).read(1)) & 0x7f;
+        final int targetGroupDataPtr = memory().read(ds, 0x04c6 + (2 * targetGroupId), 2);
+        final int targetGroupRange = memory().read(ds, targetGroupDataPtr + 0x09, 1);
+
+        // Overwrite the item offset byte of the "read damage die" instruction at {03:0d68}
+        if (targetGroupRange == 1) {
+            memory.write(ds, 0x0d69, 1, 0x08);
+        } else {
+            memory.write(ds, 0x0d69, 1, 0x09);
+            new ReadInventoryWord().exec(this);
+            if (getAX() == 0) {
+                // just kidding; this weapon doesn't have a secondary damage rating
+                memory.write(ds, 0x0d69, 1, 0x08);
+            }
+        }
     }
 
     private void bugfixCastActionAvDvMod() {

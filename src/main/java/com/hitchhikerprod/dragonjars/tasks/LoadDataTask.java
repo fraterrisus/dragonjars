@@ -142,6 +142,10 @@ public class LoadDataTask extends Task<List<Chunk>> {
     private static final Patch PURGATORY_DEPARTURE_N =
             new Patch(0x047, 0x1696, List.of((byte) 0x0f), List.of((byte) 0x0d));
 
+    // Lansk: Druid's Mace should have 1d20 primary damage, not secondary damage
+    private static final Patch DRUID_MACE_PRIMARY_DAMAGE =
+            new Patch(0x032, 0x01e2, List.of((byte) 0x00, (byte) 0xa0), List.of((byte) 0xa0, (byte) 0x00));
+
     // Dwarf Ruins: move the Dwarven Hammer chest flag from [9e:80] to [9a:08]
     private static final Patch DWARF_HAMMER_CHEST_FLAG =
             new Patch(0x055, 0x02d7, List.of((byte) 0x28), List.of((byte) 0x0c));
@@ -238,6 +242,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
         if (prefs.dwarfHammerBugfix()) patches.add(DWARF_HAMMER_CHEST_FLAG);
         patches.addAll(List.of(
                 ENABLE_THROWN_WEAPON_SKILL_CHECK,
+                DRUID_MACE_PRIMARY_DAMAGE,
                 PURGATORY_DEPARTURE_N,
                 PILGRIM_DOCK_DEPARTURE_N, PILGRIM_DOCK_DEPARTURE_E, PILGRIM_DOCK_DEPARTURE_S, PILGRIM_DOCK_DEPARTURE_W,
                 NISIR_SPINNER_19_23, NISIR_SPINNER_20_23, NISIR_TYPO_1,

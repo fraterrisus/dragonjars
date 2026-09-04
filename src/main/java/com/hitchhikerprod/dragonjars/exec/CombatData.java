@@ -176,6 +176,9 @@ public class CombatData {
         mightyDamage = 0;
         bonusDamage = 0;
 
+        final int attackRange = Heap.get(0x80).read();
+        if (attackRange > 1) sb.append(String.format(" (%d0')", attackRange));
+
         final int targetId = Heap.get(0x84).read();
         final int targetGroupId = i.memory().read(combatCodeSegment, MONSTER_GROUP_ID + targetId, 1);
         final int targetBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
@@ -190,7 +193,7 @@ public class CombatData {
         } else if (i.getCarryFlag()) {
             sb.append("), out of range");
         } else {
-            final int defenderDV = i.memory().read(combatCodeSegment, MONSTER_DV + targetId, 1);
+            final int defenderDV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_DV + targetId, 1), 1);
             sb.append(String.format(",id%d) DV%+d target=%d", targetId, defenderDV, getTarget(defenderDV)));
         }
     }
@@ -203,7 +206,7 @@ public class CombatData {
         sb.append("\n\t1d16");
 
         final Address pcBaseAddress = Heap.getPCBaseAddress();
-        final int attackerAV = i.memory().read(pcBaseAddress.incr(Memory.PC_AV), 1);
+        final int attackerAV = ALU.signExtend(i.memory().read(pcBaseAddress.incr(Memory.PC_AV), 1), 1);
         final int weaponSkill = Heap.get(0x79).read();
         final int attackRoll = Heap.get(0x7b).read();
 
@@ -315,7 +318,7 @@ public class CombatData {
         final int odds;
         if (chance == 0xff) odds = 100;
         else odds = 100 - chance;
-        sb.append(" calls for help (").append(odds).append("%) ");
+        sb.append(" calls for help (").append(odds).append("%)");
         if (successfully) sb.append(" and succeeds");
         else {
             if (Heap.get(0x27).read() == 0x32) sb.append(" but there's no room");
@@ -334,7 +337,7 @@ public class CombatData {
                 .filter(b -> b != 0).map(b -> (int)b).toList());
         sb.append(" attacks ").append(pcName);
 
-        final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
+        final int defenderDV = ALU.signExtend(i.memory().read(targetAddress.incr(Memory.PC_DV), 1), 1);
         final int defenderAC = i.memory().read(targetAddress.incr(Memory.PC_AC), 1);
         sb.append(String.format(" AC%d DV%+d target=%d", defenderAC, defenderDV, getTarget(defenderDV)));
     }
@@ -343,8 +346,8 @@ public class CombatData {
         sb.append("\n\t1d16");
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
 
-        final int groupAV = i.memory().read(combatCodeSegment, Heap.get(0x41).read(2) + GROUP_AV, 1);
-        final int attackerAV = i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1);
+        final int groupAV = ALU.signExtend(i.memory().read(combatCodeSegment, Heap.get(0x41).read(2) + GROUP_AV, 1), 1);
+        final int attackerAV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1), 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
@@ -410,7 +413,7 @@ public class CombatData {
         final Address targetAddress = Heap.getPCBaseAddress(Heap.get(0x83).read());
         final String targetName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
-        final int defenderDV = i.memory().read(targetAddress.incr(Memory.PC_DV), 1);
+        final int defenderDV = ALU.signExtend(i.memory().read(targetAddress.incr(Memory.PC_DV), 1), 1);
 
         sb.append("\n\t").append(targetName)
             .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, getTarget(defenderDV)));
@@ -418,8 +421,8 @@ public class CombatData {
         final int monsterId = Heap.get(0x82).read();
         final int monsterGroupId = 0x7f & Heap.get(0x81).read(); // 1 -> 03d6
         final int monsterGroupAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
-        final int groupAV = i.memory().read(combatCodeSegment, monsterGroupAddress + GROUP_AV, 1);
-        final int attackerAV = i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1);
+        final int groupAV = ALU.signExtend(i.memory().read(combatCodeSegment, monsterGroupAddress + GROUP_AV, 1), 1);
+        final int attackerAV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1), 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
@@ -525,9 +528,9 @@ public class CombatData {
 
             final int groupDistance = monsterData.read(groupOffset + GROUP_DIST, 1) * 10;
             final int groupDEX = monsterData.read(groupOffset + GROUP_DEX, 1);
-            final int groupAV = monsterData.read(groupOffset + GROUP_AV, 1);
-            final int groupAVmod = monsterData.read(groupOffset + GROUP_AV_MOD, 1);
-            final int groupDVmod = monsterData.read(groupOffset + GROUP_DV_MOD, 1);
+            final int groupAV = ALU.signExtend(monsterData.read(groupOffset + GROUP_AV, 1), 1);
+            final int groupAVmod = ALU.signExtend(monsterData.read(groupOffset + GROUP_AV_MOD, 1), 1);
+            final int groupDVmod = ALU.signExtend(monsterData.read(groupOffset + GROUP_DV_MOD, 1), 1);
             final int groupSpd = Integer.max(1, monsterData.read(groupOffset + GROUP_SPEED, 1)) * 10;
 
             sb.append(String.format("\n\t%d %s (%02d',%02d'): AV%d DV%d",

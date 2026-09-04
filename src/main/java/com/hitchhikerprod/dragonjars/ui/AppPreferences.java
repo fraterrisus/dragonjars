@@ -25,6 +25,7 @@ public class AppPreferences {
     private static final String PREF_CASTER_AV = "bugs.casterAV";
     private static final String PREF_COMBAT_DELAY = "game.delay";
     private static final String PREF_DWARF_HAMMER = "bugs.dwarfHammer";
+    private static final String PREF_SECONDARY_DAMAGE = "bugs.secondaryDamage";
     private static final String PREF_FILE_DATA1 = "file.data1";
     private static final String PREF_FILE_DATA2 = "file.data2";
     private static final String PREF_FILE_EXEC = "file.executable";
@@ -41,6 +42,7 @@ public class AppPreferences {
     private final BooleanProperty backRowThrown = new SimpleBooleanProperty();
     private final BooleanProperty casterAVBugfix = new SimpleBooleanProperty();
     private final BooleanProperty dwarfHammerBugfix = new SimpleBooleanProperty();
+    private final BooleanProperty fixSecondaryDamage = new SimpleBooleanProperty();
 
     private final Preferences onDiskPrefs = Preferences.userRoot().node(NODE_NAME);
 
@@ -78,9 +80,13 @@ public class AppPreferences {
             onDiskPrefs.putBoolean(PREF_DWARF_HAMMER, nVal);
         });
 
+        fixSecondaryDamage.set(onDiskPrefs.getBoolean(PREF_SECONDARY_DAMAGE, true));
+        fixSecondaryDamage.addListener((obs, oVal, nVal) -> {
+            onDiskPrefs.putBoolean(PREF_SECONDARY_DAMAGE, nVal);
+        });
+
         soundEnabled.set(onDiskPrefs.getBoolean(PREF_AUDIO_ENABLED, true));
         soundEnabled.addListener((obs, oVal, nVal) -> {
-//            System.out.println("soundEnabled pref updated (" + nVal + ")");
             onDiskPrefs.putBoolean(PREF_AUDIO_ENABLED, nVal);
         });
 
@@ -129,6 +135,10 @@ public class AppPreferences {
         return dwarfHammerBugfix;
     }
 
+    public BooleanProperty fixSecondaryDamageProperty() {
+        return fixSecondaryDamage;
+    }
+
     public IntegerProperty scaleProperty() {
         return scale;
     }
@@ -152,7 +162,8 @@ public class AppPreferences {
             boolean autoOpenParagraphs,
             boolean backRowThrown,
             boolean casterAVBugfix,
-            boolean dwarfHammerBugfix
+            boolean dwarfHammerBugfix,
+            boolean fixSecondaryDamage
     ) { }
 
     public static Frozen getFrozen() {
@@ -167,7 +178,8 @@ public class AppPreferences {
                 INSTANCE.autoOpenParagraphsProperty().get(),
                 INSTANCE.backRowThrownProperty().get(),
                 INSTANCE.casterAVBugfixProperty().get(),
-                INSTANCE.dwarfHammerProperty().get()
+                INSTANCE.dwarfHammerProperty().get(),
+                INSTANCE.fixSecondaryDamageProperty().get()
         );
     }
 }

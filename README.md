@@ -70,6 +70,13 @@ experience. (Although really, you can just go play in DOSBOX if you want that.)
   This was clearly a bug, because the Thrown Weapons skill is _right there!_
 - **Thrown Weapons can now be used from the back row** (slots 5-7). This one might be controversial, but I genuinely
   think this was a mistake by the developers rather than an intentional design choice. (Disable via preferences)
+- Some weapons with reach (most notably the Axe of Kalah) have two damage ratings; one for enemies in melee range, and
+  a second for enemies further away. The original never checked the target's range or used the secondary damage. I 
+  have added some patched code to properly use the secondary damage rating, if one exists, for targets at range. 
+  (Disable via preferences)
+- In a similar vein, the Druid's Mace is supposed to deal 1d20 damage, but because that value was placed in the 
+  *secondary* damage slot by mistake, the game never uses it, and as a result the Druid's Mace only deals 1d4. I've 
+  patched this so the mace deals its proper melee damage.
 - Each combat round, the game recalculates temporary AV/DV/AC values based on your combat action. However, it 
   inexplicably doesn't check for spell actions (which are encoded strangely), which causes it to run _way_ off the 
   end of some hardcoded arrays whose job is to translate your combat action into an AV/DV modifier. As a result, 
@@ -82,8 +89,8 @@ experience. (Although really, you can just go play in DOSBOX if you want that.)
   Purgatory to the North should drop you at (13,5) but you end up at (15,5). Likewise, the Pilgrim Dock's exits were 
   all off by a couple squares.
 - Large Shields at Ryan's Armor in Freeport now cost the normal $1000 instead of an inexplicable $100. Sorry not sorry.
-- Fixed some typos in the game's text (misplaced apostrophes, misspelled words, etc.)
-- If you look closely, the automap doesn't draws walls along its eastern edge. Mine does.
+- Fixed some typos in the game's text (misplaced apostrophes, misspelled words, etc). Definitely didn't get all of them.
+- If you look closely, the original's automap doesn't draw walls along its eastern edge. Mine does.
 - The "icy winds" region just outside your starting spot in the Depths of Nisir had a couple of mistakes, including 
   a misplaced spinner and a square that doesn't have the right special code. Those are fixed.
 - There's an occasional display bug based on a set of hardcoded "regions" in the display. The region for the party

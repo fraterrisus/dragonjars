@@ -137,6 +137,10 @@ public class PreferencesWindow {
         backRowThrown.selectedProperty().bindBidirectional(appPreferences.backRowThrownProperty());
         grid.addRow(rowCounter++, new Label("Allow Thrown Weapons from\nthe back rank (5-7)"), backRowThrown);
 
+        final CheckBox fixSecondaryDamage = new CheckBox();
+        fixSecondaryDamage.selectedProperty().bindBidirectional(appPreferences.fixSecondaryDamageProperty());
+        grid.addRow(rowCounter++, new Label("Allow secondary damage die\non reach weapons"), fixSecondaryDamage);
+
         final CheckBox casterAvCalc = new CheckBox();
         casterAvCalc.selectedProperty().bindBidirectional(appPreferences.casterAVBugfixProperty());
         grid.addRow(rowCounter++, new Label("Fix in-combat AV/DV calculation\nfor spell casters"), casterAvCalc);
