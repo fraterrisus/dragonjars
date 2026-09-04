@@ -121,7 +121,7 @@ public class DrawAutomap implements Instruction {
 
                 // Party avatar, or Deco (texture offset 0)
                 if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
-                    automap.drawTextureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
+                    automap.drawTextureData(i.memory().getCodeChunk(), automap.getLittleManTextureAddress(),
                             xOffset, yOffset, 0, automapRectangle);
                 } else if (square.touched()) {
                     square.decoTextureChunk().ifPresent(id -> {

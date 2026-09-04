@@ -9,6 +9,7 @@ public class StringDecoder {
     private static final boolean DEBUG = false;
 
     private final Chunk executable;
+    private final ExecutableLayout executableLayout;
 
     private List<Byte> lut;
     private Chunk chunk;
@@ -18,6 +19,7 @@ public class StringDecoder {
 
     public StringDecoder(Chunk executable) {
         this.executable = executable;
+        this.executableLayout = ExecutableLayout.detect(executable);
     }
 
     public int getPointer() {
@@ -48,7 +50,7 @@ public class StringDecoder {
     public void decodeString(Chunk chunk, int pointer) {
         this.chunk = chunk;
         this.pointer = pointer;
-        this.lut = executable.getBytes(0x1bca, 92);
+        this.lut = executable.getBytes(executableLayout.stringDecoderLutAddress(), 92);
         bitQueue = new LinkedList<>();
         decodedChars = new ArrayList<>();
 

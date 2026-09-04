@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
 
@@ -27,11 +28,13 @@ public class PlayTitleMusic extends Task<Void> {
     private final SourceDataLine sdl;
     private final IntegerProperty volumeProp; // 0-100
     private final Chunk codeChunk;
+    private final ExecutableLayout executableLayout;
     private final List<MusicPhase> phases;
 
     public PlayTitleMusic(SourceDataLine sdl, IntegerProperty volume, Chunk codeChunk) {
         this.sdl = sdl;
         this.codeChunk = codeChunk;
+        this.executableLayout = ExecutableLayout.detect(codeChunk);
         this.volumeProp = volume;
         this.phases = new ArrayList<>();
     }
@@ -46,7 +49,7 @@ public class PlayTitleMusic extends Task<Void> {
 
     private void decodeTitleMusic() {
         phases.clear();
-        int pointer = 0x5edc;
+        int pointer = executableLayout.titleMusicAddress();
         int duration;
         Optional<Integer> freq2 = Optional.empty();
         Optional<Integer> freq3 = Optional.empty();
@@ -57,7 +60,7 @@ public class PlayTitleMusic extends Task<Void> {
             if (durationByte >= 0xfa) break;
 
             final int targetStruct = durationByte >> 5;
-            final int durationIndex = 0x575e + (durationByte & 0x1f);
+            final int durationIndex = executableLayout.titleDurationLutAddress() + (durationByte & 0x1f);
             duration = 0x6 * codeChunk.getUnsignedByte(durationIndex);
 
             final boolean overlap = (frequencyByte & 0x80) > 0;
@@ -66,7 +69,7 @@ public class PlayTitleMusic extends Task<Void> {
             if (freq != 0x7f) {
                 final int shiftDistance = freq / 0x0c;
                 final int frequencyIndex = freq % 0x0c;
-                final int frequencyValue = codeChunk.getWord(0x58fd + (2 * frequencyIndex));
+                final int frequencyValue = codeChunk.getWord(executableLayout.titleFrequencyLutAddress() + (2 * frequencyIndex));
                 frequency = 0x1234dd / (frequencyValue >> shiftDistance);
                 if (targetStruct == 2) freq2 = Optional.of(frequency);
                 if (targetStruct == 3) freq3 = Optional.of(frequency);
