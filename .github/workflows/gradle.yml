@@ -1,0 +1,55 @@
+name: Gradle Packaging
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+      fail-fast: false
+    name: ${{ matrix.os }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          java-version: 26
+          distribution: oracle-openjdk
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+      - name: Verify Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Build
+        run: ./gradlew --info --stacktrace build
+      - name: JLink
+        run: ./gradlew --info --stacktrace jlinkZip
+      - name: JPackage
+        run: ./gradlew --into --stacktrace jpackage
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragonjars-${{matrix.os}}-exe
+          path: build/jpackage/*.exe
+          if-no-files-found: ignore
+      - name: Upload DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragonjars-${{matrix.os}}-deb
+          path: build/jpackage/*.deb
+          if-no-files-found: ignore
+      - name: Upload RPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragonjars-${{matrix.os}}-rpm
+          path: build/jpackage/*.rpm
+          if-no-files-found: ignore
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragonjars-${{matrix.os}}-zip
+          path: build/distributions/*.zip
+          if-no-files-found: ignore
+
+
