@@ -39,7 +39,19 @@ public record ExecutableLayout(
     );
 
     public static ExecutableLayout detect(Chunk executable) {
-        return forSha256(sha256(executable));
+        final String hash = sha256(executable);
+
+        if (GOG_SHA256.equalsIgnoreCase(hash)) {
+            return GOG;
+        }
+
+        System.err.printf(
+                "Warning: unrecognized DRAGON.COM (SHA-256 %s); "
+                        + "using original executable layout%n",
+                hash
+        );
+
+        return ORIGINAL;
     }
 
     static ExecutableLayout forSha256(String sha256) {
