@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
 }
 
-val jacksonVersion = "2.20.0"
+val jacksonVersion = "2.21.4"
 val junitVersion = "5.10.2"
 
 java {
@@ -45,16 +45,17 @@ javafx {
 
 dependencies {
     implementation("com.fasterxml.jackson.jr:jackson-jr-objects:${jacksonVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation(platform("org.junit:junit-bom:${junitVersion}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.+")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
     mockitoAgent("org.mockito:mockito-core:5.+") { isTransitive = false }
 }
 
 tasks.withType<Test> {
-    useJUnitPlatform()
-    // jvmArgs?.add("-javaagent:${mockitoAgent.asPath}")
-    // jvmArgs?.add("-XX+EnableDynamicAgentLoading")
+    useJUnitPlatform {
+        includeEngines("junit-jupiter")
+    }
 }
 
 jlink {
@@ -66,5 +67,13 @@ jlink {
 }
 
 jpackage {
-    imageName = "dragonjars-${version}"
+    imageName = "dragonjars"
+    if (org.gradle.internal.os.OperatingSystem.current().isLinux) {
+        icon = "icon-256.png"
+        installerOptions = listOf("--linux-shortcut", "--linux-deb-maintainer", "cordes.ben@gmail.com")
+    } else if (org.gradle.internal.os.OperatingSystem.current().isWindows) {
+        icon = "icon-256.ico"
+        installerOptions = listOf("--win-per-user-install", "--win-menu", "--win-menu-group", "Entertainment",
+            "--win-dir-chooser", "--win-shortcut-prompt")
+    }
 }
