@@ -55,7 +55,7 @@ public class VideoHelperRunner {
             final PixelRectangle gameplayArea = decoder.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
 
             decoder.clearBuffer((byte)0x66);
-            decoder.drawTextureData(codeChunk, VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE);
+            decoder.drawTextureData(codeChunk, decoder.getLittleManTextureAddress(), gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE);
             for (int i = 0; i < 4; i++) decoder.drawCorner(i);
             decoder.writeTo("textures-new/little-man.png", 4.0);
 
