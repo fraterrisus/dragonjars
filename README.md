@@ -48,12 +48,18 @@ drop a few bucks in my tip jar at [BuyMeACoffee](https://buymeacoffee.com/frater
 You'll need a Java runtime that supports at least Java 22, with Java 24 recommended. I use [OpenJDK](https://openjdk.org);
 other versions should also work.
 
-1. Download the latest release from the [Releases page](https://github.com/fraterrisus/dragonjars/releases) (.zip or 
-   .tar.bz2, your choice, they're the same)
-2. Uncompress the archive somewhere useful.
-3. (Recommended) Copy `DRAGON.COM`, `DATA1`, and `DATA2` into the `dragonjars` directory.
-4. Run `bin/dragonjars` (Linux, MacOS) or `bin/dragonjars.bat` (Windows)
-5. Open File > Preferences and point the game at the three data files.
+Download the latest release from the [Releases page](https://github.com/fraterrisus/dragonjars/releases).
+
+On Linux, grab the `.deb` or `.rpm` as appropriate and install it with your package manager of choice. Files should 
+land in `/opt/dragonjars/` and a desktop file should be added to your application menu.
+
+On Windows, grab the `.exe` installer and run it. Files will land wherever you want. The launcher will be added to 
+the Entertainment section of your Start menu.
+
+Alternately, grab the appropriate `.zip` file and uncompress it wherever you want. Run `bin/dragonjars` or 
+`bin/dragonjars.bat` as appropriate to start the game.
+
+Once the game starts, open File > Preferences and point the game at the three data files. It should start automatically.
 
 ## Future Work
 
