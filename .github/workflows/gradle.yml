@@ -17,8 +17,6 @@ jobs:
         with:
           java-version: 24
           distribution: temurin
-      - name: Print JAVA_HOME
-        run: echo $JAVA_HOME && ls -l "$JAVA_HOME/bin"
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
       - name: Build
@@ -32,6 +30,12 @@ jobs:
         with:
           name: dragonjars-${{matrix.os}}-exe
           path: build/jpackage/*.exe
+          if-no-files-found: ignore
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragonjars-${{matrix.os}}-dmg
+          path: build/jpackage/*.dmg
           if-no-files-found: ignore
       - name: Upload DEB
         uses: actions/upload-artifact@v4
