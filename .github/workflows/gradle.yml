@@ -27,7 +27,7 @@ jobs:
       - name: JLink
         run: ./gradlew --info --stacktrace jlinkZip
       - name: JPackage
-        run: ./gradlew --into --stacktrace jpackage
+        run: ./gradlew --info --stacktrace jpackage
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
