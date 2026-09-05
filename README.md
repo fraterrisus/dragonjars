@@ -53,11 +53,14 @@ Download the latest release from the [Releases page](https://github.com/fraterri
 On Linux, grab the `.deb` or `.rpm` as appropriate and install it with your package manager of choice. Files should 
 land in `/opt/dragonjars/` and a desktop file should be added to your application menu.
 
+On MacOS, grab the `.dmg` installer and run it... and I hope it works, because I don't have a Mac to test it on. Let 
+me know if it doesn't!
+
 On Windows, grab the `.exe` installer and run it. Files will land wherever you want. The launcher will be added to 
 the Entertainment section of your Start menu.
 
-Alternately, grab the appropriate `.zip` file and uncompress it wherever you want. Run `bin/dragonjars` or 
-`bin/dragonjars.bat` as appropriate to start the game.
+Alternately, grab the `.zip` file and uncompress it wherever you want. Run `bin/dragonjars` or `bin/dragonjars.bat` as
+appropriate to start the game.
 
 Once the game starts, open File > Preferences and point the game at the three data files. It should start automatically.
 
