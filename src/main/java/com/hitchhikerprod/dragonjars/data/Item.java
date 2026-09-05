@@ -63,10 +63,7 @@ public class Item {
         this.damageDice = new ArrayList<>();
         if (List.of(Lists.WEAPON_TYPES).contains(Lists.ITEM_TYPES[this.itemType])) {
             damageDice.add(new WeaponDamage(chunk.getByte(offset + 8)));
-            if (this.name.equals("Druids Mace")) {
-                damageDice.set(0, new WeaponDamage(chunk.getByte(offset + 9)));
-            } else if (this.range > 0 && chunk.getByte(offset + 9) != 0) {
-            // if (this.name.equals("Axe of Kalah") || this.name.equals("Throw Mace") || this.name.equals("Long Mace")) {
+            if (this.range > 0 && chunk.getByte(offset + 9) != 0) {
                 damageDice.add(new WeaponDamage(chunk.getByte(offset + 9)));
             }
         }

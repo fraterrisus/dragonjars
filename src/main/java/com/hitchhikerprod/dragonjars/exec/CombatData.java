@@ -67,7 +67,7 @@ public class CombatData {
 
     public void partyTurn() {
         if (whoseTurn != WhoseTurn.IDLE) {
-            System.err.println("Turn is not IDLE");
+            System.err.println("Party's turn; Turn is not IDLE");
         }
         whoseTurn = WhoseTurn.PARTY;
         sb = new StringBuilder();
@@ -248,7 +248,7 @@ public class CombatData {
 
     public void monsterTurn() {
         if (whoseTurn != WhoseTurn.IDLE) {
-            System.err.println("Turn is not IDLE");
+            System.err.println("Monster's turn; Turn is not IDLE");
         }
         whoseTurn = WhoseTurn.ENEMIES;
         sb = new StringBuilder();
