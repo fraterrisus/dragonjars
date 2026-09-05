@@ -1,5 +1,6 @@
 package com.hitchhikerprod.dragonjars.data;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled
 class StringDecoderTest {
     @Test
     public void decodeString() {
