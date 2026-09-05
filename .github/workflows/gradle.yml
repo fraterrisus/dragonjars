@@ -1,22 +1,38 @@
 name: Gradle Packaging
 on: [push, pull_request]
 
+env:
+  JAVA_DISTRO: temurin
+  JAVA_VERSION: 24
+
 jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v7
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: ${{ env.JAVA_DISTRO }}
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v6
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu, macOS, windows]
       fail-fast: false
     name: ${{ matrix.os }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
-          java-version: 24
-          distribution: temurin
+          distribution: ${{ env.JAVA_DISTRO }}
+          java-version: ${{ env.JAVA_VERSION }}
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
       - name: Build
@@ -26,34 +42,34 @@ jobs:
       - name: JPackage
         run: ./gradlew --info --stacktrace jpackage
       - name: Upload EXE
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: dragonjars-${{matrix.os}}-exe
+          name: dragonjars-${{ matrix.os }}-exe
           path: build/jpackage/*.exe
           if-no-files-found: ignore
       - name: Upload DMG
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: dragonjars-${{matrix.os}}-dmg
+          name: dragonjars-${{ matrix.os }}-dmg
           path: build/jpackage/*.dmg
           if-no-files-found: ignore
       - name: Upload DEB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: dragonjars-${{matrix.os}}-deb
+          name: dragonjars-${{ matrix.os }}-deb
           path: build/jpackage/*.deb
           if-no-files-found: ignore
       - name: Upload RPM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: dragonjars-${{matrix.os}}-rpm
+          name: dragonjars-${{ matrix.os }}-rpm
           path: build/jpackage/*.rpm
           if-no-files-found: ignore
       - name: Upload ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: dragonjars-${{matrix.os}}-zip
+          name: dragonjars-${{ matrix.os }}-zip
           path: build/distributions/*.zip
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
 
