@@ -17,9 +17,9 @@ jobs:
         uses: actions/setup-java@v6
         with:
           java-version: 24
-          distribution: oracle-openjdk
+          distribution: temurin
       - name: Print JAVA_HOME
-        run: echo $JAVA_HOME && ls -l $JAVA_HOME/bin
+        run: echo $JAVA_HOME && ls -l "$JAVA_HOME/bin"
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
       - name: Build
