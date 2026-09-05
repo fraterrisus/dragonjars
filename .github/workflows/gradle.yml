@@ -5,6 +5,9 @@ env:
   JAVA_DISTRO: temurin
   JAVA_VERSION: 24
 
+permissions:
+  contents: write
+
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
