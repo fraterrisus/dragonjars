@@ -1,5 +1,5 @@
 group = "com.hitchhikerprod"
-version = "1.1"
+version = "1.1.1"
 
 plugins {
     java
@@ -56,6 +56,19 @@ tasks.withType<Test> {
     useJUnitPlatform {
         includeEngines("junit-jupiter")
     }
+}
+
+tasks.register("generateProperties") {
+    doLast {
+        val outputDir = file("${projectDir}/src/main/resources/com/hitchhikerprod/dragonjars/")
+        val configFile = File(outputDir, "build.properties")
+        outputDir.mkdirs()
+        configFile.writeText("app.version=${version}")
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn("generateProperties")
 }
 
 jlink {
