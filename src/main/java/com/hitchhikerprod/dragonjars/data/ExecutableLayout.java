@@ -15,16 +15,20 @@ public class ExecutableLayout {
             (byte)0x90, (byte)0x99, (byte)0x99, (byte)0x19, (byte)0x99, (byte)0x99, (byte)0x99, (byte)0x99);
     private static final List<Byte> FONT_BYTES = List.of(
             (byte)0xff, (byte)0xff, (byte)0xc0, (byte)0xc0, (byte)0xcf, (byte)0xcf, (byte)0xcc, (byte)0xcc);
+    private static final List<Byte> STRING_DECODER_BYTES = List.of(
+            (byte)0xa0, (byte)0xe1, (byte)0xe2, (byte)0xe3, (byte)0xe4, (byte)0xe5, (byte)0xe6, (byte)0xe7);
+    private static final List<Byte> STATUS_BITMASK_LUT_BYTES = List.of((byte)0x02, (byte)0x04, (byte)0x80, (byte)0x01);
+    private static final List<Byte> TITLE_MUSIC_BYTES = List.of(
+            (byte)0x69, (byte)0x2d, (byte)0x69, (byte)0x21, (byte)0x69, (byte)0x21, (byte)0x69, (byte)0x21);
 
     private int littleManTextureAddress;
     private int hudRegionLutAddress;
     private int cornerLutAddress;
     private int romImageLutAddress;
     private int fontAddress;
+    private int statusBitmaskLutAddress;
     private int stringDecoderLutAddress;
     private int titleMusicAddress;
-    private int titleDurationLutAddress;
-    private int titleFrequencyLutAddress;
 
     private ExecutableLayout() {}
 
@@ -54,6 +58,9 @@ public class ExecutableLayout {
         INSTANCE.romImageLutAddress = executable.search(romImageLutAddress);
 
         INSTANCE.fontAddress = executable.search(FONT_BYTES);
+        INSTANCE.statusBitmaskLutAddress = executable.search(STATUS_BITMASK_LUT_BYTES);
+        INSTANCE.stringDecoderLutAddress = executable.search(STRING_DECODER_BYTES);
+        INSTANCE.titleMusicAddress = executable.search(TITLE_MUSIC_BYTES);
     }
 
     public int getLittleManTextureAddress() {
@@ -76,20 +83,16 @@ public class ExecutableLayout {
         return fontAddress;
     }
 
+    public int getStatusBitmaskLutAddress() {
+        return statusBitmaskLutAddress;
+    }
+
     public int getStringDecoderLutAddress() {
         return stringDecoderLutAddress;
     }
 
     public int getTitleMusicAddress() {
         return titleMusicAddress;
-    }
-
-    public int getTitleDurationLutAddress() {
-        return titleDurationLutAddress;
-    }
-
-    public int getTitleFrequencyLutAddress() {
-        return titleFrequencyLutAddress;
     }
 
     @Override
@@ -102,8 +105,6 @@ public class ExecutableLayout {
                 String.format("fontAddress=0x%x,", fontAddress) +
                 String.format("stringDecoderLutAddress=0x%x,", stringDecoderLutAddress) +
                 String.format("titleMusicAddress=0x%x,", titleMusicAddress) +
-                String.format("titleDurationLutAddress=0x%x,", titleDurationLutAddress) +
-                String.format("titleFrequencyLutAddress=0x%x", titleFrequencyLutAddress) +
                 "]";
     }
 }

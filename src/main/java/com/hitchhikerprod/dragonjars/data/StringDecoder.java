@@ -8,16 +8,14 @@ import java.util.List;
 public class StringDecoder {
     private static final boolean DEBUG = false;
 
-    private final Chunk executable;
-
-    private List<Byte> lut;
+    private final List<Byte> lut;
     private Chunk chunk;
     private int pointer;
     private Deque<Boolean> bitQueue;
     private List<Integer> decodedChars;
 
     public StringDecoder(Chunk executable) {
-        this.executable = executable;
+        this.lut = executable.getBytes(ExecutableLayout.getInstance().getStringDecoderLutAddress(), 92);
     }
 
     public int getPointer() {
@@ -48,7 +46,6 @@ public class StringDecoder {
     public void decodeString(Chunk chunk, int pointer) {
         this.chunk = chunk;
         this.pointer = pointer;
-        this.lut = executable.getBytes(0x1bca, 92);
         bitQueue = new LinkedList<>();
         decodedChars = new ArrayList<>();
 
