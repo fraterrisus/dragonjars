@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - v.*
+  workflow_dispatch:
 
 env:
   JAVA_DISTRO: temurin
