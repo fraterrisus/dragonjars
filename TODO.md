@@ -1,6 +1,5 @@
 # TODO
 
-- Figure out how to automatically update the About dialog box with the latest release version.
 - Add more combat information to the Combat Log window, like target HP after a hit.
 - Do a better job listing inventory items in the Party window.
 - Figure out why the Magic Lamp's light has an infinite duration.
@@ -12,7 +11,8 @@
 
 # Known Bugs
 
-- References to data in the executable (`codeChunk`) are based on hardcoded addresses that match *my* executable. Apparently they don't match (at least) the GOG version.
+- References to data in the executable (`codeChunk`) are based on hardcoded addresses that match *my* executable. 
+  Apparently they don't match (at least) the GOG version.
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 - I slowed down sounds to make the 'dragon roar' noise (sound 7, see Dragon Valley or Phoebus Dungeon) sound better. 

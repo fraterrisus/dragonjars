@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
@@ -121,7 +122,9 @@ public class DrawAutomap implements Instruction {
 
                 // Party avatar, or Deco (texture offset 0)
                 if (mapx == loc.pos().x() && mapy == loc.pos().y()) {
-                    automap.drawTextureData(i.memory().getCodeChunk(), VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS,
+                    automap.drawTextureData(
+                            i.memory().getCodeChunk(),
+                            ExecutableLayout.getInstance().getLittleManTextureAddress(),
                             xOffset, yOffset, 0, automapRectangle);
                 } else if (square.touched()) {
                     square.decoTextureChunk().ifPresent(id -> {

@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import javafx.scene.image.PixelWriter;
@@ -85,7 +86,7 @@ public class VideoHelper {
 
     public void drawCharacter(int ch, int x0, int y0, boolean invert) {
         Objects.requireNonNull(vb);
-        final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
+        final int offset = ExecutableLayout.getInstance().getFontAddress() + ((ch & 0x7f) * 8);
         List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
             final int b = bitmask.get(dy);
@@ -98,7 +99,7 @@ public class VideoHelper {
     }
 
     public void drawCharacter(int ch, int x0, int y0, boolean invert, PixelWriter writer) {
-        final int offset = FONT_ADDRESS + ((ch & 0x7f) * 8);
+        final int offset = ExecutableLayout.getInstance().getFontAddress() + ((ch & 0x7f) * 8);
         List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
             final int b = bitmask.get(dy);
@@ -118,7 +119,7 @@ public class VideoHelper {
     }
 
     public void drawCorner(int index) {
-        final int lutAddress = CORNER_LUT_ADDRESS + (index * 4);
+        final int lutAddress = ExecutableLayout.getInstance().getCornerLutAddress() + (index * 4);
 
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x100;
         final int x0 = codeChunk.getUnsignedByte(lutAddress + 2);
@@ -174,7 +175,7 @@ public class VideoHelper {
     }
 
     public void drawRomImage(int index) {
-        final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
+        final int lutAddress = ExecutableLayout.getInstance().getRomImageLutAddress() + (index * 2);
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
 
         final int width = 2 * codeChunk.getUnsignedByte(baseAddress);
@@ -241,7 +242,8 @@ public class VideoHelper {
     }
 
     public CharRectangle getHudRegionArea(int index) {
-        final List<Integer> rect = codeChunk.getBytes(HUD_REGION_LUT_ADDRESS + (4 * index), 4)
+        final int offset = ExecutableLayout.getInstance().getHudRegionLutAddress() + (4 * index);
+        final List<Integer> rect = codeChunk.getBytes(offset, 4)
                 .stream().map(Interpreter::byteToInt).toList();
         if (index == 0xb) {
             // BUGFIX: the data in the executable is wrong for region 0xb
@@ -252,7 +254,7 @@ public class VideoHelper {
     }
 
     public PixelRectangle getRomImageArea(int index) {
-        final int lutAddress = ROM_IMAGE_LUT_ADDRESS + (index * 2);
+        final int lutAddress = ExecutableLayout.getInstance().getRomImageLutAddress() + (index * 2);
         final int baseAddress = codeChunk.getWord(lutAddress) - 0x0100;
 
         final int width = 2 * codeChunk.getUnsignedByte(baseAddress);

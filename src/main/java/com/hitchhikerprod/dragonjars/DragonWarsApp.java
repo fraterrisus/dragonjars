@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
@@ -115,6 +116,7 @@ public class DragonWarsApp extends Application {
             progress.setValue(1.0);
             try {
                 this.dataChunks = task.get();
+                ExecutableLayout.detect(this.dataChunks.getLast());
                 showTitleScreen();
             } catch (InterruptedException | ExecutionException e) {
                 label.setValue("Failed.");
