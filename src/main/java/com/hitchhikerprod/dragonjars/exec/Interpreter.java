@@ -285,6 +285,7 @@ public class Interpreter {
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
 
+            // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0905, Interpreter::bugfixCastActionAvDvMod),
 
             new Patch(0x003, 0x0000, (i) -> i.combatData = new CombatData(i)),
@@ -292,6 +293,7 @@ public class Interpreter {
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
 
+            // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0d68, Interpreter::selectDamageDie),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),

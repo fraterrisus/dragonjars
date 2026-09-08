@@ -131,26 +131,32 @@ public class LoadDataTask extends Task<List<Chunk>> {
     }
 
     // The "Attack" action is disabled if you're in the back ranks and have a Thrown Weapon readied
+    // Confirmed that the Steam data still needs this patch
     private static final Patch ENABLE_THROWN_WEAPONS_FROM_REAR =
             new Patch(0x012, 0x0156, List.of((byte) 0x0b), List.of((byte) 0x0c));
 
     // The code that looks up weapon skills during an attack skips over Thrown Weapons skill
+    // Confirmed that the Steam data still needs this patch
     private static final Patch ENABLE_THROWN_WEAPON_SKILL_CHECK =
             new Patch(0x003, 0x0d29, List.of((byte) 0x0b), List.of((byte) 0x0c));
 
     // Purgatory: if you leave to the north, it drops you 2E of where you should be
+    // Confirmed that the Steam data still needs this patch
     private static final Patch PURGATORY_DEPARTURE_N =
             new Patch(0x047, 0x1696, List.of((byte) 0x0f), List.of((byte) 0x0d));
 
     // Lansk: Druid's Mace should have 1d20 primary damage, not secondary damage
+    // Confirmed that the Steam data still needs this patch
     private static final Patch DRUID_MACE_PRIMARY_DAMAGE =
             new Patch(0x032, 0x01e2, List.of((byte) 0x00, (byte) 0xa0), List.of((byte) 0xa0, (byte) 0x00));
 
     // Dwarf Ruins: move the Dwarven Hammer chest flag from [9e:80] to [9a:08]
+    // Confirmed that the Steam data still needs this patch
     private static final Patch DWARF_HAMMER_CHEST_FLAG =
             new Patch(0x055, 0x02d7, List.of((byte) 0x28), List.of((byte) 0x0c));
 
     // Pilgrim dock: exits are _all_ messed up
+    // Confirmed that the Steam data still has these bugs
     private static final Patch PILGRIM_DOCK_DEPARTURE_N =
             new Patch(0x060, 0x02bf, List.of((byte) 0x13), List.of((byte) 0x12));
     private static final Patch PILGRIM_DOCK_DEPARTURE_E =
@@ -161,12 +167,14 @@ public class LoadDataTask extends Task<List<Chunk>> {
             new Patch(0x060, 0x02c5, List.of((byte) 0x11), List.of((byte) 0x12));
 
     // Pilgrim dock: typos "lock in only accessable"
+    // Confirmed that the Steam data still has these bugs
     private static final Patch PILGRIM_DOCK_TYPO_1 =
             new Patch(0x060, 0x0206 + 0x1d, List.of((byte)0x4e), List.of((byte)0x52));
     private static final Patch PILGRIM_DOCK_TYPO_2 =
             new Patch(0x060, 0x0206 + 0x25, List.of((byte)0x21), List.of((byte)0x25));
 
     // Nisir: Fix the misaligned spinner in the Wind Tunnel
+    // Confirmed that the Steam data still has these bugs
     private static final Patch NISIR_SPINNER_19_23 =
             new Patch(0x061, 0x0357, List.of((byte) 0x05), List.of((byte) 0x04));
     private static final Patch NISIR_SPINNER_20_23 =
@@ -206,6 +214,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
     ));
 
     // Freeport: Large Shields should be $1000, not $100
+    // Confirmed that the Steam data still has these bug
     private static final Patch FREEPORT_LARGE_SHIELD_PRICE =
             new Patch(0x02f, 0x02c1, List.of((byte) 0x41), List.of((byte) 0x61));
 

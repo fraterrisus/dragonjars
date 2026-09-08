@@ -21,12 +21,24 @@ preserving, and developing video game source code is a constant source of inspir
 - Hit Ctrl-B in travel mode to "auto-Bandage" everyone in your party.
 - Fixed some bugs (see list below).
 
-**Note:** In order to use this program, you'll need a copy of the game's data files (PC version). As of this writing,
-someone operating the "Interplay Entertainment" license seems to be re-issuing the company's old IP on more modern
-platforms (basically, a bundled version of DOSBOX plus the data files). In an effort to not violate their copyright, I
-will not distribute those data files. You can currently buy a copy of _Dragon Wars_ on Steam or GOG for around 10 USD.
-Or, you can head over to the [Internet Archive](https://archive.org/details/msdos_Dragon_Wars_1990) and play a copy
-for free in your browser, although you won't be able to download it.
+## Compatibility Note
+
+In order to use this program, you'll need a copy of the game's data files (PC version). I developed *DragonJars* 
+using the old archival copy that I've had around for at least 15-20 years; obviously, in an effort to not violate 
+Interplay's copyright, I can't distribute the data files as part of this package.
+
+As of this writing, someone operating the "Interplay Entertainment" license seems to be re-issuing the company's old 
+IP on more modern platforms (basically, a bundled version of DOSBOX plus the data files). You can currently buy a 
+copy of _Dragon Wars_ on Steam or GOG for around 10 USD. It should be pretty easy to find the `DRAGON.COM`, `DATA1`, 
+and `DATA2` files inside whatever they install on your hard drive.
+
+(You could also head over to the [Internet Archive](https://archive.org/details/msdos_Dragon_Wars_1990) and play the 
+game for free in your browser, although you won't be able to download it or use those files with this program.)
+
+My intent is for _DragonJars_ to work with any version of the game data you happen to have, but I can only test so 
+much. I **believe** it is compatible with at least the Steam version; although the game's data files have been 
+reassembled and there are some differences, my patches and bugfixes still seem to be valid. Please let me know if 
+you run into any weird issues!
 
 ## Who are you?
 
