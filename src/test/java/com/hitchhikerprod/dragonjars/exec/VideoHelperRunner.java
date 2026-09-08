@@ -5,6 +5,7 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.LocalProperties;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 
@@ -22,14 +23,12 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
 
 public class VideoHelperRunner {
-//    private static final String SEARCH_PATH = "/home/bcordes/pc-games/dragonwars/";
-    private static final String SEARCH_PATH = "/home/bcordes/pc-games/dragonwars/steam/DRAGON/";
-
     public static void main(String[] args) {
+        final String search_path = LocalProperties.getBasePath();
         try (
-                final RandomAccessFile exec = new RandomAccessFile(SEARCH_PATH + "DRAGON.COM", "r");
-                final RandomAccessFile data1 = new RandomAccessFile(SEARCH_PATH + "DATA1", "r");
-                final RandomAccessFile data2 = new RandomAccessFile(SEARCH_PATH + "DATA2", "r");
+                final RandomAccessFile exec = new RandomAccessFile(search_path + "/DRAGON.COM", "r");
+                final RandomAccessFile data1 = new RandomAccessFile(search_path + "/DATA1", "r");
+                final RandomAccessFile data2 = new RandomAccessFile(search_path + "/DATA2", "r");
         ) {
             final int codeSize = (int) (exec.length());
             if ((long) codeSize != exec.length()) {
