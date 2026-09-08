@@ -3,6 +3,10 @@ package com.hitchhikerprod.dragonjars.data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An abstraction layer that searches DRAGON.COM for a bunch of hardcoded arrays that we refer to at runtime.
+ * Thanks to @dragongog for pointing out the need for the relocation layer.
+ */
 public class ExecutableLayout {
     private static final ExecutableLayout INSTANCE = new ExecutableLayout();
 
@@ -40,6 +44,7 @@ public class ExecutableLayout {
         INSTANCE.littleManTextureAddress = executable.search(LITTLE_MAN_BYTES);
         INSTANCE.hudRegionLutAddress = executable.search(HUD_REGION_LUT_BYTES);
 
+        // Search for the first entry in the Corners table, then use its address to find the lookup table.
         int corner0Address = executable.search(CORNER_0_BYTES);
         final List<Byte> cornerLutAddress = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -48,6 +53,7 @@ public class ExecutableLayout {
         }
         INSTANCE.cornerLutAddress = executable.search(cornerLutAddress);
 
+        // Ditto with the ROM Images.
         int romImage0Address = executable.search(ROM_IMAGE_0_BYTES);
         romImage0Address = romImage0Address + 0x100;
         final List<Byte> romImageLutAddress = new ArrayList<>();
@@ -61,6 +67,17 @@ public class ExecutableLayout {
         INSTANCE.statusBitmaskLutAddress = executable.search(STATUS_BITMASK_LUT_BYTES);
         INSTANCE.stringDecoderLutAddress = executable.search(STRING_DECODER_BYTES);
         INSTANCE.titleMusicAddress = executable.search(TITLE_MUSIC_BYTES);
+
+        if (
+            INSTANCE.littleManTextureAddress == -1 ||
+            INSTANCE.hudRegionLutAddress == -1 ||
+            INSTANCE.cornerLutAddress == -1 ||
+            INSTANCE.romImageLutAddress == -1 ||
+            INSTANCE.fontAddress == -1 ||
+            INSTANCE.statusBitmaskLutAddress == -1 ||
+            INSTANCE.stringDecoderLutAddress == -1 ||
+            INSTANCE.titleMusicAddress == -1
+        ) throw new RuntimeException("DRAGON.COM does not appear to be valid");
     }
 
     public int getLittleManTextureAddress() {

@@ -116,7 +116,6 @@ public class DragonWarsApp extends Application {
             progress.setValue(1.0);
             try {
                 this.dataChunks = task.get();
-                ExecutableLayout.detect(this.dataChunks.getLast());
                 showTitleScreen();
             } catch (InterruptedException | ExecutionException e) {
                 label.setValue("Failed.");

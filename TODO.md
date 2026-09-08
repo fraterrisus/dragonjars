@@ -11,8 +11,6 @@
 
 # Known Bugs
 
-- References to data in the executable (`codeChunk`) are based on hardcoded addresses that match *my* executable. 
-  Apparently they don't match (at least) the GOG version.
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 - I slowed down sounds to make the 'dragon roar' noise (sound 7, see Dragon Valley or Phoebus Dungeon) sound better. 

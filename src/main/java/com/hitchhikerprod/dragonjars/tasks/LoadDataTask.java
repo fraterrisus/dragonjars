@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
@@ -93,6 +94,7 @@ public class LoadDataTask extends Task<List<Chunk>> {
             }
 
             final Chunk codeChunk = new Chunk(codeSegment);
+            ExecutableLayout.detect(codeChunk);
             chunks.add(codeChunk);
             updateProgress(count + 1, count + 1);
 
