@@ -1,17 +1,24 @@
 package com.hitchhikerprod.dragonjars.data;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Objects;
 
-@Disabled
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class ExecutableLayoutTest {
+    public boolean noProps() {
+        final String basePath = LocalProperties.getBasePath();
+        return Objects.isNull(basePath) || basePath.isBlank();
+    }
+
     @Test
+    @DisabledIf("noProps")
     public void myBinary() {
         final ExecutableImporter importer = new ExecutableImporter();
-        final Chunk executable = importer.getChunk("/home/bcordes/pc-games/dragonwars/DRAGON.COM");
-        ExecutableLayout.detect(executable);
+        final Chunk executable = importer.getChunk(LocalProperties.getBasePath() + "/DRAGON.COM");
+
         final ExecutableLayout instance = ExecutableLayout.getInstance();
 
         assertEquals(0x6500, instance.getLittleManTextureAddress());
@@ -25,9 +32,10 @@ class ExecutableLayoutTest {
     }
 
     @Test
+    @DisabledIf("noProps")
     public void steamBinary() {
         final ExecutableImporter importer = new ExecutableImporter();
-        final Chunk executable = importer.getChunk("/home/bcordes/pc-games/dragonwars/steam/DRAGON/DRAGON.COM");
+        final Chunk executable = importer.getChunk(LocalProperties.getBasePath() + "/steam/DRAGON/DRAGON.COM");
         ExecutableLayout.detect(executable);
         final ExecutableLayout instance = ExecutableLayout.getInstance();
 

@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 
 public class ExecutableImporter {
     public Chunk getChunk() {
-        return getChunk("dragonwars/DRAGON.COM");
+        return getChunk(LocalProperties.getBasePath() + "/DRAGON.COM");
     }
 
     public Chunk getChunk(String filename) {
@@ -17,7 +17,9 @@ public class ExecutableImporter {
             }
             final byte[] codeSegment = new byte[codeSize];
             exec.readFully(codeSegment);
-            return new Chunk(codeSegment);
+            final Chunk codeChunk = new Chunk(codeSegment);
+            ExecutableLayout.detect(codeChunk);
+            return codeChunk;
         } catch (FileNotFoundException e) {
             throw new RuntimeException("DRAGON.COM not found", e);
         } catch (IOException e) {
