@@ -17,10 +17,9 @@ class ExecutableLayoutTest {
     @DisabledIf("noProps")
     public void myBinary() {
         final ExecutableImporter importer = new ExecutableImporter();
-        final Chunk executable = importer.getChunk(LocalProperties.getBasePath() + "/DRAGON.COM");
+        importer.getChunk(LocalProperties.getBasePath() + "/DRAGON.COM");
 
         final ExecutableLayout instance = ExecutableLayout.getInstance();
-
         assertEquals(0x6500, instance.getLittleManTextureAddress());
         assertEquals(0x2544, instance.getHudRegionLutAddress());
         assertEquals(0x6428, instance.getCornerLutAddress());
@@ -35,10 +34,9 @@ class ExecutableLayoutTest {
     @DisabledIf("noProps")
     public void steamBinary() {
         final ExecutableImporter importer = new ExecutableImporter();
-        final Chunk executable = importer.getChunk(LocalProperties.getBasePath() + "/steam/DRAGON/DRAGON.COM");
-        ExecutableLayout.detect(executable);
-        final ExecutableLayout instance = ExecutableLayout.getInstance();
+        importer.getChunk(LocalProperties.getBasePath() + "/steam/DRAGON/DRAGON.COM");
 
+        final ExecutableLayout instance = ExecutableLayout.getInstance();
         assertEquals(0x6720, instance.getLittleManTextureAddress());
         assertEquals(0x2694, instance.getHudRegionLutAddress());
         assertEquals(0x6648, instance.getCornerLutAddress());
