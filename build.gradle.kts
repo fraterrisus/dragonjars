@@ -1,5 +1,5 @@
 group = "com.hitchhikerprod"
-version = "1.2b"
+version = "1.2"
 
 plugins {
     java
@@ -81,8 +81,8 @@ jlink {
 
 jpackage {
     imageName = "dragonjars"
+    icon = "icon-256.png"
     if (org.gradle.internal.os.OperatingSystem.current().isLinux) {
-        icon = "icon-256.png"
         installerOptions = listOf("--linux-shortcut", "--linux-deb-maintainer", "cordes.ben@gmail.com")
     } else if (org.gradle.internal.os.OperatingSystem.current().isWindows) {
         icon = "icon-256.ico"
