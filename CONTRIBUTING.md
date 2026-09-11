@@ -59,9 +59,18 @@ You may also want:
 
 ### Testing
 
-I don't demand that everyone write tests for every block of code they contribute; that would be exceptionally hypocritical. I have *some* tests in this code base, but only for the parts that seemed critical and worth testing at the time.
+I don't demand that everyone write tests for every block of code they contribute; that would be exceptionally 
+hypocritical. I have *some* tests in this code base, but only for the parts that seemed critical and worth testing 
+at the time.
 
-That being said, regardless of whether you write any test code, I do appreciate at least a statement of how you tested your change, why you're confident it does the right thing, and for real bonus points, a set of steps that I can run to convince myself that your code does the right thing.
+That being said, regardless of whether you write any test code, I do appreciate at least a statement of how you 
+tested your change, why you're confident it does the right thing, and for real bonus points, a set of steps that I 
+can run to convince myself that your code does the right thing. 
+
+You may notice that there are some tests that are `@DisabledIf` a certain property doesn't exist. That property is 
+set to the empty string in `com/hitchhikerprod/dragonjars/system.properties`; if you want to set a value, you should 
+create `com/hitchhikerprod/dragonjars/personal.properties` and override the value there. That file is in the 
+`.gitignore` so there's no danger of you (or me!) accidentally checking it in.
 
 ### Code Review
 

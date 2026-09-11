@@ -2,8 +2,10 @@ package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.HuffmanDecoder;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.LocalProperties;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 
@@ -21,12 +23,12 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
 import static com.hitchhikerprod.dragonjars.exec.VideoBuffer.WHOLE_IMAGE;
 
 public class VideoHelperRunner {
-
     public static void main(String[] args) {
+        final String search_path = LocalProperties.getBasePath();
         try (
-                final RandomAccessFile exec = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DRAGON.COM", "r");
-                final RandomAccessFile data1 = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DATA1", "r");
-                final RandomAccessFile data2 = new RandomAccessFile("/home/bcordes/pc-games/dragonwars/DATA2", "r");
+                final RandomAccessFile exec = new RandomAccessFile(search_path + "/DRAGON.COM", "r");
+                final RandomAccessFile data1 = new RandomAccessFile(search_path + "/DATA1", "r");
+                final RandomAccessFile data2 = new RandomAccessFile(search_path + "/DATA2", "r");
         ) {
             final int codeSize = (int) (exec.length());
             if ((long) codeSize != exec.length()) {
@@ -35,6 +37,7 @@ public class VideoHelperRunner {
             final byte[] codeSegment = new byte[codeSize];
             exec.readFully(codeSegment);
             final Chunk codeChunk = new Chunk(codeSegment);
+            ExecutableLayout.detect(codeChunk);
 
             final ChunkTable chunkTable = new ChunkTable(data1, data2);
 
@@ -55,15 +58,18 @@ public class VideoHelperRunner {
             final PixelRectangle gameplayArea = decoder.getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
 
             decoder.clearBuffer((byte)0x66);
-            decoder.drawTextureData(codeChunk, VideoHelper.LITTLE_MAN_TEXTURE_ADDRESS, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE);
+            decoder.drawTextureData(codeChunk, ExecutableLayout.getInstance().getLittleManTextureAddress(),
+                    gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE);
             for (int i = 0; i < 4; i++) decoder.drawCorner(i);
             decoder.writeTo("textures-new/little-man.png", 4.0);
 
             for (int chunkId : walls) {
 //                System.out.format("[%02x] [%02x] ", chunkId, 0);
-                printTexture(decoder, chunkTable, chunkId, 0, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-00.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 0, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE,
+                        String.format("texture-%02x-00.png", chunkId));
 //                System.out.format("[%02x] [%02x] ", chunkId, 2);
-                printTexture(decoder, chunkTable, chunkId, 2, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE, String.format("texture-%02x-02.png", chunkId));
+                printTexture(decoder, chunkTable, chunkId, 2, gameplayArea.x0(), gameplayArea.y0(), 0, WHOLE_IMAGE,
+                        String.format("texture-%02x-02.png", chunkId));
 
                 for (int i = 0; i < WALL_TEXTURE_OFFSET.size(); i++) {
                     final int index = WALL_TEXTURE_OFFSET.get(i);

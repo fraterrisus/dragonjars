@@ -2,6 +2,8 @@ package com.hitchhikerprod.dragonjars.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 public class Chunk {
@@ -64,6 +66,41 @@ public class Chunk {
             value = value | getUnsignedByte(i + offset);
         }
         return value;
+    }
+
+    public int search(List<Byte> bytes) {
+        if (Objects.isNull(bytes)) throw new IllegalArgumentException("Null input list");
+        if (bytes.isEmpty()) throw new IllegalArgumentException("Empty input list");
+
+        final ListIterator<Byte> haystack = raw.listIterator();
+        while (haystack.hasNext()) {
+            final Byte nextByte = haystack.next();
+
+            if (nextByte.equals(bytes.getFirst())) {
+                int marker = haystack.previousIndex();
+                final ListIterator<Byte> needle = bytes.listIterator();
+                needle.next();
+
+                boolean match = true;
+                while (needle.hasNext()) {
+                    if (!haystack.hasNext()) {
+                        match = false;
+                        break;
+                    }
+                    final Byte haystackByte = haystack.next();
+                    final Byte needleByte = needle.next();
+                    if (!haystackByte.equals(needleByte)) {
+                        while (haystack.previousIndex() > marker) haystack.previous();
+                        match = false;
+                    }
+                }
+
+                if (match) {
+                    return marker;
+                }
+            }
+        }
+        return -1;
     }
 
     public void display() {

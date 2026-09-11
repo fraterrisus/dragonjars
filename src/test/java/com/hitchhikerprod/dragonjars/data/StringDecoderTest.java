@@ -2,15 +2,22 @@ package com.hitchhikerprod.dragonjars.data;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 class StringDecoderTest {
+    public boolean noProps() {
+        final String basePath = LocalProperties.getBasePath();
+        return Objects.isNull(basePath) || basePath.isBlank();
+    }
+
     @Test
+    @DisabledIf("noProps")
     public void decodeString() {
         final Chunk exec = new ExecutableImporter().getChunk();
 
@@ -27,6 +34,7 @@ class StringDecoderTest {
     }
 
     @Test
+    @DisabledIf("noProps")
     public void longTest() {
         final List<Byte> b = List.of(
                 (byte) 0xF3, (byte) 0x44, (byte) 0xC5, (byte) 0x21, (byte) 0xC1, (byte) 0x38, (byte) 0x95, (byte) 0x1B,
@@ -51,6 +59,7 @@ class StringDecoderTest {
     }
 
     @Test
+    @Disabled
     public void encode() {
         final String text1 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which namtar will march against Oceana when Dilmun is finally conquered.";
         final String text2 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which Namtar will march against Oceana when Dilmun is finally conquered.";

@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec;
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.CharRectangle;
 import com.hitchhikerprod.dragonjars.data.Chunk;
+import com.hitchhikerprod.dragonjars.data.ExecutableLayout;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
@@ -170,7 +171,7 @@ public class Interpreter {
         memory().addSegment(partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
 
         // build "x50" multiplication table
-        // which sets ax to 0x2a..
+        // which sets ax to 0x2a
         // cs:0166  al <- 0xff
         // cs:0168  frob.4d32 <- 0xff
         Heap.get(Heap.BOARD_1_SEGIDX).write(0xffff, 2);
@@ -284,6 +285,7 @@ public class Interpreter {
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
 
+            // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0905, Interpreter::bugfixCastActionAvDvMod),
 
             new Patch(0x003, 0x0000, (i) -> i.combatData = new CombatData(i)),
@@ -291,6 +293,7 @@ public class Interpreter {
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
 
+            // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0d68, Interpreter::selectDamageDie),
 
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
@@ -1163,7 +1166,8 @@ public class Interpreter {
 
         final int statuses = memory().read(PARTY_SEGMENT, charBaseAddress + Memory.PC_STATUS, 1);
         for (int i = 3; i >= 0; i--) {
-            final int mask = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_BITMASKS + i);
+            final int offset = ExecutableLayout.getInstance().getStatusBitmaskLutAddress() + i;
+            final int mask = memory().getCodeChunk().getUnsignedByte(offset);
             if ((statuses & mask) > 0) {
                 drawStatusHelper(i, statusRegion);
                 setBackground();
@@ -1192,7 +1196,9 @@ public class Interpreter {
     }
 
     private void drawStatusHelper(int i, PixelRectangle statusRegion) {
-        final int wordAddress = memory().getCodeChunk().read(VideoHelper.PC_STATUS_STRINGS + (2 * i), 2) - 0x100;
+        final int statusBitmaskLutAddress = ExecutableLayout.getInstance().getStatusBitmaskLutAddress();
+
+        final int wordAddress = memory().getCodeChunk().read(statusBitmaskLutAddress + 8 + (2 * i), 2) - 0x100;
         this.stringDecoder.decodeString(memory().getCodeChunk(), wordAddress);
 
         final List<Integer> chars = new ArrayList<>();
@@ -1201,7 +1207,7 @@ public class Interpreter {
         chars.add(0xa0); // ' '
         chars.addAll(stringDecoder.getDecodedChars());
 
-        int x = memory().getCodeChunk().getUnsignedByte(VideoHelper.PC_STATUS_OFFSETS + i);
+        int x = memory().getCodeChunk().getUnsignedByte(statusBitmaskLutAddress + 4 + i);
         for (int ch : chars) {
             fg().drawCharacter(ch, x * 8, statusRegion.y0(), bg_color_3431 == 0);
             x++;

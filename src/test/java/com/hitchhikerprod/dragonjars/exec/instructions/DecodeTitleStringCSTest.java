@@ -2,12 +2,14 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ExecutableImporter;
+import com.hitchhikerprod.dragonjars.data.LocalProperties;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -16,9 +18,14 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-@Disabled
 class DecodeTitleStringCSTest {
+    public boolean noProps() {
+        final String basePath = LocalProperties.getBasePath();
+        return Objects.isNull(basePath) || basePath.isBlank();
+    }
+
     @Test
+    @DisabledIf("noProps")
     public void decodeTitleStringCS() {
         final Chunk exec = new ExecutableImporter().getChunk();
 
