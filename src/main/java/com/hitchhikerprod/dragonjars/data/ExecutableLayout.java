@@ -120,6 +120,7 @@ public class ExecutableLayout {
                 String.format("cornerLutAddress=0x%x,", cornerLutAddress) +
                 String.format("romImageLutAddress=0x%x,", romImageLutAddress) +
                 String.format("fontAddress=0x%x,", fontAddress) +
+                String.format("statusBitmaskLutAddress=0x%x,", statusBitmaskLutAddress) +
                 String.format("stringDecoderLutAddress=0x%x,", stringDecoderLutAddress) +
                 String.format("titleMusicAddress=0x%x,", titleMusicAddress) +
                 "]";

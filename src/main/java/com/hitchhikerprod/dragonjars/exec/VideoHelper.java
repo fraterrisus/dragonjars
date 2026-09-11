@@ -77,7 +77,8 @@ public class VideoHelper {
 
     public void drawCharacter(int ch, int x0, int y0, boolean invert) {
         Objects.requireNonNull(vb);
-        final List<Byte> bitmask = codeChunk.getBytes(relocate.getFontAddress() + ((ch & 0x7f) * 8), 8);
+        final int offset = relocate.getFontAddress() + ((ch & 0x7f) * 8);
+        final List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
             final int b = bitmask.get(dy);
             final int mask = 0x80;
@@ -89,7 +90,8 @@ public class VideoHelper {
     }
 
     public void drawCharacter(int ch, int x0, int y0, boolean invert, PixelWriter writer) {
-        final List<Byte> bitmask = codeChunk.getBytes(relocate.getFontAddress() + ((ch & 0x7f) * 8), 8);
+        final int offset = relocate.getFontAddress() + ((ch & 0x7f) * 8);
+        final List<Byte> bitmask = codeChunk.getBytes(offset, 8);
         for (int dy = 0; dy < 8; dy++) {
             final int b = bitmask.get(dy);
             final int mask = 0x80;

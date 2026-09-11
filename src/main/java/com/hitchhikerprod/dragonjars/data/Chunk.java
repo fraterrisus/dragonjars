@@ -75,33 +75,26 @@ public class Chunk {
         final ListIterator<Byte> haystack = raw.listIterator();
         while (haystack.hasNext()) {
             final Byte nextByte = haystack.next();
-//            System.out.format("haystack[%d]=%02x\n", haystack.previousIndex(), nextByte);
 
             if (nextByte.equals(bytes.getFirst())) {
                 int marker = haystack.previousIndex();
-//                System.out.format("  Matches needle[0]=%02x\n", bytes.getFirst());
                 final ListIterator<Byte> needle = bytes.listIterator();
                 needle.next();
 
                 boolean match = true;
                 while (needle.hasNext()) {
                     if (!haystack.hasNext()) {
-//                        System.out.println("  Fell off the end of the haystack; returning false");
                         match = false;
                         break;
                     }
                     final Byte haystackByte = haystack.next();
                     final Byte needleByte = needle.next();
                     if (!haystackByte.equals(needleByte)) {
-//                        System.out.format("  No match haystack[%d]=%02x needle[%d]=%02x, rewinding\n",
-//                                haystack.previousIndex(), haystackByte, needle.previousIndex(), needleByte);
                         while (haystack.previousIndex() > marker) haystack.previous();
                         match = false;
-//                    } else {
-//                        System.out.format("  Match haystack[%d]=%02x needle[%d]=%02x\n",
-//                                haystack.previousIndex(), haystackByte, needle.previousIndex(), needleByte);
                     }
                 }
+
                 if (match) {
                     return marker;
                 }
