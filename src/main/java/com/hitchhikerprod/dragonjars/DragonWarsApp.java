@@ -198,9 +198,12 @@ public class DragonWarsApp extends Application {
         SpellWindow.getInstance().show();
     }
 
-    public String runOpenFileDialog(String header) {
+    public String runOpenFileDialog(String header, String oldPath) {
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open " + header);
+        if (Objects.nonNull(oldPath)) {
+            fileChooser.setInitialDirectory(new File(oldPath).getParentFile());
+        }
         final File selected = fileChooser.showOpenDialog(this.stage);
         return (Objects.isNull(selected)) ? null : selected.getAbsolutePath();
     }

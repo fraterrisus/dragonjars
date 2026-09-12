@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -52,21 +53,23 @@ public class PreferencesWindow {
 
     public void start(DragonWarsApp app) {
         final AppPreferences prefs = AppPreferences.getInstance();
-
-        execButton.setOnAction(ev -> {
-            prefs.executablePathProperty().set(app.runOpenFileDialog("DRAGON.COM"));
-            app.loadDataFiles();
-        });
-        data1Button.setOnAction(ev -> {
-            prefs.data1PathProperty().set(app.runOpenFileDialog("DATA1"));
-            app.loadDataFiles();
-        });
-        data2Button.setOnAction(ev -> {
-            prefs.data2PathProperty().set(app.runOpenFileDialog("DATA2"));
-            app.loadDataFiles();
-        });
+        execButton.setOnAction(ev -> getFile(app, prefs.executablePathProperty(), "DRAGON.COM"));
+        data1Button.setOnAction(ev -> getFile(app, prefs.data1PathProperty(), "DATA1"));
+        data2Button.setOnAction(ev -> getFile(app, prefs.data2PathProperty(), "DATA2"));
         Objects.requireNonNull(backRowThrown).setOnAction(ev -> app.loadDataFiles());
         Objects.requireNonNull(dwarfHammer).setOnAction(ev -> app.loadDataFiles());
+    }
+
+    private static String lastPath = null;
+
+    private static void getFile(DragonWarsApp app, StringProperty pref, String filename) {
+        final String oldPath;
+        if (Objects.nonNull(lastPath)) oldPath = lastPath;
+        else oldPath = pref.get();
+        final String newPath = app.runOpenFileDialog(filename, oldPath);
+        lastPath = newPath;
+        pref.set(newPath);
+        app.loadDataFiles();
     }
 
     public void show() {
