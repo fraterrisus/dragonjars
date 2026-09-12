@@ -240,8 +240,8 @@ public class Interpreter {
         return this.executionStack.pop().get();
     }
 
-    private int breakpointChunk = 0x000;
-    private int breakpointAddress = 0x01379;
+    private int breakpointChunk = 0x003;
+    private int breakpointAddress = 0x00061;
 
     private void mainLoop(Address startPoint) {
         Address nextIP = startPoint;
@@ -296,6 +296,8 @@ public class Interpreter {
             // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0d68, Interpreter::selectDamageDie),
 
+            new Patch(0x003, 0x078c, (i) -> i.combatData().ifPresent(c -> c.applyDamageToPC())),
+            new Patch(0x003, 0x07d3, (i) -> i.combatData().ifPresent(c -> c.applyDamageToMonster())),
             new Patch(0x003, 0x0b00, (i) -> i.combatData().ifPresent(c -> c.partyTurn())),
             new Patch(0x003, 0x0b98, (i) -> i.combatData().ifPresent(c -> c.partyEquip())),
             new Patch(0x003, 0x0c06, (i) -> i.combatData().ifPresent(c -> c.partyMove(i.getAL()))),

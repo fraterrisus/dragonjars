@@ -66,11 +66,6 @@ public class CombatData {
     }
 
     public void partyTurn() {
-/*
-        if (whoseTurn != WhoseTurn.IDLE) {
-            System.err.println("Party's turn; Turn is not IDLE");
-        }
-*/
         whoseTurn = WhoseTurn.PARTY;
         sb = new StringBuilder();
 
@@ -151,7 +146,7 @@ public class CombatData {
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
-        sb.append(String.format("\n\t%s (gp%d,id%d)", targetName, targetGroupId, targetId));
+        sb.append(String.format("\n\t%s (gp%d id%d)", targetName, targetGroupId, targetId));
 
         final int attackerInt = i.memory().read(pcBaseAddress.incr(Memory.PC_INT_CURRENT), 1);
         final int magicSkill = Heap.get(0x79).read();
@@ -196,7 +191,7 @@ public class CombatData {
             sb.append("), out of range");
         } else {
             final int defenderDV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_DV + targetId, 1), 1);
-            sb.append(String.format(",id%d) DV%+d target=%d", targetId, defenderDV, getTarget(defenderDV)));
+            sb.append(String.format(" id%d) DV%+d target=%d", targetId, defenderDV, getTarget(defenderDV)));
         }
     }
 
@@ -248,12 +243,20 @@ public class CombatData {
         sb.append(" = ").append(totalDamage);
     }
 
-    public void monsterTurn() {
-/*
-        if (whoseTurn != WhoseTurn.IDLE) {
-            System.err.println("Monster's turn; Turn is not IDLE");
+    public void applyDamageToMonster() {
+        final int targetMonsterId = Heap.get(0x84).read();
+        final int beforeHP = i.memory().read(i.getDS(), 0x0278 + targetMonsterId, 1);
+        sb.append(String.format("   target %dh", beforeHP));
+        final int damageHP = Heap.get(0x5d).read(2);
+        final int afterHP = beforeHP - damageHP;
+        if (afterHP < 0) {
+            sb.append(", dies");
+        } else {
+            sb.append(String.format(" > %dh", afterHP));
         }
-*/
+    }
+
+    public void monsterTurn() {
         whoseTurn = WhoseTurn.ENEMIES;
         sb = new StringBuilder();
 
@@ -265,7 +268,7 @@ public class CombatData {
         i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
         final String monsterName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
-        sb.append(String.format("%s (gp%d,id%d)", monsterName, monsterGroupId, monsterId));
+        sb.append(String.format("%s (gp%d id%d)", monsterName, monsterGroupId, monsterId));
 
         final int partySize = Heap.get(Heap.PARTY_SIZE).read();
         if (partySize == 0) {
@@ -376,7 +379,7 @@ public class CombatData {
         sb.append(numHits).append(" hit");
         if (numHits > 1) sb.append("s");
         sb.append(" for ").append(damageDie);
-        if (armor > 0) sb.append(-1 * armor).append("(AC)");
+        if (armor > 0) sb.append(" ").append(-1 * armor).append("(AC)");
         sb.append(" = ").append(totalDamage);
         sb.append(switch (monsterAction) {
             case 1 -> " (piercing)";
@@ -444,6 +447,26 @@ public class CombatData {
         if (healthDamage > 0) sb.append(" ").append(healthDamage).append("hp");
         if (stunDamage > 0) sb.append(" ").append(stunDamage).append("sp");
         if (healthDamage + stunDamage == 0) sb.append(" no damage");
+    }
+
+    public void applyDamageToPC() {
+        final Address targetAddress = Heap.getPCBaseAddress(Heap.get(0x83).read());
+        final int targetBeforeHP = i.memory().read(targetAddress.incr(Memory.PC_HEALTH_CURRENT), 2);
+        final int targetBeforeSP = i.memory().read(targetAddress.incr(Memory.PC_STUN_CURRENT), 2);
+        final int damageHP = Heap.get(0x5d).read(2);
+        final int damageSP = Heap.get(0x5f).read(2);
+        sb.append(String.format("   target %dh %ds", targetBeforeHP, targetBeforeSP));
+        final int targetAfterHP = targetBeforeHP - damageHP;
+        if (targetAfterHP < 0) {
+            sb.append(", dies");
+            return;
+        }
+        final int targetAfterSP = targetBeforeSP - damageSP;
+        if (targetAfterSP < 0) {
+            sb.append(", stunned");
+            return;
+        }
+        sb.append(String.format(" > %dh %ds", targetAfterHP, targetAfterSP));
     }
 
     private static int getToHit(int bonus, int attackRoll) {
@@ -537,7 +560,7 @@ public class CombatData {
             final int groupDVmod = ALU.signExtend(monsterData.read(groupOffset + GROUP_DV_MOD, 1), 1);
             final int groupSpd = Integer.max(1, monsterData.read(groupOffset + GROUP_SPEED, 1)) * 10;
 
-            sb.append(String.format("\n\t%d %s (%02d',%02d'): AV%d DV%d",
+            sb.append(String.format("\n\t%d %s (%02d' away, %02d' spd): AV%d DV%d",
                     groupSize, groupName, groupDistance, groupSpd,
                     (groupDEX / 4) + groupAV + groupAVmod, (groupDEX / 4) + groupDVmod));
             if ((0x08 & monsterData.read(groupOffset + GROUP_FLAGS, 1)) > 0) { sb.append(", undead"); }
@@ -561,11 +584,9 @@ public class CombatData {
                     .collect(Collectors.joining(", ")));
         }
 
-        if (whoseTurn != WhoseTurn.IDLE) {
-            CombatLog.append("New Round", "bold");
-            CombatLog.append(sb.toString());
-            whoseTurn = WhoseTurn.IDLE;
-        }
+        CombatLog.append("New Round", "bold");
+        CombatLog.append(sb.toString());
+        whoseTurn = WhoseTurn.IDLE;
     }
 
     public void decodeInitiative() {
@@ -628,7 +649,7 @@ public class CombatData {
             }
             opponents.stream()
                     .filter(opp -> opp.initiative() == finalInit)
-                    .map(opp -> String.format("%s(gp%d,id%d)", groupNames.get(opp.groupId()), opp.groupId(), opp.id()))
+                    .map(opp -> String.format("%s(gp%d id%d)", groupNames.get(opp.groupId()), opp.groupId(), opp.id()))
                     .forEach(combatants::add);
             if (!combatants.isEmpty()) sb.append("\n\t").append(init).append(": ").append(String.join(", ", combatants));
         }
