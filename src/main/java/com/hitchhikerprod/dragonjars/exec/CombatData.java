@@ -7,30 +7,33 @@ import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.data.WeaponDamage;
 import com.hitchhikerprod.dragonjars.exec.instructions.DecodeStringFrom;
 import com.hitchhikerprod.dragonjars.ui.CombatLog;
+import com.hitchhikerprod.dragonjars.ui.MonsterTableWindow;
+import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CombatData {
-    private static final int MONSTER_HP = 0x0278;
-    private static final int MONSTER_INIT = 0x02dc;
-    private static final int MONSTER_ACTION = 0x030e;
-    private static final int MONSTER_AV = 0x0340;
-    private static final int MONSTER_DV = 0x0372;
-    private static final int MONSTER_GROUP_ID = 0x03a4;
+    public static final int MONSTER_HP = 0x0278;
+    public static final int MONSTER_INIT = 0x02dc;
+    public static final int MONSTER_ACTION = 0x030e;
+    public static final int MONSTER_AV = 0x0340;
+    public static final int MONSTER_DV = 0x0372;
+    public static final int MONSTER_GROUP_ID = 0x03a4;
 
-    private static final int GROUP_DATA_POINTERS = 0x04c6;
-    private static final int GROUP_DEX = 0x01;
-    private static final int GROUP_AV = 0x06;
-    private static final int GROUP_DIST = 0x09;
-    private static final int GROUP_SIZE = 0x0a;
-    private static final int GROUP_FLAGS = 0x0e; // 0x80: is undead
-    private static final int GROUP_DISARM = 0x25; // 0: immune to Disarm
-    private static final int GROUP_SPEED = 0x21;
-    private static final int GROUP_AV_MOD = 0x27;
-    private static final int GROUP_DV_MOD = 0x28;
-    private static final int GROUP_NAME = 0x29;
+    public static final int GROUP_DATA_POINTERS = 0x04c6;
+    public static final int GROUP_DEX = 0x01;
+    public static final int GROUP_AV = 0x06;
+    public static final int GROUP_DIST = 0x09;
+    public static final int GROUP_SIZE = 0x0a;
+    public static final int GROUP_XP = 0x0c;
+    public static final int GROUP_FLAGS = 0x0e; // 0x80: is undead
+    public static final int GROUP_DISARM = 0x25; // 0: immune to Disarm
+    public static final int GROUP_SPEED = 0x21;
+    public static final int GROUP_AV_MOD = 0x27;
+    public static final int GROUP_DV_MOD = 0x28;
+    public static final int GROUP_NAME = 0x29;
 
     private static final int PC_ACTION = 0x04ce;
     private static final int PC_TARGET = 0x04d5;
@@ -245,7 +248,7 @@ public class CombatData {
 
     public void applyDamageToMonster() {
         final int targetMonsterId = Heap.get(0x84).read();
-        final int beforeHP = i.memory().read(i.getDS(), 0x0278 + targetMonsterId, 1);
+        final int beforeHP = i.memory().read(i.getDS(), 0x0278 + (2 * targetMonsterId), 2);
         sb.append(String.format("   target %dh", beforeHP));
         final int damageHP = Heap.get(0x5d).read(2);
         final int afterHP = beforeHP - damageHP;
@@ -521,71 +524,8 @@ public class CombatData {
     public void getCombatants() {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = i.memory().getSegment(combatSegmentId);
-        sb = new StringBuilder();
-/*
-        sb.append("Party:");
-        final int partySize = Heap.get(Heap.PARTY_SIZE).read();
-        for (int pcId = 0; pcId < partySize; pcId++) {
-            final Address base = Heap.getPCBaseAddress(pcId);
-            final String pcName = StringDecoder.decodeString(i.memory().readList(base, 12).stream()
-                    .filter(b -> b != 0).map(b -> (int) b).toList());
-            sb.append("\n\t").append(pcName).append(":");
-            sb.append(" ST").append(i.memory().read(base.incr(Memory.PC_STR_CURRENT), 1));
-            sb.append(" DX").append(i.memory().read(base.incr(Memory.PC_DEX_CURRENT), 1));
-            sb.append(" IQ").append(i.memory().read(base.incr(Memory.PC_INT_CURRENT), 1));
-            sb.append(" SP").append(i.memory().read(base.incr(Memory.PC_SPR_CURRENT), 1));
-            sb.append(" ").append(i.memory().read(base.incr(Memory.PC_HEALTH_CURRENT), 1)).append("hp");
-            sb.append(" ").append(i.memory().read(base.incr(Memory.PC_STUN_CURRENT), 1)).append("sp");
-            sb.append(" ").append(i.memory().read(base.incr(Memory.PC_POWER_CURRENT), 1)).append("pw");
-            sb.append(" AV").append(i.memory().read(base.incr(Memory.PC_AV), 1));
-            sb.append(" DV").append(i.memory().read(base.incr(Memory.PC_DV), 1));
-            sb.append(" AC").append(i.memory().read(base.incr(Memory.PC_AC), 1));
-        }
-        sb.append("\n");
-*/
-        sb.append("Live enemies:");
-        for (int groupId = 0; groupId < 4; groupId++) {
-            final int groupOffset = monsterData.read(GROUP_DATA_POINTERS + (2 * groupId), 2);
-            final int groupSize = monsterData.read(groupOffset + GROUP_SIZE, 1);
-            if (groupSize == 0) continue;
-
-            i.stringDecoder().decodeString(monsterData, groupOffset + GROUP_NAME);
-            final String groupName = StringDecoder.decodeString(
-                    DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), groupSize > 1));
-
-            final int groupDistance = monsterData.read(groupOffset + GROUP_DIST, 1) * 10;
-            final int groupDEX = monsterData.read(groupOffset + GROUP_DEX, 1);
-            final int groupAV = ALU.signExtend(monsterData.read(groupOffset + GROUP_AV, 1), 1);
-            final int groupAVmod = ALU.signExtend(monsterData.read(groupOffset + GROUP_AV_MOD, 1), 1);
-            final int groupDVmod = ALU.signExtend(monsterData.read(groupOffset + GROUP_DV_MOD, 1), 1);
-            final int groupSpd = Integer.max(1, monsterData.read(groupOffset + GROUP_SPEED, 1)) * 10;
-
-            sb.append(String.format("\n\t%d %s (%02d' away, %02d' spd): AV%d DV%d",
-                    groupSize, groupName, groupDistance, groupSpd,
-                    (groupDEX / 4) + groupAV + groupAVmod, (groupDEX / 4) + groupDVmod));
-            if ((0x08 & monsterData.read(groupOffset + GROUP_FLAGS, 1)) > 0) { sb.append(", undead"); }
-            if (monsterData.read(groupOffset + GROUP_DISARM, 1) == 0) { sb.append(", can't be disarmed"); }
-
-            final List<Opponent> groupMembers = new ArrayList<>();
-            int monsterId = 0;
-            while (monsterId < 50 && groupMembers.size() < groupSize) {
-                final int group = i.memory().read(combatSegmentId, MONSTER_GROUP_ID + monsterId, 1);
-                if (group == groupId) {
-                    final int hp = i.memory().read(combatSegmentId, MONSTER_HP + (2 * monsterId), 2);
-                    final int status = i.memory().read(combatSegmentId, MONSTER_ACTION + monsterId, 1);
-                    groupMembers.add(new Opponent(monsterId, group, hp, status, 0));
-                }
-                monsterId++;
-            }
-
-            sb.append("\n\t\tHP: ");
-            sb.append(groupMembers.stream()
-                    .map(opp -> String.format("%d%s", opp.hp(), (opp.status() & 0x80) > 0 ? "'" : ""))
-                    .collect(Collectors.joining(", ")));
-        }
-
+        MonsterTableWindow.getInstance().setChunk(monsterData, i.stringDecoder());
         CombatLog.append("New Round", "bold");
-        CombatLog.append(sb.toString());
         whoseTurn = WhoseTurn.IDLE;
     }
 
@@ -654,4 +594,9 @@ public class CombatData {
             if (!combatants.isEmpty()) sb.append("\n\t").append(init).append(": ").append(String.join(", ", combatants));
         }
         CombatLog.append(sb.toString());
-    }}
+    }
+
+    public void endCombat() {
+        MonsterTableWindow.getInstance().unsetChunk();
+    }
+}

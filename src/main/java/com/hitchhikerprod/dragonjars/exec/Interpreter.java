@@ -292,6 +292,7 @@ public class Interpreter {
             new Patch(0x003, 0x006c, (i) -> i.combatData().ifPresent(c -> c.decodeInitiative())),
             new Patch(0x012, 0x0097, (i) -> i.combatData().ifPresent(c -> c.getCombatants())),
             new Patch(0x003, 0x00e1, (i) -> i.combatData = null),
+            new Patch(0x003, 0x00df, (i) -> i.combatData().ifPresent(c -> c.endCombat())),
 
             // Confirmed that the Steam data still needs this patch
             new Patch(0x003, 0x0d68, Interpreter::selectDamageDie),

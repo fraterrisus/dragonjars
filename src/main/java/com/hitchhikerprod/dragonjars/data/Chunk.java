@@ -76,8 +76,16 @@ public class Chunk {
         return value;
     }
 
+    public ObservableList<Byte> getObservable() {
+        return this.raw;
+    }
+
     public IntegerBinding watch(int offset, int len) {
         return new ChunkBinding(offset, len);
+    }
+
+    public ObjectBinding<Byte> watchByte(int offset) {
+        return Bindings.valueAt(raw, offset);
     }
 
     public int search(List<Byte> bytes) {

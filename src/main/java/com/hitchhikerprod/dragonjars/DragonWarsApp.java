@@ -13,6 +13,7 @@ import com.hitchhikerprod.dragonjars.ui.CombatLog;
 import com.hitchhikerprod.dragonjars.ui.GameStateDialog;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MapWindow;
+import com.hitchhikerprod.dragonjars.ui.MonsterTableWindow;
 import com.hitchhikerprod.dragonjars.ui.MusicService;
 import com.hitchhikerprod.dragonjars.ui.ParagraphsWindow;
 import com.hitchhikerprod.dragonjars.ui.PartyStateDialog;
@@ -25,6 +26,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -158,6 +161,20 @@ public class DragonWarsApp extends Application {
         }
     }
 
+    public static void dump(Node n) {
+        dump(n, 0);
+    }
+
+    private static void dump(Node n, int depth) {
+        for (int i = 0; i < depth; i++) System.out.print("  ");
+        System.out.println(n);
+        if (n instanceof Parent) {
+            for (Node m : ((Parent) n).getChildrenUnmodifiable()) {
+                dump(m, depth+1);
+            }
+        }
+    }
+
     public void openAboutDialog() {
         withInterpreterPause(() -> new AboutDialog(stage).showAndWait());
     }
@@ -165,6 +182,11 @@ public class DragonWarsApp extends Application {
     public void openCombatLog() {
         if (Objects.isNull(interpreter)) return;
         CombatLog.getInstance().show();
+    }
+
+    public void openMonsterTable() {
+        if (Objects.isNull(interpreter)) return;
+        MonsterTableWindow.getInstance().show();
     }
 
     public void openGameStateWindow() {

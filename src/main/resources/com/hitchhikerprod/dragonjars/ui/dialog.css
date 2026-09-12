@@ -49,6 +49,15 @@
     -fx-background-color: #e1ceb6;
 }
 
+.monster-window, .monster-window .list-cell {
+    -fx-background-color: antiquewhite;
+}
+
+.monster-header {
+    -fx-font-size: 18px;
+    -fx-text-fill: darkblue;
+}
+
 .paragraphs-window {
     -fx-background-color: grey;
 }
