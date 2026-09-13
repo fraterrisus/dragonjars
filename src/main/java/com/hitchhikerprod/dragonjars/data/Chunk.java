@@ -1,5 +1,13 @@
 package com.hitchhikerprod.dragonjars.data;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -9,10 +17,10 @@ import java.util.stream.IntStream;
 public class Chunk {
     public static final Chunk EMPTY = new Chunk(List.of());
 
-    final List<Byte> raw;
+    final ObservableList<Byte> raw;
 
     public Chunk(List<Byte> raw) {
-        this.raw = new ArrayList<>(raw);
+        this.raw = FXCollections.observableArrayList(raw);
     }
 
     public Chunk(byte[] rawBytes) {
@@ -22,7 +30,7 @@ public class Chunk {
     }
 
     public Chunk(Chunk that) {
-        this.raw = new ArrayList<>(that.raw);
+        this.raw = FXCollections.observableArrayList(that.raw);
     }
 
     public byte getByte(int i) {
@@ -66,6 +74,10 @@ public class Chunk {
             value = value | getUnsignedByte(i + offset);
         }
         return value;
+    }
+
+    public IntegerBinding watch(int offset, int len) {
+        return new ChunkBinding(offset, len);
     }
 
     public int search(List<Byte> bytes) {
@@ -130,5 +142,29 @@ public class Chunk {
             counter++;
         }
         System.out.println();
+    }
+
+    class ChunkBinding extends IntegerBinding {
+        private final List<ObjectBinding<Byte>> byteBindings = new ArrayList<>();
+
+        public ChunkBinding(int offset, int len) {
+            super();
+            for (int i = 0; i < len; i++) {
+                final ObjectBinding<Byte> binding = Bindings.valueAt(raw, offset + i);
+                byteBindings.add(binding);
+                super.bind(binding);
+            }
+        }
+
+        @Override
+        protected int computeValue() {
+            int value = 0;
+            int offset = 0;
+            for (ObjectBinding<Byte> binding : byteBindings) {
+                value = value | ((binding.getValue() & 0xff) << offset);
+                offset += 8;
+            }
+            return value;
+        }
     }
 }
