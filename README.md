@@ -55,7 +55,7 @@ with a complete reimplementation of the game's engine.
 If you like what I'm doing here and want to encourage me to do more (or to fix bugs in this superemulator), you can
 drop a few bucks in my tip jar at [BuyMeACoffee](https://buymeacoffee.com/fraterrisus).
 
-## Quick Start
+## Getting Started
 
 You'll need a Java runtime that supports at least Java 22, with Java 24 recommended. I use [OpenJDK](https://openjdk.org);
 other versions should also work.
@@ -76,11 +76,10 @@ appropriate to start the game.
 
 Once the game starts, open File > Preferences and point the game at the three data files. It should start automatically.
 
-## Future Work
+## How Can I Help?
 
-- Mouse support.
-- Support for multiple, quicker save game slots.
-- Better threading safety.
+I'm glad you asked! In fact, I'm so glad you asked, I wrote a whole [Contributing Guide](CONTRIBUTING.md) that talks 
+about all the ways you can help me and this project. Go read it! 
 
 ## Bugs I Fixed
 
@@ -116,4 +115,3 @@ experience. (Although really, you can just go play in DOSBOX if you want that.)
   a misplaced spinner and a square that doesn't have the right special code. Those are fixed.
 - There's an occasional display bug based on a set of hardcoded "regions" in the display. The region for the party
   space has its Y offset set to the wrong value. You probably won't even notice I fixed this.
- 
