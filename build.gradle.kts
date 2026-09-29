@@ -1,5 +1,5 @@
 group = "com.hitchhikerprod"
-version = "1.2"
+version = "1.3"
 
 plugins {
     java
