@@ -10,6 +10,7 @@ import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.AboutDialog;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import com.hitchhikerprod.dragonjars.ui.CombatLog;
+import com.hitchhikerprod.dragonjars.ui.FrameQueue;
 import com.hitchhikerprod.dragonjars.ui.GameStateDialog;
 import com.hitchhikerprod.dragonjars.ui.LoadingWindow;
 import com.hitchhikerprod.dragonjars.ui.MapWindow;
@@ -30,7 +31,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -50,6 +50,7 @@ public class DragonWarsApp extends Application {
     private Stage stage;
     private Scene scene;
 
+    private FrameQueue frameQueue;
     private MusicService musicService;
     private Interpreter interpreter;
 
@@ -77,6 +78,8 @@ public class DragonWarsApp extends Application {
         this.stage.setOnCloseRequest(ev -> this.close());
 
         this.musicService = new MusicService();
+        this.frameQueue = new FrameQueue();
+        frameQueue.start();
 
         loadDataFiles();
     }
@@ -139,6 +142,10 @@ public class DragonWarsApp extends Application {
         });
 
         Thread.ofPlatform().daemon().start(task);
+    }
+
+    public FrameQueue frameQueue() {
+        return frameQueue;
     }
 
     public MusicService musicService() {
@@ -230,13 +237,6 @@ public class DragonWarsApp extends Application {
         return (Objects.isNull(selected)) ? null : selected.getAbsolutePath();
     }
 
-    public void setImage(Image image) {
-        // TODO I don't get why this doesn't result in actual integer scaling.
-        final int scale = AppPreferences.getInstance().scaleProperty().get();
-        RootWindow.getInstance().setImage(image, scale);
-        resize();
-    }
-
     public void resize() {
         this.stage.sizeToScene();
     }
@@ -253,13 +253,12 @@ public class DragonWarsApp extends Application {
         draw.drawChunkImage(rawChunk);
         final WritableImage titleScreenImage = Images.blankImage(IMAGE_X, IMAGE_Y);
         vb.writeTo(titleScreenImage.getPixelWriter(), VideoBuffer.WHOLE_IMAGE, false);
-        setImage(titleScreenImage);
+        frameQueue.pushImage(titleScreenImage);
         setKeyHandler(this::titleScreenHandler);
         musicService.playTitleMusic(dataChunks.getLast());
     }
 
     private void startInterpreter() {
-        setImage(Images.blankImage(IMAGE_X, IMAGE_Y));
         interpreter = new Interpreter(this, this.dataChunks);
         interpreter.init().reenter(0, 0, () -> { close(); return null; });
     }
@@ -276,7 +275,7 @@ public class DragonWarsApp extends Application {
     private void testPattern() {
         setKeyHandler(null);
         final WritableImage wimage = Images.blankImage(IMAGE_X, IMAGE_Y);
-        setImage(wimage);
+        frameQueue.pushImage(wimage);
 
         final VideoHelper draw = new VideoHelper(this.dataChunks.getLast());
         final VideoBuffer vb = new VideoBuffer(VideoBuffer.CHROMA_KEY);

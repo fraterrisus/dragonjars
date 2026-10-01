@@ -15,12 +15,9 @@ import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
-import com.hitchhikerprod.dragonjars.ui.RootWindow;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
-import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -1406,11 +1403,7 @@ public class Interpreter {
     }
 
     public void getImageWriter(Consumer<PixelWriter> fn) {
-        final Image image = RootWindow.getInstance().getImage();
-        if (image instanceof WritableImage wimage) {
-            final PixelWriter writer = wimage.getPixelWriter();
-            fn.accept(writer);
-        }
+        app.frameQueue().pushImage(fn);
     }
 
     private Instruction decodeOpcode(int opcode) {
