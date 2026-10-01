@@ -65,6 +65,9 @@ public class DragonWarsApp extends Application {
             throw new RuntimeException("Can't load styles file");
         }
 
+        this.musicService = new MusicService();
+        this.frameQueue = new FrameQueue();
+
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
         root.setStylesheets(cssUrl);
@@ -77,8 +80,6 @@ public class DragonWarsApp extends Application {
         this.stage.show();
         this.stage.setOnCloseRequest(ev -> this.close());
 
-        this.musicService = new MusicService();
-        this.frameQueue = new FrameQueue();
         frameQueue.start();
 
         loadDataFiles();

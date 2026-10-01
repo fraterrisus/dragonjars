@@ -30,3 +30,10 @@
 .label-red > .label {
     -fx-text-fill: red !important;
 }
+
+.fps {
+    -fx-padding: 6px;
+    -fx-font-size: 14px;
+    -fx-text-alignment: right;
+    -fx-text-fill: #dddddd
+}

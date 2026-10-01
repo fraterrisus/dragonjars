@@ -1,6 +1,7 @@
 package com.hitchhikerprod.dragonjars.ui;
 
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -18,8 +19,20 @@ public class FrameQueue extends AnimationTimer {
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Deque<Image> images = new LinkedList<>();
 
+    private static final long ONE_SECOND = 1_000_000_000;
+    private Long lastUpdate = 0L;
+    private Long numFrames = 0L;
+    public SimpleDoubleProperty fps = new SimpleDoubleProperty(0.0);
+
     @Override
     public void handle(long now) {
+        numFrames++;
+        if (lastUpdate < now - ONE_SECOND) {
+            fps.set(1.0 * numFrames * ONE_SECOND / (now - lastUpdate));
+            numFrames = 0L;
+            lastUpdate = now;
+        }
+
         if (images.isEmpty()) return;
         if (lock.isHeldByCurrentThread()) return;
 
@@ -50,7 +63,7 @@ public class FrameQueue extends AnimationTimer {
         if (images.isEmpty()) {
             inputImage = RootWindow.getInstance().getImage();
         } else {
-            inputImage = images.pollLast();
+            inputImage = images.getLast();
         }
         final WritableImage wImage = new WritableImage(inputImage.getPixelReader(), IMAGE_X, IMAGE_Y);
         generator.accept(wImage.getPixelWriter());

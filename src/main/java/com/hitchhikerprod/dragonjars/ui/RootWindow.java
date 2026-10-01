@@ -2,6 +2,7 @@ package com.hitchhikerprod.dragonjars.ui;
 
 import com.hitchhikerprod.dragonjars.DragonWarsApp;
 import com.hitchhikerprod.dragonjars.data.Images;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -33,11 +34,14 @@ public class RootWindow {
     private final VBox root;
     private final MenuBar menuBar;
     private final StackPane pane;
+    private final Label fps;
 
     private RootWindow() {
         menuBar = MenuBar.getInstance();
         pane = new StackPane();
         root = new VBox(menuBar.asNode(), pane);
+        fps = new Label("FPS");
+        fps.getStyleClass().add("fps");
     }
 
     public Parent asParent() {
@@ -50,6 +54,8 @@ public class RootWindow {
         final Label welcomeText = new Label(getWelcomeText());
         welcomeText.getStyleClass().add("welcome-text");
         this.pane.getChildren().setAll(welcomeText);
+
+        fps.textProperty().bind(app.frameQueue().fps.asString("%2.1f FPS"));
 
         final PreferencesWindow prefsWindow = PreferencesWindow.getInstance();
         prefsWindow.start(app);
@@ -100,7 +106,11 @@ public class RootWindow {
         pane.prefHeightProperty().bind(
                 prefs.scaleProperty().multiply(image.heightProperty())
         );
-        pane.getChildren().setAll(imageView);
+        var children = pane.getChildren();
+        children.clear();
+        children.add(imageView);
+        children.add(fps);
+        StackPane.setAlignment(fps, Pos.BOTTOM_RIGHT);
         app.resize();
     }
 }
