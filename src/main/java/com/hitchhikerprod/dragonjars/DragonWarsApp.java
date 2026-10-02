@@ -4,6 +4,8 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.KeyQueue;
+import com.hitchhikerprod.dragonjars.exec.TestKeyReceiver;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
@@ -52,6 +54,7 @@ public class DragonWarsApp extends Application {
 
     private FrameQueue frameQueue;
     private MusicService musicService;
+    private KeyQueue keyQueue;
     private Interpreter interpreter;
 
     private List<Chunk> dataChunks;
@@ -67,6 +70,7 @@ public class DragonWarsApp extends Application {
 
         this.musicService = new MusicService();
         this.frameQueue = new FrameQueue();
+        this.keyQueue = new KeyQueue();
 
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
@@ -80,7 +84,7 @@ public class DragonWarsApp extends Application {
         this.stage.show();
         this.stage.setOnCloseRequest(ev -> this.close());
 
-        frameQueue.start();
+        this.frameQueue.start();
 
         loadDataFiles();
     }
@@ -151,6 +155,10 @@ public class DragonWarsApp extends Application {
 
     public MusicService musicService() {
         return musicService;
+    }
+
+    public KeyQueue keyQueue() {
+        return keyQueue;
     }
 
     private void withInterpreterPause(Runnable fn) {
@@ -260,6 +268,7 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
+        setKeyHandler(ev -> keyQueue.send(ev.getCode()));
         interpreter = new Interpreter(this, this.dataChunks);
         interpreter.init().reenter(0, 0, () -> { close(); return null; });
     }
@@ -336,21 +345,22 @@ public class DragonWarsApp extends Application {
                         pref.set(false);
                     } else {
                         pref.set(true);
-                        musicService.playTitleMusic(dataChunks.getLast());
+                        this.musicService.playTitleMusic(dataChunks.getLast());
                     }
                 } else {
-                    musicService.stop();
+                    this.musicService.stop();
+                    this.gameStarted = true;
                     startInterpreter();
                 }
             }
             case Q -> close();
             case T -> {
-                musicService.stop();
+                this.musicService.stop();
                 this.gameStarted = true;
                 testPattern();
             }
             default -> {
-                musicService.stop();
+                this.musicService.stop();
                 this.gameStarted = true;
                 startInterpreter();
             }
