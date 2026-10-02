@@ -47,7 +47,7 @@ public class PersistChunk implements Instruction {
             i.start(nextChunkId, nextAddress);
         });
 
-        Thread.ofPlatform().daemon().start(task);
+        Thread.ofVirtual().start(task);
         return null;
     }
 

@@ -35,7 +35,7 @@ public class PauseUntilKeyOrTime implements Instruction {
         i.app().setKeyHandler(event -> moveAlong());
 
         sleepTask.setOnSucceeded(event -> moveAlong());
-        Thread.ofPlatform().daemon().start(sleepTask);
+        Thread.ofVirtual().start(sleepTask);
 
         return null;
     }

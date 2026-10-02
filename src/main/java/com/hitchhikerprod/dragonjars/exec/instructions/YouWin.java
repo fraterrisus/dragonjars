@@ -71,7 +71,7 @@ public class YouWin implements Instruction {
             i.app().setKeyHandler(null);
             final SleepTask sleepTask = new SleepTask(1500);
             sleepTask.setOnSucceeded(event -> pageOne(box + 1));
-            Thread.ofPlatform().daemon().start(sleepTask);
+            Thread.ofVirtual().start(sleepTask);
         } else {
             i.app().setKeyHandler(nextPage(2));
         }

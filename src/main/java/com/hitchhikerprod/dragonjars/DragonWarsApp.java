@@ -142,7 +142,7 @@ public class DragonWarsApp extends Application {
             alert.showAndWait();
         });
 
-        Thread.ofPlatform().daemon().start(task);
+        Thread.ofVirtual().start(task);
     }
 
     public FrameQueue frameQueue() {

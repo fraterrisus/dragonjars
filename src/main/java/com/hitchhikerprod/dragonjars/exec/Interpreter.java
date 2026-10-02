@@ -579,22 +579,6 @@ public class Interpreter {
         bbox_x0 = bbox_x0 + 1;
     }
 
-/*    public int getMulResult() {
-        return mul_result;
-    }
-
-    public void setMulResult(int mulResult) {
-        this.mul_result = mulResult;
-    }
-
-    public int getDivResult() {
-        return div_result;
-    }
-
-    public void setDivResult(int divResult) {
-        this.div_result = divResult;
-    }*/
-
     public boolean getCarryFlag() {
         return flagCarry;
     }
@@ -876,7 +860,7 @@ public class Interpreter {
         spellDecayTask.setOnSucceeded(ev -> spellDecayTask = null);
         spellDecayTask.setOnFailed(ev -> spellDecayTask = null);
         spellDecayTask.setOnCancelled(ev -> spellDecayTask = null);
-        Thread.ofPlatform().daemon().start(spellDecayTask);
+        Thread.ofVirtual().start(spellDecayTask);
     }
 
     public void startTorchAnimation() {
@@ -884,7 +868,7 @@ public class Interpreter {
         torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnFailed(ev -> torchAnimationTask = null);
         torchAnimationTask.setOnCancelled(ev -> torchAnimationTask = null);
-        Thread.ofPlatform().daemon().start(torchAnimationTask);
+        Thread.ofVirtual().start(torchAnimationTask);
     }
     
     public void startEyeAnimation() {
@@ -892,7 +876,7 @@ public class Interpreter {
         eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnFailed(ev -> eyeAnimationTask = null);
         eyeAnimationTask.setOnCancelled(ev -> eyeAnimationTask = null);
-        Thread.ofPlatform().daemon().start(eyeAnimationTask);
+        Thread.ofVirtual().start(eyeAnimationTask);
     }
 
     public boolean isMonsterAnimationEnabled() {
@@ -927,7 +911,7 @@ public class Interpreter {
     public void startMonsterAnimation(MonsterAnimationTask task) {
         stopMonsterAnimation();
         monsterAnimationTask = task;
-        Thread.ofPlatform().daemon().start(monsterAnimationTask);
+        Thread.ofVirtual().start(monsterAnimationTask);
     }
 
     public void stopMonsterAnimation() {

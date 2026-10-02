@@ -31,7 +31,7 @@ public class ShowMonsterImage implements Instruction {
 
             final SleepTask sleepTask = new SleepTask(1000);
             sleepTask.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
-            Thread.ofPlatform().daemon().start(sleepTask);
+            Thread.ofVirtual().start(sleepTask);
 
             return null;
         }

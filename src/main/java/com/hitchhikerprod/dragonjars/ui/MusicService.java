@@ -145,7 +145,7 @@ public class MusicService {
         task.setOnSucceeded(removeThisTaskHelper(task));
         task.setOnFailed(removeThisTaskHelper(task));
         task.setOnCancelled(removeThisTaskHelper(task));
-        Thread.ofPlatform().daemon().start(task);
+        Thread.ofVirtual().start(task);
         runningTask = task;
     }
 
