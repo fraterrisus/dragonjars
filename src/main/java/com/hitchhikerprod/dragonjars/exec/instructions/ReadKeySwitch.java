@@ -74,7 +74,7 @@ public class ReadKeySwitch implements Instruction {
 
         // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115
         if ((imm_2a44 & 0x40) != 0) {
-            i.setPrompt(List.of(new KeyAction((ev) -> true, chunkId, pointer)));
+            i.setKeyPrompt(List.of(new KeyAction((ev) -> true, chunkId, pointer)));
             return null;
         }
 
@@ -103,7 +103,7 @@ public class ReadKeySwitch implements Instruction {
                 prompts.add(new KeyAction(detector(ch), chunkId, target));
             }
         }
-        i.setPrompt(prompts);
+        i.setKeyPrompt(prompts);
         return null;
     }
 

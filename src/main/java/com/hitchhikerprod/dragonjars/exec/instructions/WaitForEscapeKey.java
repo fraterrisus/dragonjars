@@ -12,7 +12,7 @@ public class WaitForEscapeKey implements Instruction {
         final int nextAddress = nextIP.offset();
         i.drawStringBuffer();
         i.printFooter(0x02); // hardcoded at 0x2bab
-        i.app().setKeyHandler(event -> {
+        i.setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;
             i.fillRectangle();
             i.start(nextChunkId, nextAddress);

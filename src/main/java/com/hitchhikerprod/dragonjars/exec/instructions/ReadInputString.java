@@ -26,7 +26,7 @@ public class ReadInputString implements Instruction {
         chars.clear();
         i.drawChar(0xba);
         i.drawChar(PROMPT_BOX);
-        i.app().setKeyHandler(event -> {
+        i.setKeyHandler(event -> {
             final KeyCode keycode = event.getCode();
             final int scancode = keycode.getCode();
             // this probably isn't quite accurate, i made most of it up

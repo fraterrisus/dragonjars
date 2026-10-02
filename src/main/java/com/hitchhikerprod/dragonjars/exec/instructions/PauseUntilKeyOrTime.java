@@ -32,7 +32,7 @@ public class PauseUntilKeyOrTime implements Instruction {
         this.nextChunkId = nextIP.chunkId(i.memory());
         this.nextAddress = nextIP.offset();
 
-        i.app().setKeyHandler(event -> moveAlong());
+        i.setKeyHandler(event -> moveAlong());
 
         sleepTask.setOnSucceeded(event -> moveAlong());
         Thread.ofVirtual().start(sleepTask);
@@ -43,7 +43,6 @@ public class PauseUntilKeyOrTime implements Instruction {
     private void moveAlong() {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
-            i.app().setKeyHandler(null);
             i.start(nextChunkId, nextAddress);
         }
     }

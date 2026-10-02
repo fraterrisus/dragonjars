@@ -19,7 +19,7 @@ public class RunYesNoModal implements Instruction {
         final Address nextIP = i.getIP().incr(OPCODE);
         final int nextChunkId = nextIP.chunkId(i.memory());
         final int nextAddress = nextIP.offset();
-        i.app().setKeyHandler(event -> {
+        i.setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {
                 i.setZeroFlag(true);
                 i.start(nextChunkId, nextAddress);

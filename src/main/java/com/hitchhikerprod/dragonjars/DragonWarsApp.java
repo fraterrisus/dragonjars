@@ -4,8 +4,6 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import com.hitchhikerprod.dragonjars.exec.KeyQueue;
-import com.hitchhikerprod.dragonjars.exec.TestKeyReceiver;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
@@ -44,6 +42,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class DragonWarsApp extends Application {
     public static final int IMAGE_X = 320;
@@ -54,8 +53,9 @@ public class DragonWarsApp extends Application {
 
     private FrameQueue frameQueue;
     private MusicService musicService;
-    private KeyQueue keyQueue;
+    private LinkedBlockingQueue<KeyEvent> keyQueue;
     private Interpreter interpreter;
+    private Thread interpreterThread;
 
     private List<Chunk> dataChunks;
 
@@ -70,7 +70,7 @@ public class DragonWarsApp extends Application {
 
         this.musicService = new MusicService();
         this.frameQueue = new FrameQueue();
-        this.keyQueue = new KeyQueue();
+        this.keyQueue = new LinkedBlockingQueue<>();
 
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
@@ -94,8 +94,23 @@ public class DragonWarsApp extends Application {
     }
 
     public void close() {
-        musicService.close();
+        this.musicService.close();
+        shutdownInterpreterThread();
         Platform.exit();
+    }
+
+    private void shutdownInterpreterThread() {
+        if (Objects.isNull(interpreter)) return;
+
+        this.interpreter.requestShutdown();
+        this.interpreterThread.interrupt();
+        while (interpreterThread.isAlive()) {
+            try {
+                this.interpreterThread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private boolean gameStarted = false;
@@ -157,7 +172,7 @@ public class DragonWarsApp extends Application {
         return musicService;
     }
 
-    public KeyQueue keyQueue() {
+    public LinkedBlockingQueue<KeyEvent> keyQueue() {
         return keyQueue;
     }
 
@@ -268,9 +283,9 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setKeyHandler(ev -> keyQueue.send(ev.getCode()));
+        setKeyHandler(keyQueue::offer);
         interpreter = new Interpreter(this, this.dataChunks);
-        interpreter.reenter(0, 0, () -> { close(); return null; });
+        interpreterThread = Thread.ofPlatform().name("DWInterpreter").start(interpreter);
     }
 
     private void stringHelper(VideoHelper draw, String s, int x, int y, boolean invert) {
@@ -363,6 +378,7 @@ public class DragonWarsApp extends Application {
                 this.musicService.stop();
                 this.gameStarted = true;
                 startInterpreter();
+//                keyQueue.offer(event);
             }
         }
     }

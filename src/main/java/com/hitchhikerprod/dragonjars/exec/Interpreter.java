@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -40,12 +41,18 @@ public class Interpreter implements Runnable {
     public static final int PARTY_SEGMENT = 1;
 
     private final DragonWarsApp app;
+    private boolean shutdownRequested = false;
 
     /* Utility classes */
 
     private final StringDecoder stringDecoder;
     private final VideoHelper videoHelper;
     private MapData mapDecoder;
+
+    /* UI Thread Interaction */
+
+    private LinkedBlockingQueue<KeyEvent> keyQueue;
+    private EventHandler<KeyEvent> keyCallback;
 
     /* Memory space */
 
@@ -196,9 +203,23 @@ public class Interpreter implements Runnable {
         // [3923] <- 0x00
     }
 
+    public synchronized void requestShutdown() {
+        this.shutdownRequested = true;
+    }
+
+    public synchronized boolean isShutdownRequested() {
+        return this.shutdownRequested;
+    }
+
+    /**
+     * Start the interpreter thread.
+     * Initializes the keyboard callback and pushes the root state onto the execution stack.
+     */
     @Override
     public void run() {
-
+        this.keyQueue = app().keyQueue();
+        clearKeyHandler();
+        reenter(0, 0, () -> { app().close(); return null; });
     }
 
     /**
@@ -212,13 +233,16 @@ public class Interpreter implements Runnable {
         final Address nextIP = new Address(startingSegment, addr);
         setDS(startingSegment);
         mainLoop(nextIP);
+        waitForKeyPress();
     }
 
+    // Unused except in tests!
     public void start(int chunk, int addr) {
-        if (Objects.nonNull(app())) app().setKeyHandler(null);
+        clearKeyHandler();
         final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
         final Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
+        waitForKeyPress();
     }
 
     public Address finish() {
@@ -254,6 +278,20 @@ public class Interpreter implements Runnable {
                 throw(e);
             }
             this.instructionsExecuted++;
+        }
+    }
+
+    private void waitForKeyPress() {
+        if (Objects.isNull(app)) return;
+        while (!isShutdownRequested()) {
+            KeyEvent event = null;
+            try {
+                event = keyQueue.take();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            if (Objects.isNull(event) || Objects.isNull(keyCallback)) continue;
+            keyCallback.handle(event);
         }
     }
 
@@ -1326,8 +1364,8 @@ public class Interpreter implements Runnable {
         drawPartyInfoArea();
     }
 
-    public void setPrompt(List<ReadKeySwitch.KeyAction> prompts) {
-        final EventHandler<KeyEvent> keyHandler = event -> {
+    public void setKeyPrompt(List<ReadKeySwitch.KeyAction> prompts) {
+        setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;
             if (event.getCode() == KeyCode.B && event.isControlDown()) {
                 autoBandage();
@@ -1348,8 +1386,15 @@ public class Interpreter implements Runnable {
                     break;
                 }
             }
-        };
-        app().setKeyHandler(keyHandler);
+        });
+    }
+
+    public void setKeyHandler(EventHandler<KeyEvent> callback) {
+        this.keyCallback = callback;
+    }
+
+    public void clearKeyHandler() {
+        this.keyCallback = null;
     }
 
     private static final List<Integer> FOOTER_OFFSETS = List.of(0x0c, 0x0f, 0x09, 0x0e);

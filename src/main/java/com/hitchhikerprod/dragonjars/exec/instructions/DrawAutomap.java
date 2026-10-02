@@ -138,7 +138,7 @@ public class DrawAutomap implements Instruction {
         final Address nextIP = i.getIP().incr(OPCODE);
         final int nextChunkId = nextIP.chunkId(i.memory());
         final int nextAddress = nextIP.offset();
-        i.app().setKeyHandler(event -> {
+        i.setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
                     i.disableMonsterAnimation();

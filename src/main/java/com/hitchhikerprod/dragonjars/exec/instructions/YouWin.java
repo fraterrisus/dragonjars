@@ -48,7 +48,7 @@ public class YouWin implements Instruction {
         }
 
         i.bitBlast(bg, VideoBuffer.WHOLE_IMAGE, false);
-        i.app().setKeyHandler(nextPage(page + 1));
+        i.setKeyHandler(nextPage(page + 1));
     }
 
     private static final PixelRectangle BODY_1 = new PixelRectangle(28, 12, 153, 132);
@@ -68,12 +68,12 @@ public class YouWin implements Instruction {
         i.bitBlast(fg, VideoBuffer.WHOLE_IMAGE, true);
 
         if (box != 3) {
-            i.app().setKeyHandler(null);
+            i.clearKeyHandler();
             final SleepTask sleepTask = new SleepTask(1500);
             sleepTask.setOnSucceeded(event -> pageOne(box + 1));
             Thread.ofVirtual().start(sleepTask);
         } else {
-            i.app().setKeyHandler(nextPage(2));
+            i.setKeyHandler(nextPage(2));
         }
     }
 
