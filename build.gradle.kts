@@ -24,10 +24,6 @@ java {
 
 val mockitoAgent = configurations.create("mockitoAgent")
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
-
 // Always check your release notes: https://github.com/openjdk/jfx/tree/master/doc-files
 application {
     mainModule.set("com.hitchhikerprod.dragonjars")
@@ -50,6 +46,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.+")
     mockitoAgent("org.mockito:mockito-core:5.+") { isTransitive = false }
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
 }
 
 tasks.withType<Test> {

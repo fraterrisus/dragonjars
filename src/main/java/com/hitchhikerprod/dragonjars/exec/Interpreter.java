@@ -333,7 +333,7 @@ public class Interpreter {
 
     private void openParagraph(int id) {
         final AppPreferences prefs = AppPreferences.getInstance();
-        if (prefs.autoOpenParagraphsProperty().get()) app.openParagraphsWindow(id);
+        if (prefs.autoOpenParagraphsProperty().get()) app().openParagraphsWindow(id);
     }
 
     private void selectDamageDie() {
@@ -348,17 +348,19 @@ public class Interpreter {
         final int targetGroupDataPtr = memory().read(ds, 0x04c6 + (2 * targetGroupId), 2);
         final int targetGroupRange = memory().read(ds, targetGroupDataPtr + 0x09, 1);
 
-        // Overwrite the item offset byte of the "read damage die" instruction at {03:0d68}
-        if (targetGroupRange == 1) {
-            memory.write(ds, 0x0d69, 1, 0x08);
-        } else {
-            memory.write(ds, 0x0d69, 1, 0x09);
+        // Set the item offset byte of the "read damage die" instruction at {03:0d68}
+        // It should be 0x08 for "primary" damage and 0x09 for "secondary" damage, but only if the target is more than
+        // 10' away and the weapon even has a secondary damage die
+        int itemOffset = 0x08;
+        if (targetGroupRange > 1) {
+            itemOffset = 0x09;
             new ReadInventoryWord().exec(this);
             if (getAX() == 0) {
                 // just kidding; this weapon doesn't have a secondary damage rating
-                memory.write(ds, 0x0d69, 1, 0x08);
+                itemOffset = 0x08;
             }
         }
+        memory.write(ds, 0x0d69, 1, itemOffset);
     }
 
     private void bugfixCastActionAvDvMod() {
@@ -1403,7 +1405,7 @@ public class Interpreter {
     }
 
     public void getImageWriter(Consumer<PixelWriter> fn) {
-        app.frameQueue().pushImage(fn);
+        app().frameQueue().pushImage(fn);
     }
 
     private Instruction decodeOpcode(int opcode) {
