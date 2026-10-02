@@ -18,7 +18,7 @@ class TestAndSetHeapSignTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(Heap.SELECTED_PC).write(0xff);
         i.start(0, 0);
 
@@ -35,7 +35,7 @@ class TestAndSetHeapSignTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(Heap.SELECTED_PC).write(0x7f);
         i.start(0, 0);
 

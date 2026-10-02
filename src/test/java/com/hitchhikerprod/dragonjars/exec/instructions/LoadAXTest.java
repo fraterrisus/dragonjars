@@ -25,7 +25,7 @@ public class LoadAXTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
@@ -37,7 +37,7 @@ public class LoadAXTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));

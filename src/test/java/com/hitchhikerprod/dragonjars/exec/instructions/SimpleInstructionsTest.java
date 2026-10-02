@@ -48,7 +48,7 @@ public class SimpleInstructionsTest {
                 (byte)0x55, // PopAX (skipped over)
                 (byte)0x1e  // Exit
         ));
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
         i.start(0, 0);
@@ -66,7 +66,7 @@ public class SimpleInstructionsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x26).write(0xaa);
         Heap.get(0x27).write(0xbb);
         i.start(0, 0);
@@ -85,7 +85,7 @@ public class SimpleInstructionsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.start(0, 0);
 
         assertEquals(0x000000aa, i.getBL());
@@ -182,7 +182,7 @@ public class SimpleInstructionsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0xffff);
         i.start(0, 0);
 

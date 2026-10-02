@@ -18,7 +18,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL((0x03 << 3) | (0x4)); // 0x80 >> 4 = 0x08
         i.start(0, 0);
         // heap index 0x10 + 0x03
@@ -35,7 +35,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x12).write(0xff);
         i.setAL((0x10 << 3) | (0x3));
         i.start(0, 0);
@@ -54,7 +54,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0x02);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
@@ -74,7 +74,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0xfd);
         i.setAL((0x10 << 3) | (0x6));
         i.start(0, 0);
@@ -97,7 +97,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.start(0, 0);
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
@@ -115,7 +115,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x12).write(0xff);
         i.start(0, 0);
         // heap index 0x10 + 0x02
@@ -135,7 +135,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0x02);
         i.start(0, 0);
         // heap index 0x10 + 0x15
@@ -156,7 +156,7 @@ class FlagOperationsTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0xfd);
         i.start(0, 0);
         // heap index 0x10 + 0x15

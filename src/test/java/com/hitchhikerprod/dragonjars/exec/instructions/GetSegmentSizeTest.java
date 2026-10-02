@@ -19,7 +19,7 @@ class GetSegmentSizeTest {
 
         final Chunk data = new Chunk(new byte[0x135]);
 
-        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY));
         i.setWidth(true);
         i.setAL(i.getSegmentForChunk(0x01, Frob.IN_USE));
         i.start(0, 0);

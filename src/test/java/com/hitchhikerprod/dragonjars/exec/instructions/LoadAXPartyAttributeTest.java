@@ -20,7 +20,7 @@ class LoadAXPartyAttributeTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE));
         i.setWidth(true);
         // value to retrieve
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x41e, 2, 0xf1c3);
@@ -34,7 +34,7 @@ class LoadAXPartyAttributeTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE));
         i.memory().write(Interpreter.PARTY_SEGMENT, 0x41e, 2, 0xf1c3);
         Heap.get(Heap.SELECTED_PC).write(0x02); // character ID
         Heap.get(Heap.MARCHING_ORDER + 0x02).write(0x04); // marching order

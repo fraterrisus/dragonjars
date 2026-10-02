@@ -19,7 +19,7 @@ class CopyAutomapBufferTest {
     public void fromBufferToChunk() {
         final Chunk data = new Chunk(new byte[0x700]);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         for (int idx = 0; idx < 0x700; idx++) {
             int value = (int)(Math.random() * 0xff);
             i.memory().automapChunk().write(idx, 1, value);
@@ -48,7 +48,7 @@ class CopyAutomapBufferTest {
         }
         final Chunk data = new Chunk(rawBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
         i.setAH(0x00);
         i.setAL(0x00);

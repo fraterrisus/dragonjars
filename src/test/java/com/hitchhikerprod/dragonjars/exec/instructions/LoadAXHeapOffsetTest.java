@@ -25,7 +25,7 @@ class LoadAXHeapOffsetTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0x04);
         Heap.get(0x26).write(0xaa);
         Heap.get(0x27).write(0xbb);
@@ -50,7 +50,7 @@ class LoadAXHeapOffsetTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0x04);
         Heap.get(0x26).write(0xaa);
         Heap.get(0x27).write(0xbb);

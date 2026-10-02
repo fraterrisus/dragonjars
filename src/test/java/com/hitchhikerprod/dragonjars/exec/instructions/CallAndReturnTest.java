@@ -22,7 +22,7 @@ class CallAndReturnTest {
 
     @Test
     public void roundTrip() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setAL(0x00);
         i.start(0, 0);
 

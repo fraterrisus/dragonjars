@@ -21,7 +21,7 @@ class JumpCarryTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
         i.start(0, 0);
@@ -42,7 +42,7 @@ class JumpCarryTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
         i.start(0, 0);

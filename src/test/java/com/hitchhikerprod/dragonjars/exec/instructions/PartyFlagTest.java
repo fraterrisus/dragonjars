@@ -18,7 +18,7 @@ class PartyFlagTest {
                 (byte) 0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL((0x01 << 3) | 0x04);
         Heap.get(Heap.SELECTED_PC).write(0x03);
         Heap.get(0x0d).write(0x02);
@@ -35,7 +35,7 @@ class PartyFlagTest {
                 (byte) 0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL((0x01 << 3) | 0x04);
         Heap.get(Heap.SELECTED_PC).write(0x03);
         Heap.get(0x0d).write(0x02);
@@ -53,7 +53,7 @@ class PartyFlagTest {
                 (byte) 0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL((0x01 << 3) | 0x00);
         Heap.get(Heap.SELECTED_PC).write(0x03);
         Heap.get(0x0d).write(0x02);

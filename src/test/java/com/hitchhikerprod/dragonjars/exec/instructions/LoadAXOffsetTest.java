@@ -25,7 +25,7 @@ public class LoadAXOffsetTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setBL(0x00000002);
@@ -38,7 +38,7 @@ public class LoadAXOffsetTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setBL(0x00000002);

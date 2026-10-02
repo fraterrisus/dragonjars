@@ -28,7 +28,7 @@ class ArrayMaxTest {
         dataBytes[0x115] = (byte)0x31;
         final Chunk data = new Chunk(dataBytes);
 
-        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY));
         i.setWidth(true);
         i.setDS(i.getSegmentForChunk(1, Frob.IN_USE));
         i.setBX(0x0106);

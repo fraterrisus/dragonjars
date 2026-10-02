@@ -24,7 +24,7 @@ class IncHeapTest {
 
     @Test
     public void wide() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(true);
         Heap.get(0x74).write(0xff);
         Heap.get(0x75).write(0x01);
@@ -38,7 +38,7 @@ class IncHeapTest {
 
     @Test
     public void narrow() {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(false);
         Heap.get(0x74).write(0xff);
         Heap.get(0x75).write(0x01);

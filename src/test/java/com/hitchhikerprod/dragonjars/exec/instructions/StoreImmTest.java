@@ -28,7 +28,7 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY));
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(true);
@@ -54,7 +54,7 @@ class StoreImmTest {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY));
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(false);

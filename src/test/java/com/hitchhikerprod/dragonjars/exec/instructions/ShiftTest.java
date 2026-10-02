@@ -104,7 +104,7 @@ class ShiftTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         Heap.get(0x03).write(0x4181, 2);
-        i.init().start(0, 0);
+        i.start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 0010 0000 1100 0000
@@ -124,7 +124,7 @@ class ShiftTest {
         i.setWidth(false);
         Heap.get(0x03).write(0x81);
         Heap.get(0x04).write(0x41);
-        i.init().start(0, 0);
+        i.start(0, 0);
 
         // old: 0100 0001 1000 0001  bit[8] is shifted to [7], but the high byte
         // new: 0100 0001 1100 0000  doesn't get written back
@@ -143,7 +143,7 @@ class ShiftTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         Heap.get(0x03).write(0x4181, 2);
-        i.init().start(0, 0);
+        i.start(0, 0);
 
         // old: 0100 0001 1000 0001
         // new: 1000 0011 0000 0010
@@ -163,7 +163,7 @@ class ShiftTest {
         i.setWidth(false);
         Heap.get(0x03).write(0xc1);
         Heap.get(0x04).write(0x41);
-        i.init().start(0, 0);
+        i.start(0, 0);
 
         // old: 0100 0001 1100 0001
         // new: 0100 0001 1000 0010

@@ -26,7 +26,7 @@ class StoreAXTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setAH(0xbb);
@@ -46,7 +46,7 @@ class StoreAXTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setAH(0xbb);

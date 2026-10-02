@@ -25,7 +25,7 @@ class LoadAXHeapTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAH(0xff);
         i.setAL(0xff);
         Heap.get(0x26).write(0xaa);
@@ -46,7 +46,7 @@ class LoadAXHeapTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAH(0xff);
         i.setAL(0xff);
         Heap.get(0x26).write(0xaa);

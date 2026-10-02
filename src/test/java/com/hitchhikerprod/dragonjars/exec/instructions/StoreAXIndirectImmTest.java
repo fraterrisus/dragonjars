@@ -27,7 +27,7 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         i.setWidth(false);
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
@@ -50,7 +50,7 @@ class StoreAXIndirectImmTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         i.setWidth(false);
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);

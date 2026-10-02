@@ -19,7 +19,7 @@ class AddAXHeapTest {
     ));
 
     private void helper(boolean wide, int ax, int heap, int total, boolean carryOut) {
-        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE)).init();
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, CODE));
         i.setWidth(wide);
         i.setAX(ax);
         Heap.get(0x81).write(heap, wide ? 2 : 1);

@@ -41,7 +41,7 @@ class DecodeTitleStringCSTest {
         final Interpreter j = spy(i);
         doReturn(decoder).when(j).stringDecoder();
         doNothing().when(j).setTitleString(anyList());
-        j.init().start(0x1, 0x0);
+        j.start(0x1, 0x0);
 
         final List<Integer> expectedChars = decoder.getDecodedChars();
         verify(j).setTitleString(expectedChars);

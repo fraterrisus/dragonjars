@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class Interpreter {
+public class Interpreter implements Runnable {
     private static final int MASK_LOW = 0x000000ff;
     private static final int MASK_HIGH = 0x0000ff00;
     private static final int MASK_WORD = 0x0000ffff;
@@ -119,6 +119,8 @@ public class Interpreter {
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
+        final boolean testMode = Objects.isNull(app);
+
         this.memory = new Memory(
                 dataChunks.getLast(),
                 dataChunks.subList(0, dataChunks.size() - 1)
@@ -133,10 +135,6 @@ public class Interpreter {
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
         this.videoHelper = new VideoHelper(this.memory().getCodeChunk());
-    }
-
-    public Interpreter init() {
-        final boolean testMode = Objects.isNull(app());
 
         if (!testMode) {
             videoBackground.reset((byte)0x00);
@@ -196,8 +194,11 @@ public class Interpreter {
         this.instructionsExecuted = 0;
         // [width] <- 0x00
         // [3923] <- 0x00
+    }
 
-        return this; // for call chaining
+    @Override
+    public void run() {
+
     }
 
     /**

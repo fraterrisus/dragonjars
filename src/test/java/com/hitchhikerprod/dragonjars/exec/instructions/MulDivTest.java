@@ -18,7 +18,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x11);
         i.setAH(0x11);
         Heap.get(0x10).write(0x12345678, 4);
@@ -37,7 +37,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         i.setAL(0xff);
         i.setAH(0xff);
@@ -55,7 +55,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
         i.setAL(0xff);
         i.setAH(0xff);
@@ -73,7 +73,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x0a);
         i.setAH(0x00);
         Heap.get(0x10).write(0x00000020, 4);
@@ -91,7 +91,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(true);
         i.setAL(0x11);
         i.setAH(0x11);
@@ -108,7 +108,7 @@ public class MulDivTest {
                 (byte)0x1e  // Exit
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(false);
         i.setAL(0x11);
         i.setAH(0x11); // AX is always read on mul, even in narrow mode

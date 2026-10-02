@@ -27,7 +27,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY));
         i.getSegmentForChunk(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -51,7 +51,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY)).init();
+        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY));
         i.getSegmentForChunk(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);

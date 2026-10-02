@@ -270,7 +270,7 @@ public class DragonWarsApp extends Application {
     private void startInterpreter() {
         setKeyHandler(ev -> keyQueue.send(ev.getCode()));
         interpreter = new Interpreter(this, this.dataChunks);
-        interpreter.init().reenter(0, 0, () -> { close(); return null; });
+        interpreter.reenter(0, 0, () -> { close(); return null; });
     }
 
     private void stringHelper(VideoHelper draw, String s, int x, int y, boolean invert) {
