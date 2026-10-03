@@ -87,12 +87,11 @@ public class FindBoardAction implements Instruction {
 //                System.out.println("  match found");
                 final int eventPointer = i.mapDecoder().getEventPointer(action.event());
                 if (eventPointer != 0) { // disabled dynamically
-                    final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
-                    i.reenter(target, () -> {
-//                        System.out.println("  return; carry = " + i.getCarryFlag());
-                        if (i.getCarryFlag()) return nextIP;
-                        else return searchForActions(nextIP);
-                    });
+                    i.reenter(
+                            i.memory().getSegmentChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
+                            eventPointer,
+                            () -> (i.getCarryFlag() ? nextIP : searchForActions(nextIP))
+                    );
                     return null;
                 }
             }

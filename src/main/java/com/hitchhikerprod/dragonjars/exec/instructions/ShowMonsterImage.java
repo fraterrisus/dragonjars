@@ -25,9 +25,14 @@ public class ShowMonsterImage implements Instruction {
             i.drawStringBuffer();
             final PixelRectangle gameplayArea = i.fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             i.fg().drawRectangle(gameplayArea, (byte)0);
+
+            final int nextChunkId = nextIP.chunkId(i.memory());
+            final int nextAddress = nextIP.offset();
+
             final SleepTask sleepTask = new SleepTask(1000);
-            sleepTask.setOnSucceeded(event -> i.start(nextIP));
+            sleepTask.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
             Thread.ofPlatform().daemon().start(sleepTask);
+
             return null;
         }
 

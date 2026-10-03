@@ -68,8 +68,6 @@ public class DrawAutomap implements Instruction {
     //   0x85 133  floor  abyss
 
     private Address displayAutomapPage(final int x0, final int y0) { // 0x16f0
-        final Address ip = i.getIP();
-        final Address nextIP = ip.incr(OPCODE);
         final PartyLocation loc = Heap.getPartyLocation();
 
         // Note that we iterate (boxx,boxy) over one extra square (10x8 instead of 9x7) so that we can use the square
@@ -137,12 +135,15 @@ public class DrawAutomap implements Instruction {
         i.bitBlast(automap, automapRectangle);
 
         // The switch is at cs:1717, but it points to code segment addresses so we emulate it here
+        final Address nextIP = i.getIP().incr(OPCODE);
+        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextAddress = nextIP.offset();
         i.app().setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
                     i.disableMonsterAnimation();
                     i.resetUI();
-                    i.start(nextIP);
+                    i.start(nextChunkId, nextAddress);
                 }
                 case KeyCode.UP, KeyCode.I, KeyCode.A -> {
                     final int y1 = y0 + 1;

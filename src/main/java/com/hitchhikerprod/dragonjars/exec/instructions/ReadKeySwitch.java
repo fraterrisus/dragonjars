@@ -17,7 +17,8 @@ public class ReadKeySwitch implements Instruction {
 
     public record KeyAction(
             KeyDetector function,
-            Address destination
+            int chunk,
+            int address
     ) {}
 
     // 89 44a2
@@ -47,6 +48,7 @@ public class ReadKeySwitch implements Instruction {
         }
 
         final Address ip = i.getIP();
+        final int chunkId = ip.chunkId(i.memory());
         i.drawStringBuffer();
         final int imm_2a44 = i.memory().read(ip.incr(1), 1);
         final int imm_2a45 = i.memory().read(ip.incr(2), 1);
@@ -72,8 +74,7 @@ public class ReadKeySwitch implements Instruction {
 
         // This is a GUESS. I don't know for sure that it's 0x40; it might be 0x04, which is also unique to 0f/0115
         if ((imm_2a44 & 0x40) != 0) {
-            final Address nextIP = new Address(ip.segment(), pointer);
-            i.setPrompt(List.of(new KeyAction((ev) -> true, nextIP)));
+            i.setPrompt(List.of(new KeyAction((ev) -> true, chunkId, pointer)));
             return null;
         }
 
@@ -95,11 +96,11 @@ public class ReadKeySwitch implements Instruction {
                     final int scancode = ev.getCode().getCode();
                     return (min <= scancode && scancode <= max);
                 };
-                prompts.add(new KeyAction(det, new Address(ip.segment(), target)));
+                prompts.add(new KeyAction(det, chunkId, target));
             } else {
                 final int target = i.memory().read(ip.segment(), pointer + 1, 2);
                 pointer += 3;
-                prompts.add(new KeyAction(detector(ch), new Address(ip.segment(), target)));
+                prompts.add(new KeyAction(detector(ch), chunkId, target));
             }
         }
         i.setPrompt(prompts);

@@ -8,4 +8,8 @@ public record Address(int segment, int offset) {
     public Address incr() {
         return incr(1);
     }
+
+    public int chunkId(Memory mem) {
+        return mem.getSegmentChunk(segment);
+    }
 }

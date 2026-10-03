@@ -17,13 +17,15 @@ public class RunYesNoModal implements Instruction {
         i.addToStringBuffer(YES_NO_STRING);
         i.drawStringBuffer();
         final Address nextIP = i.getIP().incr(OPCODE);
+        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextAddress = nextIP.offset();
         i.app().setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {
                 i.setZeroFlag(true);
-                i.start(nextIP);
+                i.start(nextChunkId, nextAddress);
             } else if (event.getCode() == KeyCode.N) {
                 i.setZeroFlag(false);
-                i.start(nextIP);
+                i.start(nextChunkId, nextAddress);
             }
         });
         return null;

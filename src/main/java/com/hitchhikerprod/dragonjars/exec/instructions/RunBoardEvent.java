@@ -23,9 +23,11 @@ public class RunBoardEvent implements Instruction {
                 Heap.get(Heap.NEXT_SPECIAL).write(square.specialId(), 1);
                 final int eventPointer = i.mapDecoder().getEventPointer(square.specialId());
                 if (eventPointer != 0) { // event was disabled dynamically
-                    final Address target = new Address(Heap.get(Heap.BOARD_1_SEGIDX).read(), eventPointer);
-                    final After after = new After(i, location, nextIP);
-                    i.reenter(target, after);
+                    i.reenter(
+                            i.memory().getSegmentChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
+                            eventPointer,
+                            new After(i, location, nextIP)
+                    );
                     return null;
                 }
             }
@@ -36,17 +38,7 @@ public class RunBoardEvent implements Instruction {
         return null;
     }
 
-    private static class After implements Supplier<Address> {
-        private final Interpreter i;
-        private final PartyLocation oldLoc;
-        private final Address nextIP;
-
-        private After(Interpreter i, PartyLocation oldLoc, Address nextIP) {
-            this.i = i;
-            this.oldLoc = oldLoc;
-            this.nextIP = nextIP;
-        }
-
+    private record After (Interpreter i, PartyLocation oldLoc, Address nextIP) implements Supplier<Address> {
         @Override
         public Address get() {
             // maybe should be oldLoc.mapId()?

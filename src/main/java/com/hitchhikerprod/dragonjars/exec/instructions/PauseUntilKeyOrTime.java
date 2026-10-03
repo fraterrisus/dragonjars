@@ -12,7 +12,8 @@ public class PauseUntilKeyOrTime implements Instruction {
     private final AtomicBoolean handled;
     private final SleepTask sleepTask;
     private final Interpreter i;
-    private Address nextIP;
+    private int nextChunkId;
+    private int nextAddress;
 
     public PauseUntilKeyOrTime(Interpreter i) {
         this.i = i;
@@ -27,7 +28,9 @@ public class PauseUntilKeyOrTime implements Instruction {
         i.drawPartyInfoArea(); // 0x4840
         i.drawStringBuffer(); // 0x4843
 
-        nextIP = i.getIP().incr(OPCODE);
+        final Address nextIP = i.getIP().incr(OPCODE);
+        this.nextChunkId = nextIP.chunkId(i.memory());
+        this.nextAddress = nextIP.offset();
 
         i.app().setKeyHandler(event -> moveAlong());
 
@@ -41,7 +44,7 @@ public class PauseUntilKeyOrTime implements Instruction {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
             i.app().setKeyHandler(null);
-            i.start(nextIP);
+            i.start(nextChunkId, nextAddress);
         }
     }
 }

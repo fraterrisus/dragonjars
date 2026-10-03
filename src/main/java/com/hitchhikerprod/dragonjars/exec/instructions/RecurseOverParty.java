@@ -19,7 +19,7 @@ public class RecurseOverParty implements Instruction {
             // The reentrant code might *change the party size* so read it fresh every time
             while (charId < partySize.read()) {
                 selectedPC.write(charId);
-                i.reenter(new Address(ip.segment(), funcPtr), () -> null);
+                i.reenter(ip.chunkId(i.memory()), funcPtr, () -> null);
                 charId++;
             }
             selectedPC.write(oldSelectedPC);

@@ -68,7 +68,8 @@ public class DrawCurrentViewport implements Instruction {
         // A *little* worried about performance, here, but it's necessary if we want fog-of-war and avatar.
         MapWindow.getInstance().setMap(i.mapDecoder());
 
-        i.start(i.getIP().incr());
+        final Address nextIP = i.getIP().incr();
+        i.start(nextIP.chunkId(i.memory()), nextIP.offset());
     }
 
     public void drawFloorTexture() {

@@ -205,6 +205,8 @@ public class Interpreter {
 
     /**
      * Start the interpreter from the provided chunk ID (NOT segment) and address.
+     * Forcing a chunk ID helps avoid the situation where the caller passes in a segment ID, but that segment gets
+     * deallocated between the lookup and the time it's used.
      */
     public void reenter(int chunk, int addr, Supplier<Address> after) {
         this.executionStack.push(after);
@@ -219,20 +221,6 @@ public class Interpreter {
         final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
         final Address nextIP = new Address(startingSegment, addr);
         mainLoop(nextIP);
-    }
-
-    /**
-     * Start the interpreter from the provided Address, which contains a segment/address pair.
-     */
-    public void reenter(Address startPoint, Supplier<Address> after) {
-        this.executionStack.push(after);
-        setDS(startPoint.segment());
-        mainLoop(startPoint);
-    }
-
-    public void start(Address startPoint) {
-        if (Objects.nonNull(app())) app().setKeyHandler(null);
-        mainLoop(startPoint);
     }
 
     public Address finish() {
@@ -252,8 +240,8 @@ public class Interpreter {
             final int opcode = memory().read(nextIP, 1);
             final int csChunk = memory().getSegmentChunk(cs);
             if (memory().getSegmentFrob(cs) != Frob.IN_USE) {
-                System.err.println("instruction read from segment " + cs + " (chunk " + csChunk + ") with frob " +
-                        memory().getSegmentFrob(cs));
+                System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
+                        cs, csChunk, memory().getSegmentFrob(cs));
             }
 //            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
             if (csChunk == breakpointChunk && ip == breakpointAddress) {
@@ -1372,7 +1360,7 @@ public class Interpreter {
                         Heap.get(Heap.SELECTED_PC).write(event.getCode().getCode() - (int)'1');
                     }
                     setAX(ReadKeySwitch.scanCode(event.getCode(), event.isShiftDown(), event.isControlDown()));
-                    start(prompt.destination());
+                    start(prompt.chunk(), prompt.address());
                     break;
                 }
             }
