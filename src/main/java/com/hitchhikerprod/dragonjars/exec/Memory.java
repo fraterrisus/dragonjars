@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 public class Memory {
+    private static final boolean DEBUG = false;
+
     private record Segment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
         private Segment withFrob(Frob newFrob) {
             return new Segment(chunk, chunkId, size, newFrob);
@@ -87,6 +89,10 @@ public class Memory {
     }
 
     public void addSegment(ModifiableChunk chunk, int chunkId, int size, Frob frob) {
+        if (DEBUG) {
+            System.out.format("Segment %02d (chunk 0x%02x) -> %s\n",
+                    segments.size(), chunkId, frob);
+        }
         segments.add(new Segment(chunk, chunkId, size, frob));
     }
 
@@ -96,6 +102,10 @@ public class Memory {
         } else if (segmentId == segments.size()) {
             addSegment(chunk, chunkId, size, frob);
         } else {
+            if (DEBUG) {
+                System.out.format("Segment %02d (chunk 0x%02x) -> %s\n",
+                        segmentId, chunkId, frob);
+            }
             segments.set(segmentId, new Segment(chunk, chunkId, size, frob));
         }
     }
@@ -115,7 +125,14 @@ public class Memory {
     }
 
     public void setSegmentFrob(int segmentId, Frob frob) {
-        segments.set(segmentId, segments.get(segmentId).withFrob(frob));
+        final Segment segment = segments.get(segmentId);
+        if (segment.frob != frob) {
+            if (DEBUG) {
+                System.out.format("Segment %02d (chunk 0x%02x) -> %s\n",
+                        segmentId, segment.chunkId, frob);
+            }
+            segments.set(segmentId, segment.withFrob(frob));
+        }
     }
 
     /**
