@@ -3,8 +3,6 @@ package com.hitchhikerprod.dragonjars.data;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -81,7 +79,7 @@ public class Chunk {
     }
 
     public IntegerBinding watch(int offset, int len) {
-        return new ChunkBinding(offset, len);
+        return new MultiByteIntBinding(offset, len);
     }
 
     public ObjectBinding<Byte> watchByte(int offset) {
@@ -152,10 +150,10 @@ public class Chunk {
         System.out.println();
     }
 
-    class ChunkBinding extends IntegerBinding {
+    class MultiByteIntBinding extends IntegerBinding {
         private final List<ObjectBinding<Byte>> byteBindings = new ArrayList<>();
 
-        public ChunkBinding(int offset, int len) {
+        public MultiByteIntBinding(int offset, int len) {
             super();
             for (int i = 0; i < len; i++) {
                 final ObjectBinding<Byte> binding = Bindings.valueAt(raw, offset + i);

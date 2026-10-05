@@ -206,21 +206,6 @@ public class Interpreter implements Runnable {
         // [3923] <- 0x00
     }
 
-    public void shutdown() {
-        requestShutdown();
-        if (Objects.nonNull(app())) {
-            Platform.runLater(() -> this.app().close());
-        }
-    }
-
-    public synchronized void requestShutdown() {
-        this.shutdownRequested = true;
-    }
-
-    public synchronized boolean isShutdownRequested() {
-        return this.shutdownRequested;
-    }
-
     /**
      * Start the interpreter thread.
      * Initializes the keyboard callback and pushes the root state onto the execution stack.
@@ -234,6 +219,45 @@ public class Interpreter implements Runnable {
                 0
         ));
         eventLoop();
+    }
+
+    /**
+     * Start the interpreter from the provided chunk ID (NOT segment) and address.
+     * Forcing a chunk ID helps avoid the situation where the caller passes in a segment ID, but that segment gets
+     * deallocated between the lookup and the time it's used.
+     */
+    public void reenter(int chunk, int addr, Runnable after) {
+//        System.out.format("reenter[%02x:%04x]\n", chunk, addr);
+        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        this.executionStack.push(new ExecutionContext(after, segmentId, addr));
+        setDS(-1);
+        Thread.currentThread().interrupt();
+    }
+
+    public void start(int chunk, int addr) {
+        clearKeyHandler();
+        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        final Address nextIP = new Address(segmentId, addr);
+        final ExecutionContext context = this.executionStack.peek();
+        assert(Objects.isNull(context.nextIP()));
+        context.nextIP(nextIP);
+        app().interruptInterpreterThread();
+    }
+
+    public Address finish() {
+        this.width = false;
+        this.executionStack.pop().after();
+//        System.out.println("finish()");
+        if (Objects.nonNull(app())) app().interruptInterpreterThread();
+        // reenter() callers must push the nextIP by returning it from the method that calls reenter
+        return null;
+    }
+
+    public void shutdown() {
+        requestShutdown();
+        if (Objects.nonNull(app())) {
+            Platform.runLater(() -> this.app().close());
+        }
     }
 
     private void eventLoop() {
@@ -262,48 +286,8 @@ public class Interpreter implements Runnable {
         }
     }
 
-    public LinkedBlockingQueue<InterpreterEvent> eventQueue() {
-        return this.eventQueue;
-    }
-
-    public void runLater(Consumer<Interpreter> callback) {
-        eventQueue().offer(new MethodEvent(callback));
-    }
-
-    /**
-     * Start the interpreter from the provided chunk ID (NOT segment) and address.
-     * Forcing a chunk ID helps avoid the situation where the caller passes in a segment ID, but that segment gets
-     * deallocated between the lookup and the time it's used.
-     */
-    public void reenter(int chunk, int addr, Runnable after) {
-        System.out.format("reenter[%02x:%04x]\n", chunk, addr);
-        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
-        this.executionStack.push(new ExecutionContext(after, segmentId, addr));
-        setDS(-1);
-        Thread.currentThread().interrupt();
-    }
-
-    public void start(int chunk, int addr) {
-        clearKeyHandler();
-        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
-        final Address nextIP = new Address(segmentId, addr);
-        final ExecutionContext context = this.executionStack.peek();
-        assert(Objects.isNull(context.nextIP()));
-        context.nextIP(nextIP);
-        app().interruptInterpreterThread();
-    }
-
-    public Address finish() {
-        this.width = false;
-        this.executionStack.pop().after();
-        System.out.println("finish()");
-        if (Objects.nonNull(app())) app().interruptInterpreterThread();
-        // reenter() callers must push the nextIP by returning it from the method that calls reenter
-        return null;
-    }
-
-    private int breakpointChunk = 0x003;
-    private int breakpointAddress = 0x00061;
+    private int breakpointChunk = 0x000;
+    private int breakpointAddress = 0xfffff;
 
     private void executeInstruction(Address ip) {
         final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
@@ -316,10 +300,12 @@ public class Interpreter implements Runnable {
             System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
                     cs, csChunk, memory().getSegmentFrob(cs));
         }
+/*
         System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
         if (csChunk == breakpointChunk && this.ip == breakpointAddress) {
             System.out.println("breakpoint");
         }
+ */
         runPatches(csChunk, this.ip);
         final Instruction ins = decodeOpcode(opcode);
         try {
@@ -333,6 +319,8 @@ public class Interpreter implements Runnable {
         }
         this.instructionsExecuted++;
     }
+
+    private CombatData combatData = null;
 
     public Optional<CombatData> combatData() {
         return Optional.ofNullable(combatData);
@@ -454,8 +442,20 @@ public class Interpreter implements Runnable {
         if ((action & 0x80) > 0) setAL(0x0f);
     }
 
+    public DragonWarsApp app() {
+        return app;
+    }
+
     public int instructionsExecuted() {
         return this.instructionsExecuted;
+    }
+
+    public synchronized void requestShutdown() {
+        this.shutdownRequested = true;
+    }
+
+    public synchronized boolean isShutdownRequested() {
+        return this.shutdownRequested;
     }
 
     public Memory memory() {
@@ -478,19 +478,12 @@ public class Interpreter implements Runnable {
         return this.mapDecoder;
     }
 
-    private CombatData combatData = null;
+    public LinkedBlockingQueue<InterpreterEvent> eventQueue() {
+        return this.eventQueue;
+    }
 
-    private void decodePartyAttack() {
-        final int combatSegmentId = getSegmentForChunk(0x03, Frob.IN_USE);
-        final int targetMonsterId = Heap.get(0x84).read(1);
-
-        final int weaponType = Heap.get(0x66).read(1);
-        final boolean weaponIsMelee = (weaponType < 0x08);
-
-        final int targetStatus = memory().read(combatSegmentId, 0x030e + targetMonsterId, 1);
-        final boolean monsterIsBlocking = (targetStatus & 0x40) > 0;
-
-        if (weaponIsMelee & monsterIsBlocking) return;
+    public void runLater(Consumer<Interpreter> callback) {
+        eventQueue().offer(new MethodEvent(callback));
     }
 
     public void decodeMap(int mapId) {
@@ -585,7 +578,6 @@ public class Interpreter implements Runnable {
             segmentId = memory().getFreeSegmentId();
             final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
             memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
-            // System.out.format("getSegmentForChunk(0x%03x), %s", chunkId, memory());
         }
         // should there be a "don't overwrite frob 0xff" guard here?
         memory().setSegmentFrob(segmentId, frob);
@@ -615,11 +607,6 @@ public class Interpreter implements Runnable {
         if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
             memory().setSegmentFrob(segmentId, Frob.FREE);
         }
-        // System.out.format("freeSegment(%d), %s", segmentId, memory());
-    }
-
-    public DragonWarsApp app() {
-        return app;
     }
 
     private final ReentrantLock pauseLock = new ReentrantLock();
@@ -627,32 +614,21 @@ public class Interpreter implements Runnable {
     public boolean isPaused() {
         boolean p;
         pauseLock.lock();
-        try {
-            p = gameIsPaused;
-        } finally {
-            pauseLock.unlock();
-        }
+        try { p = gameIsPaused; }
+        finally { pauseLock.unlock(); }
         return p;
     }
 
     public void pause() {
         pauseLock.lock();
-        try {
-            if (!gameIsPaused) System.out.println("pause <- true");
-            gameIsPaused = true;
-        } finally {
-            pauseLock.unlock();
-        }
+        try { gameIsPaused = true; }
+        finally { pauseLock.unlock(); }
     }
 
     public void unpause() {
         pauseLock.lock();
-        try {
-            if (gameIsPaused) System.out.println("pause <- false");
-            gameIsPaused = false;
-        } finally {
-            pauseLock.unlock();
-        }
+        try { gameIsPaused = false; }
+        finally { pauseLock.unlock(); }
     }
 
     public CharRectangle getBBox() {

@@ -6,6 +6,7 @@ import com.hitchhikerprod.dragonjars.data.PowerInt;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.CombatData;
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -195,7 +196,7 @@ public class MonsterTableWindow {
 
         // Subscribe to chunk invalidation events
         this.invalidationListener();
-        this.chunkListener = chunk.getObservable().subscribe(this::invalidationListener);
+        this.chunkListener = chunk.getObservable().subscribe(() -> Platform.runLater(this::invalidationListener));
     }
 
     private void invalidationListener() {

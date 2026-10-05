@@ -1,15 +1,13 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.exec.ExecutionContext;
-import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AddAXHeapTest {
     private static final Chunk CODE = new Chunk(List.of());
