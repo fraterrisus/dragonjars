@@ -63,7 +63,7 @@ public class CombatData {
     private int bravery;
 
     public void turnDone() {
-        CombatLog.append(sb.toString());
+        Platform.runLater(() -> CombatLog.append(sb.toString()));
         whoseTurn = WhoseTurn.IDLE;
     }
 
@@ -523,8 +523,10 @@ public class CombatData {
     public void getCombatants() {
         final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
         final Chunk monsterData = i.memory().getSegment(combatSegmentId);
-        MonsterTableWindow.getInstance().setChunk(monsterData, i.stringDecoder());
-        CombatLog.append("New Round", "bold");
+        Platform.runLater(() -> {
+            MonsterTableWindow.getInstance().setChunk(monsterData, i.newStringDecoder());
+            CombatLog.append("New Round", "bold");
+        });
         whoseTurn = WhoseTurn.IDLE;
     }
 
@@ -592,10 +594,10 @@ public class CombatData {
                     .forEach(combatants::add);
             if (!combatants.isEmpty()) sb.append("\n\t").append(init).append(": ").append(String.join(", ", combatants));
         }
-        CombatLog.append(sb.toString());
+        Platform.runLater(() -> CombatLog.append(sb.toString()));
     }
 
     public void endCombat() {
-        MonsterTableWindow.getInstance().unsetChunk();
+        Platform.runLater(() -> MonsterTableWindow.getInstance().unsetChunk());
     }
 }

@@ -81,7 +81,7 @@ public class RootWindow {
         menuBar.setStylesheets(cssUrl);
     }
 
-    public Image getImage() {
+    public synchronized Image getImage() {
         final Node node = pane.getChildren().getFirst();
         if (node instanceof ImageView imageView) {
             return imageView.getImage();
@@ -92,7 +92,7 @@ public class RootWindow {
         }
     }
 
-    public void setImage(Image image) {
+    public synchronized void setImage(Image image) {
         final ImageView imageView = new ImageView(image);
         final AppPreferences prefs = AppPreferences.getInstance();
         imageView.setPreserveRatio(true);
@@ -107,9 +107,7 @@ public class RootWindow {
                 prefs.scaleProperty().multiply(image.heightProperty())
         );
         var children = pane.getChildren();
-        children.clear();
-        children.add(imageView);
-        children.add(fps);
+        children.setAll(imageView, fps);
         StackPane.setAlignment(fps, Pos.BOTTOM_RIGHT);
         app.resize();
     }

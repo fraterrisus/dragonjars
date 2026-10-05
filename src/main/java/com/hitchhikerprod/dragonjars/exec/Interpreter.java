@@ -459,6 +459,10 @@ public class Interpreter implements Runnable {
         return this.stringDecoder;
     }
 
+    public StringDecoder newStringDecoder() {
+        return new StringDecoder(this.memory().getCodeChunk());
+    }
+
     public MapData mapDecoder() {
         return this.mapDecoder;
     }
