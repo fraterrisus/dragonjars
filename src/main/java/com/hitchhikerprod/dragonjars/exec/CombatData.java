@@ -63,7 +63,8 @@ public class CombatData {
     private int bravery;
 
     public void turnDone() {
-        Platform.runLater(() -> CombatLog.append(sb.toString()));
+        final String logLine = sb.toString();
+        Platform.runLater(() -> CombatLog.append(logLine));
         whoseTurn = WhoseTurn.IDLE;
     }
 
@@ -594,7 +595,8 @@ public class CombatData {
                     .forEach(combatants::add);
             if (!combatants.isEmpty()) sb.append("\n\t").append(init).append(": ").append(String.join(", ", combatants));
         }
-        Platform.runLater(() -> CombatLog.append(sb.toString()));
+        final String logLine = sb.toString();
+        Platform.runLater(() -> CombatLog.append(logLine));
     }
 
     public void endCombat() {
