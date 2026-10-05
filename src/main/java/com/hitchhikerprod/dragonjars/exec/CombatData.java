@@ -8,11 +8,10 @@ import com.hitchhikerprod.dragonjars.data.WeaponDamage;
 import com.hitchhikerprod.dragonjars.exec.instructions.DecodeStringFrom;
 import com.hitchhikerprod.dragonjars.ui.CombatLog;
 import com.hitchhikerprod.dragonjars.ui.MonsterTableWindow;
-import javafx.collections.ObservableList;
+import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CombatData {
     public static final int MONSTER_HP = 0x0278;
@@ -47,7 +46,7 @@ public class CombatData {
         this.i = i;
         this.whoseTurn = null;
         this.sb = new StringBuilder();
-        CombatLog.clear();
+        Platform.runLater(CombatLog::clear);
     }
 
     private enum WhoseTurn { IDLE, PARTY, ENEMIES }

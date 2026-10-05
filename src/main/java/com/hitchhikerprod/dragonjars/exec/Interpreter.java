@@ -265,7 +265,7 @@ public class Interpreter implements Runnable {
         final ExecutionContext context = this.executionStack.peek();
         assert(Objects.isNull(context.nextIP()));
         context.nextIP(nextIP);
-        Thread.currentThread().interrupt();
+        app().interruptInterpreterThread();
     }
 
     public Address finish() {

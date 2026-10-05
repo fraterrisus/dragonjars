@@ -23,7 +23,6 @@ import static com.hitchhikerprod.dragonjars.DragonWarsApp.IMAGE_Y;
  * RootWindow.
  * */
 public class FrameQueue extends AnimationTimer {
-    private final ReentrantLock lock = new ReentrantLock(true);
     private final Deque<Image> images = new LinkedList<>();
 
     private static final long ONE_SECOND = 1_000_000_000;
@@ -48,25 +47,16 @@ public class FrameQueue extends AnimationTimer {
         }
 
         if (images.isEmpty()) return;
-        if (lock.isHeldByCurrentThread()) return;
 
-        // Don't wait for anyone else.
-        // In theory, this means that if there are multiple writers queued up to add new frames, none of them will
-        // actually make it to the screen until they all finish writing. Although tryLock will also jump the fairness
-        // queue, so maybe it sneaks in?
-        if (!lock.tryLock()) return;
-
-        Image newFrame = null;
-        try {
-            if (!images.isEmpty()) {
-                newFrame = images.getLast();
-                images.clear();
-            }
-        } finally {
-            lock.unlock();
-        }
-
+        final Image newFrame = getNewFrame();
         if (Objects.nonNull(newFrame)) RootWindow.getInstance().setImage(newFrame);
+    }
+
+    private synchronized Image getNewFrame() {
+        if (images.isEmpty()) return null;
+        final Image newFrame = images.getLast();
+        images.clear();
+        return newFrame;
     }
 
     /**
@@ -75,13 +65,8 @@ public class FrameQueue extends AnimationTimer {
      *
      * @param newImage The Image to push
      */
-    public void pushImage(Image newImage) {
-        lock.lock();
-        try {
-            images.add(newImage);
-        } finally {
-            lock.unlock();
-        }
+    public synchronized void pushImage(Image newImage) {
+        images.add(newImage);
     }
 
     /**
@@ -91,20 +76,15 @@ public class FrameQueue extends AnimationTimer {
      *
      * @param generator A lambda that receives a PixelWriter.
      */
-    public void pushImage(Consumer<PixelWriter> generator) {
-        lock.lock();
-        try {
-            final Image inputImage;
-            if (images.isEmpty()) {
-                inputImage = RootWindow.getInstance().getImage();
-            } else {
-                inputImage = images.getLast();
-            }
-            final WritableImage wImage = new WritableImage(inputImage.getPixelReader(), IMAGE_X, IMAGE_Y);
-            generator.accept(wImage.getPixelWriter());
-            images.add(wImage);
-        } finally {
-            lock.unlock();
+    public synchronized void pushImage(Consumer<PixelWriter> generator) {
+        final Image inputImage;
+        if (images.isEmpty()) {
+            inputImage = RootWindow.getInstance().getImage();
+        } else {
+            inputImage = images.getLast();
         }
+        final WritableImage wImage = new WritableImage(inputImage.getPixelReader(), IMAGE_X, IMAGE_Y);
+        generator.accept(wImage.getPixelWriter());
+        images.add(wImage);
     }
 }

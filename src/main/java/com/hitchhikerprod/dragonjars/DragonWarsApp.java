@@ -99,6 +99,10 @@ public class DragonWarsApp extends Application {
         Platform.exit();
     }
 
+    public void interruptInterpreterThread() {
+        this.interpreterThread.interrupt();
+    }
+
     private void shutdownInterpreterThread() {
         if (Objects.isNull(interpreter)) return;
 
