@@ -18,6 +18,7 @@ import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
 import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
 import javafx.scene.image.PixelWriter;
@@ -53,7 +54,8 @@ public class Interpreter implements Runnable {
 
     /* UI Thread Interaction */
 
-    private LinkedBlockingQueue<InterpreterEvent> eventQueue;
+    private final Deque<ExecutionContext> executionStack = new LinkedList<>();
+    private final LinkedBlockingQueue<InterpreterEvent> eventQueue = new LinkedBlockingQueue<>();
     private EventHandler<KeyEvent> keyCallback;
 
     /* Memory space */
@@ -124,7 +126,6 @@ public class Interpreter implements Runnable {
     private boolean gameIsPaused = false;
 
     private int instructionsExecuted = 0;
-    private final Deque<ExecutionContext> executionStack = new LinkedList<>();
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
@@ -205,6 +206,10 @@ public class Interpreter implements Runnable {
         // [3923] <- 0x00
     }
 
+    public void shutdown() {
+        Platform.runLater(() -> this.app().close());
+    }
+
     public synchronized void requestShutdown() {
         this.shutdownRequested = true;
     }
@@ -219,10 +224,9 @@ public class Interpreter implements Runnable {
      */
     @Override
     public void run() {
-        this.eventQueue = app().interpreterEventQueue();
         clearKeyHandler();
         this.executionStack.push(new ExecutionContext(
-                app()::close,
+                this::shutdown,
                 getSegmentForChunk(0x0, Frob.IN_USE),
                 0
         ));
@@ -255,8 +259,12 @@ public class Interpreter implements Runnable {
         }
     }
 
+    public LinkedBlockingQueue<InterpreterEvent> eventQueue() {
+        return this.eventQueue;
+    }
+
     public void runLater(Consumer<Interpreter> callback) {
-        this.eventQueue.add(new MethodEvent(callback));
+        eventQueue().offer(new MethodEvent(callback));
     }
 
     /**
@@ -286,7 +294,7 @@ public class Interpreter implements Runnable {
         this.width = false;
         this.executionStack.pop().after();
         System.out.println("finish()");
-        Thread.currentThread().interrupt();
+        app().interruptInterpreterThread();
         // reenter() callers must push the nextIP by returning it from the method that calls reenter
         return null;
     }

@@ -63,7 +63,7 @@ public class Instructions {
     public static final Instruction SOFT_EXIT = Interpreter::finish;
 
     public static final Instruction HARD_EXIT = (i) -> {
-        if (Objects.nonNull(i.app())) i.app().close();
+        if (Objects.nonNull(i.app())) i.shutdown();
         return null;
     };
 

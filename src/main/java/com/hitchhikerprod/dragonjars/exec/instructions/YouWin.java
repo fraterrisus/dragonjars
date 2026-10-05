@@ -35,7 +35,7 @@ public class YouWin implements Instruction {
 
     private void handler(int page) {
         if (page > 4) {
-            i.app().close();
+            i.shutdown();
             return;
         }
 

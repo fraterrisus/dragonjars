@@ -55,7 +55,6 @@ public class DragonWarsApp extends Application {
 
     private FrameQueue frameQueue;
     private MusicService musicService;
-    private LinkedBlockingQueue<InterpreterEvent> keyQueue;
     private Interpreter interpreter;
     private Thread interpreterThread;
 
@@ -72,7 +71,6 @@ public class DragonWarsApp extends Application {
 
         this.musicService = new MusicService();
         this.frameQueue = new FrameQueue();
-        this.keyQueue = new LinkedBlockingQueue<>();
 
         final RootWindow root = RootWindow.getInstance();
         root.start(this);
@@ -176,10 +174,6 @@ public class DragonWarsApp extends Application {
 
     public MusicService musicService() {
         return musicService;
-    }
-
-    public LinkedBlockingQueue<InterpreterEvent> interpreterEventQueue() {
-        return keyQueue;
     }
 
     private void withInterpreterPause(Runnable fn) {
@@ -289,8 +283,8 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setKeyHandler(kev -> this.keyQueue.offer(new KeyPressEvent(kev)));
         interpreter = new Interpreter(this, this.dataChunks);
+        setKeyHandler(kev -> interpreter.eventQueue().offer(new KeyPressEvent(kev)));
         interpreterThread = Thread.ofPlatform().name("DWInterpreter").start(interpreter);
     }
 
