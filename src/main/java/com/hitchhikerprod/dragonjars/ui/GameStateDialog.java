@@ -61,6 +61,29 @@ public class GameStateDialog extends Dialog<Void> {
         int mask = 0x80;
 
         int rowIndex = 0;
+
+        final Label spellHeaderLabel = new Label("Travel Spells");
+        spellHeaderLabel.getStyleClass().add("text-header");
+        grid.addRow(rowIndex++, spellHeaderLabel);
+        GridPane.setColumnSpan(spellHeaderLabel, 2);
+
+        Heap.lock();
+        final int compassDuration = Heap.get(Heap.COMPASS_DURATION).lockedRead();
+        final int detectTrapsDuration = Heap.get(Heap.DETECT_TRAPS_DURATION).lockedRead();
+        final int shieldDuration = Heap.get(Heap.SHIELD_DURATION).lockedRead();
+        final int lightDuration = Heap.get(Heap.LIGHT_DURATION).lockedRead();
+        Heap.unlock();
+
+        final Label compassLabel = new Label(compassDuration > 0 ? compassDuration + ":00" : "—");
+        final Label detectTrapsLabel = new Label(detectTrapsDuration > 0 ? detectTrapsDuration + ":00" : "—");
+        final Label shieldLabel = new Label(shieldDuration > 0 ? shieldDuration + ":00" : "—");
+        final Label lightLabel = new Label(lightDuration > 0 ? lightDuration + ":00" : "—");
+        
+        grid.addRow(rowIndex++, lightLabel, new Label("Light"));
+        grid.addRow(rowIndex++, shieldLabel, new Label("Shield"));
+        grid.addRow(rowIndex++, detectTrapsLabel, new Label("Detect Traps"));
+        grid.addRow(rowIndex++, compassLabel, new Label("Compass"));
+
         for (String flagName : flagNames) {
             if (flagName.startsWith("-- ")) {
                 final String thatBoard = flagName.substring(3);
