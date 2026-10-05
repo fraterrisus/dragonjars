@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LoadAXIndirectTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
-            (byte)0x1e, // padding
             (byte)0x0e, // LoadAXIndirect
             (byte)0x31, // heap address
             (byte)0x1e  // exit
@@ -31,7 +30,7 @@ public class LoadAXIndirectTest {
         Heap.get(0x31).write(0x0005, 2);
         i.setBL(0x0002);
         i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
-        i.start(0, 1);
+        i.run();
 
         assertEquals(0x0000bbaa, i.getAX());
         assertEquals(2, i.instructionsExecuted());
@@ -46,7 +45,7 @@ public class LoadAXIndirectTest {
         i.setBL(0x0002);
         i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));
         i.setWidth(false);
-        i.start(0, 1);
+        i.run();
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(2, i.instructionsExecuted());

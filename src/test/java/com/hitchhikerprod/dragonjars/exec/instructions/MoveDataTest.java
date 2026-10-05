@@ -32,7 +32,7 @@ class MoveDataTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(true);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xbbaa, i.memory().read(dataSegment, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());
@@ -50,7 +50,7 @@ class MoveDataTest {
         final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
         i.setDS(dataSegment);
         i.setWidth(false);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00aa, i.memory().read(dataSegment, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());

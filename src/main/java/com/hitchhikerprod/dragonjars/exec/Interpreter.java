@@ -207,7 +207,10 @@ public class Interpreter implements Runnable {
     }
 
     public void shutdown() {
-        Platform.runLater(() -> this.app().close());
+        requestShutdown();
+        if (Objects.nonNull(app())) {
+            Platform.runLater(() -> this.app().close());
+        }
     }
 
     public synchronized void requestShutdown() {
@@ -294,7 +297,7 @@ public class Interpreter implements Runnable {
         this.width = false;
         this.executionStack.pop().after();
         System.out.println("finish()");
-        app().interruptInterpreterThread();
+        if (Objects.nonNull(app())) app().interruptInterpreterThread();
         // reenter() callers must push the nextIP by returning it from the method that calls reenter
         return null;
     }
@@ -619,7 +622,7 @@ public class Interpreter implements Runnable {
         return app;
     }
 
-    private ReentrantLock pauseLock = new ReentrantLock();
+    private final ReentrantLock pauseLock = new ReentrantLock();
 
     public boolean isPaused() {
         boolean p;

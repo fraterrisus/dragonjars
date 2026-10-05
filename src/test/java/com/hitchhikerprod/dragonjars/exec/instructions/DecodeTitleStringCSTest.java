@@ -37,11 +37,11 @@ class DecodeTitleStringCSTest {
         ));
 
         final StringDecoder decoder = new StringDecoder(exec);
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, program, exec));
+        final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY, exec));
         final Interpreter j = spy(i);
         doReturn(decoder).when(j).stringDecoder();
         doNothing().when(j).setTitleString(anyList());
-        j.start(0x1, 0x0);
+        j.run();
 
         final List<Integer> expectedChars = decoder.getDecodedChars();
         verify(j).setTitleString(expectedChars);

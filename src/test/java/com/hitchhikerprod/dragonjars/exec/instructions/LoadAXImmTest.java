@@ -20,9 +20,9 @@ public class LoadAXImmTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
-        i.start(0, 0);
+        i.run();
 
-        assertEquals(0x0000bbaa, i.getAX());
+        assertEquals(0x0000bbaa, i.getAX(true));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -37,7 +37,7 @@ public class LoadAXImmTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(3, i.instructionsExecuted());

@@ -22,7 +22,7 @@ class StoreAXHeapOffsetTest {
         i.setAX(0x1234);
         i.setBL(0x02);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00001234, Heap.get(0x3c).read(2));
         assertEquals(2, i.instructionsExecuted());
@@ -42,7 +42,7 @@ class StoreAXHeapOffsetTest {
         i.setBL(0x02);
         i.setWidth(false);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00000034, Heap.get(0x3c).read(2));
         assertEquals(2, i.instructionsExecuted());

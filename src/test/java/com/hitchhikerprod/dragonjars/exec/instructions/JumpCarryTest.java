@@ -24,7 +24,7 @@ class JumpCarryTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00, i.getAL());
         assertEquals(4, i.instructionsExecuted());
@@ -45,7 +45,7 @@ class JumpCarryTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xff, i.getAL());
         assertEquals(5, i.instructionsExecuted());

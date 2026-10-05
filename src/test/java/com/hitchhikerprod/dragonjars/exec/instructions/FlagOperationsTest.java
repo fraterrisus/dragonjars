@@ -20,7 +20,7 @@ class FlagOperationsTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL((0x03 << 3) | (0x4)); // 0x80 >> 4 = 0x08
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
         assertEquals(0x08, Heap.get(0x43).read());
@@ -38,7 +38,7 @@ class FlagOperationsTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x12).write(0xff);
         i.setAL((0x10 << 3) | (0x3));
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
@@ -57,7 +57,7 @@ class FlagOperationsTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0x02);
         i.setAL((0x10 << 3) | (0x6));
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
         assertFalse(i.getCarryFlag());
@@ -77,7 +77,7 @@ class FlagOperationsTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0xfd);
         i.setAL((0x10 << 3) | (0x6));
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
         //                  1111_1101 = 0xfd
@@ -98,7 +98,7 @@ class FlagOperationsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x03
         // mask 0x80 >> 4 = 0000_1000 = 0x08
         assertEquals(0x08, Heap.get(0x43).read());
@@ -117,7 +117,7 @@ class FlagOperationsTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x12).write(0xff);
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x02
         // mask 0x80 >> 3 = 0001_0000 = 0x10
         // value 1110_1111 = 0xef
@@ -137,7 +137,7 @@ class FlagOperationsTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0x02);
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
         assertFalse(i.getCarryFlag());
@@ -158,7 +158,7 @@ class FlagOperationsTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x25).write(0xfd);
-        i.start(0, 0);
+        i.run();
         // heap index 0x10 + 0x15
         // mask 0x80 >> 6 = 0000_0010 = 0x02
         //                  1111_1101 = 0xfd

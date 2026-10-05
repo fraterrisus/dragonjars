@@ -22,7 +22,7 @@ class GetSegmentSizeTest {
         final Interpreter i = new Interpreter(null, List.of(program, data, Chunk.EMPTY));
         i.setWidth(true);
         i.setAL(i.getSegmentForChunk(0x01, Frob.IN_USE));
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x0135, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

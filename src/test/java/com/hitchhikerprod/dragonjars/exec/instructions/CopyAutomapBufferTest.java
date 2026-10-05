@@ -29,7 +29,7 @@ class CopyAutomapBufferTest {
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0x00);
-        i.start(0, 0);
+        i.run();
 
         final Chunk newData = i.memory().getSegment(segmentId);
 
@@ -53,7 +53,7 @@ class CopyAutomapBufferTest {
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0xff);
-        i.start(0, 0);
+        i.run();
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(data.getUnsignedByte(idx), i.memory().automapChunk().read(idx, 1),

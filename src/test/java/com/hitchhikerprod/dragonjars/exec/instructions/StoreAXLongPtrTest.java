@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StoreAXLongPtrTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
-            (byte) 0x00, // Padding
             (byte) 0x17, // StoreAXIndirect
             (byte) 0x5b, //   heap index
             (byte) 0x1e  // Exit
@@ -27,7 +26,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY, data, Chunk.EMPTY));
         i.getSegmentForChunk(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -37,7 +36,7 @@ class StoreAXLongPtrTest {
         Heap.get(0x5d).write(0x02); // segment#
         i.setBL(0x03); // address offset
         i.setWidth(true);
-        i.start(1, 1);
+        i.run();
 
         assertEquals(0xbbaa, i.memory().read(0x02, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());
@@ -51,7 +50,7 @@ class StoreAXLongPtrTest {
                 (byte) 0x00,(byte) 0x00,(byte) 0x00,(byte) 0x00
         ));
 
-        final Interpreter i = new Interpreter(null, List.of(Chunk.EMPTY, PROGRAM, data, Chunk.EMPTY));
+        final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY, data, Chunk.EMPTY));
         i.getSegmentForChunk(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);
@@ -60,7 +59,7 @@ class StoreAXLongPtrTest {
         Heap.get(0x5c).write(0x00);
         Heap.get(0x5d).write(0x02);
         i.setBL(0x03); // address offset
-        i.start(1, 1);
+        i.run();
 
         assertEquals(0x00aa, i.memory().read(0x02, 0x06, 2));
         assertEquals(2, i.instructionsExecuted());

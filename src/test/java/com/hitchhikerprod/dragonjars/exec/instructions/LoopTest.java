@@ -21,7 +21,7 @@ class LoopTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0x03); // runs loop four times
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xff, i.getBL());
         assertEquals(9, i.instructionsExecuted());
@@ -40,7 +40,7 @@ class LoopTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0x00);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x03, i.getBL());
         assertEquals(7, i.instructionsExecuted());

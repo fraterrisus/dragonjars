@@ -24,7 +24,7 @@ public class XorAXTest {
         Heap.get(0x1b).write(0xff);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x0000, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -44,7 +44,7 @@ public class XorAXTest {
         Heap.get(0x1b).write(0xc3);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00ff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -63,7 +63,7 @@ public class XorAXTest {
         i.setWidth(true);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xffff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -81,7 +81,7 @@ public class XorAXTest {
         i.setWidth(false);
         i.setAL(0xa5);
         i.setAH(0x3c);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x3cff, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

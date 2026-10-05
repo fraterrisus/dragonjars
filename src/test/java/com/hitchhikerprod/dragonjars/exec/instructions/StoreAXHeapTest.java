@@ -28,7 +28,7 @@ class StoreAXHeapTest {
         i.setWidth(true);
         i.setAX(0x1234);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00001234, Heap.get(0x3a).read(2));
         assertEquals(2, i.instructionsExecuted());
@@ -41,7 +41,7 @@ class StoreAXHeapTest {
         i.setWidth(false);
         i.setAH(0x12);
         i.setAL(0x34);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00000034, Heap.get(0x3a).read(2));
         assertEquals(2, i.instructionsExecuted());

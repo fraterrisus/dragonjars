@@ -25,7 +25,7 @@ class TestValueTest {
         final Interpreter i = new Interpreter(null, List.of(HEAP_PROGRAM, Chunk.EMPTY));
         i.setWidth(width);
         Heap.get(0x1a).write(heap, 2);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");
         assertEquals(sign, i.getSignFlag(), "Sign flag is wrong");
@@ -36,7 +36,7 @@ class TestValueTest {
         final Interpreter i = new Interpreter(null, List.of(AX_PROGRAM, Chunk.EMPTY));
         i.setWidth(width);
         i.setAX(ax, true);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(zero, i.getZeroFlag(), "Zero flag is wrong");
         assertEquals(sign, i.getSignFlag(), "Sign flag is wrong");

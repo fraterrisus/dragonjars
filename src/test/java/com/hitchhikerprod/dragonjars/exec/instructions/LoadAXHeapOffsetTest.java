@@ -34,9 +34,9 @@ class LoadAXHeapOffsetTest {
         Heap.get(0x2a).write(0xee);
         Heap.get(0x2b).write(0xff);
 
-        i.start(0, 0);
+        i.run();
 
-        assertEquals(0x0000ffee, i.getAX());
+        assertEquals(0x0000ffee, i.getAX(true));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }
@@ -59,9 +59,9 @@ class LoadAXHeapOffsetTest {
         Heap.get(0x2a).write(0xee);
         Heap.get(0x2b).write(0xff);
 
-        i.start(0, 0);
+        i.run();
 
-        assertEquals(0x000000ee, i.getAX());
+        assertEquals(0x000000ee, i.getAX(true));
         assertEquals(3, i.instructionsExecuted());
         assertEquals(program.getSize() - 1, i.getIP().offset());
     }

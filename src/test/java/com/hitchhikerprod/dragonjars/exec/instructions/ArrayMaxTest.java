@@ -32,7 +32,7 @@ class ArrayMaxTest {
         i.setWidth(true);
         i.setDS(i.getSegmentForChunk(1, Frob.IN_USE));
         i.setBX(0x0106);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x03, i.getBL());
         assertEquals(0xf2, i.getAL());

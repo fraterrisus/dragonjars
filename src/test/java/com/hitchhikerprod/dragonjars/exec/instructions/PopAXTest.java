@@ -20,7 +20,7 @@ class PopAXTest {
         i.pushByte(0xf3);
         i.pushByte(0x7d);
         i.setWidth(true);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xf37d, i.getAX());
         assertEquals(2, i.instructionsExecuted());
@@ -32,7 +32,7 @@ class PopAXTest {
         i.pushByte(0x7d);
         i.pushByte(0xf3);
         i.setWidth(false);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00f3, i.getAX());
         assertEquals(2, i.instructionsExecuted());
@@ -54,7 +54,7 @@ class PopAXTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xaabb, i.getAX());
         assertEquals(6, i.instructionsExecuted());

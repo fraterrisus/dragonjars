@@ -22,7 +22,7 @@ class StoreZeroHeapTest {
         Heap.get(0x3a).write(0xff);
         Heap.get(0x3b).write(0xff);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00000000, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
@@ -41,7 +41,7 @@ class StoreZeroHeapTest {
         Heap.get(0x3a).write(0xff);
         Heap.get(0x3b).write(0xff);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x0000ff00, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());

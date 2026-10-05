@@ -29,7 +29,7 @@ class MoveHeapTest {
         i.setWidth(true);
         Heap.get(0x3a).write(0x1234, 2);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00001234, Heap.get(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());
@@ -49,7 +49,7 @@ class MoveHeapTest {
         i.setWidth(true);
         Heap.get(0x3a).write(0x1234, 2);
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00000034, Heap.get(0x18).read(2));
         assertEquals(3, i.instructionsExecuted());

@@ -32,7 +32,7 @@ public class LoadAXLongPtrTest {
         Heap.get(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
         Heap.get(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x0000bbaa, i.getAX());
         assertEquals(3, i.instructionsExecuted());
@@ -60,7 +60,7 @@ public class LoadAXLongPtrTest {
         Heap.get(Heap.LONGPTR_ADR).write(0x0008, 2); // segment offset lo
         Heap.get(Heap.LONGPTR_SEG).write(dataSegment, 1); // segment ID
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000aa, i.getAX());
         assertEquals(3, i.instructionsExecuted());

@@ -28,7 +28,7 @@ class IncHeapTest {
         i.setWidth(true);
         Heap.get(0x74).write(0xff);
         Heap.get(0x75).write(0x01);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00, Heap.get(0x74).read());
         assertEquals(0x02, Heap.get(0x75).read());
@@ -42,7 +42,7 @@ class IncHeapTest {
         i.setWidth(false);
         Heap.get(0x74).write(0xff);
         Heap.get(0x75).write(0x01);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00, Heap.get(0x74).read());
         assertEquals(0x01, Heap.get(0x75).read());

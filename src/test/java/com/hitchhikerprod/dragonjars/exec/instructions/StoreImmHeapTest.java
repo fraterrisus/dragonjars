@@ -22,7 +22,7 @@ class StoreImmHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x0000bbaa, Heap.get(0x3a).read(2));
         assertEquals(3, i.instructionsExecuted());
@@ -40,7 +40,7 @@ class StoreImmHeapTest {
         ));
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
 
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000aa, Heap.get(0x43).read(2));
         assertEquals(3, i.instructionsExecuted());

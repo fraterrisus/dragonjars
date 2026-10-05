@@ -20,7 +20,7 @@ class TestAndSetHeapSignTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(Heap.SELECTED_PC).write(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertFalse(i.getZeroFlag());
         assertEquals(0x80, Heap.get(Heap.SELECTED_PC).read() & 0x80);
@@ -37,7 +37,7 @@ class TestAndSetHeapSignTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(Heap.SELECTED_PC).write(0x7f);
-        i.start(0, 0);
+        i.run();
 
         assertTrue(i.getZeroFlag());
         // bit gets set if not already set

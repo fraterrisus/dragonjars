@@ -30,7 +30,7 @@ class AndAXTest {
         Heap.get(0x1b).write(0x81);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x817c, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -48,7 +48,7 @@ class AndAXTest {
         i.setWidth(false);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xff77, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
@@ -67,7 +67,7 @@ class AndAXTest {
         i.setWidth(true);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x7777, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());

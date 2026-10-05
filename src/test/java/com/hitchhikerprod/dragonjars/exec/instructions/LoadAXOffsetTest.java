@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LoadAXOffsetTest {
     private static final Chunk PROGRAM = new Chunk(List.of(
-            (byte)0x1e, // padding
             (byte)0x0d, // LoadAXOffset
             (byte)0x05, // address (lo)
             (byte)0x00, // address (hi)
@@ -30,9 +29,9 @@ public class LoadAXOffsetTest {
         i.setAX(0x0000ffff);
         i.setBL(0x00000002);
         i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
-        i.start(0, 1);
+        i.run();
 
-        assertEquals(0x0000bbaa, i.getAX());
+        assertEquals(0x0000bbaa, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
     }
 
@@ -44,9 +43,9 @@ public class LoadAXOffsetTest {
         i.setBL(0x00000002);
         i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));
         i.setWidth(false);
-        i.start(0, 1);
+        i.run();
 
-        assertEquals(0x000000aa, i.getAX());
+        assertEquals(0x000000aa, i.getAX(true));
         assertEquals(2, i.instructionsExecuted());
     }
 }

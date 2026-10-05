@@ -29,7 +29,7 @@ class DecHeapTest {
         Heap.get(0xaa).write(0x00);
         Heap.get(0xab).write(0x01);
         i.setWidth(true);
-        i.start(0, 0);
+        i.run();
 
         i.setWidth(false);
         assertEquals(0xff, Heap.get(0xaa).read());
@@ -43,7 +43,7 @@ class DecHeapTest {
         i.setWidth(false);
         Heap.get(0xaa).write(0x16);
         Heap.get(0xab).write(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x15, Heap.get(0xaa).read());
         assertEquals(0xff, Heap.get(0xab).read());
@@ -56,7 +56,7 @@ class DecHeapTest {
         i.setWidth(false);
         Heap.get(0xaa).write(0x00);
         Heap.get(0xab).write(0x01);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xff, Heap.get(0xaa).read());
         assertEquals(0x01, Heap.get(0xab).read());

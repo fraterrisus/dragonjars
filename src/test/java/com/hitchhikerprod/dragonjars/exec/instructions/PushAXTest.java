@@ -21,7 +21,7 @@ class PushAXTest {
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(true);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xdd, i.popByte());
         assertEquals(0x81, i.popByte());
@@ -34,7 +34,7 @@ class PushAXTest {
         i.setAH(0x81);
         i.setAL(0xdd);
         i.setWidth(false);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xdd, i.popByte());
         assertThrows(NoSuchElementException.class, i::popByte);

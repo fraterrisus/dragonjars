@@ -34,7 +34,7 @@ class StoreAXIndirectTest {
         i.setAL(0xaa);
         Heap.get(0x5b).write(0x0001, 2);
         i.setBL(0x04);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0xbbaa, i.memory().read(dataSegment, 0x05, 2));
         assertEquals(2, i.instructionsExecuted());
@@ -57,7 +57,7 @@ class StoreAXIndirectTest {
         Heap.get(0x5b).write(0x0001, 2);
         i.setBL(0x04);
         i.setWidth(false);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00aa, i.memory().read(dataSegment, 0x05, 2));
         assertEquals(2, i.instructionsExecuted());

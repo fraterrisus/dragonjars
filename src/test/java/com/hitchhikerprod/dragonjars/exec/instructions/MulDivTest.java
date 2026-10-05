@@ -22,7 +22,7 @@ public class MulDivTest {
         i.setAL(0x11);
         i.setAH(0x11);
         Heap.get(0x10).write(0x12345678, 4);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x00011112, Heap.get(0x37).read(4));
         assertEquals(0x0246, Heap.get(0x3b).read(2));
         assertEquals(2, i.instructionsExecuted());
@@ -41,7 +41,7 @@ public class MulDivTest {
         i.setWidth(true);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x0000000e, Heap.get(0x37).read(4));
         assertEquals(0x1023, Heap.get(0x3b).read(2));
         assertEquals(2, i.instructionsExecuted());
@@ -59,7 +59,7 @@ public class MulDivTest {
         i.setWidth(false);
         i.setAL(0xff);
         i.setAH(0xff);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x00000787, Heap.get(0x37).read(4));
         assertEquals(0x0011, Heap.get(0x3b).read(2));
         assertEquals(2, i.instructionsExecuted());
@@ -77,7 +77,7 @@ public class MulDivTest {
         i.setAL(0x0a);
         i.setAH(0x00);
         Heap.get(0x10).write(0x00000020, 4);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x00000140, Heap.get(0x37).read(4));
         assertEquals(2, i.instructionsExecuted());
     }
@@ -95,7 +95,7 @@ public class MulDivTest {
         i.setWidth(true);
         i.setAL(0x11);
         i.setAH(0x11);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x04681dba, Heap.get(0x37).read(4));
         assertEquals(2, i.instructionsExecuted());
     }
@@ -112,7 +112,7 @@ public class MulDivTest {
         i.setWidth(false);
         i.setAL(0x11);
         i.setAH(0x11); // AX is always read on mul, even in narrow mode
-        i.start(0, 0);
+        i.run();
         assertEquals(0x0001bbba, Heap.get(0x37).read(4));
         assertEquals(2, i.instructionsExecuted());
     }

@@ -51,7 +51,7 @@ public class SimpleInstructionsTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setAL(0x00);
         i.pushByte(0xff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x00, i.getAL());
         assertEquals(3, i.instructionsExecuted());
@@ -69,7 +69,7 @@ public class SimpleInstructionsTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         Heap.get(0x26).write(0xaa);
         Heap.get(0x27).write(0xbb);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000aa, i.getBL());
         assertEquals(3, i.instructionsExecuted());
@@ -86,7 +86,7 @@ public class SimpleInstructionsTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000aa, i.getBL());
         assertEquals(3, i.instructionsExecuted());
@@ -184,7 +184,7 @@ public class SimpleInstructionsTest {
 
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setBL(0xffff);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(0x000000ff, Heap.get(0x7a).read());
         assertEquals(3, i.instructionsExecuted());

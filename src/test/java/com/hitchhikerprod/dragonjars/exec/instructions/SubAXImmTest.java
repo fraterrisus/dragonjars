@@ -20,7 +20,7 @@ class SubAXImmTest {
         final Interpreter i = new Interpreter(null, List.of(program, Chunk.EMPTY));
         i.setWidth(wide);
         i.setAX(ax);
-        i.start(0, 0);
+        i.run();
 
         assertEquals(2, i.instructionsExecuted(), "Wrong number of instructions");
         assertEquals(result, i.getAX(), "Incorrect result");

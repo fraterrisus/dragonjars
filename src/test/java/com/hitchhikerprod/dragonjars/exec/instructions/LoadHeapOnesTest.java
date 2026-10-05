@@ -21,7 +21,7 @@ class LoadHeapOnesTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(true);
         Heap.get(0x48).write(0x0000, 2);
-        i.start(0, 0);
+        i.run();
         assertEquals(0xffff, Heap.get(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
@@ -31,7 +31,7 @@ class LoadHeapOnesTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY));
         i.setWidth(false);
         Heap.get(0x48).write(0x0000, 2);
-        i.start(0, 0);
+        i.run();
         assertEquals(0x00ff, Heap.get(0x48).read(2));
         assertEquals(2, i.instructionsExecuted());
     }
