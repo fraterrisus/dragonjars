@@ -90,7 +90,9 @@ public class FindBoardAction implements Instruction {
                     i.reenter(
                             i.memory().getSegmentChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
                             eventPointer,
-                            () -> (i.getCarryFlag() ? nextIP : searchForActions(nextIP))
+                            () -> {
+                                if (!i.getCarryFlag()) searchForActions(nextIP);
+                            }
                     );
                     return null;
                 }

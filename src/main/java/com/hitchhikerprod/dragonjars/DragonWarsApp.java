@@ -283,7 +283,7 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setKeyHandler(keyQueue::offer);
+        setKeyHandler(this.keyQueue::offer);
         interpreter = new Interpreter(this, this.dataChunks);
         interpreterThread = Thread.ofPlatform().name("DWInterpreter").start(interpreter);
     }

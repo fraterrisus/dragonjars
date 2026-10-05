@@ -122,7 +122,7 @@ public class Interpreter implements Runnable {
     private boolean gameIsPaused = false;
 
     private int instructionsExecuted = 0;
-    private final Deque<Supplier<Address>> executionStack = new LinkedList<>();
+    private final Deque<ExecutionContext> executionStack = new LinkedList<>();
 
     public Interpreter(DragonWarsApp app, List<Chunk> dataChunks) {
         this.app = app;
@@ -219,7 +219,30 @@ public class Interpreter implements Runnable {
     public void run() {
         this.keyQueue = app().keyQueue();
         clearKeyHandler();
-        reenter(0, 0, () -> { app().close(); return null; });
+        this.executionStack.push(new ExecutionContext(
+                app()::close,
+                getSegmentForChunk(0x0, Frob.IN_USE),
+                0
+        ));
+        eventLoop();
+    }
+
+    private void eventLoop() {
+        while (!isShutdownRequested()) {
+            final Address nextIP = Objects.requireNonNull(this.executionStack.peek()).nextIP();
+            if (Objects.nonNull(nextIP)) {
+                executeInstruction(nextIP);
+            } else {
+                KeyEvent kev = null;
+                try {
+                    kev = keyQueue.take();
+                    System.out.println("KeyEvent[" + kev.getCode().getName() + "]");
+                } catch (InterruptedException e) { }
+                if (Objects.nonNull(kev) && (Objects.nonNull(keyCallback))) {
+                    keyCallback.handle(kev);
+                }
+            }
+        }
     }
 
     /**
@@ -227,72 +250,63 @@ public class Interpreter implements Runnable {
      * Forcing a chunk ID helps avoid the situation where the caller passes in a segment ID, but that segment gets
      * deallocated between the lookup and the time it's used.
      */
-    public void reenter(int chunk, int addr, Supplier<Address> after) {
-        this.executionStack.push(after);
-        final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
-        final Address nextIP = new Address(startingSegment, addr);
-        setDS(startingSegment);
-        mainLoop(nextIP);
-        waitForKeyPress();
+    public void reenter(int chunk, int addr, Runnable after) {
+        System.out.format("reenter[%02x:%04x]\n", chunk, addr);
+        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        this.executionStack.push(new ExecutionContext(after, segmentId, addr));
+        setDS(-1);
+        Thread.currentThread().interrupt();
     }
 
-    // Unused except in tests!
     public void start(int chunk, int addr) {
         clearKeyHandler();
-        final int startingSegment = getSegmentForChunk(chunk, Frob.IN_USE);
-        final Address nextIP = new Address(startingSegment, addr);
-        mainLoop(nextIP);
-        waitForKeyPress();
+        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        final Address nextIP = new Address(segmentId, addr);
+        final ExecutionContext context = this.executionStack.peek();
+        assert(Objects.isNull(context.nextIP()));
+        context.nextIP(nextIP);
+        Thread.currentThread().interrupt();
     }
 
     public Address finish() {
         this.width = false;
-        return this.executionStack.pop().get();
+        this.executionStack.pop().after();
+        System.out.println("finish()");
+        Thread.currentThread().interrupt();
+        // reenter() callers must push the nextIP by returning it from the method that calls reenter
+        return null;
     }
 
     private int breakpointChunk = 0x003;
     private int breakpointAddress = 0x00061;
 
-    private void mainLoop(Address startPoint) {
-        Address nextIP = startPoint;
-        while (Objects.nonNull(nextIP)) {
-            this.cs = nextIP.segment();
-            if (this.ds == -1) this.ds = this.cs;
-            this.ip = nextIP.offset();
-            final int opcode = memory().read(nextIP, 1);
-            final int csChunk = memory().getSegmentChunk(cs);
-            if (memory().getSegmentFrob(cs) != Frob.IN_USE) {
-                System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
-                        cs, csChunk, memory().getSegmentFrob(cs));
-            }
-//            System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", ip, opcode);
-            if (csChunk == breakpointChunk && ip == breakpointAddress) {
-                System.out.println("breakpoint");
-            }
-            runPatches(csChunk, ip);
-            final Instruction ins = decodeOpcode(opcode);
-            try {
-                nextIP = ins.exec(this);
-            } catch (Exception e) {
-                System.err.format("Caught exception at [%03x:%06x]\n", csChunk, this.ip);
-                throw(e);
-            }
-            this.instructionsExecuted++;
+    private void executeInstruction(Address ip) {
+        final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
+        this.cs = ip.segment();
+        if (this.ds == -1) this.ds = this.cs;
+        this.ip = ip.offset();
+        final int opcode = memory().read(ip, 1);
+        final int csChunk = memory().getSegmentChunk(cs);
+        if (memory().getSegmentFrob(cs) != Frob.IN_USE) {
+            System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
+                    cs, csChunk, memory().getSegmentFrob(cs));
         }
-    }
-
-    private void waitForKeyPress() {
-        if (Objects.isNull(app)) return;
-        while (!isShutdownRequested()) {
-            KeyEvent event = null;
-            try {
-                event = keyQueue.take();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            if (Objects.isNull(event) || Objects.isNull(keyCallback)) continue;
-            keyCallback.handle(event);
+        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
+        if (csChunk == breakpointChunk && this.ip == breakpointAddress) {
+            System.out.println("breakpoint");
         }
+        runPatches(csChunk, this.ip);
+        final Instruction ins = decodeOpcode(opcode);
+        try {
+            final Address nextIP = ins.exec(this);
+            // Note that executing an instruction may change the execution stack, so it's important that we change the
+            // nextIP field on the *current* context rather than whatever context happens to be on top at this point.
+            context.nextIP(nextIP);
+        } catch (Exception e) {
+            System.err.format("Caught exception at [%03x:%06x]\n", csChunk, this.ip);
+            throw(e);
+        }
+        this.instructionsExecuted++;
     }
 
     public Optional<CombatData> combatData() {

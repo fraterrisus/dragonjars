@@ -26,28 +26,27 @@ public class RunBoardEvent implements Instruction {
                     i.reenter(
                             i.memory().getSegmentChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
                             eventPointer,
-                            new After(i, location, nextIP)
+                            new After(i, location)
                     );
-                    return null;
+                    return nextIP;
                 }
             }
         }
 
         final int address = i.mapDecoder().getEventPointer(0);
-        i.reenter(0x46 + location.mapId(), address, () -> nextIP);
-        return null;
+        i.reenter(0x46 + location.mapId(), address, () -> {});
+        return nextIP;
     }
 
-    private record After (Interpreter i, PartyLocation oldLoc, Address nextIP) implements Supplier<Address> {
+    private record After (Interpreter i, PartyLocation oldLoc) implements Runnable {
         @Override
-        public Address get() {
+        public void run() {
             // maybe should be oldLoc.mapId()?
             // we're trying to catch when the event program moved us to a new board and exit quickly
-            if (Heap.get(Heap.BOARD_ID).read(1) != Heap.get(Heap.DECODED_BOARD_ID).read(1)) return nextIP;
+            if (Heap.get(Heap.BOARD_ID).read(1) != Heap.get(Heap.DECODED_BOARD_ID).read(1)) return;
 
             final int address = i.mapDecoder().getEventPointer(0);
-            i.reenter(0x46 + oldLoc.mapId(), address, () -> nextIP);
-            return null;
+            i.reenter(0x46 + oldLoc.mapId(), address, () -> {});
         }
     }
 }
