@@ -81,7 +81,7 @@ public class RootWindow {
         menuBar.setStylesheets(cssUrl);
     }
 
-    public synchronized Image getImage() {
+    public Image getImage() {
         final Node node = pane.getChildren().getFirst();
         if (node instanceof ImageView imageView) {
             return imageView.getImage();
@@ -92,7 +92,7 @@ public class RootWindow {
         }
     }
 
-    public synchronized void setImage(Image image) {
+    public void setImage(Image image) {
         final ImageView imageView = new ImageView(image);
         final AppPreferences prefs = AppPreferences.getInstance();
         imageView.setPreserveRatio(true);

@@ -47,16 +47,15 @@ public class FrameQueue extends AnimationTimer {
         }
 
         if (images.isEmpty()) return;
-
-        final Image newFrame = getNewFrame();
-        if (Objects.nonNull(newFrame)) RootWindow.getInstance().setImage(newFrame);
+        getNewFrame();
     }
 
-    private synchronized Image getNewFrame() {
-        if (images.isEmpty()) return null;
+    // N.B. the calls to RootWindow#setImage here and #getImage elsewhere must be synchronized.
+    private synchronized void getNewFrame() {
+        if (images.isEmpty()) return;
         final Image newFrame = images.getLast();
         images.clear();
-        return newFrame;
+        if (Objects.nonNull(newFrame)) RootWindow.getInstance().setImage(newFrame);
     }
 
     /**
