@@ -4,7 +4,6 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.Memory;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public class SpellDecayTask extends Task<Void> {
             }
         }
 
-        public boolean decrementAndUpdate(Interpreter i) {
+        public boolean decrementAndUpdate() {
             final Heap.Access dur = Heap.get(durationIndex);
             final int duration = dur.lockedRead();
             if (duration > 0) {
@@ -82,11 +81,11 @@ public class SpellDecayTask extends Task<Void> {
 
             Heap.lock();
             try {
-                if (decaySummons()) Platform.runLater(i::drawPartyInfoArea);
+                if (decaySummons()) i.runLater(Interpreter::drawPartyInfoArea);
                 if (decays.stream()
-                        .map(d -> d.decrementAndUpdate(i))
+                        .map(DecayCounter::decrementAndUpdate)
                         .reduce(Boolean::logicalOr)
-                        .orElse(false)) Platform.runLater(() -> i.drawSpellIcons(false));
+                        .orElse(false)) i.runLater(j -> j.drawSpellIcons(false));
             } finally {
                 Heap.unlock();
             }

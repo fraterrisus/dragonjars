@@ -9,6 +9,9 @@ import com.hitchhikerprod.dragonjars.data.MapData;
 import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
+import com.hitchhikerprod.dragonjars.exec.events.InterpreterEvent;
+import com.hitchhikerprod.dragonjars.exec.events.KeyPressEvent;
+import com.hitchhikerprod.dragonjars.exec.events.MethodEvent;
 import com.hitchhikerprod.dragonjars.exec.instructions.*;
 import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
@@ -31,7 +34,6 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class Interpreter implements Runnable {
     private static final int MASK_LOW = 0x000000ff;
@@ -51,7 +53,7 @@ public class Interpreter implements Runnable {
 
     /* UI Thread Interaction */
 
-    private LinkedBlockingQueue<KeyEvent> keyQueue;
+    private LinkedBlockingQueue<InterpreterEvent> eventQueue;
     private EventHandler<KeyEvent> keyCallback;
 
     /* Memory space */
@@ -217,7 +219,7 @@ public class Interpreter implements Runnable {
      */
     @Override
     public void run() {
-        this.keyQueue = app().keyQueue();
+        this.eventQueue = app().interpreterEventQueue();
         clearKeyHandler();
         this.executionStack.push(new ExecutionContext(
                 app()::close,
@@ -233,16 +235,28 @@ public class Interpreter implements Runnable {
             if (Objects.nonNull(nextIP)) {
                 executeInstruction(nextIP);
             } else {
-                KeyEvent kev = null;
+                InterpreterEvent ev = null;
                 try {
-                    kev = keyQueue.take();
-                    System.out.println("KeyEvent[" + kev.getCode().getName() + "]");
+                    ev = eventQueue.take();
                 } catch (InterruptedException e) { }
-                if (Objects.nonNull(kev) && (Objects.nonNull(keyCallback))) {
-                    keyCallback.handle(kev);
+
+                if (Objects.isNull(ev)) continue;
+
+                switch (ev) {
+                    case KeyPressEvent kev -> {
+                        if (Objects.nonNull(keyCallback)) {
+                            keyCallback.handle(kev.event());
+                        }
+                    }
+                    case MethodEvent mev -> mev.run(this);
+                    default -> throw new RuntimeException("Unrecognized event type " + ev.getClass().getName());
                 }
             }
         }
+    }
+
+    public void runLater(Consumer<Interpreter> callback) {
+        this.eventQueue.add(new MethodEvent(callback));
     }
 
     /**
@@ -593,18 +607,37 @@ public class Interpreter implements Runnable {
         return app;
     }
 
+    private ReentrantLock pauseLock = new ReentrantLock();
+
     public boolean isPaused() {
-        return gameIsPaused;
+        boolean p;
+        pauseLock.lock();
+        try {
+            p = gameIsPaused;
+        } finally {
+            pauseLock.unlock();
+        }
+        return p;
     }
 
     public void pause() {
-//        if (!gameIsPaused) System.out.println("pause <- true");
-        gameIsPaused = true;
+        pauseLock.lock();
+        try {
+            if (!gameIsPaused) System.out.println("pause <- true");
+            gameIsPaused = true;
+        } finally {
+            pauseLock.unlock();
+        }
     }
 
     public void unpause() {
-//        if (gameIsPaused) System.out.println("pause <- false");
-        gameIsPaused = false;
+        pauseLock.lock();
+        try {
+            if (gameIsPaused) System.out.println("pause <- false");
+            gameIsPaused = false;
+        } finally {
+            pauseLock.unlock();
+        }
     }
 
     public CharRectangle getBBox() {

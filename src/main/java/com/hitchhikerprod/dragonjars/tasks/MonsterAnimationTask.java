@@ -149,9 +149,9 @@ public class MonsterAnimationTask extends Task<Void> {
     private void sendToScreen() {
         final VideoBuffer output = new VideoBuffer(background);
         foreground.writeTo(output, mask);
-        Platform.runLater(() -> {
-            if (interpreter.isMonsterAnimationEnabled())
-                interpreter.bitBlast(output, mask);
+        interpreter.runLater(i -> {
+            if (i.isMonsterAnimationEnabled())
+                i.bitBlast(output, mask);
         });
     }
 }

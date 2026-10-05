@@ -6,6 +6,8 @@ import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
+import com.hitchhikerprod.dragonjars.exec.events.InterpreterEvent;
+import com.hitchhikerprod.dragonjars.exec.events.KeyPressEvent;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.AboutDialog;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
@@ -53,7 +55,7 @@ public class DragonWarsApp extends Application {
 
     private FrameQueue frameQueue;
     private MusicService musicService;
-    private LinkedBlockingQueue<KeyEvent> keyQueue;
+    private LinkedBlockingQueue<InterpreterEvent> keyQueue;
     private Interpreter interpreter;
     private Thread interpreterThread;
 
@@ -176,7 +178,7 @@ public class DragonWarsApp extends Application {
         return musicService;
     }
 
-    public LinkedBlockingQueue<KeyEvent> keyQueue() {
+    public LinkedBlockingQueue<InterpreterEvent> interpreterEventQueue() {
         return keyQueue;
     }
 
@@ -287,7 +289,7 @@ public class DragonWarsApp extends Application {
     }
 
     private void startInterpreter() {
-        setKeyHandler(this.keyQueue::offer);
+        setKeyHandler(kev -> this.keyQueue.offer(new KeyPressEvent(kev)));
         interpreter = new Interpreter(this, this.dataChunks);
         interpreterThread = Thread.ofPlatform().name("DWInterpreter").start(interpreter);
     }
@@ -382,7 +384,6 @@ public class DragonWarsApp extends Application {
                 this.musicService.stop();
                 this.gameStarted = true;
                 startInterpreter();
-//                keyQueue.offer(event);
             }
         }
     }

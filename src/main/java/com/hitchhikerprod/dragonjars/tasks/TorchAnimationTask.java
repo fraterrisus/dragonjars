@@ -24,12 +24,12 @@ public class TorchAnimationTask extends Task<Void> {
     protected Void call() throws Exception {
         while (true) {
             phaseIndex = (phaseIndex + 1 + (int)(Math.random() * 4)) % 5;
-            Platform.runLater(() -> interpreter.setTorchPhase(phaseIndex));
+            interpreter.runLater(j -> j.setTorchPhase(phaseIndex));
 
             try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
             if (isCancelled() || heap.read() == 0) {
-                interpreter.setTorchPhase(-1);
+                interpreter.runLater(j -> j.setTorchPhase(-1));
                 return null;
             }
         }

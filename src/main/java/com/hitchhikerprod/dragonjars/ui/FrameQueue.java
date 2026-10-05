@@ -66,7 +66,7 @@ public class FrameQueue extends AnimationTimer {
      * @param newImage The Image to push
      */
     public synchronized void pushImage(Image newImage) {
-        images.add(newImage);
+        images.addLast(newImage);
     }
 
     /**

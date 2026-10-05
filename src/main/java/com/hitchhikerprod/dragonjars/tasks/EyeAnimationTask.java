@@ -51,12 +51,12 @@ public class EyeAnimationTask extends Task<Void> {
             }
             final int eyePhase = PHASES.get(phaseIndex).getKey();
 
-            Platform.runLater(() -> interpreter.setEyePhase(eyePhase));
+            interpreter.runLater(i -> i.setEyePhase(eyePhase));
 
             try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
             if (isCancelled() || heap.read() == 0) {
-                interpreter.setEyePhase(-1);
+                interpreter.runLater(i -> i.setEyePhase(-1));
                 return null;
             }
         }
