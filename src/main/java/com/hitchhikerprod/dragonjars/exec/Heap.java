@@ -53,6 +53,24 @@ public class Heap {
 
     private Heap() {}
 
+    public static void setFlag(int op1, int op2) {
+        final int mask = 0x80 >> (op1 & 0x7);
+        final int heapIndex = (op1 >> 3) + op2;
+        get(heapIndex).modify(1, x -> x | mask);
+    }
+
+    public static void clearFlag(int op1, int op2) {
+        final int mask = 0x80 >> (op1 & 0x7);
+        final int heapIndex = (op1 >> 3) + op2;
+        get(heapIndex).modify(1, x -> x & ~mask);
+    }
+
+    public static int readFlag(int op1, int op2) {
+        final int mask = 0x80 >> (op1 & 0x7);
+        final int heapIndex = (op1 >> 3) + op2;
+        return get(heapIndex).read(1) & mask;
+    }
+
     private void write(int index, int count, int val) {
         if (val != 0 && count > 4) throw new IllegalArgumentException();
         for (int i = 0; i < count; i++) {

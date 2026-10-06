@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FlagOperationsTest {
+class FlagInstructionTest {
     @Test
     public void setAL() {
         final Chunk program = new Chunk(List.of(

@@ -330,7 +330,12 @@ public class Interpreter implements Runnable {
     private static final List<Patch> PATCHES = List.of(
             new Patch(0x008, 0x02f1, (i) -> i.openParagraph(i.getAX())),
             new Patch(0x046 + 0x08, 0x03aa, (i) -> i.openParagraph(30)),
-            new Patch(0x046 + 0x12, 0x10ff, (i) -> i.openParagraph(138)),
+            new Patch(0x046 + 0x12, 0x10ff, (i) -> {
+                final Address flag = new Address(i.memory().lookupChunkId(0x046 + 0x12), 0x1105);
+                final int bitsplit = i.memory().read(flag, 1);
+                final int offset = i.memory().read(flag.incr(), 1);
+                if (Heap.readFlag(bitsplit, offset) > 0) i.openParagraph(138);
+            }),
             new Patch(0x046 + 0x18, 0x06c5, (i) -> i.openParagraph(80)),
             new Patch(0x046 + 0x1e, 0x065b, (i) -> i.openParagraph(91)),
             new Patch(0x046 + 0x24, 0x041b, (i) -> i.openParagraph(42)),
@@ -1559,9 +1564,9 @@ public class Interpreter implements Runnable {
             case 0x4b -> Instructions.SET_CARRY;
             case 0x4c -> Instructions.CLEAR_CARRY;
             case 0x4d -> new RandomAX();
-            case 0x4e -> new FlagSetAL();
-            case 0x4f -> new FlagClearAL();
-            case 0x50 -> new FlagTestAL();
+            case 0x4e -> FlagInstruction.SET_AL_IMM;
+            case 0x4f -> FlagInstruction.CLEAR_AL_IMM;
+            case 0x50 -> FlagInstruction.TEST_AL_IMM;
             case 0x51 -> new ArrayMax();
             case 0x52 -> JumpIf.ALWAYS;
             case 0x53 -> new Call();
@@ -1636,9 +1641,9 @@ public class Interpreter implements Runnable {
             case 0x98 -> new WritePCField();
             case 0x99 -> new TestAX();
             case 0x9a -> new LoadHeapOnes();
-            case 0x9b -> new FlagSetImm();
-            case 0x9c -> new FlagClearImm();
-            case 0x9d -> new FlagTestImm();
+            case 0x9b -> FlagInstruction.SET_IMM_IMM;
+            case 0x9c -> FlagInstruction.CLEAR_IMM_IMM;
+            case 0x9d -> FlagInstruction.TEST_IMM_IMM;
             case 0x9e -> new GetSegmentSize();
             case 0x9f -> new YouWin();
             default -> throw new IllegalArgumentException(String.format("Unimplemented opcode %02x", opcode));

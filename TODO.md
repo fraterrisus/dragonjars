@@ -2,9 +2,6 @@
 
 - Add more combat information to the Combat Log window.
 - Do a better job listing inventory items in the Party window.
-- Figure out why the Magic Lamp's light has an infinite duration.
-- Better multithreading, including (maybe) putting the interpreter on its own thread so it's not on the JavaFX
-  Application thread.
 - Add mouse support.
 - Add support for multiple save files (that are *just* chunks 0x07 and 0x10).
 - Add a character editor.
