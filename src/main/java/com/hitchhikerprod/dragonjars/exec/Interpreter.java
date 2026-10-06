@@ -219,6 +219,7 @@ public class Interpreter implements Runnable {
                 0
         ));
         eventLoop();
+        System.err.println("Exiting interpreter thread.");
     }
 
     /**
@@ -286,8 +287,8 @@ public class Interpreter implements Runnable {
         }
     }
 
-    private int breakpointChunk = 0x000;
-    private int breakpointAddress = 0xfffff;
+    private int breakpointChunk = 0x58;
+    private int breakpointAddress = 0x0dce;
 
     private void executeInstruction(Address ip) {
         final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
@@ -300,12 +301,10 @@ public class Interpreter implements Runnable {
             System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
                     cs, csChunk, memory().getSegmentFrob(cs));
         }
-/*
-        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
+//        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
         if (csChunk == breakpointChunk && this.ip == breakpointAddress) {
             System.out.println("breakpoint");
         }
- */
         runPatches(csChunk, this.ip);
         final Instruction ins = decodeOpcode(opcode);
         try {
@@ -399,7 +398,9 @@ public class Interpreter implements Runnable {
 
     private void openParagraph(int id) {
         final AppPreferences prefs = AppPreferences.getInstance();
-        if (prefs.autoOpenParagraphsProperty().get()) app().openParagraphsWindow(id);
+        if (prefs.autoOpenParagraphsProperty().get()) {
+            Platform.runLater(() -> app().openParagraphsWindow(id));
+        }
     }
 
     private void selectDamageDie() {

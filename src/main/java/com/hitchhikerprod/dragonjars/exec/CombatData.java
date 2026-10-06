@@ -252,7 +252,7 @@ public class CombatData {
         sb.append(String.format("   target %dh", beforeHP));
         final int damageHP = Heap.get(0x5d).read(2);
         final int afterHP = beforeHP - damageHP;
-        if (afterHP < 0) {
+        if (afterHP <= 0) {
             sb.append(", dies");
         } else {
             sb.append(String.format(" > %dh", afterHP));

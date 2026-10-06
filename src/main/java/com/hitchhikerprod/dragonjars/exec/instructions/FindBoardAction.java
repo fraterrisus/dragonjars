@@ -94,7 +94,7 @@ public class FindBoardAction implements Instruction {
                                 if (!i.getCarryFlag()) searchForActions(nextIP);
                             }
                     );
-                    return null;
+                    return nextIP;
                 }
             }
         }

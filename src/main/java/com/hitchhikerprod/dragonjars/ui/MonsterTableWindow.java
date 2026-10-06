@@ -542,8 +542,8 @@ public class MonsterTableWindow {
                 "HP", "Current health",
                 "Init", "Current initiative roll;\n" +
                         "set to zero once creature has acted",
-                "+AV", "Temporary AV modifier due to chosen action",
-                "+DV", "Temporary DV modifier due to chosen action",
+                "AV", "Current total AV",
+                "DV", "Current total DV",
                 "Targetable", "Monsters can only be attacked once until\n" +
                         "every monster in the group has been attacked.\n" +
                         "This property resets frequently.\n",
@@ -598,11 +598,11 @@ public class MonsterTableWindow {
         }
 
         private static TableColumn<MonsterData, Integer> getAVColumn() {
-            return getBaseColumn("+AV", "av", signExtension);
+            return getBaseColumn("AV", "av", signExtension);
         }
 
         private static TableColumn<MonsterData, Integer> getDVColumn() {
-            return getBaseColumn("+DV", "dv", signExtension);
+            return getBaseColumn("DV", "dv", signExtension);
         }
 
         private static TableColumn<MonsterData, Integer> getGroupIDColumn() {
