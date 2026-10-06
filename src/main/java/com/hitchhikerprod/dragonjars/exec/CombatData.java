@@ -167,7 +167,6 @@ public class CombatData {
                     bonus, getToHit(bonus, attackRoll), attackerInt / 4, magicSkill));
         }
         sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
-        // TODO: add kill detection
     }
 
     public void partyAttackTarget() {
@@ -203,13 +202,12 @@ public class CombatData {
     }
 
     public void partyAttackHits() {
-        sb.append("\n\t1d16");
-
         final Address pcBaseAddress = Heap.getPCBaseAddress();
         final int attackerAV = ALU.signExtend(i.memory().read(pcBaseAddress.incr(Memory.PC_AV), 1), 1);
         final int weaponSkill = Heap.get(0x79).read();
         final int attackRoll = Heap.get(0x7b).read();
-
+//        sb.append("\n\tRoll: ").append(attackRoll);
+        sb.append("\n\t1d16");
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
             sb.append(i.getCarryFlag() ? "=1" : "=16");
             sb.append(", automatic ");
@@ -477,7 +475,7 @@ public class CombatData {
     }
 
     private static int getTarget(int defenderDV) {
-        return 8 + defenderDV;
+        return 6 + defenderDV;
     }
 
     private String decodePartyAction(int action) {
