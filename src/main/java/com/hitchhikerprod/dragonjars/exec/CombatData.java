@@ -98,7 +98,7 @@ public class CombatData {
     }
 
     public void partyMove(int targetSlot) {
-        sb.append(" moves to slot ").append(targetSlot);
+        sb.append(" to slot ").append(targetSlot);
     }
 
     public void partySpell() {
@@ -156,14 +156,13 @@ public class CombatData {
         final int defenderDV = Heap.get(0x7a).read();
         final int attackRoll = Heap.get(0x7b).read();
 
-        sb.append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, getTarget(defenderDV)));
+        sb.append(String.format(" DV%+d target=%d {vs} ", defenderDV, getTarget(defenderDV)));
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
-            sb.append(i.getCarryFlag() ? "=1" : "=16");
-            sb.append(", automatic ");
+            sb.append("automatic ");
         } else {
             final int bonus = (attackerInt / 4) + magicSkill;
-            sb.append(String.format("%+d=%d (IQ%+d Sk%+d), ",
+            sb.append(String.format("1d16%+d=%d (IQ%+d Sk%+d), ",
                     bonus, getToHit(bonus, attackRoll), attackerInt / 4, magicSkill));
         }
         sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
@@ -207,13 +206,12 @@ public class CombatData {
         final int weaponSkill = Heap.get(0x79).read();
         final int attackRoll = Heap.get(0x7b).read();
 //        sb.append("\n\tRoll: ").append(attackRoll);
-        sb.append("\n\t1d16");
+        sb.append("\n\t");
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
-            sb.append(i.getCarryFlag() ? "=1" : "=16");
-            sb.append(", automatic ");
+            sb.append("automatic ");
         } else {
             final int bonus = attackerAV + weaponSkill;
-            sb.append(String.format("%+d=%d (AV%+d Sk%+d), ",
+            sb.append(String.format("1d16%+d=%d (AV%+d Sk%+d), ",
                     bonus, getToHit(bonus, attackRoll), attackerAV, weaponSkill));
         }
         sb.append(i.getCarryFlag() ? "miss" : "hit");
@@ -351,19 +349,18 @@ public class CombatData {
     }
 
     public void monsterAttackHits() {
-        sb.append("\n\t1d16");
+        sb.append("\n\t");
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
 
-        final int groupAV = ALU.signExtend(i.memory().read(combatCodeSegment, Heap.get(0x41).read(2) + GROUP_AV, 1), 1);
+        // See {03:08bf}. Effective AV seems to be (DEX/4) + (group mod) + (global mod),
+        // ignoring the "Group AV" rating in group[06].
         final int attackerAV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1), 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
-            sb.append(i.getCarryFlag() ? "=1" : "=16");
-            sb.append(", automatic ");
+            sb.append("automatic ");
         } else {
-            final int bonus = attackerAV + groupAV;
-            sb.append(String.format("%+d=%d, ", bonus, getToHit(bonus, attackRoll)));
+            sb.append(String.format("1d16%+d=%d, ", attackerAV, getToHit(attackerAV, attackRoll)));
         }
         sb.append(i.getCarryFlag() ? "miss" : "hit");
     }
@@ -424,7 +421,7 @@ public class CombatData {
         final int defenderDV = ALU.signExtend(i.memory().read(targetAddress.incr(Memory.PC_DV), 1), 1);
 
         sb.append("\n\t").append(targetName)
-            .append(String.format(" DV%+d target=%d {vs} 1d16", defenderDV, getTarget(defenderDV)));
+            .append(String.format(" DV%+d target=%d {vs} ", defenderDV, getTarget(defenderDV)));
 
         final int monsterId = Heap.get(0x82).read();
         final int monsterGroupId = 0x7f & Heap.get(0x81).read(); // 1 -> 03d6
@@ -434,11 +431,10 @@ public class CombatData {
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
-            sb.append(i.getCarryFlag() ? "=1" : "=16");
-            sb.append(", automatic ");
+            sb.append("automatic ");
         } else {
             final int bonus = attackerAV + groupAV;
-            sb.append(String.format("%+d=%d, ", bonus, getToHit(bonus, attackRoll)));
+            sb.append(String.format("1d16%+d=%d, ", bonus, getToHit(bonus, attackRoll)));
         }
         sb.append(i.getCarryFlag() ? "miss (1/2)" : "hit");
 
@@ -487,8 +483,8 @@ public class CombatData {
             case 4 -> "equips";
             case 5 -> "blocks";
             case 6 -> "dodges";
-            case 8 -> "moves ahead";
-            case 9 -> "moves behind";
+            case 8 -> "moves forward";
+            case 9 -> "moves back";
             case 10 -> "flees";
             case 11 -> "passes";
             case 12 -> "uses";

@@ -287,8 +287,8 @@ public class Interpreter implements Runnable {
         }
     }
 
-    private int breakpointChunk = 0x58;
-    private int breakpointAddress = 0x0dce;
+    private int breakpointChunk = 0x03;
+    private int breakpointAddress = 0x08bf;
 
     private void executeInstruction(Address ip) {
         final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
@@ -425,11 +425,17 @@ public class Interpreter implements Runnable {
         // 10' away and the weapon even has a secondary damage die
         int itemOffset = 0x08;
         if (targetGroupRange > 1) {
-            itemOffset = 0x09;
-            new ReadInventoryWord().exec(this);
-            if (getAX() == 0) {
-                // just kidding; this weapon doesn't have a secondary damage rating
-                itemOffset = 0x08;
+            final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
+            final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
+            final int slotId = Heap.get(Heap.SELECTED_ITEM).read();
+            final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (0x17 * slotId);
+            final int itemWord = memory().read(
+                    Interpreter.PARTY_SEGMENT,
+                    itemBaseAddress + 0x09,
+                    width()
+            );
+            if (itemWord != 0) {
+                itemOffset = 0x09;
             }
         }
         memory.write(ds, 0x0d69, 1, itemOffset);
