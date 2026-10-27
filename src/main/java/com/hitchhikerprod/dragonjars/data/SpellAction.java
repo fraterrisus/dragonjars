@@ -8,7 +8,7 @@ public class SpellAction extends Action {
 
     public SpellAction(int header, int specialId, int eventId) {
         super(header, specialId, eventId);
-        this.spellName = Lists.SPELL_NAMES[header / 8][header % 8];
+        this.spellName = Lists.getSpellName(header);
     }
 
     @Override

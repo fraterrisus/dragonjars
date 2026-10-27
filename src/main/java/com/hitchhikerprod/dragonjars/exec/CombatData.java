@@ -109,7 +109,7 @@ public class CombatData {
             sb.append(" the ").append(item.getName()).append(" to cast");
         }
         final int spellId = Heap.get(0x85).read();
-        final String spellName = Lists.SPELL_NAMES[spellId / 0x08][spellId % 0x08];
+        final String spellName = Lists.getSpellName(spellId);
         final int power = Heap.get(0x86).read(2);
         sb.append(" ").append(spellName).append(" (").append(power).append("pow)");
     }
@@ -393,7 +393,7 @@ public class CombatData {
 
     public void monsterSpell() {
         final int spellId = Heap.get(0x85).read();
-        final String spellName = Lists.SPELL_NAMES[spellId / 0x08][spellId % 0x08];
+        final String spellName = Lists.getSpellName(spellId);
         final int power = Heap.get(0x86).read(2);
         sb.append(" casts ").append(spellName).append(" (").append(power).append("pow)");
     }

@@ -21,7 +21,13 @@ public class Lists {
             "Bows", "Crossbows", "Thrown Weapons"
     };
 
-    public static final String[][] SPELL_NAMES = {
+    public static String getSpellName(int spellId) {
+        final int section = (spellId >> 3) & 0x7;
+        final int offset = spellId & 0x7;
+        return SPELL_NAMES[section][offset];
+    }
+
+    private static final String[][] SPELL_NAMES = {
             { "L:Mage Fire", "L:Disarm", "L:Charm", "L:Luck", "L:Lesser Heal",
                     "L:Mage Light", "H:Fire Light", "H:Elvar's Fire" },
             { "H:Poog's Vortex", "H:Ice Chill", "H:Big Chill", "H:Dazzle",
