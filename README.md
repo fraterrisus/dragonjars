@@ -23,28 +23,26 @@ preserving, and developing video game source code is a constant source of inspir
 
 ## Compatibility Note
 
-In order to use this program, you'll need a copy of the game's data files (PC version). I developed *DragonJars* 
-using the old archival copy that I've had around for at least 15-20 years; obviously, in an effort to not violate 
-Interplay's copyright, I can't distribute the data files as part of this package.
+In order to use this program, you'll need a copy of the data files from the PC version of the game. Obviously, to 
+avoid violating Interplay's copyright, I can't distribute those files. However, as of this writing, someone 
+operating the "Interplay Entertainment" license seems to be re-issuing the company's old IP on more modern platforms 
+(basically, a bundled version of DOSBOX plus the data files). You can currently buy a copy of _Dragon Wars_ on Steam 
+or GOG for around 10 USD. It should be pretty easy to find the `DRAGON.COM`, `DATA1`, and `DATA2` files inside 
+whatever they install on your hard drive.
 
-As of this writing, someone operating the "Interplay Entertainment" license seems to be re-issuing the company's old 
-IP on more modern platforms (basically, a bundled version of DOSBOX plus the data files). You can currently buy a 
-copy of _Dragon Wars_ on Steam or GOG for around 10 USD. It should be pretty easy to find the `DRAGON.COM`, `DATA1`, 
-and `DATA2` files inside whatever they install on your hard drive.
-
-(You could also head over to the [Internet Archive](https://archive.org/details/msdos_Dragon_Wars_1990) and play the 
+(You could also head over to the [Internet Archive](https://archive.org/details/msdos_Dragon_Wars_1990) and play the
 game for free in your browser, although you won't be able to download it or use those files with this program.)
 
-My intent is for _DragonJars_ to work with any version of the game data you happen to have, but I can only test so 
-much. I **believe** it is compatible with at least the Steam version; although the game's data files have been 
-reassembled and there are some differences, my patches and bugfixes still seem to be valid. Please let me know if 
-you run into any weird issues!
+I developed *DragonJars* using the old archival copy that I've had around for at least 15-20 years. My intent is for 
+it to work with any version of the game data you happen to have, but I can only test so much. I **believe** it is 
+compatible with at least the Steam version; although the game's data files have been reassembled and there are some 
+differences, my patches and bugfixes still seem to be valid. Please let me know if you run into any weird issues!
 
 ## Who are you?
 
 I'm Ben Cordes, aka FraterRisus. I'm a giant fan of _Dragon Wars_, and have been since 1990 or so when I bought a copy
-of it for the family PC and played it to death. (I got real quick on stopping the blaring title music so as to not
-annoy the rest of my family, which is why adding a _persistent_ sound preference was one of the first things I did
+of it for the family PC and played it to death. (I quickly learned how to stop the blaring title music so as to not
+annoy the rest of my family, which is why adding a persistent sound preference was one of the first things I did
 after I got the music working.)
 
 I'm also the author of what I think is [the most comprehensive walkthrough](https://walkthroughs.hitchhikerprod.com/dragon-wars)
@@ -72,9 +70,11 @@ On Windows, grab the `.exe` installer and run it. Files will land wherever you w
 the Entertainment section of your Start menu.
 
 Alternately, grab the `.zip` file and uncompress it wherever you want. Run `bin/dragonjars` or `bin/dragonjars.bat` as
-appropriate to start the game.
+appropriate to start the emulator.
 
-Once the game starts, open File > Preferences and point the game at the three data files. It should start automatically.
+Once the emulator starts, open File > Preferences and point at the three data files. The game should start 
+automatically. You only have to do this the first time; if you want to point the emulator at different versions of 
+the data files, do it while you're still on the game's title screen.
 
 ## How Can I Help?
 

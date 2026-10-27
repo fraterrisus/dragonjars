@@ -8,10 +8,9 @@ The most important rule for contributing to this project is this: **No generativ
 documentation and I don't want it in the code. This rule is not negotiable, and I am unlikely to engage with any 
 attempt at discussion.
 
-Apart from that, please keep in mind that *DragonJars* was and continues to be a labor of love on my part, and no 
-one is getting paid here. *Dragon Wars* isn't my game, after all. I don't have a Code of Conduct — *yet* — because 
-not enough people have expressed an interest in helping. In lieu of a formal document, please 
-follow [Wheaton's Law](https://knowyourmeme.com/memes/wheatons-law).   
+Apart from that, please keep in mind that *DragonJars* is a labor of love on my part, and no one is getting paid to 
+work on it. *Dragon Wars* isn't my game, after all. I don't have a Code of Conduct — *yet* — because not enough 
+people have expressed an interest in helping. In lieu of a formal document, please follow [Wheaton's Law](https://knowyourmeme.com/memes/wheatons-law).   
 
 You should also be aware of the [Creative Commons license](LICENSE) I've chosen, and be okay with any contributions you 
 make being captured under that license.
@@ -20,17 +19,20 @@ make being captured under that license.
 
 In short:
 
-- Check the [TODO file](TODO.md). I keep a running list of bugs I know about, things I'd like to do in the future, etc.
-- If your bug, idea, problem, or wish list item isn't in that file, write a [GitHub Issue](https://github.com/fraterrisus/dragonjars/issues) against this repository.
+- Check the [TODO file](TODO.md). I keep a running list of bugs I know about,
+  things I'd like to do in the future, etc.
+- If your bug, idea, problem, or wish list item isn't in that file, write 
+  a [GitHub Issue](https://github.com/fraterrisus/dragonjars/issues) against this repository. Please, please include 
+  the version, which OS you're using, and where you got your data files.
 
 More details follow in the sections below.
 
 ## Play the Game
 
-The best way to help out is simply to download the project and use it to play *Dragon Wars*! The reason I made this 
-superemulator is because I love this game and I want other people to enjoy it as much as I do. But I'm just one person 
-running my own archived copy of the game on my own machine — more players means more testing, which means we find 
-more of the weird stuff I didn't think to try. 
+The best way to help out is simply to download the project and use it to play *Dragon Wars*! I wrote this 
+superemulator because I love this game and I want other people to enjoy it as much as I do. But I'm just one person
+running my own archived copy of the game on my own machine — more players means more testing, which means we find
+more of the weird stuff I didn't think to try.
 
 Do the Windows and MacOS versions even work? Does it work with the Steam or GOG versions of *Dragon Wars*? If you 
 try it, I'd love to know — file an Issue on this repository with your notes!
@@ -65,7 +67,7 @@ JavaFX *should* be cross-platform enough that neither of those matter.
 ### Understanding the Engine
 
 If you want to dig into the internals of the engine itself (as opposed to the UI), you may want to check out the 
-sibling repository where attempt to document the internals of the game, the data structures, and how it does things: 
+sibling repository where I attempt to document the internals of the game, the data structures, and how it does things:
 [dragonwars-crack](https://github.com/fraterrisus/dragonwars-crack) 
 
 In particular, that repo has some utilities that can be used to rip apart the data files and get at the microcode 
