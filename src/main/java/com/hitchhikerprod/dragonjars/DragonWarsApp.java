@@ -240,7 +240,10 @@ public class DragonWarsApp extends Application {
 
     public void openPartyStateDialog() {
         if (Objects.isNull(interpreter)) return;
-        withInterpreterPause(() -> new PartyStateDialog(stage, interpreter.memory()).showAndWait());
+        withInterpreterPause(() -> {
+            final Chunk partyData = interpreter.memory().getSegment(Interpreter.PARTY_SEGMENT);
+            new PartyStateDialog(stage, partyData).showAndWait();
+        });
     }
 
     public void openPreferencesDialog() {

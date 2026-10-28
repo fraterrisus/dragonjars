@@ -31,15 +31,15 @@ import java.util.Map;
 import java.util.Objects;
 
 public class PartyStateDialog extends Dialog<Void> {
-    private final ModifiableChunk partyData;
+    private final Chunk partyData;
 
-    public PartyStateDialog(Window parent, Memory memory) {
+    public PartyStateDialog(Window parent, Chunk partyData) {
         super();
         super.initOwner(parent);
         super.setResultConverter(buttonType -> null);
         super.setTitle("Party State");
 
-        this.partyData = memory.getSegment(Interpreter.PARTY_SEGMENT);
+        this.partyData = partyData;
 
         final ButtonType dismissButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
         final DialogPane root = getDialogPane();
