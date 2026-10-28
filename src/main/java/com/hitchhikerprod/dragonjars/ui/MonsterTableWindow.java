@@ -68,9 +68,10 @@ public class MonsterTableWindow {
         groupList = new ListView<>();
         groupList.setCellFactory(MonsterCell::new);
         groupList.setPrefWidth(750);
+        groupList.getStyleClass().add("dj-background");
 
         final ScrollPane parent = new ScrollPane(groupList);
-        parent.getStyleClass().add("monster-window");
+        parent.getStyleClass().addAll("monster-window", "dj-background");
         parent.setFitToHeight(true);
         parent.setFitToWidth(true);
         return parent;

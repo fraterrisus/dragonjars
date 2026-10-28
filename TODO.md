@@ -14,10 +14,9 @@
   Is everything else off now?
 - I saved on the trap square on the Second Guard Bridge after looting the armory but before the outbound fight, and 
   when I reloaded the outbound fight didn't happen until I stepped on the armory square a second time.
-- There's some odd scrolling behavior on the Combat Log window if the horizontal scrollbar becomes required.
 - There's a bit of a pause and blink when a combat round starts... seems like the thing that updates the party 
   status area sometimes sneaks a frame in before the messages start.
-- Goblins are one pixel up from the bottom of the viewport.
+- Goblins are one pixel up from the bottom of the viewport. Maybe others? Maybe this isn't a bug?
 - Some monster images overdraw the viewport corners.
 
 # Implementation Differences
