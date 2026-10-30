@@ -41,7 +41,7 @@ class SegmentTable {
     }
 
     /**
-     * Fetch a Segment from the table. Throws if the segment ID doesn't exist.
+     * Fetch a Segment from the table. Throws if the segment ID doesn't exist or the slot is empty.
      * @param segmentId ID of the Segment
      * @return Segment
      */
