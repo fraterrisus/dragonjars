@@ -40,6 +40,10 @@ public class FrameQueue extends AnimationTimer {
     @Override
     public void handle(long now) {
         numFrames++;
+
+        // You can apply an artificial FPS limiter here by, for instance, returning if numFrames % 10 != 0.
+        // Which makes all the graphic blips go away.
+
         if (lastUpdate < now - ONE_SECOND) {
             fps.set(1.0 * numFrames * ONE_SECOND / (now - lastUpdate));
             numFrames = 0L;
@@ -69,9 +73,11 @@ public class FrameQueue extends AnimationTimer {
     }
 
     /**
-     * Used when the caller desires to make changes to the current frame. A copy of the most recent frame will be made,
+     * Used when the caller desires to make changes to the current frame. A copy of the most recent frame will be made
      * and a `PixelWriter` pointing to that copy passed back to the generator lambda so that the caller can make
      * modifications to it.
+     * Note that because this call is synchronized, no one else can write a frame while waiting for another caller to
+     * run its generator lambda. Try to be nice.
      *
      * @param generator A lambda that receives a PixelWriter.
      */
