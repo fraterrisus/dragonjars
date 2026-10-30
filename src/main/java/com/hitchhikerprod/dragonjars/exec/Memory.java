@@ -46,14 +46,20 @@ public class Memory {
         // fault. Get it? That's an x86 joke for everyone out there reading the comments.
         final ModifiableChunk garbageChunk = new ModifiableChunk(new byte[0x1]);
         final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
-        segmentTable.setSegment(0, garbageChunk, 0xffff, 0x1, Frob.FROZEN);
-        segmentTable.setSegment(Interpreter.PARTY_SEGMENT, partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
+        assert segmentTable.newSegment(garbageChunk, 0xffff, Frob.FROZEN) == 0x0;
+        assert segmentTable.newSegment(partyChunk, 0xffff, Frob.FROZEN) == 0x1;
     }
 
+    /**
+     * Returns a reference to the Chunk of executable data.
+     */
     public Chunk getCodeChunk() {
         return codeChunk;
     }
 
+    /**
+     * Returns a reference to the privately-allocated Chunk of automap data storage.
+     */
     public ModifiableChunk automapChunk() {
         return automapChunk;
     }
@@ -62,26 +68,25 @@ public class Memory {
      * Allocates a segment for a chunk ID, writes the frob, and returns the segment ID. If the chunk is already present
      * in the segment table, updates the frob and returns the existing segment ID.
      *
-     * @param chunkId     The desired chunk ID
-     * @param frob        The desired new value of the segment's frob
+     * @param chunkId The chunk ID we want to load
+     * @param frob The new segment's frob
      * @return The segment ID for the chunk, which may or may not be newly allocated
      */
     public synchronized int allocateSegment(int chunkId, Frob frob) {
         int segmentId = segmentTable.findSegmentId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
-            segmentId = segmentTable.getFreeSegmentId();
-            // Make a copy of the chunk data for the new segment, so the data we read from the file stays pristine.
-            // This is a closer emulation to how the engine runs.
+            // Allocate a new segment.
+            // Make a copy of the chunk data so the data we read from the file stays pristine.
             final ModifiableChunk newChunk = new ModifiableChunk(dataChunks.get(chunkId));
-            segmentTable.setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
+            return segmentTable.newSegment(newChunk, chunkId, frob);
+        } else {
+            // Update the frob on the existing segment.
+            segmentTable.setFrob(segmentId, frob);
+            return segmentId;
         }
-        if (segmentTable.getSegment(segmentId).frob() == Frob.FROZEN && frob != Frob.FROZEN)
-            System.err.println("Warning: overwriting Frob.FROZEN for segment " + segmentId + "\n");
-        segmentTable.setSegmentFrob(segmentId, frob);
-        return segmentId;
     }
 
-    /* There are an awful lot of calls to getSegmentForChunk followed immediately by getChunk. We could introduce a new
+    /* There are an awful lot of calls to allocateSegment followed immediately by getChunk. We could introduce a new
      * call that made those atomic, but some callers need both return values. */
 
     /**
@@ -92,10 +97,8 @@ public class Memory {
      * @return The segment ID of the new segment
      */
     public synchronized int allocateTemporary(int bufferSize) {
-        final int segmentId = segmentTable.getFreeSegmentId();
         final ModifiableChunk tempChunk = new ModifiableChunk(new byte[bufferSize]);
-        segmentTable.setSegment(segmentId, tempChunk, 0xffff, tempChunk.getSize(), Frob.IN_USE);
-        return segmentId;
+        return segmentTable.newSegment(tempChunk, 0xffff, Frob.IN_USE);
     }
 
     /**
@@ -106,7 +109,7 @@ public class Memory {
      */
     public synchronized void freeChunk(int chunkId) {
         final int segmentId = segmentTable.findSegmentId(chunkId);
-        if (segmentId != -1) segmentTable.freeSegment(segmentId);
+        if (segmentId != -1) segmentTable.free(segmentId);
     }
 
     /**
@@ -120,7 +123,7 @@ public class Memory {
      */
     public synchronized void freeSegment(int segmentId) {
         if (segmentId == 0xff) return;
-        segmentTable.freeSegment(segmentId);
+        segmentTable.free(segmentId);
     }
 
     /**
@@ -150,36 +153,82 @@ public class Memory {
      * Returns the size of the given segment ID.
      */
     public synchronized int getSize(int segmentId) {
-        return segmentTable.getSegment(segmentId).size();
+        return segmentTable.getSegment(segmentId).chunk().getSize();
     }
 
     /**
-     * Returns the segment ID matching this chunk ID, or -1 if the chunk is not in the segment table.
+     * Looks up the segment ID matching a given chunk ID.
+     *
+     * @param chunkId The chunk ID to locate
+     * @return The segment ID, or -1 if not found.
      */
     public synchronized int lookupChunkId(int chunkId) {
         return segmentTable.findSegmentId(chunkId);
     }
 
+    /**
+     * Read some bytes from a memory location and translate them from little-endian into a Java integer.
+     *
+     * @param segmentId Segment ID from which to read.
+     * @param offset Address from which to read.
+     * @param length Number of bytes (1-4) of data to read.
+     * @return int
+     */
     public synchronized int read(int segmentId, int offset, int length) {
         return getChunk(segmentId).read(offset, length);
     }
 
+    /**
+     * Read some bytes from a memory location and translate them from little-endian into a Java integer.
+     *
+     * @param address Memory location from which to read.
+     * @param length Number of bytes (1-4) of data to read.
+     * @return int
+     */
     public synchronized int read(Address address, int length) {
         return read(address.segment(), address.offset(), length);
     }
 
+    /**
+     * Read some bytes from a memory location.
+     *
+     * @param address Memory location from which to read.
+     * @param length Number of bytes of data to read.
+     * @return A list of Bytes, in the same order they are in the file.
+     */
     public synchronized List<Byte> readBytes(Address address, int length) {
         return getChunk(address.segment()).getBytes(address.offset(), length);
     }
 
+    /**
+     * Write some data to a memory location.
+     *
+     * @param segmentId Segment ID to write.
+     * @param offset Address to write.
+     * @param length Number of bytes of data to write.
+     * @param data A Java int containing the data to write; will be written in little-endian order.
+     */
     public synchronized void write(int segmentId, int offset, int length, int data) {
         getChunk(segmentId).write(offset, length, data);
     }
 
+    /**
+     * Write some data to a memory location.
+     *
+     * @param address Memory location to write.
+     * @param length Number of bytes (1-4) of data to write.
+     * @param data A Java int containing the data to write; will be written in little-endian order.
+     */
     public synchronized void write(Address address, int length, int data) {
         write(address.segment(), address.offset(), length, data);
     }
 
+    /**
+     * Write some data to a memory location.
+     *
+     * @param address Memory location to write.
+     * @param data A list of Bytes to write; will be written in list order.
+     */
     public synchronized void writeBytes(Address address, List<Byte> data) {
         getChunk(address.segment()).setBytes(address.offset(), data);
     }
