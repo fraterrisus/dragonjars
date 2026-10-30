@@ -78,8 +78,8 @@ public class DrawCurrentViewport implements Instruction {
             final int squareId = FLOOR_SQUARE_ORDER.get(index);
             final GridCoordinate rotated = loc.translate(squareId);
             final MapData.Square s = i.mapDecoder().getSquare(rotated.x(), rotated.y());
-            final int segmentId = i.getSegmentForChunk(s.floorTextureChunk(), Frob.IN_USE);
-            final Chunk textureChunk = i.memory().getSegment(segmentId);
+            final int segmentId = i.memory().allocateSegment(s.floorTextureChunk(), Frob.IN_USE);
+            final Chunk textureChunk = i.memory().getChunk(segmentId);
             final int x0 = FLOOR_X_OFFSET.get(index);
             final int y0 = FLOOR_Y_OFFSET.get(index);
             final int textureOffset = FLOOR_TEXTURE_OFFSET.get(index);
@@ -91,8 +91,8 @@ public class DrawCurrentViewport implements Instruction {
 
     private void drawRoofTexture(int textureId) {
         if (textureId == 1) { // 0x54f8
-            final int segmentId = i.getSegmentForChunk(ChunkTable.SKY_TEXTURE, Frob.IN_USE);
-            final Chunk textureChunk = i.memory().getSegment(segmentId);
+            final int segmentId = i.memory().allocateSegment(ChunkTable.SKY_TEXTURE, Frob.IN_USE);
+            final Chunk textureChunk = i.memory().getChunk(segmentId);
             i.fg().drawTexture(textureChunk, 0x4, 0x0, 0x0, 0x0, gameplayArea);
         } else { // 0x5515
             // Draw a generic checkerboard roof
@@ -123,8 +123,8 @@ public class DrawCurrentViewport implements Instruction {
 
             // Wall texture
             if ((wallChunk >= 0x6e) && (wallChunk < 0x7f)) {
-                final int segmentId = i.getSegmentForChunk(wallChunk, Frob.IN_USE);
-                final Chunk textureChunk = i.memory().getSegment(segmentId);
+                final int segmentId = i.memory().allocateSegment(wallChunk, Frob.IN_USE);
+                final Chunk textureChunk = i.memory().getChunk(segmentId);
                 i.fg().drawTexture(textureChunk, textureOffset, x0, y0, invert, gameplayArea);
             }
 
@@ -133,8 +133,8 @@ public class DrawCurrentViewport implements Instruction {
                 final MapData.Square sq = i.mapDecoder().getSquare(farSquare);
                 if (sq.decoTextureChunk().isPresent()) {
                     final Integer otherChunkId = sq.decoTextureChunk().get();
-                    final int segmentId = i.getSegmentForChunk(otherChunkId, Frob.IN_USE);
-                    final Chunk textureChunk = i.memory().getSegment(segmentId);
+                    final int segmentId = i.memory().allocateSegment(otherChunkId, Frob.IN_USE);
+                    final Chunk textureChunk = i.memory().getChunk(segmentId);
                     i.fg().drawTexture(textureChunk, textureOffset, x0, y0, 0, gameplayArea);
                 }
             }

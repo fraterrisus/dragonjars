@@ -170,10 +170,8 @@ public class Interpreter implements Runnable {
         // cs:015b  cx <- 0x0180
         // cs:015e  chunk_map[0x0000..0x017f] <- 0x00
 
-        // create segments 0 and 1, which have the same segment address, to store party data [0x0e00 bytes]
-        final ModifiableChunk partyChunk = new ModifiableChunk(new byte[0x0e00]);
-        memory().addSegment(partyChunk, 0xffff, 0x0001, Frob.FROZEN);
-        memory().addSegment(partyChunk, 0xffff, 0x0e00, Frob.FROZEN);
+        // Allocate a garbage segment (0x0) and the party segment (0x1). We handle this in the Memory constructor
+        // rather than asking the Interpreter to do it.
 
         // build "x50" multiplication table
         // which sets ax to 0x2a
@@ -215,7 +213,7 @@ public class Interpreter implements Runnable {
         clearKeyHandler();
         this.executionStack.push(new ExecutionContext(
                 this::shutdown,
-                getSegmentForChunk(0x0, Frob.IN_USE),
+                memory.allocateSegment(0x0, Frob.IN_USE),
                 0
         ));
         eventLoop();
@@ -229,7 +227,7 @@ public class Interpreter implements Runnable {
      */
     public void reenter(int chunk, int addr, Runnable after) {
 //        System.out.format("reenter[%02x:%04x]\n", chunk, addr);
-        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE);
         this.executionStack.push(new ExecutionContext(after, segmentId, addr));
         setDS(-1);
         Thread.currentThread().interrupt();
@@ -237,7 +235,7 @@ public class Interpreter implements Runnable {
 
     public void start(int chunk, int addr) {
         clearKeyHandler();
-        final int segmentId = getSegmentForChunk(chunk, Frob.IN_USE);
+        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE);
         final Address nextIP = new Address(segmentId, addr);
         final ExecutionContext context = this.executionStack.peek();
         assert(Objects.isNull(context.nextIP()));
@@ -288,7 +286,7 @@ public class Interpreter implements Runnable {
     }
 
     private int breakpointChunk = 0x03;
-    private int breakpointAddress = 0x08bf;
+    private int breakpointAddress = 0x06b5;
 
     private void executeInstruction(Address ip) {
         final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
@@ -296,15 +294,21 @@ public class Interpreter implements Runnable {
         if (this.ds == -1) this.ds = this.cs;
         this.ip = ip.offset();
         final int opcode = memory().read(ip, 1);
-        final int csChunk = memory().getSegmentChunk(cs);
-        if (memory().getSegmentFrob(cs) != Frob.IN_USE) {
+        final int csChunk = memory().getChunkId(cs);
+
+        // -----
+        // Debugging.
+        final Frob csFrob = memory().getFrob(cs);
+        if (csFrob != Frob.IN_USE) {
             System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
-                    cs, csChunk, memory().getSegmentFrob(cs));
+                    cs, csChunk, csFrob);
         }
-//        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
+        //        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
         if (csChunk == breakpointChunk && this.ip == breakpointAddress) {
             System.out.println("breakpoint");
         }
+        // -----
+
         runPatches(csChunk, this.ip);
         final Instruction ins = decodeOpcode(opcode);
         try {
@@ -328,6 +332,16 @@ public class Interpreter implements Runnable {
     private record Patch(int chunkId, int ip, Consumer<Interpreter> fn) {}
 
     private static final List<Patch> PATCHES = List.of(
+            new Patch(0x003, 0x06b5, (i) -> {
+                System.out.format("[03:06b5] ax %04x bx %04x\n", i.ax, i.bx);
+                final ModifiableChunk dataSegment = i.memory().getChunk(i.getDS());
+                System.out.format("[%02x:04c6] %04x %04x %04x %04x\n", i.ds,
+                        dataSegment.getWord(0x04c6),
+                        dataSegment.getWord(0x04c8),
+                        dataSegment.getWord(0x04ca),
+                        dataSegment.getWord(0x04cc));
+            }),
+
             new Patch(0x008, 0x02f1, (i) -> i.openParagraph(i.getAX())),
             new Patch(0x046 + 0x08, 0x03aa, (i) -> i.openParagraph(30)),
             new Patch(0x046 + 0x12, 0x10ff, (i) -> {
@@ -507,20 +521,20 @@ public class Interpreter implements Runnable {
         if (boardId.read() != mapId) {
             if (Objects.nonNull(mapDecoder)) {
                 packAutomapData(boardId.read());
-                mapDecoder.chunkIds().forEach(this::freeSegmentForChunk);
+                mapDecoder.chunkIds().forEach(chunkId -> memory.freeChunk(chunkId));
             }
 
             boardId.write(mapId);
 
             this.mapDecoder = new MapData(stringDecoder());
 
-            final int primarySegment = getSegmentForChunk(mapId + 0x46, Frob.IN_USE);
+            final int primarySegment = memory.allocateSegment(mapId + 0x46, Frob.IN_USE);
             Heap.get(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
-            final ModifiableChunk primaryData = memory().getSegment(primarySegment);
+            final ModifiableChunk primaryData = memory().getChunk(primarySegment);
 
-            final int secondarySegment = getSegmentForChunk(mapId + 0x1e, Frob.IN_USE);
+            final int secondarySegment = memory.allocateSegment(mapId + 0x1e, Frob.IN_USE);
             Heap.get(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
-            final ModifiableChunk secondaryData = memory().getSegment(secondarySegment);
+            final ModifiableChunk secondaryData = memory().getChunk(secondarySegment);
 
             mapDecoder().parse(mapId, primaryData, secondaryData);
             unpackAutomapData(mapId);
@@ -574,50 +588,6 @@ public class Interpreter implements Runnable {
                     value = automap.getByte(++address);
                 }
             }
-        }
-    }
-
-    /**
-     * Examines the segment table to translate a chunk ID into a segment ID. If the chunk doesn't exist in the segment
-     * table, a new segment will be allocated for it; if it does exist, its frob will be overwritten with the new value.
-     * @param chunkId The desired chunk ID
-     * @param frob The desired new value of the segment's frob
-     * @return The segment ID of the (new) segment
-     */
-    public int getSegmentForChunk(int chunkId, Frob frob) {
-        int segmentId = memory().lookupChunkId(chunkId);
-        if (segmentId == -1 || (chunkId & 0x8000) > 0) {
-            segmentId = memory().getFreeSegmentId();
-            final ModifiableChunk newChunk = memory().copyDataChunk(chunkId);
-            memory().setSegment(segmentId, newChunk, chunkId, newChunk.getSize(), frob);
-        }
-        // should there be a "don't overwrite frob 0xff" guard here?
-        memory().setSegmentFrob(segmentId, frob);
-        return segmentId;
-    }
-
-    /**
-     * Marks the segment related to a chunk as available to be unloaded.
-     * This method is much safer than #freeSegment, because it looks up the chunk-to-segment relationship first.
-     * @param chunkId
-     */
-    public void freeSegmentForChunk(int chunkId) {
-        final int segmentId = memory().lookupChunkId(chunkId);
-        if (segmentId != -1) freeSegment(segmentId);
-    }
-
-    /**
-     * Marks a segment as available to be unloaded, but doesn't actually remove it. If a subsequent call to
-     * getSegmentForChunk() occurs for the same chunk, there's a chance that the existing segment will be revived
-     * (rather than unloading and reloading it).
-     * Note that this method is somewhat dangerous, in that it requires the caller to pass a correct segment ID with
-     * the knowledge that it refers to the correct segment (chunk).
-     * @param segmentId
-     */
-    public void freeSegment(int segmentId) {
-        if (segmentId == 0xff) return;
-        if (memory().getSegmentFrob(segmentId) != Frob.FROZEN) {
-            memory().setSegmentFrob(segmentId, Frob.FREE);
         }
     }
 

@@ -168,8 +168,8 @@ public class DrawAutomap implements Instruction {
     }
 
     private void drawChunk(int chunkId, int chunkIndex, int x, int y) {
-        final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
-        final Chunk chunk = i.memory().getSegment(segmentId);
+        final int segmentId = i.memory().allocateSegment(chunkId, Frob.IN_USE);
+        final Chunk chunk = i.memory().getChunk(segmentId);
         automap.drawTexture(chunk, chunkIndex, x, y, 0, automapRectangle);
     }
 }

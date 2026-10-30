@@ -57,10 +57,10 @@ public class PersistChunk implements Instruction {
             System.err.println("Chunk ID " + chunkId + " is not loaded, refusing to save it");
             return null;
         }
-        if (i.memory().getSegmentFrob(segmentId) == Frob.FROZEN) {
+        if (i.memory().getFrob(segmentId) == Frob.FROZEN) {
             System.err.println("Chunk ID " + chunkId + " is marked FROZEN, refusing to save it");
             return null;
         }
-        return i.memory().getSegment(segmentId);
+        return i.memory().getChunk(segmentId);
     }
 }

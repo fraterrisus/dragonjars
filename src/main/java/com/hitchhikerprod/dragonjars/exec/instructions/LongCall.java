@@ -14,7 +14,7 @@ public class LongCall implements Instruction {
         i.pushWord(returnAddress.offset());
         i.pushByte(returnAddress.segment());
         final boolean unloadAfterUse = (i.memory().lookupChunkId(chunkId) == -1);
-        final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
+        final int segmentId = i.memory().allocateSegment(chunkId, Frob.IN_USE);
         i.pushByte(unloadAfterUse ? 0xff : 0x00);
         i.setDS(segmentId);
         return new Address(segmentId, address);

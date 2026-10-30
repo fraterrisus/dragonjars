@@ -15,7 +15,7 @@ public class ModifiableChunk extends Chunk {
         super(chunk);
     }
 
-    public void write(int index, int length, int value) {
+    public synchronized void write(int index, int length, int value) {
         int v = value;
         for (int i = 0; i < length; i++) {
             final byte newValue = (byte)(v & 0xff);
@@ -26,7 +26,7 @@ public class ModifiableChunk extends Chunk {
         }
     }
 
-    public void setBytes(int index, List<Byte> values) {
+    public synchronized void setBytes(int index, List<Byte> values) {
         for (byte b : values) {
             final byte newValue = (byte)(b & 0xff);
             if (this.raw.get(index) != newValue) {

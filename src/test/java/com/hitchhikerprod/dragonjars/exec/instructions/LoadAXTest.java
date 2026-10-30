@@ -27,7 +27,7 @@ public class LoadAXTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
-        i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE));
         i.run();
 
         assertEquals(0x0000bbaa, i.getAX(true));
@@ -39,7 +39,7 @@ public class LoadAXTest {
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, DATA, Chunk.EMPTY));
         i.setWidth(true);
         i.setAX(0x0000ffff);
-        i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x1, Frob.IN_USE));
         i.setWidth(false);
         i.run();
 

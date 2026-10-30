@@ -13,7 +13,7 @@ public class DropItem implements Instruction {
         while (slotId < 11) {
             final int slotBaseAddress = pcBaseAddress + 0xec + (0x17 * slotId);
             final Address slotAddress = new Address(Interpreter.PARTY_SEGMENT, slotBaseAddress);
-            i.memory().writeList(slotAddress, i.memory().readList(slotAddress.incr(0x17), 0x17));
+            i.memory().writeBytes(slotAddress, i.memory().readBytes(slotAddress.incr(0x17), 0x17));
             slotId++;
         }
         final int slotBaseAddress = pcBaseAddress + 0xec + (0x17 * 11);

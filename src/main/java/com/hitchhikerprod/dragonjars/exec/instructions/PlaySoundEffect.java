@@ -15,9 +15,9 @@ public class PlaySoundEffect implements Instruction {
             i.app().musicService().playSimpleSound(soundId);
         } else if (soundId >= 4 && soundId <= 10) {
             final int chunkId = 0xfc + soundId;
-            final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
-            final Chunk data = i.memory().getSegment(segmentId);
-            i.freeSegment(segmentId);
+            final int segmentId = i.memory().allocateSegment(chunkId, Frob.IN_USE);
+            final Chunk data = i.memory().getChunk(segmentId);
+            i.memory().freeSegment(segmentId);
             i.app().musicService().playChunkSound(data);
         }
 

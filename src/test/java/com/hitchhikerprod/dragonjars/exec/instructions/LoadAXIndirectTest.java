@@ -29,7 +29,7 @@ public class LoadAXIndirectTest {
         i.setAX(0xffff);
         Heap.get(0x31).write(0x0005, 2);
         i.setBL(0x0002);
-        i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE));
         i.run();
 
         assertEquals(0x0000bbaa, i.getAX());
@@ -43,7 +43,7 @@ public class LoadAXIndirectTest {
         i.setAX(0xffff);
         Heap.get(0x31).write(0x0005, 2);
         i.setBL(0x0002);
-        i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x1, Frob.IN_USE));
         i.setWidth(false);
         i.run();
 

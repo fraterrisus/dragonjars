@@ -98,7 +98,7 @@ public class DecodeStringFrom implements Instruction {
         if (withFill) i.fillRectangle();
         final Address addr = getPointer.apply(i);
         final StringDecoder decoder = i.stringDecoder();
-        final ModifiableChunk chunk = i.memory().getSegment(addr.segment());
+        final ModifiableChunk chunk = i.memory().getChunk(addr.segment());
         decoder.decodeString(chunk, addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (saveAX) {

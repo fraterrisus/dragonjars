@@ -10,6 +10,6 @@ public record Address(int segment, int offset) {
     }
 
     public int chunkId(Memory mem) {
-        return mem.getSegmentChunk(segment);
+        return mem.getChunkId(segment);
     }
 }

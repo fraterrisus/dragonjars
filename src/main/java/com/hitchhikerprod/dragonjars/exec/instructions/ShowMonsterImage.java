@@ -37,20 +37,20 @@ public class ShowMonsterImage implements Instruction {
         }
 
         final int priChunkId = 0x8a + (2 * monsterId);
-        final int priSegment = i.getSegmentForChunk(priChunkId, Frob.IN_USE);
-        final Chunk priChunk = i.memory().getSegment(priSegment);
+        final int priSegment = i.memory().allocateSegment(priChunkId, Frob.IN_USE);
+        final Chunk priChunk = i.memory().getChunk(priSegment);
 
         final int secChunkId = priChunkId + 1;
-        final int secSegment = i.getSegmentForChunk(secChunkId, Frob.IN_USE);
-        final Chunk secChunk = i.memory().getSegment(secSegment);
+        final int secSegment = i.memory().allocateSegment(secChunkId, Frob.IN_USE);
+        final Chunk secChunk = i.memory().getChunk(secSegment);
 
-        i.enableMonsterAnimation(monsterId); //, priSegment, secSegment);
+        i.enableMonsterAnimation(monsterId);
 
         final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priChunk, secChunk);
 
         final EventHandler<WorkerStateEvent> taskEnd = event -> {
-            i.freeSegmentForChunk(priChunkId);
-            i.freeSegmentForChunk(secChunkId);
+            i.memory().freeChunk(priChunkId);
+            i.memory().freeChunk(secChunkId);
         };
         monsterAnimationTask.setOnSucceeded(taskEnd);
         monsterAnimationTask.setOnFailed(taskEnd);

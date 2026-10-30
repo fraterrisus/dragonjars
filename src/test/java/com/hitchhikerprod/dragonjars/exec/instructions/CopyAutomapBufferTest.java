@@ -24,14 +24,14 @@ class CopyAutomapBufferTest {
             int value = (int)(Math.random() * 0xff);
             i.memory().automapChunk().write(idx, 1, value);
         }
-        final int segmentId = i.getSegmentForChunk(0x01, Frob.IN_USE);
+        final int segmentId = i.memory().allocateSegment(0x01, Frob.IN_USE);
         i.setDS(segmentId);
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0x00);
         i.run();
 
-        final Chunk newData = i.memory().getSegment(segmentId);
+        final Chunk newData = i.memory().getChunk(segmentId);
 
         for (int idx = 0; idx < 0x700; idx++) {
             assertEquals(i.memory().automapChunk().read(idx, 1), newData.getUnsignedByte(idx),
@@ -49,7 +49,7 @@ class CopyAutomapBufferTest {
         final Chunk data = new Chunk(rawBytes);
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
-        i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE));
         i.setAH(0x00);
         i.setAL(0x00);
         i.setBL(0xff);

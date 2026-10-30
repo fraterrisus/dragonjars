@@ -31,11 +31,11 @@ public class Chunk {
         this.raw = FXCollections.observableArrayList(that.raw);
     }
 
-    public byte getByte(int i) {
+    public synchronized byte getByte(int i) {
         return this.raw.get(i);
     }
 
-    public List<Byte> getBytes(int offset, int length) {
+    public synchronized List<Byte> getBytes(int offset, int length) {
         int end = offset + length;
         if (end > getSize()) { end = getSize(); }
         if (offset > end) { return List.of(); }
@@ -46,17 +46,17 @@ public class Chunk {
         return this.raw.size();
     }
 
-    public int getUnsignedByte(int i) {
+    public synchronized int getUnsignedByte(int i) {
         return this.raw.get(i) & 0xff;
     }
 
-    public int getWord(int i) {
+    public synchronized int getWord(int i) {
         int b0 = getUnsignedByte(i);
         int b1 = getUnsignedByte(i + 1);
         return (b1 << 8) | b0;
     }
 
-    public int getQuadWord(int i) {
+    public synchronized int getQuadWord(int i) {
         int b0 = getUnsignedByte(i);
         int b1 = getUnsignedByte(i + 1);
         int b2 = getUnsignedByte(i + 2);
@@ -64,7 +64,7 @@ public class Chunk {
         return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
     }
 
-    public int read(int offset, int num) {
+    public synchronized int read(int offset, int num) {
         if (num > 4) throw new IllegalArgumentException("Can't read more bytes than fit in an int (4)");
         int value = 0;
         for (int i = num - 1; i >= 0; i--) {
@@ -86,7 +86,7 @@ public class Chunk {
         return Bindings.valueAt(raw, offset);
     }
 
-    public int search(List<Byte> bytes) {
+    public synchronized int search(List<Byte> bytes) {
         if (Objects.isNull(bytes)) throw new IllegalArgumentException("Null input list");
         if (bytes.isEmpty()) throw new IllegalArgumentException("Empty input list");
 
@@ -121,15 +121,15 @@ public class Chunk {
         return -1;
     }
 
-    public void display() {
+    public synchronized void display() {
         display(0, raw.size());
     }
 
-    public void display(int start) {
+    public synchronized void display(int start) {
         display(start, raw.size());
     }
 
-    public void display(int start, int end) {
+    public synchronized void display(int start, int end) {
         int counter = start & 0xfff0;
         if (raw.size() < end) end = raw.size();
         while (counter < end) {

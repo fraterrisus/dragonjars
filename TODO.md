@@ -1,6 +1,5 @@
 # TODO
 
-- Add more combat information to the Combat Log window.
 - Do a better job listing inventory items in the Party window.
 - Add mouse support.
 - Add support for multiple save files (that are *just* chunks 0x07 and 0x10).

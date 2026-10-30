@@ -76,7 +76,7 @@ public class CombatData {
         final int pcId = Heap.get(Heap.SELECTED_PC).read();
         final Address pcBaseAddress = Heap.getPCBaseAddress();
 
-        final String pcName = StringDecoder.decodeString(i.memory().readList(pcBaseAddress, 12).stream()
+        final String pcName = StringDecoder.decodeString(i.memory().readBytes(pcBaseAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int) b).toList());
         sb.append(pcName);
 
@@ -93,7 +93,7 @@ public class CombatData {
 
     public void partyEquip() {
         final Address itemAddress = Heap.getPCItemAddress();
-        final Item item = new Item(i.memory().getSegment(itemAddress.segment())).decode(itemAddress.offset());
+        final Item item = new Item(i.memory().getChunk(itemAddress.segment())).decode(itemAddress.offset());
         sb.append(" equips the ").append(item.getName());
     }
 
@@ -105,7 +105,7 @@ public class CombatData {
         final boolean isItem = Heap.get(0x89).read() == 0;
         if (isItem) {
             final Address itemAddress = Heap.getPCItemAddress();
-            final Item item = new Item(i.memory().getSegment(itemAddress.segment())).decode(itemAddress.offset());
+            final Item item = new Item(i.memory().getChunk(itemAddress.segment())).decode(itemAddress.offset());
             sb.append(" the ").append(item.getName()).append(" to cast");
         }
         final int spellId = Heap.get(0x85).read();
@@ -117,7 +117,7 @@ public class CombatData {
     public void partyHeal() {
         // the selected PC is currently the target, not the caster
         final Address targetBase = Heap.getPCBaseAddress();
-        final String targetName = StringDecoder.decodeString(i.memory().readList(targetBase, 12).stream()
+        final String targetName = StringDecoder.decodeString(i.memory().readBytes(targetBase, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
 
         final int spellId = Heap.get(0x85).read();
@@ -145,7 +145,7 @@ public class CombatData {
         final int targetId = Heap.get(0x84).read();
         final int targetGroupId = Heap.get(0x48).read();
         final int targetBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), targetBaseAddress + GROUP_NAME);
+        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), targetBaseAddress + GROUP_NAME);
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
@@ -180,7 +180,7 @@ public class CombatData {
         final int targetId = Heap.get(0x84).read();
         final int targetGroupId = i.memory().read(combatCodeSegment, MONSTER_GROUP_ID + targetId, 1);
         final int targetBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), targetBaseAddress + GROUP_NAME);
+        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), targetBaseAddress + GROUP_NAME);
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
@@ -264,7 +264,7 @@ public class CombatData {
 
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
         final int monsterBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getSegment(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
+        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
         final String monsterName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
         sb.append(String.format("%s (gp%d id%d)", monsterName, monsterGroupId, monsterId));
@@ -339,7 +339,7 @@ public class CombatData {
 
     public void monsterAttackTarget() {
         final Address targetAddress = Heap.getPCBaseAddress();
-        final String pcName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
+        final String pcName = StringDecoder.decodeString(i.memory().readBytes(targetAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
         sb.append(" attacks ").append(pcName);
 
@@ -416,7 +416,7 @@ public class CombatData {
         final int combatCodeSegment = i.memory().lookupChunkId(0x03);
 
         final Address targetAddress = Heap.getPCBaseAddress(Heap.get(0x83).read());
-        final String targetName = StringDecoder.decodeString(i.memory().readList(targetAddress, 12).stream()
+        final String targetName = StringDecoder.decodeString(i.memory().readBytes(targetAddress, 12).stream()
                 .filter(b -> b != 0).map(b -> (int)b).toList());
         final int defenderDV = ALU.signExtend(i.memory().read(targetAddress.incr(Memory.PC_DV), 1), 1);
 
@@ -516,8 +516,8 @@ public class CombatData {
     }
 
     public void getCombatants() {
-        final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
-        final Chunk monsterData = i.memory().getSegment(combatSegmentId);
+        final int combatSegmentId = i.memory().allocateSegment(0x03, Frob.IN_USE);
+        final Chunk monsterData = i.memory().getChunk(combatSegmentId);
         Platform.runLater(() -> {
             MonsterTableWindow.getInstance().setChunk(monsterData, i.newStringDecoder());
             CombatLog.append("New Round", "bold");
@@ -526,9 +526,9 @@ public class CombatData {
     }
 
     public void decodeInitiative() {
-        final int combatSegmentId = i.getSegmentForChunk(0x03, Frob.IN_USE);
-        final Chunk monsterData = i.memory().getSegment(combatSegmentId);
-        final Chunk partyData = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
+        final int combatSegmentId = i.memory().allocateSegment(0x03, Frob.IN_USE);
+        final Chunk monsterData = i.memory().getChunk(combatSegmentId);
+        final Chunk partyData = i.memory().getChunk(Interpreter.PARTY_SEGMENT);
 
         final List<Opponent> opponents = new ArrayList<>();
         final List<String> groupNames = new ArrayList<>();
