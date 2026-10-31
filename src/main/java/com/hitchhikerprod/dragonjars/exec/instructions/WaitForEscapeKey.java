@@ -15,7 +15,7 @@ public class WaitForEscapeKey implements Instruction {
         i.setKeyHandler(event -> {
             if (event.getCode().isModifierKey()) return;
             i.fillRectangle();
-            i.start(nextChunkId, nextAddress);
+            i.restart(nextChunkId, nextAddress);
         });
         return null;
     }

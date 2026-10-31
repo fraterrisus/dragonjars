@@ -40,11 +40,11 @@ public class PersistChunk implements Instruction {
         final SaveChunkTask task = new SaveChunkTask(data1Path, data2Path, chunkId, chunkData);
         final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
-        task.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
+        task.setOnSucceeded(event -> i.restart(nextChunkId, nextAddress));
         task.setOnFailed(event -> {
             final Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save your game.");
             alert.showAndWait();
-            i.start(nextChunkId, nextAddress);
+            i.restart(nextChunkId, nextAddress);
         });
 
         Thread.ofVirtual().start(task);

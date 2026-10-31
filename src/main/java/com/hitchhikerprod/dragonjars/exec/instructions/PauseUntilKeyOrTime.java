@@ -43,7 +43,7 @@ public class PauseUntilKeyOrTime implements Instruction {
     private void moveAlong() {
         if (handled.compareAndSet(false, true)) {
             sleepTask.cancel();
-            i.start(nextChunkId, nextAddress);
+            i.restart(nextChunkId, nextAddress);
         }
     }
 }

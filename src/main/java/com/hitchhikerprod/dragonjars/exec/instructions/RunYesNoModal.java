@@ -22,10 +22,10 @@ public class RunYesNoModal implements Instruction {
         i.setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {
                 i.setZeroFlag(true);
-                i.start(nextChunkId, nextAddress);
+                i.restart(nextChunkId, nextAddress);
             } else if (event.getCode() == KeyCode.N) {
                 i.setZeroFlag(false);
-                i.start(nextChunkId, nextAddress);
+                i.restart(nextChunkId, nextAddress);
             }
         });
         return null;

@@ -5,8 +5,10 @@ import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Facing;
 import com.hitchhikerprod.dragonjars.data.GridCoordinate;
 import com.hitchhikerprod.dragonjars.data.MapData;
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.PartyLocation;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
+import com.hitchhikerprod.dragonjars.exec.Segment;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.ALU;
 import com.hitchhikerprod.dragonjars.exec.Address;
@@ -17,6 +19,7 @@ import com.hitchhikerprod.dragonjars.tasks.SleepTask;
 import com.hitchhikerprod.dragonjars.ui.MapWindow;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DrawCurrentViewport implements Instruction {
     private final Interpreter i;
@@ -45,7 +48,7 @@ public class DrawCurrentViewport implements Instruction {
         final PartyLocation loc = Heap.getPartyLocation();
 //        System.out.format("drawCurrentViewport(%s)\n", loc);
 
-        i.decodeMap(loc.mapId());
+        decodeMap(loc.mapId());
 
         Heap.get(Heap.BOARD_MAX_X).write(i.mapDecoder().xMax());
         Heap.get(Heap.BOARD_MAX_Y).write(i.mapDecoder().yMax());
@@ -69,10 +72,87 @@ public class DrawCurrentViewport implements Instruction {
         MapWindow.getInstance().setMap(i.mapDecoder());
 
         final Address nextIP = i.getIP().incr();
-        i.start(i.memory().segmentToChunk(nextIP.segment()), nextIP.offset());
+        i.restart(i.memory().segmentToChunk(nextIP.segment()), nextIP.offset());
     }
 
-    public void drawFloorTexture() {
+    private void decodeMap(int mapId) {
+        // See [cs/0384] load_dirty_map_state() and [cs/5544] load_map_chunks()
+        // This code reads clean primary map data (chunk 0x46 + mapID) and dirty map data (chunk 0x10) into memory and
+        // then copies the dirty data into the "clean" segment. So here we point the map decoder at the segment for
+        // formerly-clean primary map data instead of 0x10.
+        final Heap.Access boardId = Heap.get(Heap.DECODED_BOARD_ID);
+        if (boardId.read() != mapId) {
+            if (Objects.nonNull(i.mapDecoder())) {
+                packAutomapData(boardId.read());
+                i.mapDecoder().chunkIds().forEach(chunkId -> i.memory().freeChunk(chunkId));
+            }
+
+            boardId.write(mapId);
+
+            i.setMapDecoder(new MapData(i.stringDecoder()));
+
+            final Segment primarySegment = i.memory().allocateSegment(mapId + 0x46, Frob.IN_USE);
+            Heap.get(Heap.BOARD_1_SEGIDX).write(primarySegment.id(), 1);
+
+            final Segment secondarySegment = i.memory().allocateSegment(mapId + 0x1e, Frob.IN_USE);
+            Heap.get(Heap.BOARD_2_SEGIDX).write(secondarySegment.id(), 1);
+
+            i.mapDecoder().parse(mapId, primarySegment.chunk(), secondarySegment.chunk());
+            unpackAutomapData(mapId);
+
+            // erase board state flags on every load (see cs:5589)
+            Heap.get(Heap.GAME_STATE_BOARD).write(0, 4);
+        }
+    }
+
+    private void packAutomapData(int mapId) { // 0x4e00 and 0x4e5a
+        final ModifiableChunk automap = i.memory().getAutomapChunk();
+        final int xMax = i.mapDecoder().xMax();
+        final int yMax = i.mapDecoder().yMax();
+        int flagMask = automap.getWord(2 * mapId);
+        int address = 0x050 + (flagMask >> 3);
+        int mask = 0x80 >> (flagMask & 0x7);
+        int value = automap.getByte(address);
+        for (int y = 0; y < yMax; y++) {
+            for (int x = 0; x < xMax; x++) {
+                value = value & ~mask;
+                if ((i.mapDecoder().getSquare(x, y).rawData() & 0x000800) > 0) {
+                    value = value | mask;
+                }
+                mask = mask >> 1;
+                if (mask == 0) {
+                    automap.write(address, 1, value);
+                    mask = 0x80;
+                    value = automap.getByte(++address);
+                }
+            }
+        }
+        automap.write(address, 1, value);
+    }
+
+    private void unpackAutomapData(int mapId) { // 0x4e00 and 0x4e6b
+        final ModifiableChunk automap = i.memory().getAutomapChunk();
+        final int xMax = i.mapDecoder().xMax();
+        final int yMax = i.mapDecoder().yMax();
+        int flagMask = automap.getWord(2 * mapId);
+        int address = 0x050 + (flagMask >> 3);
+        int mask = 0x80 >> (flagMask & 0x7);
+        int value = automap.getByte(address);
+        for (int y = 0; y < yMax; y++) {
+            for (int x = 0; x < xMax; x++) {
+                if ((value & mask) > 0) {
+                    i.mapDecoder().setStepped(new GridCoordinate(x, y));
+                }
+                mask = mask >> 1;
+                if (mask == 0) {
+                    mask = 0x80;
+                    value = automap.getByte(++address);
+                }
+            }
+        }
+    }
+
+    private void drawFloorTexture() {
         final PartyLocation loc = Heap.getPartyLocation();
         for (int index = 8; index >= 0; index--) {
             final int squareId = FLOOR_SQUARE_ORDER.get(index);

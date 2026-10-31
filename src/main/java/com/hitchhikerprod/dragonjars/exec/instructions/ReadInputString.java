@@ -32,12 +32,12 @@ public class ReadInputString implements Instruction {
             // this probably isn't quite accurate, i made most of it up
             if (keycode == KeyCode.ESCAPE) {
                 Heap.get(Heap.INPUT_STRING).write(0x00, 1);
-                i.start(nextChunkId, nextAddress);
+                i.restart(nextChunkId, nextAddress);
             } else if (keycode == KeyCode.ENTER) {
                 int ptr = Heap.INPUT_STRING;
                 for (int ch : chars) Heap.get(ptr++).write(ch);
                 Heap.get(ptr).write(0x00);
-                i.start(nextChunkId, nextAddress);
+                i.restart(nextChunkId, nextAddress);
             } else if (keycode == KeyCode.BACK_SPACE || keycode == KeyCode.DELETE) {
                 if (!chars.isEmpty()) {
                     chars.removeLast();

@@ -143,7 +143,7 @@ public class DrawAutomap implements Instruction {
                 case KeyCode.ESCAPE -> {
                     i.disableMonsterAnimation();
                     i.resetUI();
-                    i.start(nextChunkId, nextAddress);
+                    i.restart(nextChunkId, nextAddress);
                 }
                 case KeyCode.UP, KeyCode.I, KeyCode.A -> {
                     final int y1 = y0 + 1;

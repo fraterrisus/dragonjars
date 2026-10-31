@@ -30,7 +30,7 @@ public class ShowMonsterImage implements Instruction {
             final int nextAddress = nextIP.offset();
 
             final SleepTask sleepTask = new SleepTask(1000);
-            sleepTask.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
+            sleepTask.setOnSucceeded(event -> i.restart(nextChunkId, nextAddress));
             Thread.ofVirtual().start(sleepTask);
 
             return null;

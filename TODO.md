@@ -9,11 +9,11 @@
 
 - You can't update a Property from within a ChangeListener on that Property. In the case where enabling the music 
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
-- I slowed down sounds to make the 'dragon roar' noise (sound 7, see Dragon Valley or Phoebus Dungeon) sound better. 
-  Is everything else off now?
 - I saved on the trap square on the Second Guard Bridge after looting the armory but before the outbound fight, and 
   when I reloaded the outbound fight didn't happen until I stepped on the armory square a second time.
-- There's a bit of a pause and blink when a combat round starts, sometimes.
+- There's a bit of a pause and blink when a combat round starts, sometimes. Possibly this is "just" a result of the 
+  FPS being much higher on a modern Java system than it is on an old x86; if I insert artificial FPS limiters, the 
+  blinking goes away!
 - Goblins are one pixel up from the bottom of the viewport. Maybe others? Maybe this isn't a bug?
 - Some monster images overdraw the viewport corners.
 
@@ -22,8 +22,5 @@
 - The routine that decrements the spell counters `[0f:032f]` gets triggered (I *think*) by an idle counter that runs
   while the game is waiting for you to press a key (and possibly increments once per keypress as well?). I 
   implemented this with a timer thread, so it won't be a perfect copy, but it should be more consistent.
-- My implementation of Frobs is definitely incomplete/different. Freeing segments too aggressively caused bugs. I'm 
-  currently erring on the side of not freeing segments, which is fine because the memory footprint is still fairly 
-  small.
 - Using JavaFX's `scale` function to scale the output `Image` doesn't actually result in integer scaling, and I 
   have no idea why not.
