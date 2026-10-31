@@ -783,9 +783,7 @@ public class Interpreter implements Runnable {
         this.stringDecoder.decodeString(memory().getCodeChunk(), wordAddress);
 
         final List<Integer> chars = new ArrayList<>();
-        chars.add(0xe9); // 'i'
-        chars.add(0xf3); // 's'
-        chars.add(0xa0); // ' '
+        chars.addAll(List.of(0xe9, 0xf3, 0xa0)); // 'is '
         chars.addAll(stringDecoder.getDecodedChars());
 
         int x = memory().getCodeChunk().getUnsignedByte(statusBitmaskLutAddress + 4 + i);

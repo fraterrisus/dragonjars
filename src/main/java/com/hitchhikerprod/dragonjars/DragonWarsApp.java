@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.Images;
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
@@ -239,8 +240,9 @@ public class DragonWarsApp extends Application {
     public void openPartyStateDialog() {
         if (Objects.isNull(interpreter)) return;
         withInterpreterPause(() -> {
-            final Chunk partyData = interpreter.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
+            final ModifiableChunk partyData = interpreter.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
             new PartyStateDialog(stage, partyData).showAndWait();
+            interpreter.runLater(Interpreter::drawPartyInfoArea);
         });
     }
 

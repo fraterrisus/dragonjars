@@ -9,12 +9,16 @@ public enum Gender {
     NEUTRAL(2, "it"),
     NONE(3, "-");
 
-    final int index;
-    final String pronouns;
+    private final int index;
+    private final String pronouns;
 
     Gender(int index, String pronouns) {
         this.index = index;
         this.pronouns = pronouns;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public String getPronouns() {

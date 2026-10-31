@@ -6,6 +6,11 @@
     -fx-background-color: #e1ceb6;
 }
 
+.validation-error {
+    -fx-highlight-fill: #ff0000;
+    -fx-background-color: #ff7171;
+}
+
 .bold {
     -fx-font-weight: bold;
 }
