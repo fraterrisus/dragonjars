@@ -33,7 +33,7 @@ public class DrawCurrentViewport implements Instruction {
     @Override
     public Address exec(Interpreter ignored) {
         i.unpause();
-        i.disableMonsterAnimation();
+        i.taskManager().disableMonsterAnimation();
 
         /* This emulates the slight performance delay that's baked into the old x86 processor (and emulators). Without
          * it, spots where the game takes multiple steps (Tracking in Tars, fleeing combat, etc.) all get smushed

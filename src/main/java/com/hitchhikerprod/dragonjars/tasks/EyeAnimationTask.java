@@ -2,7 +2,6 @@ package com.hitchhikerprod.dragonjars.tasks;
 
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.util.Pair;
 
@@ -51,12 +50,14 @@ public class EyeAnimationTask extends Task<Void> {
             }
             final int eyePhase = PHASES.get(phaseIndex).getKey();
 
-            interpreter.runLater(i -> i.setEyePhase(eyePhase));
+            interpreter.taskManager().setEyePhase(eyePhase);
+            interpreter.runLater(j -> { if (!j.isPaused()) j.drawEyeHelper(); });
 
             try { Thread.sleep(ANIMATION_DELAY_MS); } catch (InterruptedException e) {}
 
             if (isCancelled() || heap.read() == 0) {
-                interpreter.runLater(i -> i.setEyePhase(-1));
+                interpreter.taskManager().setEyePhase(-1);
+                interpreter.runLater(j -> { if (!j.isPaused()) j.drawEyeHelper(); });
                 return null;
             }
         }

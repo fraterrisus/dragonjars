@@ -141,7 +141,7 @@ public class DrawAutomap implements Instruction {
         i.setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
-                    i.disableMonsterAnimation();
+                    i.taskManager().disableMonsterAnimation();
                     i.resetUI();
                     i.restart(nextChunkId, nextAddress);
                 }

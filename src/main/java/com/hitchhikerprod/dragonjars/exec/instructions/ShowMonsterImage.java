@@ -17,9 +17,9 @@ public class ShowMonsterImage implements Instruction {
         final Address nextIP = i.getIP().incr(OPCODE);
 
         final int monsterId = i.getAL();
-        if (monsterId == i.activeMonster()) return nextIP;
+        if (monsterId == i.taskManager().activeMonster()) return nextIP;
 
-        i.disableMonsterAnimation();
+        i.taskManager().disableMonsterAnimation();
         if (monsterId == 0xff) {
             // Covers [4c/078e], which otherwise is probably expecting to draw straight to the screen
             i.drawStringBuffer();
@@ -42,7 +42,7 @@ public class ShowMonsterImage implements Instruction {
         final int secChunkId = priChunkId + 1;
         final Segment secSegment = i.memory().allocateSegment(secChunkId, Frob.IN_USE);
 
-        i.enableMonsterAnimation(monsterId);
+        i.taskManager().enableMonsterAnimation(monsterId);
 
         final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priSegment.chunk(), secSegment.chunk());
 
@@ -54,7 +54,7 @@ public class ShowMonsterImage implements Instruction {
         monsterAnimationTask.setOnFailed(taskEnd);
         monsterAnimationTask.setOnCancelled(taskEnd);
 
-        i.startMonsterAnimation(monsterAnimationTask);
+        i.taskManager().startMonsterAnimation(monsterAnimationTask);
         return nextIP;
     }
 }

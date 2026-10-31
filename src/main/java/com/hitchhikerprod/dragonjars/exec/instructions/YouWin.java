@@ -26,7 +26,9 @@ public class YouWin implements Instruction {
         fg = new VideoHelper(codeChunk);
         fg.setVideoBuffer(new VideoBuffer());
 
-        i.stopAllThreads();
+        i.pause();
+        i.taskManager().stopAllThreads();
+        i.fg().setVideoBuffer(null);
 
         i.app().musicService().playTitleMusic(codeChunk);
 

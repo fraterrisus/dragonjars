@@ -12,10 +12,7 @@ import com.hitchhikerprod.dragonjars.exec.events.KeyPressEvent;
 import com.hitchhikerprod.dragonjars.exec.events.MethodEvent;
 import com.hitchhikerprod.dragonjars.exec.instructions.Instruction;
 import com.hitchhikerprod.dragonjars.exec.instructions.Instructions;
-import com.hitchhikerprod.dragonjars.tasks.EyeAnimationTask;
-import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
-import com.hitchhikerprod.dragonjars.tasks.SpellDecayTask;
-import com.hitchhikerprod.dragonjars.tasks.TorchAnimationTask;
+import com.hitchhikerprod.dragonjars.tasks.TaskManager;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.image.PixelWriter;
@@ -30,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 public class Interpreter implements Runnable {
@@ -55,6 +51,7 @@ public class Interpreter implements Runnable {
 
     private final StringDecoder stringDecoder;
     private final VideoHelper videoHelper;
+    private final TaskManager taskManager;
     private MapData mapDecoder;
 
     /* UI Thread Interaction */
@@ -72,11 +69,6 @@ public class Interpreter implements Runnable {
     private final VideoBuffer videoBackground = new VideoBuffer();
     // Write everything else
     private final VideoBuffer videoForeground = new VideoBuffer();
-
-    private MonsterAnimationTask monsterAnimationTask;
-    private EyeAnimationTask eyeAnimationTask;
-    private TorchAnimationTask torchAnimationTask;
-    private SpellDecayTask spellDecayTask;
 
 //    private int mul_result; // 0x1166:4
 //    private int div_result; // 0x116a:4
@@ -106,9 +98,6 @@ public class Interpreter implements Runnable {
     //     draw_current_viewport
     //   fcn.4a80
     //   draw_current_viewport (0x4f90)
-    private final ReentrantLock monsterAnimationLock = new ReentrantLock();
-    private boolean animationEnabled_4d4e = false;
-    private int animationMonsterId_4d32 = 0xff;
 
     /* Architectural registers */
 
@@ -154,6 +143,7 @@ public class Interpreter implements Runnable {
 
         this.stringDecoder = new StringDecoder(this.memory().getCodeChunk());
         this.videoHelper = new VideoHelper(this.memory().getCodeChunk());
+        this.taskManager = new TaskManager(this);
 
         if (!testMode) {
             videoBackground.reset((byte)0x00);
@@ -169,7 +159,7 @@ public class Interpreter implements Runnable {
             videoHelper.drawRectangle(mask, (byte)0);
 //            videoForeground.writeTo("video-foreground.png", AppPreferences.getInstance().scaleProperty().get());
 
-            startSpellDecayTask();
+            taskManager.startSpellDecayTask();
         }
 
         // cs:0150  ax <- 0x0000
@@ -254,6 +244,10 @@ public class Interpreter implements Runnable {
 
     public StringDecoder newStringDecoder() {
         return new StringDecoder(this.memory().getCodeChunk());
+    }
+
+    public TaskManager taskManager() {
+        return this.taskManager;
     }
 
     public MapData mapDecoder() {
@@ -614,7 +608,7 @@ public class Interpreter implements Runnable {
     }
 
     // *******************************************************************************
-    // *** Graphics "Primitives"
+    // *** Graphics "Primitives".
     // These are lower-level helper methods that perform smaller functions. Many of these are implemented very close to
     // the functions in the original engine, which is why their member variables often have hexadecimal suffixes (the
     // memory location in the x86 binary).
@@ -750,7 +744,7 @@ public class Interpreter implements Runnable {
     }
 
     // *******************************************************************************
-    // *** Graphics Helpers
+    // *** Graphics Helpers.
     // Higher-level helper methods that aggregate larger sets of functionality.
 
     public void drawViewportCorners() {
@@ -1054,109 +1048,9 @@ public class Interpreter implements Runnable {
         setBackground();
     }
 
-    // *******************************************************************************
-    // *** Animation Task / Thread Management.
-    // Animations, especially the dancing monsters and the spell icons, are be handled with background threads that, in
-    // turn, submit events to our queue to update the graphics.
-
-    public void stopAllThreads() {
-        pause();
-        stopMonsterAnimation();
-        spellDecayTask.cancel();
-        torchAnimationTask.cancel();
-        eyeAnimationTask.cancel();
-        while (Objects.nonNull(monsterAnimationTask) ||
-                Objects.nonNull(spellDecayTask) ||
-                Objects.nonNull(torchAnimationTask) ||
-                Objects.nonNull(eyeAnimationTask)) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {}
-        }
-        videoHelper.setVideoBuffer(null);
-    }
-
-    private void startSpellDecayTask() {
-        spellDecayTask = new SpellDecayTask(this);
-        spellDecayTask.setOnSucceeded(ev -> spellDecayTask = null);
-        spellDecayTask.setOnFailed(ev -> spellDecayTask = null);
-        spellDecayTask.setOnCancelled(ev -> spellDecayTask = null);
-        Thread.ofVirtual().start(spellDecayTask);
-    }
-
-    public void startTorchAnimation() {
-        torchAnimationTask = new TorchAnimationTask(this);
-        torchAnimationTask.setOnSucceeded(ev -> torchAnimationTask = null);
-        torchAnimationTask.setOnFailed(ev -> torchAnimationTask = null);
-        torchAnimationTask.setOnCancelled(ev -> torchAnimationTask = null);
-        Thread.ofVirtual().start(torchAnimationTask);
-    }
-    
-    public void startEyeAnimation() {
-        eyeAnimationTask = new EyeAnimationTask(this);
-        eyeAnimationTask.setOnSucceeded(ev -> eyeAnimationTask = null);
-        eyeAnimationTask.setOnFailed(ev -> eyeAnimationTask = null);
-        eyeAnimationTask.setOnCancelled(ev -> eyeAnimationTask = null);
-        Thread.ofVirtual().start(eyeAnimationTask);
-    }
-
-    public boolean isMonsterAnimationEnabled() {
-        monsterAnimationLock.lock();
-        final boolean enabled = animationEnabled_4d4e;
-        monsterAnimationLock.unlock();
-        return enabled;
-    }
-
-    public int activeMonster() {
-        monsterAnimationLock.lock();
-        final int monsterId = animationMonsterId_4d32;
-        monsterAnimationLock.unlock();
-        return monsterId;
-    }
-
-    public void enableMonsterAnimation(int monsterId) {
-        monsterAnimationLock.lock();
-        animationEnabled_4d4e = true;
-        animationMonsterId_4d32 = monsterId;
-        monsterAnimationLock.unlock();
-    }
-
-    public void disableMonsterAnimation() {
-        monsterAnimationLock.lock();
-        stopMonsterAnimation();
-        animationEnabled_4d4e = false;
-        animationMonsterId_4d32 = 0xff;
-        monsterAnimationLock.unlock();
-    }
-
-    public void startMonsterAnimation(MonsterAnimationTask task) {
-        stopMonsterAnimation();
-        monsterAnimationTask = task;
-        Thread.ofVirtual().start(monsterAnimationTask);
-    }
-
-    public void stopMonsterAnimation() {
-        if (Objects.nonNull(monsterAnimationTask)) {
-            monsterAnimationTask.cancel();
-            monsterAnimationTask = null;
-        }
-    }
-
-    private int eyePhase = -1;
-    private int torchPhase = -1;
-
-    public void setTorchPhase(int phase) {
-        this.torchPhase = phase;
-        if (!isPaused()) drawTorchHelper();
-    }
-
-    public void setEyePhase(int phase) {
-        this.eyePhase = phase;
-        if (!isPaused()) drawEyeHelper();
-    }
-
-    private void drawEyeHelper() {
+    public void drawEyeHelper() {
         final PixelRectangle mask = fg().getRomImageArea(VideoHelper.EYE_CLOSED);
+        final int eyePhase = taskManager().getEyePhase();
         if (eyePhase < 0) {
             bitBlast(videoBackground, mask);
         } else {
@@ -1165,8 +1059,9 @@ public class Interpreter implements Runnable {
         }
     }
 
-    private void drawTorchHelper() {
+    public void drawTorchHelper() {
         final PixelRectangle mask = fg().getRomImageArea(VideoHelper.TORCH_1);
+        final int torchPhase = taskManager().getTorchPhase();
         if (torchPhase < 0) {
             bitBlast(videoBackground, mask);
         } else {
@@ -1202,29 +1097,13 @@ public class Interpreter implements Runnable {
     public void drawSpellIcons(boolean force) {
         if (!force && isPaused()) return;
 
-        final int trap = Heap.get(Heap.DETECT_TRAPS_RANGE).read();
-        if (trap > 0) {
-            if (Objects.isNull(eyeAnimationTask)) startEyeAnimation();
-        } else {
-            eyePhase = -1;
-        }
-
-        final int torch = Heap.get(Heap.LIGHT_RANGE).read();
-        if (torch > 0) {
-            if (Objects.isNull(torchAnimationTask)) startTorchAnimation();
-        } else {
-            torchPhase = -1;
-        }
+        taskManager().checkEye();
+        taskManager().checkTorch();
 
         drawCompassHelper();
         drawShieldHelper();
         drawEyeHelper();
         drawTorchHelper();
-
-        // ax <- 0x0000
-        // [4a71] <- ax
-        // [4a73] <- ax
-        // CF <- 1
     }
 
     // *******************************************************************************

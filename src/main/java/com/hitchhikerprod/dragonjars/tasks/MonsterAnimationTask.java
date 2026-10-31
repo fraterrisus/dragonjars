@@ -6,7 +6,6 @@ import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class MonsterAnimationTask extends Task<Void> {
     }
 
     private boolean weShouldStop() {
-        return isCancelled() || !interpreter.isMonsterAnimationEnabled();
+        return isCancelled() || !interpreter.taskManager().isMonsterAnimationEnabled();
     }
 
     @Override
@@ -150,7 +149,7 @@ public class MonsterAnimationTask extends Task<Void> {
         final VideoBuffer output = new VideoBuffer(background);
         foreground.writeTo(output, mask);
         interpreter.runLater(i -> {
-            if (i.isMonsterAnimationEnabled())
+            if (i.taskManager().isMonsterAnimationEnabled())
                 i.bitBlast(output, mask);
         });
     }
