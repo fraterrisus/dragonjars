@@ -1,0 +1,16 @@
+[versions]
+jackson = "2.21.8"
+junit = "5.10.2"
+mockito = "5.+"
+
+[libraries]
+jackson = { module = "com.fasterxml.jackson.jr:jackson-jr-objects", version.ref = "jackson" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[plugins]
+modularity = { id = "org.javamodularity.moduleplugin", version = "2.0.1" }
+javafx = { id = "org.openjfx.javafxplugin", version = "0.1.0" }
+jlink = { id = "org.beryx.jlink", version = "4.1.1" }

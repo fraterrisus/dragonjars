@@ -4,17 +4,15 @@ version = "1.3"
 plugins {
     java
     application
-    id("org.javamodularity.moduleplugin") version "2.0.1"
-    id("org.openjfx.javafxplugin") version "0.1.0"
-    id("org.beryx.jlink") version "4.1.1"
+    alias(libs.plugins.modularity)
+    alias(libs.plugins.javafx)
+    alias(libs.plugins.jlink)
 }
 
 repositories {
     mavenCentral()
 }
 
-val jacksonVersion = "2.21.4"
-val junitVersion = "5.10.2"
 
 java {
     toolchain {
@@ -24,7 +22,6 @@ java {
 
 val mockitoAgent = configurations.create("mockitoAgent")
 
-// Always check your release notes: https://github.com/openjdk/jfx/tree/master/doc-files
 application {
     mainModule.set("com.hitchhikerprod.dragonjars")
     mainClass.set("com.hitchhikerprod.dragonjars.DragonWarsApp")
@@ -34,18 +31,29 @@ application {
     )
 }
 
+// Always check your release notes: https://github.com/openjdk/jfx/tree/master/doc-files
 javafx {
     version = "24"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.jr:jackson-jr-objects:${jacksonVersion}")
-    testImplementation(platform("org.junit:junit-bom:${junitVersion}"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.mockito:mockito-core:5.+")
-    mockitoAgent("org.mockito:mockito-core:5.+") { isTransitive = false }
+    implementation(libs.jackson)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.launcher)
+    testImplementation(libs.mockito)
+    mockitoAgent(libs.mockito) { isTransitive = false }
+}
+
+// Explicitly add the Mockito java agent on the command line so it stops complaining.
+// https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+abstract class MockitoAgentProvider : CommandLineArgumentProvider {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val agentJar: ConfigurableFileCollection
+
+    override fun asArguments(): Iterable<String?> = listOf("-javaagent:${agentJar.asPath}")
 }
 
 tasks.withType<JavaCompile> {
@@ -53,6 +61,11 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<Test> {
+    jvmArgumentProviders.add(
+        objects.newInstance<MockitoAgentProvider>().apply {
+            agentJar.from(mockitoAgent)
+        }
+    )
     useJUnitPlatform {
         includeEngines("junit-jupiter")
     }
