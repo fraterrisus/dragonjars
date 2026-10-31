@@ -98,7 +98,8 @@ public class DecodeStringFrom implements Instruction {
         if (withFill) i.fillRectangle();
         final Address addr = getPointer.apply(i);
         final StringDecoder decoder = i.stringDecoder();
-        final ModifiableChunk chunk = i.memory().getChunk(addr.segment());
+        // addr.segment() here will always be IP.seg or DS, which are safe
+        final ModifiableChunk chunk = i.memory().unsafeGetSegment(addr.segment()).chunk();
         decoder.decodeString(chunk, addr.offset());
         final List<Integer> chars = decoder.getDecodedChars();
         if (saveAX) {

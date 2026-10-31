@@ -98,16 +98,16 @@ class SegmentTable {
     }
 
     /**
-     * Update the Frob on a segment without changing anything else. You shouldn't call this on a FROZEN segment,
-     * but if you do it will work (and spew a console message saying you shouldn't do that).
+     * Update the Frob on a segment without changing anything else. Segments marked FROZEN can not be changed.
      *
      * @param segmentId ID of the segment to update
      * @param frob new Frob value
      */
     void setFrob(int segmentId, Frob frob) {
         final SegmentTable.Segment segment = segments.get(segmentId);
+        if (segment.frob() == Frob.FROZEN) return;
         if (segment.frob() != frob) {
-            if (DEBUG || segment.frob() == Frob.FROZEN) {
+            if (DEBUG) {
                 System.out.format("Segment %02d (chunk 0x%02x) %s -> %s\n",
                         segmentId, segment.chunkId(), segment.frob(), frob);
             }
@@ -116,7 +116,7 @@ class SegmentTable {
     }
 
     /**
-     * Mark a segment as FREE (able to be overwritten). If you call this on a FROZEN segment, no update occurs.
+     * Mark a segment as FREE (able to be overwritten). Segments marked FROZEN can not be changed.
      *
      * @param segmentId ID of the segment to update
      */

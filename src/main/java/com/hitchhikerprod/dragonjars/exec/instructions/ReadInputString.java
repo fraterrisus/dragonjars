@@ -18,7 +18,7 @@ public class ReadInputString implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr();
-        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
 
         i.drawStringBuffer();

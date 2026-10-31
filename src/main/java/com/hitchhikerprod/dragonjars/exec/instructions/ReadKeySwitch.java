@@ -48,7 +48,7 @@ public class ReadKeySwitch implements Instruction {
         }
 
         final Address ip = i.getIP();
-        final int chunkId = ip.chunkId(i.memory());
+        final int chunkId = i.memory().segmentToChunk(ip.segment());
         i.drawStringBuffer();
         final int imm_2a44 = i.memory().read(ip.incr(1), 1);
         final int imm_2a45 = i.memory().read(ip.incr(2), 1);

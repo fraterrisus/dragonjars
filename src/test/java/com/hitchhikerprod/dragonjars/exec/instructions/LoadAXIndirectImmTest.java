@@ -29,7 +29,7 @@ public class LoadAXIndirectImmTest {
         i.setWidth(true);
         i.setAX(0xffff);
         Heap.get(0x31).write(0x0005, 2);
-        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE).id());
         i.run();
 
         assertEquals(0x0000bbaa, i.getAX());
@@ -42,7 +42,7 @@ public class LoadAXIndirectImmTest {
         i.setWidth(true);
         i.setAX(0xffff);
         Heap.get(0x31).write(0x0005, 2);
-        i.setDS(i.memory().allocateSegment(0x1, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x1, Frob.IN_USE).id());
         i.setWidth(false);
         i.run();
 

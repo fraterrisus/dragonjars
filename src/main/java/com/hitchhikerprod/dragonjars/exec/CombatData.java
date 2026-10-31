@@ -3,6 +3,7 @@ package com.hitchhikerprod.dragonjars.exec;
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.Item;
 import com.hitchhikerprod.dragonjars.data.Lists;
+import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.data.StringDecoder;
 import com.hitchhikerprod.dragonjars.data.WeaponDamage;
 import com.hitchhikerprod.dragonjars.exec.instructions.DecodeStringFrom;
@@ -72,7 +73,6 @@ public class CombatData {
         whoseTurn = WhoseTurn.PARTY;
         sb = new StringBuilder();
 
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
         final int pcId = Heap.get(Heap.SELECTED_PC).read();
         final Address pcBaseAddress = Heap.getPCBaseAddress();
 
@@ -86,15 +86,20 @@ public class CombatData {
             return;
         }
 
-        final int action = i.memory().read(combatCodeSegment, PC_ACTION + pcId, 1);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
+        final int action = combatCode.read(PC_ACTION + pcId, 1);
         sb.append(" ").append(decodePartyAction(action));
         if (List.of(5, 6, 7, 11).contains(action)) turnDone();
     }
 
-    public void partyEquip() {
+    private Item getItem() {
         final Address itemAddress = Heap.getPCItemAddress();
-        final Item item = new Item(i.memory().getChunk(itemAddress.segment())).decode(itemAddress.offset());
-        sb.append(" equips the ").append(item.getName());
+        final Chunk chunk = i.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
+        return new Item(chunk).decode(itemAddress.offset());
+    }
+
+    public void partyEquip() {
+        sb.append(" equips the ").append(getItem().getName());
     }
 
     public void partyMove(int targetSlot) {
@@ -104,9 +109,7 @@ public class CombatData {
     public void partySpell() {
         final boolean isItem = Heap.get(0x89).read() == 0;
         if (isItem) {
-            final Address itemAddress = Heap.getPCItemAddress();
-            final Item item = new Item(i.memory().getChunk(itemAddress.segment())).decode(itemAddress.offset());
-            sb.append(" the ").append(item.getName()).append(" to cast");
+            sb.append(" the ").append(getItem().getName()).append(" to cast");
         }
         final int spellId = Heap.get(0x85).read();
         final String spellName = Lists.getSpellName(spellId);
@@ -121,31 +124,31 @@ public class CombatData {
                 .filter(b -> b != 0).map(b -> (int)b).toList());
 
         final int spellId = Heap.get(0x85).read();
-        final int spellCodeSegment = i.memory().lookupChunkId(0x06);
-        final WeaponDamage healDie = new WeaponDamage((byte)i.memory().read(spellCodeSegment, 0x032d + spellId, 1));
+        final Chunk spellCode = i.memory().unsafeGetChunk(0x06);
+        final WeaponDamage healDie = new WeaponDamage((byte)spellCode.read(0x032d + spellId, 1));
         final int amount = Heap.get(0x5d).read(2);
 
         sb.append(String.format("\n\theals %s for %s = %d", targetName, healDie, amount));
     }
 
-    public void partySpellDamage() {
+    public void decodeSpellDamage() {
         final boolean variablePower = Heap.get(0x47).read() != 0;
         final int powerCost = Heap.get(0x86).read(2);
         final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
         final int totalDamage = Heap.get(0x61).read(2);
         sb.append("\n\tfor ");
         if (variablePower) sb.append(powerCost).append(" x ");
-        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage each");
+        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage");
     }
 
     public void partySpellTarget() {
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
         final Address pcBaseAddress = Heap.getPCBaseAddress();
 
         final int targetId = Heap.get(0x84).read();
         final int targetGroupId = Heap.get(0x48).read();
-        final int targetBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), targetBaseAddress + GROUP_NAME);
+        final int targetBaseAddress = combatCode.read(GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
+        i.stringDecoder().decodeString(combatCode, targetBaseAddress + GROUP_NAME);
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
@@ -169,7 +172,7 @@ public class CombatData {
     }
 
     public void partyAttackTarget() {
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
 
         mightyDamage = 0;
         bonusDamage = 0;
@@ -178,9 +181,9 @@ public class CombatData {
         if (attackRange > 1) sb.append(String.format(" (%d0')", attackRange));
 
         final int targetId = Heap.get(0x84).read();
-        final int targetGroupId = i.memory().read(combatCodeSegment, MONSTER_GROUP_ID + targetId, 1);
-        final int targetBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), targetBaseAddress + GROUP_NAME);
+        final int targetGroupId = combatCode.read(MONSTER_GROUP_ID + targetId, 1);
+        final int targetBaseAddress = combatCode.read(GROUP_DATA_POINTERS + (2 * targetGroupId), 2);
+        i.stringDecoder().decodeString(combatCode, targetBaseAddress + GROUP_NAME);
         final String targetName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
 
@@ -191,7 +194,7 @@ public class CombatData {
         } else if (i.getCarryFlag()) {
             sb.append("), out of range");
         } else {
-            final int defenderDV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_DV + targetId, 1), 1);
+            final int defenderDV = ALU.signExtend(combatCode.read(MONSTER_DV + targetId, 1), 1);
             sb.append(String.format(" id%d) DV%+d target=%d", targetId, defenderDV, getTarget(defenderDV)));
         }
     }
@@ -262,9 +265,9 @@ public class CombatData {
         monsterId = Heap.get(0x77).read();
         final int monsterGroupId = Heap.get(0x78).read();
 
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
-        final int monsterBaseAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
-        i.stringDecoder().decodeString(i.memory().getChunk(combatCodeSegment), monsterBaseAddress + GROUP_NAME);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
+        final int monsterBaseAddress = combatCode.read(GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
+        i.stringDecoder().decodeString(combatCode, monsterBaseAddress + GROUP_NAME);
         final String monsterName = StringDecoder.decodeString(
                 DecodeStringFrom.pluralize(i.stringDecoder().getDecodedChars(), false));
         sb.append(String.format("%s (gp%d id%d)", monsterName, monsterGroupId, monsterId));
@@ -350,11 +353,11 @@ public class CombatData {
 
     public void monsterAttackHits() {
         sb.append("\n\t");
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
 
         // See {03:08bf}. Effective AV seems to be (DEX/4) + (group mod) + (global mod),
         // ignoring the "Group AV" rating in group[06].
-        final int attackerAV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1), 1);
+        final int attackerAV = ALU.signExtend(combatCode.read(MONSTER_AV + monsterId, 1), 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
@@ -402,18 +405,8 @@ public class CombatData {
         sb.append(" breathes");
     }
 
-    public void monsterSpellDamage() {
-        final boolean variablePower = Heap.get(0x47).read() != 0;
-        final int powerCost = Heap.get(0x86).read(2);
-        final WeaponDamage damageDie = new WeaponDamage((byte)Heap.get(0x7c).read(1));
-        final int totalDamage = Heap.get(0x61).read(2);
-        sb.append("\n\tfor ");
-        if (variablePower) sb.append(powerCost).append(" x ");
-        sb.append(damageDie).append(" = ").append(totalDamage).append(" damage");
-    }
-
     public void monsterSpellHits() {
-        final int combatCodeSegment = i.memory().lookupChunkId(0x03);
+        final Chunk combatCode = i.memory().unsafeGetChunk(0x03);
 
         final Address targetAddress = Heap.getPCBaseAddress(Heap.get(0x83).read());
         final String targetName = StringDecoder.decodeString(i.memory().readBytes(targetAddress, 12).stream()
@@ -425,9 +418,9 @@ public class CombatData {
 
         final int monsterId = Heap.get(0x82).read();
         final int monsterGroupId = 0x7f & Heap.get(0x81).read(); // 1 -> 03d6
-        final int monsterGroupAddress = i.memory().read(combatCodeSegment, GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
-        final int groupAV = ALU.signExtend(i.memory().read(combatCodeSegment, monsterGroupAddress + GROUP_AV, 1), 1);
-        final int attackerAV = ALU.signExtend(i.memory().read(combatCodeSegment, MONSTER_AV + monsterId, 1), 1);
+        final int monsterGroupAddress = combatCode.read(GROUP_DATA_POINTERS + (2 * monsterGroupId), 2);
+        final int groupAV = ALU.signExtend(combatCode.read(monsterGroupAddress + GROUP_AV, 1), 1);
+        final int attackerAV = ALU.signExtend(combatCode.read(MONSTER_AV + monsterId, 1), 1);
         final int attackRoll = Heap.get(0x7b).read();
 
         if (attackRoll == 0xff) { // we forced this to detect crit hits/misses
@@ -516,19 +509,17 @@ public class CombatData {
     }
 
     public void getCombatants() {
-        final int combatSegmentId = i.memory().allocateSegment(0x03, Frob.IN_USE);
-        final Chunk monsterData = i.memory().getChunk(combatSegmentId);
+        final Chunk combatData = i.memory().unsafeGetChunk(0x03);
         Platform.runLater(() -> {
-            MonsterTableWindow.getInstance().setChunk(monsterData, i.newStringDecoder());
+            MonsterTableWindow.getInstance().setChunk(combatData, i.newStringDecoder());
             CombatLog.append("New Round", "bold");
         });
         whoseTurn = WhoseTurn.IDLE;
     }
 
     public void decodeInitiative() {
-        final int combatSegmentId = i.memory().allocateSegment(0x03, Frob.IN_USE);
-        final Chunk monsterData = i.memory().getChunk(combatSegmentId);
-        final Chunk partyData = i.memory().getChunk(Interpreter.PARTY_SEGMENT);
+        final Chunk monsterData = i.memory().unsafeGetChunk(0x03);
+        final Chunk partyData = i.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
 
         final List<Opponent> opponents = new ArrayList<>();
         final List<String> groupNames = new ArrayList<>();
@@ -549,11 +540,11 @@ public class CombatData {
             int monsterId = 0;
             int groupMembers = 0;
             while (monsterId < 50 && groupMembers < groupSize) {
-                final int group = i.memory().read(combatSegmentId, 0x03a4 + monsterId, 1);
+                final int group = monsterData.read(0x03a4 + monsterId, 1);
                 if (group == groupId) {
-                    final int hp = i.memory().read(combatSegmentId, 0x0278 + (2 * monsterId), 2);
-                    final int status = i.memory().read(combatSegmentId, 0x030e + monsterId, 1);
-                    final int initiative = i.memory().read(combatSegmentId, 0x02dc + monsterId, 1);
+                    final int hp = monsterData.read(0x0278 + (2 * monsterId), 2);
+                    final int status = monsterData.read(0x030e + monsterId, 1);
+                    final int initiative = monsterData.read(0x02dc + monsterId, 1);
                     opponents.add(new Opponent(monsterId, group, hp, status, initiative));
                     groupMembers++;
                 }
@@ -563,7 +554,7 @@ public class CombatData {
 
         final List<Integer> partyInitiatives = new ArrayList<>();
         for (int pcid = 0; pcid < Heap.get(Heap.PARTY_SIZE).read(); pcid++) {
-            partyInitiatives.add(i.memory().read(combatSegmentId, PC_INIT + pcid, 1));
+            partyInitiatives.add(monsterData.read(PC_INIT + pcid, 1));
         }
 
         final int maxInit = Integer.max(

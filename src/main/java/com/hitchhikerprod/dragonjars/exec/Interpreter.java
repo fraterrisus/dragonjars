@@ -213,7 +213,7 @@ public class Interpreter implements Runnable {
         clearKeyHandler();
         this.executionStack.push(new ExecutionContext(
                 this::shutdown,
-                memory.allocateSegment(0x0, Frob.IN_USE),
+                memory.allocateSegment(0x0, Frob.IN_USE).id(),
                 0
         ));
         eventLoop();
@@ -227,7 +227,7 @@ public class Interpreter implements Runnable {
      */
     public void reenter(int chunk, int addr, Runnable after) {
 //        System.out.format("reenter[%02x:%04x]\n", chunk, addr);
-        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE);
+        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE).id();
         this.executionStack.push(new ExecutionContext(after, segmentId, addr));
         setDS(-1);
         Thread.currentThread().interrupt();
@@ -235,7 +235,7 @@ public class Interpreter implements Runnable {
 
     public void start(int chunk, int addr) {
         clearKeyHandler();
-        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE);
+        final int segmentId = memory.allocateSegment(chunk, Frob.IN_USE).id();
         final Address nextIP = new Address(segmentId, addr);
         final ExecutionContext context = this.executionStack.peek();
         assert(Objects.isNull(context.nextIP()));
@@ -285,39 +285,35 @@ public class Interpreter implements Runnable {
         }
     }
 
-    private int breakpointChunk = 0x03;
-    private int breakpointAddress = 0x06b5;
+    private final int breakpointChunk = 0x03;
+    private final int breakpointAddress = 0x06b5;
 
     private void executeInstruction(Address ip) {
         final ExecutionContext context = Objects.requireNonNull(this.executionStack.peek());
         this.cs = ip.segment();
+        final Segment codeSegment = memory().unsafeGetSegment(cs);
         if (this.ds == -1) this.ds = this.cs;
         this.ip = ip.offset();
+
+        if (codeSegment.frob() != Frob.IN_USE) {
+            System.err.println("instruction read from " + codeSegment);
+        }
+        if (codeSegment.chunkId() == breakpointChunk && this.ip == breakpointAddress) {
+//            System.out.println("breakpoint");
+        }
+
+        runPatches(codeSegment.chunkId(), this.ip);
+
         final int opcode = memory().read(ip, 1);
-        final int csChunk = memory().getChunkId(cs);
-
-        // -----
-        // Debugging.
-        final Frob csFrob = memory().getFrob(cs);
-        if (csFrob != Frob.IN_USE) {
-            System.err.format("instruction read from segment 0x%02x (chunk 0x%02x) with frob %s\n",
-                    cs, csChunk, csFrob);
-        }
-        //        System.out.format("%02x%s%08x %02x\n", csChunk, isWide() ? ":" : " ", this.ip, opcode);
-        if (csChunk == breakpointChunk && this.ip == breakpointAddress) {
-            System.out.println("breakpoint");
-        }
-        // -----
-
-        runPatches(csChunk, this.ip);
         final Instruction ins = decodeOpcode(opcode);
+
         try {
             final Address nextIP = ins.exec(this);
             // Note that executing an instruction may change the execution stack, so it's important that we change the
             // nextIP field on the *current* context rather than whatever context happens to be on top at this point.
             context.nextIP(nextIP);
         } catch (Exception e) {
-            System.err.format("Caught exception at [%03x:%06x]\n", csChunk, this.ip);
+            System.err.format("Caught exception at [%03x:%06x]\n", codeSegment.chunkId(), this.ip);
             throw(e);
         }
         this.instructionsExecuted++;
@@ -334,7 +330,7 @@ public class Interpreter implements Runnable {
     private static final List<Patch> PATCHES = List.of(
             new Patch(0x003, 0x06b5, (i) -> {
                 System.out.format("[03:06b5] ax %04x bx %04x\n", i.ax, i.bx);
-                final ModifiableChunk dataSegment = i.memory().getChunk(i.getDS());
+                final ModifiableChunk dataSegment = i.memory().unsafeGetSegment(i.getDS()).chunk();
                 System.out.format("[%02x:04c6] %04x %04x %04x %04x\n", i.ds,
                         dataSegment.getWord(0x04c6),
                         dataSegment.getWord(0x04c8),
@@ -345,9 +341,10 @@ public class Interpreter implements Runnable {
             new Patch(0x008, 0x02f1, (i) -> i.openParagraph(i.getAX())),
             new Patch(0x046 + 0x08, 0x03aa, (i) -> i.openParagraph(30)),
             new Patch(0x046 + 0x12, 0x10ff, (i) -> {
-                final Address flag = new Address(i.memory().lookupChunkId(0x046 + 0x12), 0x1105);
-                final int bitsplit = i.memory().read(flag, 1);
-                final int offset = i.memory().read(flag.incr(), 1);
+//                final Address flag = new Address(i.memory().lookupChunkId(0x046 + 0x12), 0x1105);
+                final Chunk chunk = i.memory().unsafeGetChunk(0x046 + 0x12);
+                final int bitsplit = chunk.read(0x1105, 1);
+                final int offset = chunk.read(0x1106, 1);
                 if (Heap.readFlag(bitsplit, offset) > 0) i.openParagraph(138);
             }),
             new Patch(0x046 + 0x18, 0x06c5, (i) -> i.openParagraph(80)),
@@ -401,10 +398,10 @@ public class Interpreter implements Runnable {
             new Patch(0x003, 0x1508, (i) -> i.combatData().ifPresent(c -> c.monsterBreath())),
 
             new Patch(0x006, 0x03e4, (i) -> i.combatData().ifPresent(c -> c.partyHeal())),
-            new Patch(0x006, 0x0631, (i) -> i.combatData().ifPresent(c -> c.partySpellDamage())),
+            new Patch(0x006, 0x0631, (i) -> i.combatData().ifPresent(c -> c.decodeSpellDamage())),
             new Patch(0x006, 0x0678, (i) -> i.combatData().ifPresent(c -> Heap.get(0x7b).write(0xff))),
             new Patch(0x006, 0x067d, (i) -> i.combatData().ifPresent(c -> c.partySpellTarget())),
-            new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.monsterSpellDamage())),
+            new Patch(0x006, 0x0795, (i) -> i.combatData().ifPresent(c -> c.decodeSpellDamage())),
             new Patch(0x006, 0x07ca, (i) -> i.combatData().ifPresent(c -> c.monsterSpellHits()))
     );
 
@@ -528,15 +525,13 @@ public class Interpreter implements Runnable {
 
             this.mapDecoder = new MapData(stringDecoder());
 
-            final int primarySegment = memory.allocateSegment(mapId + 0x46, Frob.IN_USE);
-            Heap.get(Heap.BOARD_1_SEGIDX).write(primarySegment, 1);
-            final ModifiableChunk primaryData = memory().getChunk(primarySegment);
+            final Segment primarySegment = memory.allocateSegment(mapId + 0x46, Frob.IN_USE);
+            Heap.get(Heap.BOARD_1_SEGIDX).write(primarySegment.id(), 1);
 
-            final int secondarySegment = memory.allocateSegment(mapId + 0x1e, Frob.IN_USE);
-            Heap.get(Heap.BOARD_2_SEGIDX).write(secondarySegment, 1);
-            final ModifiableChunk secondaryData = memory().getChunk(secondarySegment);
+            final Segment secondarySegment = memory.allocateSegment(mapId + 0x1e, Frob.IN_USE);
+            Heap.get(Heap.BOARD_2_SEGIDX).write(secondarySegment.id(), 1);
 
-            mapDecoder().parse(mapId, primaryData, secondaryData);
+            mapDecoder().parse(mapId, primarySegment.chunk(), secondarySegment.chunk());
             unpackAutomapData(mapId);
 
             // erase board state flags on every load (see cs:5589)
@@ -545,7 +540,7 @@ public class Interpreter implements Runnable {
     }
 
     private void packAutomapData(int mapId) { // 0x4e00 and 0x4e5a
-        final ModifiableChunk automap = memory().automapChunk();
+        final ModifiableChunk automap = memory().getAutomapChunk();
         final int xMax = mapDecoder().xMax();
         final int yMax = mapDecoder().yMax();
         int flagMask = automap.getWord(2 * mapId);
@@ -570,7 +565,7 @@ public class Interpreter implements Runnable {
     }
 
     private void unpackAutomapData(int mapId) { // 0x4e00 and 0x4e6b
-        final ModifiableChunk automap = memory().automapChunk();
+        final ModifiableChunk automap = memory().getAutomapChunk();
         final int xMax = mapDecoder().xMax();
         final int yMax = mapDecoder().yMax();
         int flagMask = automap.getWord(2 * mapId);

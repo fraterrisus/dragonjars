@@ -29,7 +29,7 @@ public class PauseUntilKeyOrTime implements Instruction {
         i.drawStringBuffer(); // 0x4843
 
         final Address nextIP = i.getIP().incr(OPCODE);
-        this.nextChunkId = nextIP.chunkId(i.memory());
+        this.nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         this.nextAddress = nextIP.offset();
 
         i.setKeyHandler(event -> moveAlong());

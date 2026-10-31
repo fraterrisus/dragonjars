@@ -42,7 +42,7 @@ public class FindBoardAction implements Instruction {
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;
         final int itemNumber = Heap.get(Heap.SELECTED_ITEM).read();
         final int itemBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (itemNumber * 0x17);
-        final Chunk partyData = i.memory().getChunk(Interpreter.PARTY_SEGMENT);
+        final Chunk partyData = i.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
         final int itemUsed = Heap.get(0x88).read(); // 0x40: item used, 0x0f: item index (== h[07]?)
         final int skillUsed = Heap.get(0x85).read();
 
@@ -88,7 +88,7 @@ public class FindBoardAction implements Instruction {
                 final int eventPointer = i.mapDecoder().getEventPointer(action.event());
                 if (eventPointer != 0) { // disabled dynamically
                     i.reenter(
-                            i.memory().getChunkId(Heap.get(Heap.BOARD_1_SEGIDX).read()),
+                            i.memory().segmentToChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
                             eventPointer,
                             () -> {
                                 if (!i.getCarryFlag()) searchForActions(nextIP);

@@ -4,8 +4,6 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
-import java.util.function.Supplier;
-
 public class RecurseOverParty implements Instruction {
     private record RecursionState (
             Interpreter interpreter,
@@ -30,11 +28,8 @@ public class RecurseOverParty implements Instruction {
             if (charId < partySize.read()) {
                 selectedPC.write(charId);
                 final RecursionState newState = this.copy(1);
-                this.interpreter.reenter(
-                        this.oldIP.chunkId(this.interpreter.memory()),
-                        this.functionPointer,
-                        newState::after
-                );
+                final int chunkId = this.interpreter.memory().segmentToChunk(this.oldIP.segment());
+                this.interpreter.reenter(chunkId, this.functionPointer, newState::after);
             } else {
                 selectedPC.write(this.oldSelectedPC);
             }

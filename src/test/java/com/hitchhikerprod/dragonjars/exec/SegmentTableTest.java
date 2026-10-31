@@ -70,7 +70,7 @@ class SegmentTableTest {
     }
 
     @Test
-    public void testSetFrobOverwritesFrozen() {
+    public void testSetFrobWontOverwriteFrozen() {
         final SegmentTable table = new SegmentTable();
         final ModifiableChunk chunk = new ModifiableChunk(new byte[0x10]);
         final int segmentId = table.newSegment(chunk, 0x4, Frob.FROZEN);
@@ -79,7 +79,7 @@ class SegmentTableTest {
         table.setFrob(segmentId, Frob.IN_USE);
 
         final SegmentTable.Segment segment = table.getSegment(segmentId);
-        assertEquals(Frob.IN_USE, segment.frob());
+        assertEquals(Frob.FROZEN, segment.frob());
         assertEquals(0x4, segment.chunkId());
         assertEquals(chunk, segment.chunk());
     }

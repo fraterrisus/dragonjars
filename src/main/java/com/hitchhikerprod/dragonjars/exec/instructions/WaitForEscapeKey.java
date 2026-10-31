@@ -8,7 +8,7 @@ public class WaitForEscapeKey implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr(OPCODE);
-        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
         i.drawStringBuffer();
         i.printFooter(0x02); // hardcoded at 0x2bab

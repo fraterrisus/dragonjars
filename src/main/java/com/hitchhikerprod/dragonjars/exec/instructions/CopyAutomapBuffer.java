@@ -13,9 +13,9 @@ public class CopyAutomapBuffer implements Instruction {
         final boolean toSegment = (i.getBL() & 0x80) == 0;
         final Address memAddress = new Address(i.getDS(), i.getAX(true));
         if (toSegment) {
-            i.memory().writeBytes(memAddress, i.memory().automapChunk().getBytes(0, BUFFER_SIZE));
+            i.memory().writeBytes(memAddress, i.memory().getAutomapChunk().getBytes(0, BUFFER_SIZE));
         } else {
-            i.memory().automapChunk().setBytes(0, i.memory().readBytes(memAddress, BUFFER_SIZE));
+            i.memory().getAutomapChunk().setBytes(0, i.memory().readBytes(memAddress, BUFFER_SIZE));
         }
         return i.getIP().incr(OPCODE);
     }

@@ -60,7 +60,7 @@ public class Memory {
     /**
      * Returns a reference to the privately-allocated Chunk of automap data storage.
      */
-    public ModifiableChunk automapChunk() {
+    public ModifiableChunk getAutomapChunk() {
         return automapChunk;
     }
 
@@ -70,20 +70,22 @@ public class Memory {
      *
      * @param chunkId The chunk ID we want to load
      * @param frob The new segment's frob
-     * @return The segment ID for the chunk, which may or may not be newly allocated
+     * @return The segment record for the chunk, which may or may not be newly allocated
      */
-    public synchronized int allocateSegment(int chunkId, Frob frob) {
+    public synchronized Segment allocateSegment(int chunkId, Frob frob) {
         int segmentId = segmentTable.findSegmentId(chunkId);
         if (segmentId == -1 || (chunkId & 0x8000) > 0) {
             // Allocate a new segment.
             // Make a copy of the chunk data so the data we read from the file stays pristine.
             final ModifiableChunk newChunk = new ModifiableChunk(dataChunks.get(chunkId));
-            return segmentTable.newSegment(newChunk, chunkId, frob);
+            segmentId = segmentTable.newSegment(newChunk, chunkId, frob);
         } else {
             // Update the frob on the existing segment.
             segmentTable.setFrob(segmentId, frob);
-            return segmentId;
         }
+        // Refetch in case the setFrob action didn't work
+        final SegmentTable.Segment newSegment = segmentTable.getSegment(segmentId);
+        return new Segment(segmentId, newSegment.chunkId(), newSegment.chunk(), newSegment.frob());
     }
 
     /* There are an awful lot of calls to allocateSegment followed immediately by getChunk. We could introduce a new
@@ -96,9 +98,10 @@ public class Memory {
      * @param bufferSize Size of the buffer in bytes
      * @return The segment ID of the new segment
      */
-    public synchronized int allocateTemporary(int bufferSize) {
+    public synchronized Segment allocateTemporary(int bufferSize) {
         final ModifiableChunk tempChunk = new ModifiableChunk(new byte[bufferSize]);
-        return segmentTable.newSegment(tempChunk, 0xffff, Frob.IN_USE);
+        final int segmentId = segmentTable.newSegment(tempChunk, 0xffff, Frob.IN_USE);
+        return new Segment(segmentId, 0xffff, tempChunk, Frob.IN_USE);
     }
 
     /**
@@ -117,7 +120,8 @@ public class Memory {
      * #allocateSegment occurs for the same chunk ID, there's a chance that the existing segment will be revived
      * (rather than unloading and reloading it).
      * Note that this method is somewhat dangerous, in that it requires the caller to pass a segment ID while hopefully
-     * knowing that it refers to the correct chunk.
+     * knowing that it refers to the correct chunk. However, if the caller has a Segment object, it will NOT be
+     * invalidated by calling this method, so (for example) the Chunk can still be read from it.
      *
      * @param segmentId The Segment ID to mark for unloading.
      */
@@ -127,12 +131,26 @@ public class Memory {
     }
 
     /**
-     * Retrieve a Chunk from the segments table.
-     * @param segmentId ID of the segment
+     * Blindly returns a segment from the segment table. Throws if the segment ID doesn't exist or is blank.
+     * It is (relatively) safe to call this on a segment ID you know is FROZEN, such as the party segment (ID 1), or
+     * segments you know are loaded, such as (generally) IP or DS.
+     * @param segmentId the ID of the segment to return
+     * @return a Segment data structure
+     */
+    public synchronized Segment unsafeGetSegment(int segmentId) {
+        final SegmentTable.Segment segment = segmentTable.getSegment(segmentId);
+        return new Segment(segmentId, segment.chunkId(), segment.chunk(), segment.frob());
+    }
+
+    /**
+     * Blindly returns the chunk data for a given ID. Throws if the chunk ID isn't in the segment table.
+     * @param chunkId the ID of the chunk to search for
      * @return a ModifiableChunk
      */
-    public synchronized ModifiableChunk getChunk(int segmentId) {
-        return segmentTable.getSegment(segmentId).chunk();
+    public synchronized ModifiableChunk unsafeGetChunk(int chunkId) {
+        final int segmentId = chunkToSegment(chunkId);
+        final SegmentTable.Segment segment = segmentTable.getSegment(segmentId);
+        return segment.chunk();
     }
 
     /**
@@ -140,20 +158,8 @@ public class Memory {
      * @param segmentId ID of the segment
      * @return ID of the chunk
      */
-    public synchronized int getChunkId(int segmentId) {
+    public synchronized int segmentToChunk(int segmentId) {
         return segmentTable.getSegment(segmentId).chunkId();
-    }
-
-    // This method only ever gets called for debugging purposes.
-    public synchronized Frob getFrob(int segmentId) {
-        return segmentTable.getSegment(segmentId).frob();
-    }
-
-    /**
-     * Returns the size of the given segment ID.
-     */
-    public synchronized int getSize(int segmentId) {
-        return segmentTable.getSegment(segmentId).chunk().getSize();
     }
 
     /**
@@ -162,7 +168,7 @@ public class Memory {
      * @param chunkId The chunk ID to locate
      * @return The segment ID, or -1 if not found.
      */
-    public synchronized int lookupChunkId(int chunkId) {
+    public synchronized int chunkToSegment(int chunkId) {
         return segmentTable.findSegmentId(chunkId);
     }
 
@@ -175,7 +181,9 @@ public class Memory {
      * @return int
      */
     public synchronized int read(int segmentId, int offset, int length) {
-        return getChunk(segmentId).read(offset, length);
+        return segmentTable.getSegment(segmentId)
+                .chunk()
+                .read(offset, length);
     }
 
     /**
@@ -197,7 +205,9 @@ public class Memory {
      * @return A list of Bytes, in the same order they are in the file.
      */
     public synchronized List<Byte> readBytes(Address address, int length) {
-        return getChunk(address.segment()).getBytes(address.offset(), length);
+        return segmentTable.getSegment(address.segment())
+                .chunk()
+                .getBytes(address.offset(), length);
     }
 
     /**
@@ -209,7 +219,9 @@ public class Memory {
      * @param data A Java int containing the data to write; will be written in little-endian order.
      */
     public synchronized void write(int segmentId, int offset, int length, int data) {
-        getChunk(segmentId).write(offset, length, data);
+        segmentTable.getSegment(segmentId)
+                .chunk()
+                .write(offset, length, data);
     }
 
     /**
@@ -230,6 +242,8 @@ public class Memory {
      * @param data A list of Bytes to write; will be written in list order.
      */
     public synchronized void writeBytes(Address address, List<Byte> data) {
-        getChunk(address.segment()).setBytes(address.offset(), data);
+        segmentTable.getSegment(address.segment())
+                .chunk()
+                .setBytes(address.offset(), data);
     }
 }

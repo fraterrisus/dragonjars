@@ -17,7 +17,7 @@ public class RunYesNoModal implements Instruction {
         i.addToStringBuffer(YES_NO_STRING);
         i.drawStringBuffer();
         final Address nextIP = i.getIP().incr(OPCODE);
-        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
         i.setKeyHandler(event -> {
             if (event.getCode() == KeyCode.Y) {

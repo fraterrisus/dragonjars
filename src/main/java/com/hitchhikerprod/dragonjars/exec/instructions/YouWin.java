@@ -40,8 +40,7 @@ public class YouWin implements Instruction {
             return;
         }
 
-        final int segmentId = i.memory().allocateSegment(ChunkTable.YOU_WIN + page, Frob.IN_USE);
-        final Chunk pageChunk = i.memory().getChunk(segmentId);
+        final Chunk pageChunk = i.memory().allocateSegment(ChunkTable.YOU_WIN + page, Frob.IN_USE).chunk();
         bg.drawChunkImage(pageChunk);
 
         if (page == 1) {
