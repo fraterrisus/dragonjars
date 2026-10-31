@@ -1,7 +1,6 @@
 package com.hitchhikerprod.dragonjars.exec;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
-import com.hitchhikerprod.dragonjars.data.ModifiableChunk;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
 import javafx.application.Platform;
 
@@ -12,15 +11,15 @@ record Patch(int chunkId, int ip, Consumer<Interpreter> fn) {
 
     private static final List<Patch> PATCHES = List.of(
             // Debugging a threading conflict.
-            new Patch(0x003, 0x06b5, (i) -> {
-                System.out.format("[03:06b5] ax %04x bx %04x\n", i.getAX(), i.getBX());
-                final ModifiableChunk dataSegment = i.memory().unsafeGetSegment(i.getDS()).chunk();
-                System.out.format("[%02x:04c6] %04x %04x %04x %04x\n", i.getDS(),
-                        dataSegment.getWord(0x04c6),
-                        dataSegment.getWord(0x04c8),
-                        dataSegment.getWord(0x04ca),
-                        dataSegment.getWord(0x04cc));
-            }),
+//            new Patch(0x003, 0x06b5, (i) -> {
+//                System.out.format("[03:06b5] ax %04x bx %04x\n", i.getAX(), i.getBX());
+//                final ModifiableChunk dataSegment = i.memory().unsafeGetSegment(i.getDS()).chunk();
+//                System.out.format("[%02x:04c6] %04x %04x %04x %04x\n", i.getDS(),
+//                        dataSegment.getWord(0x04c6),
+//                        dataSegment.getWord(0x04c8),
+//                        dataSegment.getWord(0x04ca),
+//                        dataSegment.getWord(0x04cc));
+//            }),
 
             // Open the paragraph window when the game prompts you to do so. Some of these are hardcoded in strings, so
             // I have to hardcode them here as well.

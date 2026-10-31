@@ -13,7 +13,7 @@
   when I reloaded the outbound fight didn't happen until I stepped on the armory square a second time.
 - There's a bit of a pause and blink when a combat round starts, sometimes. Possibly this is "just" a result of the 
   FPS being much higher on a modern Java system than it is on an old x86; if I insert artificial FPS limiters, the 
-  blinking goes away!
+  blinking goes away! It seems to happen more often when you pick (F)ight rather than (Q)uickfight.
 - Goblins are one pixel up from the bottom of the viewport. Maybe others? Maybe this isn't a bug?
 - Some monster images overdraw the viewport corners.
 

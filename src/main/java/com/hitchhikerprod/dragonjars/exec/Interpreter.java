@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -124,9 +125,6 @@ public class Interpreter implements Runnable {
     private boolean flagCarry; // 0x0001
     private boolean flagZero;  // 0x0040
     private boolean flagSign;  // 0x0080
-
-    private final ReentrantLock pauseLock = new ReentrantLock();
-    private boolean gameIsPaused = false;
 
     /* Debugging information */
 
@@ -570,24 +568,18 @@ public class Interpreter implements Runnable {
     // so they stop animating things like the spell icons, but it also stops spell decay and anything else that's
     // keeping a long timer.
 
+    private final AtomicBoolean gameIsPaused = new AtomicBoolean(false);
+
     public boolean isPaused() {
-        boolean p;
-        pauseLock.lock();
-        try { p = gameIsPaused; }
-        finally { pauseLock.unlock(); }
-        return p;
+        return gameIsPaused.get();
     }
 
     public void pause() {
-        pauseLock.lock();
-        try { gameIsPaused = true; }
-        finally { pauseLock.unlock(); }
+        gameIsPaused.set(true);
     }
 
     public void unpause() {
-        pauseLock.lock();
-        try { gameIsPaused = false; }
-        finally { pauseLock.unlock(); }
+        gameIsPaused.set(false);
     }
 
     // *******************************************************************************
@@ -623,7 +615,9 @@ public class Interpreter implements Runnable {
 
     // *******************************************************************************
     // *** Graphics "Primitives"
-    // These are lower-level helper methods that perform smaller functions.
+    // These are lower-level helper methods that perform smaller functions. Many of these are implemented very close to
+    // the functions in the original engine, which is why their member variables often have hexadecimal suffixes (the
+    // memory location in the x86 binary).
 
     public void getImageWriter(Consumer<PixelWriter> fn) {
         app().frameQueue().pushImage(fn);
