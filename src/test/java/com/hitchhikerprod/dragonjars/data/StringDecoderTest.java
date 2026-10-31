@@ -61,12 +61,13 @@ class StringDecoderTest {
     @Test
     @Disabled
     public void encode() {
-        final String text1 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which namtar will march against Oceana when Dilmun is finally conquered.";
-        final String text2 = "The battle plain is crowded with an army of faerie reptile men a million strong. This is the army which Namtar will march against Oceana when Dilmun is finally conquered.";
+        final String text1 = "Namtars evil body once again is still, but for how long?";
+        final String text2 = "Namtar's evil body once again is still, but for how long?";
         final StringEncoder enc = new StringEncoder();
         final List<Byte> result1 = enc.encodeString(text1);
         final List<Byte> result2 = enc.encodeString(text2);
-        if (result1.size() != result2.size()) System.out.format("Size changed: was %d, now %d\n", result1.size(), result2.size());
+        if (result1.size() != result2.size())
+            System.out.format("Size changed: was %d, now %d\n", result1.size(), result2.size());
         for (int i = 0; i < result1.size(); i++) {
             if (!result1.get(i).equals(result2.get(i))) {
                 System.out.format("[0x%03x] old:%02x new:%02x\n", i, result1.get(i), result2.get(i));

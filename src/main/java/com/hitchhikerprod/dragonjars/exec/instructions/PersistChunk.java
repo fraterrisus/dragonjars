@@ -2,7 +2,6 @@ package com.hitchhikerprod.dragonjars.exec.instructions;
 
 import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
-import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.tasks.SaveChunkTask;
 import com.hitchhikerprod.dragonjars.ui.AppPreferences;
@@ -25,7 +24,8 @@ public class PersistChunk implements Instruction {
     public Address exec(Interpreter i) {
         final Address nextIP = i.getIP().incr(OPCODE);
         final int chunkId = i.getAL();
-        final Chunk chunkData = getChunkData(i, chunkId);
+        // If the chunk isn't already resident, this will bomb.
+        final Chunk chunkData = i.memory().unsafeGetChunk(chunkId);
         if (Objects.isNull(chunkData)) return nextIP;
 
         final AppPreferences prefs = AppPreferences.getInstance();
@@ -38,29 +38,16 @@ public class PersistChunk implements Instruction {
         }
 
         final SaveChunkTask task = new SaveChunkTask(data1Path, data2Path, chunkId, chunkData);
-        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
-        task.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
+        task.setOnSucceeded(event -> i.restart(nextChunkId, nextAddress));
         task.setOnFailed(event -> {
             final Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save your game.");
             alert.showAndWait();
-            i.start(nextChunkId, nextAddress);
+            i.restart(nextChunkId, nextAddress);
         });
 
         Thread.ofVirtual().start(task);
         return null;
-    }
-
-    private Chunk getChunkData(Interpreter i, Integer chunkId) {
-        final int segmentId = i.memory().lookupChunkId(chunkId);
-        if (segmentId == -1) {
-            System.err.println("Chunk ID " + chunkId + " is not loaded, refusing to save it");
-            return null;
-        }
-        if (i.memory().getSegmentFrob(segmentId) == Frob.FROZEN) {
-            System.err.println("Chunk ID " + chunkId + " is marked FROZEN, refusing to save it");
-            return null;
-        }
-        return i.memory().getSegment(segmentId);
     }
 }

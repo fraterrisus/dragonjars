@@ -19,7 +19,7 @@ public class SearchSpecialItem implements Instruction {
             final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + pcId).read() << 8;
             for (int slotId = 0; slotId < 12; slotId++) {
                 final int slotBaseAddress = pcBaseAddress + Memory.PC_INVENTORY + (0x17 * slotId);
-                final Chunk partyChunk = i.memory().getSegment(Interpreter.PARTY_SEGMENT);
+                final Chunk partyChunk = i.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
                 final Item myItem = new Item(partyChunk).decode(slotBaseAddress);
                 if (boardItem.equals(myItem)) {
                     Heap.get(Heap.SELECTED_PC).write(pcId);

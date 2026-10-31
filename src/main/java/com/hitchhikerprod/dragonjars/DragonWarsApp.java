@@ -6,7 +6,6 @@ import com.hitchhikerprod.dragonjars.data.Images;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
-import com.hitchhikerprod.dragonjars.exec.events.InterpreterEvent;
 import com.hitchhikerprod.dragonjars.exec.events.KeyPressEvent;
 import com.hitchhikerprod.dragonjars.tasks.LoadDataTask;
 import com.hitchhikerprod.dragonjars.ui.AboutDialog;
@@ -44,7 +43,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class DragonWarsApp extends Application {
     public static final int IMAGE_X = 320;
@@ -240,7 +238,10 @@ public class DragonWarsApp extends Application {
 
     public void openPartyStateDialog() {
         if (Objects.isNull(interpreter)) return;
-        withInterpreterPause(() -> new PartyStateDialog(stage, interpreter.memory()).showAndWait());
+        withInterpreterPause(() -> {
+            final Chunk partyData = interpreter.memory().unsafeGetSegment(Interpreter.PARTY_SEGMENT).chunk();
+            new PartyStateDialog(stage, partyData).showAndWait();
+        });
     }
 
     public void openPreferencesDialog() {

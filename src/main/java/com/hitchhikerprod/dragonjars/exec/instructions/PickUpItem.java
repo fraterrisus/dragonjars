@@ -16,7 +16,7 @@ public class PickUpItem implements Instruction {
             final Address slotAddress = new Address(Interpreter.PARTY_SEGMENT, slotBaseAddress);
             if (i.memory().read(slotAddress.incr(0x0b), 1) != 0) continue;
 
-            i.memory().writeList(slotAddress, i.memory().readList(itemToPickUp, 0x17));
+            i.memory().writeBytes(slotAddress, i.memory().readBytes(itemToPickUp, 0x17));
             Heap.get(Heap.SELECTED_ITEM).write(slotId);
             i.setZeroFlag(true);
             return nextIP;

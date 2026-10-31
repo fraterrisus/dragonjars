@@ -167,7 +167,7 @@ public class Item {
             if (one == 0) {
                 return null;
             } else if ((one & 0xc0) == 0) {
-                final String spellName = Lists.SPELL_NAMES[one / 8][one % 8];
+                final String spellName = Lists.getSpellName(one);
                 if (two > 0) {
                     return "casts " + spellName + " @" + two;
                 } else {
@@ -190,7 +190,7 @@ public class Item {
                 case 3 -> {
                     this.chargeable = true;
                     final int spellId = (two & 0x3f);
-                    final String spellName = Lists.SPELL_NAMES[spellId / 8][spellId % 8];
+                    final String spellName = Lists.getSpellName(spellId);
                     return "teaches " + spellName;
                 }
                 case 4 -> {
@@ -204,4 +204,3 @@ public class Item {
         }
     }
 }
-

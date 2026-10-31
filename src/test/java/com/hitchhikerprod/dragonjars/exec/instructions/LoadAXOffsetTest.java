@@ -28,7 +28,7 @@ public class LoadAXOffsetTest {
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setBL(0x00000002);
-        i.setDS(i.getSegmentForChunk(0x01, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x01, Frob.IN_USE).id());
         i.run();
 
         assertEquals(0x0000bbaa, i.getAX(true));
@@ -41,7 +41,7 @@ public class LoadAXOffsetTest {
         i.setWidth(true);
         i.setAX(0x0000ffff);
         i.setBL(0x00000002);
-        i.setDS(i.getSegmentForChunk(0x1, Frob.IN_USE));
+        i.setDS(i.memory().allocateSegment(0x1, Frob.IN_USE).id());
         i.setWidth(false);
         i.run();
 

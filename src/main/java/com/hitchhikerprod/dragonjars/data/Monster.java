@@ -391,7 +391,7 @@ public class Monster {
         }
 
         public String toString() {
-            final String spellName = Lists.SPELL_NAMES[spellId / 8][spellId % 8];
+            final String spellName = Lists.getSpellName(spellId);
             return String.format("%s/%s:Cast(%s, pow:%d%s)", this.bravery, this.sentiment, spellName,
                 this.power, (this.selfTarget) ? "" : ", target");
         }

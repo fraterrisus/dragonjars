@@ -11,6 +11,8 @@ import java.util.List;
 public class SpellDecayTask extends Task<Void> {
     // Summon spells: 4 ticks per point
     // Mage Light, Guidance: 3 ticks per point
+    //   ...except the Magic Lamp, which casts Mage Light at *zero power* and therefore gets an infinite duration
+    //   (because zero power -> zero ticks remain, so the counter never counts)
     // Radiance, Disarm Traps, Sense Traps: 2 ticks
     // Cloak Arcane: 1 tick
     private static final int ANIMATION_DELAY_MS = 250;

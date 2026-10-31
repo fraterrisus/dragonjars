@@ -47,7 +47,7 @@ public class RecurseOverInventory implements Instruction {
         i.setAH(0x00);
         final Address ip = i.getIP();
         final Address nextIP = ip.incr(OPCODE + ADDRESS);
-        final int chunkId = ip.chunkId(i.memory());
+        final int chunkId = i.memory().segmentToChunk(ip.segment());
         final int functionPointer = i.memory().read(ip.incr(), 2);
         final int marchingOrder = Heap.get(Heap.SELECTED_PC).read();
         final int pcBaseAddress = Heap.get(Heap.MARCHING_ORDER + marchingOrder).read() << 8;

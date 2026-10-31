@@ -136,14 +136,14 @@ public class DrawAutomap implements Instruction {
 
         // The switch is at cs:1717, but it points to code segment addresses so we emulate it here
         final Address nextIP = i.getIP().incr(OPCODE);
-        final int nextChunkId = nextIP.chunkId(i.memory());
+        final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
         final int nextAddress = nextIP.offset();
         i.setKeyHandler(event -> {
             switch(event.getCode()) {
                 case KeyCode.ESCAPE -> {
                     i.disableMonsterAnimation();
                     i.resetUI();
-                    i.start(nextChunkId, nextAddress);
+                    i.restart(nextChunkId, nextAddress);
                 }
                 case KeyCode.UP, KeyCode.I, KeyCode.A -> {
                     final int y1 = y0 + 1;
@@ -168,8 +168,7 @@ public class DrawAutomap implements Instruction {
     }
 
     private void drawChunk(int chunkId, int chunkIndex, int x, int y) {
-        final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
-        final Chunk chunk = i.memory().getSegment(segmentId);
+        final Chunk chunk = i.memory().allocateSegment(chunkId, Frob.IN_USE).chunk();
         automap.drawTexture(chunk, chunkIndex, x, y, 0, automapRectangle);
     }
 }

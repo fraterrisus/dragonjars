@@ -28,7 +28,7 @@ class StoreAXIndirectTest {
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         i.setWidth(true);
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
+        final int dataSegment = i.memory().allocateSegment(0x01, Frob.IN_USE).id();
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);
@@ -50,7 +50,7 @@ class StoreAXIndirectTest {
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, data, Chunk.EMPTY));
         i.setWidth(true);
-        final int dataSegment = i.getSegmentForChunk(0x01, Frob.IN_USE);
+        final int dataSegment = i.memory().allocateSegment(0x01, Frob.IN_USE).id();
         i.setDS(dataSegment);
         i.setAH(0xbb);
         i.setAL(0xaa);

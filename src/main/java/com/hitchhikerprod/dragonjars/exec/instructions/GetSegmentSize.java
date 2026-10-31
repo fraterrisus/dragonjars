@@ -7,7 +7,7 @@ public class GetSegmentSize implements Instruction {
     @Override
     public Address exec(Interpreter i) {
         final int segmentID = i.getAL();
-        final int segmentSize = i.memory().getSegmentSize(segmentID);
+        final int segmentSize = i.memory().unsafeGetSegment(segmentID).chunk().getSize();
         i.setAX(segmentSize, true);
         return i.getIP().incr();
     }

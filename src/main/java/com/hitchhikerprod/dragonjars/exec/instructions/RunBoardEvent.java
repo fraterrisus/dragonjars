@@ -6,8 +6,6 @@ import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Heap;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 
-import java.util.function.Supplier;
-
 public class RunBoardEvent implements Instruction {
     @Override
     public Address exec(Interpreter i) {
@@ -23,11 +21,8 @@ public class RunBoardEvent implements Instruction {
                 Heap.get(Heap.NEXT_SPECIAL).write(square.specialId(), 1);
                 final int eventPointer = i.mapDecoder().getEventPointer(square.specialId());
                 if (eventPointer != 0) { // event was disabled dynamically
-                    i.reenter(
-                            i.memory().getSegmentChunk(Heap.get(Heap.BOARD_1_SEGIDX).read()),
-                            eventPointer,
-                            new After(i, location)
-                    );
+                    final int chunkId = i.memory().segmentToChunk(Heap.get(Heap.BOARD_1_SEGIDX).read());
+                    i.reenter(chunkId, eventPointer, new After(i, location));
                     return nextIP;
                 }
             }

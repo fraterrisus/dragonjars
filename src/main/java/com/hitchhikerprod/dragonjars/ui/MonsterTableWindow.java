@@ -68,9 +68,10 @@ public class MonsterTableWindow {
         groupList = new ListView<>();
         groupList.setCellFactory(MonsterCell::new);
         groupList.setPrefWidth(750);
+        groupList.getStyleClass().add("dj-background");
 
         final ScrollPane parent = new ScrollPane(groupList);
-        parent.getStyleClass().add("monster-window");
+        parent.getStyleClass().addAll("monster-window", "dj-background");
         parent.setFitToHeight(true);
         parent.setFitToWidth(true);
         return parent;
@@ -287,6 +288,8 @@ public class MonsterTableWindow {
             return distance.get();
         }
 
+        public int getDexterity() { return dex.get(); }
+
         public int getCalculatedAv() {
             return avCalc.get();
         }
@@ -330,6 +333,8 @@ public class MonsterTableWindow {
         public IntegerProperty distanceProperty() {
             return distance;
         }
+
+        public IntegerProperty dexterityProperty() { return dex; }
 
         public IntegerProperty calculatedAvProperty() {
             return avCalc;
@@ -411,7 +416,7 @@ public class MonsterTableWindow {
         }
 
         private static TableColumn<GroupData, String> getDexColumn() {
-            return getPropertyColumn("DEX", "dex");
+            return getPropertyColumn("DEX", "dexterity");
         }
 
         private static TableColumn<GroupData, String> getCalculatedAvColumn() {
@@ -469,8 +474,7 @@ public class MonsterTableWindow {
                     getSizeColumn(),
                     getDistanceColumn(),
                     getSpeedColumn(),
-                    getCalculatedAvColumn(),
-                    getCalculatedDvColumn(),
+                    getDexColumn(),
                     getAvModColumn(),
                     getDvModColumn(),
                     getUndeadColumn(),
@@ -542,8 +546,8 @@ public class MonsterTableWindow {
                 "HP", "Current health",
                 "Init", "Current initiative roll;\n" +
                         "set to zero once creature has acted",
-                "+AV", "Temporary AV modifier due to chosen action",
-                "+DV", "Temporary DV modifier due to chosen action",
+                "AV", "Current total AV, recalculated at the START of each round.",
+                "DV", "Current total DV, recalculated at the START of each round.",
                 "Targetable", "Monsters can only be attacked once until\n" +
                         "every monster in the group has been attacked.\n" +
                         "This property resets frequently.\n",
@@ -598,11 +602,11 @@ public class MonsterTableWindow {
         }
 
         private static TableColumn<MonsterData, Integer> getAVColumn() {
-            return getBaseColumn("+AV", "av", signExtension);
+            return getBaseColumn("AV", "av", signExtension);
         }
 
         private static TableColumn<MonsterData, Integer> getDVColumn() {
-            return getBaseColumn("+DV", "dv", signExtension);
+            return getBaseColumn("DV", "dv", signExtension);
         }
 
         private static TableColumn<MonsterData, Integer> getGroupIDColumn() {

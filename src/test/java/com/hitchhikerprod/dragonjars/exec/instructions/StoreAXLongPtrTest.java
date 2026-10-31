@@ -27,7 +27,7 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY, data, Chunk.EMPTY));
-        i.getSegmentForChunk(0x02, Frob.IN_USE);
+        i.memory().allocateSegment(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);
@@ -51,7 +51,7 @@ class StoreAXLongPtrTest {
         ));
 
         final Interpreter i = new Interpreter(null, List.of(PROGRAM, Chunk.EMPTY, data, Chunk.EMPTY));
-        i.getSegmentForChunk(0x02, Frob.IN_USE);
+        i.memory().allocateSegment(0x02, Frob.IN_USE);
         i.setWidth(false);
         i.setAH(0xbb);
         i.setAL(0xaa);

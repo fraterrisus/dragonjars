@@ -1,3 +1,11 @@
+.dj-background {
+    -fx-background-color: antiquewhite;
+}
+
+.dj-background-alt {
+    -fx-background-color: #e1ceb6;
+}
+
 .bold {
     -fx-font-weight: bold;
 }
@@ -36,17 +44,12 @@
     -fx-text-fill: darkblue;
 }
 
-.combat-log > * {
+.combat-log * {
     -fx-font-size: 16px;
-    -fx-background-color: antiquewhite;
 }
 
-.combat-log .list-cell {
-    -fx-background-color: antiquewhite;
-}
-
-.combat-log .list-cell:even {
-    -fx-background-color: #e1ceb6;
+.combat-log .log-cell-holder .log-cell {
+    -fx-padding: 4px 0 4px 0;
 }
 
 .monster-window, .monster-window .list-cell {
@@ -55,6 +58,7 @@
 
 .monster-header {
     -fx-font-size: 18px;
+    -fx-font-weight: bold;
     -fx-text-fill: darkblue;
 }
 

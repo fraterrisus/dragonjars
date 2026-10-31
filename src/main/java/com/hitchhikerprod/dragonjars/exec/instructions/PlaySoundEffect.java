@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.Segment;
 
 public class PlaySoundEffect implements Instruction {
     @Override
@@ -15,10 +16,9 @@ public class PlaySoundEffect implements Instruction {
             i.app().musicService().playSimpleSound(soundId);
         } else if (soundId >= 4 && soundId <= 10) {
             final int chunkId = 0xfc + soundId;
-            final int segmentId = i.getSegmentForChunk(chunkId, Frob.IN_USE);
-            final Chunk data = i.memory().getSegment(segmentId);
-            i.freeSegment(segmentId);
-            i.app().musicService().playChunkSound(data);
+            final Segment musicSegment = i.memory().allocateSegment(chunkId, Frob.IN_USE);
+            i.memory().freeSegment(musicSegment.id());
+            i.app().musicService().playChunkSound(musicSegment.chunk());
         }
 
         return ip.incr(OPCODE + IMMEDIATE);

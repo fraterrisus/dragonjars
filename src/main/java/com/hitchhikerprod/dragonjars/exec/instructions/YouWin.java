@@ -4,6 +4,7 @@ import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.ChunkTable;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.exec.Address;
+import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
 import com.hitchhikerprod.dragonjars.exec.VideoBuffer;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
@@ -39,7 +40,7 @@ public class YouWin implements Instruction {
             return;
         }
 
-        final Chunk pageChunk = i.memory().copyDataChunk(ChunkTable.YOU_WIN + page);
+        final Chunk pageChunk = i.memory().allocateSegment(ChunkTable.YOU_WIN + page, Frob.IN_USE).chunk();
         bg.drawChunkImage(pageChunk);
 
         if (page == 1) {

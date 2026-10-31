@@ -1,10 +1,10 @@
 package com.hitchhikerprod.dragonjars.exec.instructions;
 
-import com.hitchhikerprod.dragonjars.data.Chunk;
 import com.hitchhikerprod.dragonjars.data.PixelRectangle;
 import com.hitchhikerprod.dragonjars.exec.Address;
 import com.hitchhikerprod.dragonjars.exec.Frob;
 import com.hitchhikerprod.dragonjars.exec.Interpreter;
+import com.hitchhikerprod.dragonjars.exec.Segment;
 import com.hitchhikerprod.dragonjars.exec.VideoHelper;
 import com.hitchhikerprod.dragonjars.tasks.MonsterAnimationTask;
 import com.hitchhikerprod.dragonjars.tasks.SleepTask;
@@ -26,31 +26,29 @@ public class ShowMonsterImage implements Instruction {
             final PixelRectangle gameplayArea = i.fg().getHudRegionArea(VideoHelper.HUD_GAMEPLAY).toPixel();
             i.fg().drawRectangle(gameplayArea, (byte)0);
 
-            final int nextChunkId = nextIP.chunkId(i.memory());
+            final int nextChunkId = i.memory().segmentToChunk(nextIP.segment());
             final int nextAddress = nextIP.offset();
 
             final SleepTask sleepTask = new SleepTask(1000);
-            sleepTask.setOnSucceeded(event -> i.start(nextChunkId, nextAddress));
+            sleepTask.setOnSucceeded(event -> i.restart(nextChunkId, nextAddress));
             Thread.ofVirtual().start(sleepTask);
 
             return null;
         }
 
         final int priChunkId = 0x8a + (2 * monsterId);
-        final int priSegment = i.getSegmentForChunk(priChunkId, Frob.IN_USE);
-        final Chunk priChunk = i.memory().getSegment(priSegment);
+        final Segment priSegment = i.memory().allocateSegment(priChunkId, Frob.IN_USE);
 
         final int secChunkId = priChunkId + 1;
-        final int secSegment = i.getSegmentForChunk(secChunkId, Frob.IN_USE);
-        final Chunk secChunk = i.memory().getSegment(secSegment);
+        final Segment secSegment = i.memory().allocateSegment(secChunkId, Frob.IN_USE);
 
-        i.enableMonsterAnimation(monsterId); //, priSegment, secSegment);
+        i.enableMonsterAnimation(monsterId);
 
-        final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priChunk, secChunk);
+        final MonsterAnimationTask monsterAnimationTask = new MonsterAnimationTask(i, priSegment.chunk(), secSegment.chunk());
 
         final EventHandler<WorkerStateEvent> taskEnd = event -> {
-            i.freeSegmentForChunk(priChunkId);
-            i.freeSegmentForChunk(secChunkId);
+            i.memory().freeChunk(priSegment.chunkId());
+            i.memory().freeChunk(secSegment.chunkId());
         };
         monsterAnimationTask.setOnSucceeded(taskEnd);
         monsterAnimationTask.setOnFailed(taskEnd);
