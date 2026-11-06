@@ -1,9 +1,9 @@
 # TODO
 
 - Do a better job listing inventory items in the Party window.
-- Add mouse support.
-- Add support for multiple save files (that are *just* chunks 0x07 and 0x10).
-- Add a character editor.
+- Allow editing items in the party editor.
+- Mouse support.
+- Multiple save files (that are *just* chunks 0x07 and 0x10).
 
 # Known Bugs
 
@@ -11,9 +11,10 @@
   system fails, I work around this by popping a dialog and then resetting the Property value afterwards. Ick.
 - I saved on the trap square on the Second Guard Bridge after looting the armory but before the outbound fight, and 
   when I reloaded the outbound fight didn't happen until I stepped on the armory square a second time.
-- There's a bit of a pause and blink when a combat round starts, sometimes. Possibly this is "just" a result of the 
-  FPS being much higher on a modern Java system than it is on an old x86; if I insert artificial FPS limiters, the 
-  blinking goes away! It seems to happen more often when you pick (F)ight rather than (Q)uickfight.
+- There's a bit of a pause and blink when a combat round starts, sometimes. The pause might be the Monster 
+  Status window getting rebuilt. Possibly the blink is "just" a result of the FPS being much higher on a modern Java 
+  system than it is on an old x86; if I insert artificial FPS limiters, the blinking goes away! It seems to happen more 
+  often when you pick (F)ight rather than (Q)uickfight.
 - Goblins are one pixel up from the bottom of the viewport. Maybe others? Maybe this isn't a bug?
 - Some monster images overdraw the viewport corners.
 
