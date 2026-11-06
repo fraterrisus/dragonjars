@@ -9,11 +9,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.Properties;
 
 public class AboutDialog extends Dialog<Void> {
     private static final String ABOUT_TEXT = "/com/hitchhikerprod/dragonjars/ui/about.txt";
-    private static final String BUILD_PROPERTIES = "/com/hitchhikerprod/dragonjars/build.properties";
 
     public AboutDialog(Window parent) {
         super();
@@ -38,17 +36,7 @@ public class AboutDialog extends Dialog<Void> {
     }
 
     private String getHeader() {
-        final Properties buildProps = new Properties();
-        try (InputStream istream = this.getClass().getResourceAsStream(BUILD_PROPERTIES)) {
-            if (Objects.isNull(istream)) {
-                throw new IOException("Null stream");
-            }
-            buildProps.load(istream);
-        } catch (IOException e) {
-            return "DragonJars\nby Ben Cordes";
-        }
-
-        return "DragonJars v" + buildProps.get("app.version") + "\nby Ben Cordes";
+        return "DragonJars " + AppPreferences.getInstance().getAppVersion() + "\nⓒ Ben Cordes 2024–2026";
     }
 
     private String getText() {

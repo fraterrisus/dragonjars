@@ -32,7 +32,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -77,7 +77,7 @@ public class DragonWarsApp extends Application {
 
         this.scene = new Scene(root.asParent());
 
-        this.stage.setTitle("DragonJars");
+        this.stage.setTitle("DragonJars " + AppPreferences.getInstance().getAppVersion());
         this.stage.setScene(scene);
         this.stage.setResizable(false);
         this.stage.show();

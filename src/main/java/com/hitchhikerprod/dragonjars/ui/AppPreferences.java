@@ -9,7 +9,10 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.prefs.Preferences;
 
 public class AppPreferences {
@@ -45,6 +48,8 @@ public class AppPreferences {
     private final BooleanProperty fixSecondaryDamage = new SimpleBooleanProperty();
 
     private final Preferences onDiskPrefs = Preferences.userRoot().node(NODE_NAME);
+
+    private static final String BUILD_PROPERTIES = "/com/hitchhikerprod/dragonjars/build.properties";
 
     private AppPreferences() {
         executablePath.set(onDiskPrefs.get(PREF_FILE_EXEC, null));
@@ -149,6 +154,19 @@ public class AppPreferences {
 
     public IntegerProperty volumeProperty() {
         return volume;
+    }
+
+    public String getAppVersion() {
+        final Properties buildProps = new Properties();
+        try (InputStream istream = this.getClass().getResourceAsStream(BUILD_PROPERTIES)) {
+            if (Objects.isNull(istream)) {
+                throw new IOException("Null stream");
+            }
+            buildProps.load(istream);
+        } catch (IOException e) {
+            return "";
+        }
+        return "v" + buildProps.get("app.version");
     }
 
     public record Frozen(

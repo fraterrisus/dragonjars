@@ -130,7 +130,7 @@
     "targets": "single",
     "range": "50’",
     "type": "Zap",
-    "w": "Lansk Guard Bridge, Magic College",
+    "where": "Lansk Guard Bridge, Magic College",
     "effect": "1d4 hp/pt"
   },
   {
